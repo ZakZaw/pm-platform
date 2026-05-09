@@ -1,0 +1,23 @@
+# Env
+.env
+.env.local
+
+# Backend
+**/bin/
+**/obj/
+*.user
+
+# Frontend
+node_modules/
+dist/
+.vite/
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store

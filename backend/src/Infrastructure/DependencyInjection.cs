@@ -1,6 +1,7 @@
 using Application.Interfaces;
 using Infrastructure.Persistence;
 using Infrastructure.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,12 @@ public static class DependencyInjection
         services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
         services.AddSingleton<IJwtService, JwtService>();
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser, CurrentUserService>();
+
+        services.Configure<FileStorageSettings>(configuration.GetSection("FileStorage"));
+        services.AddScoped<IFileStorage, LocalFileStorage>();
 
         return services;
     }

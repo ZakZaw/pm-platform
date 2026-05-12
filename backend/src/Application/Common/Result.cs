@@ -46,4 +46,28 @@ public static class AuthErrors
 
     public static readonly Error InvalidRefreshToken =
         new("Auth.InvalidRefreshToken", "The refresh token is invalid or has expired.");
+
+    public static readonly Error NotAuthenticated =
+        new("Auth.NotAuthenticated", "You must be signed in to perform this action.");
+}
+
+public static class OrgErrors
+{
+    public static readonly Error NotFound =
+        new("Org.NotFound", "Organization not found.");
+
+    public static readonly Error NotAMember =
+        new("Org.NotAMember", "You do not have access to this organization.");
+
+    public static readonly Error NotOwner =
+        new("Org.NotOwner", "Only the organization owner can perform this action.");
+
+    public static readonly Error LogoTooLarge =
+        new("Org.LogoTooLarge", "Logo file must be 2 MB or less.");
+
+    public static readonly Error LogoInvalidType =
+        new("Org.LogoInvalidType", "Logo must be a PNG, JPEG, or WebP image.");
+
+    public static readonly Error InvalidName =
+        new("Org.InvalidName", "Organization name must be 2-80 characters and contain at least one letter or digit.");
 }

@@ -1,9 +1,7 @@
-using System.Security.Claims;
 using Application.Common;
 using Application.Features.Auth;
 using Application.Features.Auth.Commands;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -31,18 +29,6 @@ public class AuthController(ISender mediator) : ControllerBase
     {
         var result = await mediator.Send(command, ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
-    }
-
-    [HttpGet("/api/v1/users/me")]
-    [Authorize]
-    public ActionResult Me()
-    {
-        return Ok(new
-        {
-            id = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub"),
-            email = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue("email"),
-            name = User.FindFirstValue("name")
-        });
     }
 
     private ObjectResult ToProblem(Error error)

@@ -1,0 +1,23 @@
+.org-home__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.org-home__title {
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.org-home__slug {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  margin-top: var(--space-1);
+}
+
+.org-home__placeholder {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}

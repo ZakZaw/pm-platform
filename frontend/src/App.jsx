@@ -1,7 +1,9 @@
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { DashboardPage } from '@/pages/dashboard/DashboardPage';
+import { CreateOrgPage } from '@/pages/onboarding/CreateOrgPage';
+import { OrgHomePage } from '@/pages/org/OrgHomePage';
 import { AppShell } from '@/components/layout/AppShell';
 import { useAuthStore } from '@/store/authStore';
 
@@ -14,6 +16,12 @@ function ProtectedLayout() {
   return <AppShell />;
 }
 
+// Forces OrgHomePage to remount when slug changes so its useState resets cleanly.
+function OrgHomePageKeyed() {
+  const { slug } = useParams();
+  return <OrgHomePage key={slug} />;
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -22,6 +30,8 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route element={<ProtectedLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/onboarding/create-org" element={<CreateOrgPage />} />
+          <Route path="/:slug/home" element={<OrgHomePageKeyed />} />
         </Route>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

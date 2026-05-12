@@ -6,6 +6,7 @@
 **/bin/
 **/obj/
 *.user
+backend/src/Api/wwwroot/uploads/
 
 # Frontend
 node_modules/

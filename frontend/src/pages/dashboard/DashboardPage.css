@@ -1,12 +1,11 @@
-.dashboard {
-  padding: var(--space-8);
+.dashboard__title {
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: var(--color-text);
 }
 
 .dashboard__subtitle {
   color: var(--color-text-secondary);
   margin-top: var(--space-2);
-}
-
-.dashboard__actions {
-  margin-top: var(--space-6);
+  font-size: var(--text-sm);
 }

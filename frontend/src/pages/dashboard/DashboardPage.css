@@ -1,0 +1,12 @@
+.dashboard {
+  padding: var(--space-8);
+}
+
+.dashboard__subtitle {
+  color: var(--color-text-secondary);
+  margin-top: var(--space-2);
+}
+
+.dashboard__actions {
+  margin-top: var(--space-6);
+}

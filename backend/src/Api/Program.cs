@@ -2,6 +2,7 @@ using System.Text;
 using Application;
 using Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,6 +43,14 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+var uploadsRoot = Path.Combine(app.Environment.ContentRootPath, "wwwroot", "uploads");
+Directory.CreateDirectory(uploadsRoot);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsRoot),
+    RequestPath = "/uploads"
+});
 
 app.UseAuthentication();
 app.UseAuthorization();

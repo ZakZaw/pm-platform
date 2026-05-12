@@ -13,6 +13,8 @@ public class AppDbContext : DbContext, IAppDbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<Organization> Organizations => Set<Organization>();
+    public DbSet<OrgMembership> OrgMemberships => Set<OrgMembership>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -20,8 +22,6 @@ public class AppDbContext : DbContext, IAppDbContext
         // the model until their owning task registers them with proper
         // configurations. Remove the relevant Ignore call when adding the
         // DbSet/IEntityTypeConfiguration for that entity.
-        modelBuilder.Ignore<Organization>();
-        modelBuilder.Ignore<OrgMembership>();
         modelBuilder.Ignore<Project>();
         modelBuilder.Ignore<ProjectMembership>();
         modelBuilder.Ignore<Team>();

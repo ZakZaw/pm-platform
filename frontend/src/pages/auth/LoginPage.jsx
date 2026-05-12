@@ -2,19 +2,21 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button, Card, Input } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
+import { useOrgStore } from '@/store/orgStore';
 import './AuthPage.css';
 
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const login = useAuthStore((s) => s.login);
+  const refreshOrgs = useOrgStore((s) => s.refresh);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const from = location.state?.from?.pathname ?? '/dashboard';
+  const from = location.state?.from?.pathname;
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -22,7 +24,13 @@ export function LoginPage() {
     setSubmitting(true);
     try {
       await login({ email, password });
-      navigate(from, { replace: true });
+      if (from) {
+        navigate(from, { replace: true });
+      } else {
+        const orgs = await refreshOrgs();
+        const target = orgs.length === 0 ? '/onboarding/create-org' : `/${orgs[0].slug}/home`;
+        navigate(target, { replace: true });
+      }
     } catch (err) {
       const detail = err.response?.data?.detail ?? 'Login failed.';
       setError(detail);

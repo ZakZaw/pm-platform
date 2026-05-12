@@ -20,7 +20,7 @@ export function RegisterPage() {
     setSubmitting(true);
     try {
       await register({ email, password, fullName });
-      navigate('/dashboard', { replace: true });
+      navigate('/onboarding/create-org', { replace: true });
     } catch (err) {
       const detail = err.response?.data?.detail ?? 'Registration failed.';
       setError(detail);

@@ -40,6 +40,11 @@ export const useAuthStore = create(
         });
       },
 
+      // Used by ProfilePage to keep the cached user in sync after a profile
+      // update / avatar upload. Only updates user fields, never the tokens.
+      setUserFromProfile: ({ id, email, fullName }) =>
+        set({ user: { id, email, fullName } }),
+
       logout: () => set({ user: null, accessToken: null, refreshToken: null }),
     }),
     {

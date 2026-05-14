@@ -66,6 +66,33 @@ public static class OrgErrors
         new("Org.InvalidName", "Organization name must be 2-80 characters and contain at least one letter or digit.");
 }
 
+public static class UserErrors
+{
+    public static readonly Error NotFound =
+        new("User.NotFound", "User not found.");
+
+    public static readonly Error InvalidFullName =
+        new("User.InvalidFullName", "Full name must be 2-120 characters.");
+
+    public static readonly Error InvalidTimezone =
+        new("User.InvalidTimezone", "Timezone must be a valid IANA timezone identifier.");
+
+    public static readonly Error InvalidCapacity =
+        new("User.InvalidCapacity", "Capacity must be between 0 and 168 hours per week.");
+
+    public static readonly Error TooManySkillTags =
+        new("User.TooManySkillTags", "A user can have at most 20 skill tags.");
+
+    public static readonly Error InvalidSkillTag =
+        new("User.InvalidSkillTag", "Each skill tag must be 1-30 characters.");
+
+    public static readonly Error AvatarTooLarge =
+        new("User.AvatarTooLarge", "Avatar file must be 2 MB or less.");
+
+    public static readonly Error AvatarInvalidType =
+        new("User.AvatarInvalidType", "Avatar must be a PNG, JPEG, or WebP image.");
+}
+
 public static class InvitationErrors
 {
     public static readonly Error InvalidEmail =

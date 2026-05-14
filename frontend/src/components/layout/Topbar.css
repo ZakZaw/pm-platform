@@ -3,16 +3,16 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  height: 56px;
-  padding: 0 var(--space-6);
-  background: var(--color-bg-secondary);
-  border-bottom: 1px solid var(--color-border);
+  height: 44px;
+  padding: 0 var(--space-4);
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0;
 }
 
 .topbar__breadcrumb {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
+  font-size: var(--font-size-dense);
+  color: var(--text-tertiary);
 }
 
 .topbar__user {
@@ -24,17 +24,17 @@
 .topbar__user-initials {
   width: 28px;
   height: 28px;
-  border-radius: var(--radius-full);
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-default);
   display: grid;
   place-items: center;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--color-text);
+  font-size: var(--font-size-meta);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
 }
 
 .topbar__user-name {
-  font-size: var(--text-sm);
-  color: var(--color-text);
+  font-size: var(--font-size-dense);
+  color: var(--text-primary);
 }

@@ -1,22 +1,23 @@
 import { useId } from 'react';
 import './Input.css';
 
-export function Input({ label, error, id, className = '', ...rest }) {
+export function Input({ label, error, help, id, className = '', ...rest }) {
   const reactId = useId();
   const inputId = id ?? reactId;
-  const classes = ['input', error ? 'input--error' : '', className]
+  const classes = ['input', error ? 'is-error' : '', className]
     .filter(Boolean)
     .join(' ');
 
   return (
     <div className="input-group">
       {label && (
-        <label className="input-group__label" htmlFor={inputId}>
+        <label className="input-label" htmlFor={inputId}>
           {label}
         </label>
       )}
       <input id={inputId} className={classes} {...rest} />
-      {error && <span className="input-group__error">{error}</span>}
+      {error && <span className="input-help is-error">{error}</span>}
+      {!error && help && <span className="input-help">{help}</span>}
     </div>
   );
 }

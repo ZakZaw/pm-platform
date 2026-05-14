@@ -23,8 +23,8 @@
 }
 
 .create-org__logo-help {
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  color: var(--text-tertiary);
 }
 
 .create-org__file-input {
@@ -32,6 +32,6 @@
 }
 
 .create-org__error {
-  font-size: var(--text-xs);
-  color: var(--color-danger);
+  font-size: var(--font-size-meta);
+  color: var(--status-danger);
 }

@@ -3,13 +3,14 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border-radius: var(--radius-full);
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-  font-weight: 600;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.02em;
   overflow: hidden;
   user-select: none;
+  position: relative;
+  border: 1px solid var(--bg-base);
 }
 
 .avatar__image {
@@ -19,26 +20,32 @@
   display: block;
 }
 
-.avatar--sm {
-  width: 24px;
-  height: 24px;
-  font-size: var(--text-xs);
-}
+.avatar-xs { width: 18px; height: 18px; font-size: 9px; }
+.avatar-sm { width: 22px; height: 22px; font-size: 9px; }
+.avatar-md { width: 28px; height: 28px; font-size: 11px; }
+.avatar-lg { width: 36px; height: 36px; font-size: 13px; }
+.avatar-xl { width: 56px; height: 56px; font-size: 18px; }
 
-.avatar--md {
-  width: 32px;
-  height: 32px;
-  font-size: var(--text-sm);
+.avatar .status-dot {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-base);
 }
+.avatar .status-dot.online  { background: var(--status-success); }
+.avatar .status-dot.busy    { background: var(--status-danger); }
+.avatar .status-dot.away    { background: var(--status-warning); }
+.avatar .status-dot.offline { background: var(--text-muted); }
 
-.avatar--lg {
-  width: 48px;
-  height: 48px;
-  font-size: var(--text-md);
-}
-
-.avatar--xl {
-  width: 80px;
-  height: 80px;
-  font-size: var(--text-xl);
-}
+/* Gradient palette — 8 slots, used when no image is provided. */
+.av-1 { background: linear-gradient(135deg, #5B6AF0, #7A6BFF); }
+.av-2 { background: linear-gradient(135deg, #4FD1E0, #4F9EFF); }
+.av-3 { background: linear-gradient(135deg, #E0A23A, #E5484D); }
+.av-4 { background: linear-gradient(135deg, #3FB984, #4FD1E0); }
+.av-5 { background: linear-gradient(135deg, #C77BFF, #5B6AF0); }
+.av-6 { background: linear-gradient(135deg, #E5484D, #C77BFF); }
+.av-7 { background: linear-gradient(135deg, #4F9EFF, #5B6AF0); }
+.av-8 { background: linear-gradient(135deg, #6BD7A6, #3FB984); }

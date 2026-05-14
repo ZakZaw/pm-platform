@@ -1,7 +1,7 @@
 .app-shell {
   display: flex;
   min-height: 100vh;
-  background: var(--color-bg);
+  background: var(--bg-app);
 }
 
 .app-shell__main {

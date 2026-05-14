@@ -48,21 +48,28 @@ Read this before writing any code, creating any file, or making any architectura
 │   │   └── Integration/
 │   └── backend.sln
 │
+├── Design Files/                   # ← STRATOS design system reference (mockups + canonical CSS)
+│
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   └── ui/                 # ← DESIGN SYSTEM (the single source of truth for all UI)
+│   │   │   └── ui/                 # ← Stratos primitives, single source of truth for all UI
 │   │   │       ├── Button/
 │   │   │       │   ├── Button.jsx
 │   │   │       │   └── Button.css
 │   │   │       ├── Input/
-│   │   │       ├── Badge/
+│   │   │       ├── Select/
 │   │   │       ├── Card/
-│   │   │       ├── Modal/
 │   │   │       ├── Avatar/
-│   │   │       ├── Dropdown/
-│   │   │       ├── Tooltip/
-│   │   │       ├── Spinner/
+│   │   │       ├── Badge/          # planned — Stratos tones (neutral/info/purple/warning/danger/success)
+│   │   │       ├── StatusBadge/    # planned — task-status pill
+│   │   │       ├── Priority/       # planned — urgent/high/med/low bars
+│   │   │       ├── AIChip/         # planned
+│   │   │       ├── Modal/          # planned
+│   │   │       ├── Dropdown/       # planned (.menu)
+│   │   │       ├── Tooltip/        # planned
+│   │   │       ├── Toast/          # planned
+│   │   │       ├── Icon/           # planned — lucide-react wrapper
 │   │   │       └── index.js        # Re-exports every UI component
 │   │   │
 │   │   ├── components/
@@ -121,126 +128,95 @@ Read this before writing any code, creating any file, or making any architectura
 
 ---
 
-## CSS Strategy (No Tailwind)
+## Design System — Stratos (No Tailwind)
 
-All styling uses **CSS custom properties (tokens) + scoped component CSS**. This is the equivalent of a design system.
+The UI is built on **Stratos**, a token-based design system. Design-time reference artifacts (canonical tokens, every component variant, every screen mockup) live in `/Design Files/` at the repo root — that folder is the source of truth when you have any visual question. The working code in `frontend/src/` mirrors it.
 
-### Tokens (`src/styles/tokens.css`)
+**Hard rules:**
 
-Every visual value lives here. Never hardcode colors, spacing, or font sizes anywhere else.
+- All styling uses **CSS custom properties (tokens) + scoped component CSS**. Never hardcode a color, spacing value, font size, radius, shadow, or duration anywhere in component CSS.
+- Class naming is **flat** (`btn-primary`, `card-elevated`, `badge-info`, `is-error`) — not BEM (`btn--primary`). State is expressed via separate state classes (`is-active`, `is-error`, `is-disabled`).
+- Stratos supports both dark (default) and light themes via `[data-theme="light"]`. New component CSS must not assume dark — always reference theme-aware tokens like `--bg-base`, `--text-primary`, `--border-default`.
 
-```css
-:root {
-  /* Colors */
-  --color-primary: #5B6AF0;
-  --color-primary-hover: #4A59E0;
-  --color-danger: #E0474C;
-  --color-success: #27AE60;
-  --color-warning: #F39C12;
+### Tokens (`frontend/src/styles/tokens.css`)
 
-  --color-bg: #0F1117;
-  --color-bg-secondary: #181C27;
-  --color-bg-elevated: #1E2235;
-  --color-border: #2A2F45;
+The single source of truth for visual values. Token families:
 
-  --color-text: #E8EAF2;
-  --color-text-secondary: #8B91A8;
-  --color-text-muted: #545870;
-
-  /* Spacing */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
-  --space-16: 64px;
-
-  /* Typography */
-  --font-sans: 'Geist', 'Inter', system-ui, sans-serif;
-  --font-mono: 'Geist Mono', 'Fira Code', monospace;
-
-  --text-xs: 11px;
-  --text-sm: 13px;
-  --text-base: 14px;
-  --text-md: 15px;
-  --text-lg: 17px;
-  --text-xl: 20px;
-  --text-2xl: 24px;
-  --text-3xl: 30px;
-
-  /* Radius */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 10px;
-  --radius-xl: 14px;
-  --radius-full: 9999px;
-
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
-  --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
-
-  /* Transitions */
-  --transition-fast: 120ms ease;
-  --transition-base: 200ms ease;
-}
-```
+| Family | Examples |
+|---|---|
+| Surfaces | `--bg-app`, `--bg-base`, `--bg-surface-1/2/3`, `--bg-hover`, `--bg-selected`, `--bg-overlay` |
+| Borders | `--border-subtle`, `--border-default`, `--border-strong`, `--border-focus` |
+| Text | `--text-primary`, `--text-secondary`, `--text-tertiary`, `--text-muted`, `--text-disabled`, `--text-on-accent`, `--text-inverse` |
+| Accent | `--accent-primary`, `--accent-primary-hover`, `--accent-primary-active`, `--accent-primary-muted`, `--accent-primary-soft` |
+| Color scales | `--indigo-50..950`, `--blue-50..950`, `--sky-50..900`, `--slate-50..950` |
+| Status | `--status-{success,warning,danger,info,neutral,purple}` + `-bg` + `-border` |
+| Priority | `--prio-urgent`, `--prio-high`, `--prio-med`, `--prio-low` |
+| AI surface | `--ai-violet`, `--ai-cyan`, `--ai-pink`, `--ai-bg`, `--ai-border`, `--ai-glow` |
+| Spacing | `--space-1..16` (4/8/12/16/20/24/32/40/48/64 px) |
+| Radius | `--radius-xs/sm/md/lg/xl/2xl`, `--radius-pill` |
+| Shadows | `--shadow-xs/sm/md/lg/xl`, `--shadow-focus`, `--shadow-focus-danger` |
+| Type sizes | `--font-size-display/h1/h2/h3/h4/body/dense/meta` (30/24/20/17/15/14/13/11) |
+| Type | `--font-ui`, `--font-mono`, `--weight-{regular,medium,semibold,bold}`, `--leading-{tight,snug,norm}` |
+| Motion | `--dur-fast` (120 ms), `--dur-med` (220 ms), `--ease-out` |
 
 ### Component CSS Pattern
 
-Each component has its own `.css` file. Classes use BEM-ish naming scoped to the component.
+Each component lives in its own folder under `frontend/src/components/ui/<Name>/` with `<Name>.jsx` + `<Name>.css`. Classes are flat. Example:
 
 ```css
-/* Button.css */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  transition: background var(--transition-fast);
-  cursor: pointer;
-  border: none;
+.btn { /* base */ }
+.btn-sm { height: 24px; padding: 0 8px; font-size: var(--font-size-meta); }
+.btn-md { height: 30px; padding: 0 12px; }
+.btn-lg { height: 36px; padding: 0 16px; }
+
+.btn-primary {
+  background: var(--accent-primary);
+  color: var(--text-on-accent);
+  box-shadow: var(--shadow-xs), inset 0 1px 0 rgba(255,255,255,0.12);
 }
-
-.btn--primary {
-  background: var(--color-primary);
-  color: #fff;
-}
-.btn--primary:hover { background: var(--color-primary-hover); }
-
-.btn--ghost { background: transparent; color: var(--color-text); }
-.btn--ghost:hover { background: var(--color-bg-elevated); }
-
-.btn--danger { background: var(--color-danger); color: #fff; }
-.btn--sm { padding: var(--space-1) var(--space-3); font-size: var(--text-xs); }
-.btn--lg { padding: var(--space-3) var(--space-6); font-size: var(--text-md); }
+.btn-primary:hover:not(:disabled) { background: var(--accent-primary-hover); }
+.btn-primary:active:not(:disabled) { background: var(--accent-primary-active); }
 ```
 
-### The Golden Rule for Components
+### Primitives & component API
 
-**Every shared UI primitive lives in `/src/components/ui/` and is exported from its `index.js`.**
-Pages and feature components import from there — never duplicate a primitive.
+These are the canonical primitives. Build new ones in `frontend/src/components/ui/` and export them from `index.js` before using anywhere else.
+
+| Primitive | Variants / props | Status |
+|---|---|---|
+| `Button` | `variant`: primary, secondary, ghost, danger, ai · `size`: sm, md, lg · `block`, `type`, `disabled` | ✅ |
+| `Input` | `label`, `error`, `help`, all native props | ✅ |
+| `Select` | `label`, `error`, `help`, `options` or children | ✅ |
+| `Card` | `variant`: default, elevated, ai · `title`, `subtitle` | ✅ |
+| `Avatar` | `name`, `src`, `size`: xs/sm/md/lg/xl · `color`: 1–8 · `status`: online/busy/away/offline | ✅ |
+| `Badge` | `tone`: neutral/info/purple/warning/danger/success · `dot`, `icon` | ⏳ build when first needed |
+| `Priority` | `level`: urgent/high/med/low | ⏳ |
+| `StatusBadge` | `status`: backlog/todo/in_progress/in_review/blocked/done | ⏳ |
+| `AvatarStack` | `people`, `max`, `size` | ⏳ |
+| `AIChip` | wraps "AI" with violet/cyan gradient pill | ⏳ |
+| `Tabs` / `Tab` | flat-class `.tabs > .tab.is-active` | ⏳ |
+| `Modal` | `.modal-backdrop`, `.modal-header/body/footer` | ⏳ |
+| `Dropdown` / `Menu` | `.menu > .menu-item / .menu-section / .menu-divider` | ⏳ |
+| `Tooltip` | `.tooltip` with arrow | ⏳ |
+| `Toast` | `.toast.toast-{success,danger,info}` | ⏳ |
+| `Icon` | thin wrapper over `lucide-react` | ⏳ |
 
 ```js
 // components/ui/index.js
 export { Button } from './Button/Button';
 export { Input } from './Input/Input';
-export { Badge } from './Badge/Badge';
-export { Modal } from './Modal/Modal';
-export { Avatar } from './Avatar/Avatar';
+export { Select } from './Select/Select';
 export { Card } from './Card/Card';
-// ... etc
+export { Avatar } from './Avatar/Avatar';
+// ... new primitives added here as they're built
 
 // Usage anywhere in the app:
-import { Button, Badge, Avatar } from '@/components/ui';
+import { Button, Card, Avatar } from '@/components/ui';
 ```
+
+### App frame classes
+
+The app shell uses Stratos layout classes directly (no component wrapper required): `.app` (grid 220px 1fr × 44px 1fr), `.app-sidebar`, `.app-topbar`, `.app-main`, `.page-header`. Sidebar items use `.side-item / .side-item.active`. Search the design files for any pattern you need before inventing one.
 
 ---
 
@@ -381,8 +357,9 @@ Key variables:
 ## What NOT to Do
 
 - Do not call the Anthropic API from the frontend. Backend only.
-- Do not write inline styles. All styles go through tokens + component CSS.
-- Do not duplicate UI primitives. If it doesn't exist in `ui/`, create it there first.
+- Do not write inline styles. All styles go through Stratos tokens + component CSS in `/components/ui/`.
+- Do not duplicate UI primitives. If it doesn't exist in `ui/`, create it there first — and match the Stratos vocabulary in `/Design Files/` (flat class names, theme-aware tokens).
+- Do not hardcode colors, font sizes, spacing values, radii, shadows, or durations. Use the token (`var(--accent-primary)`, `var(--space-4)`, etc.). Hex codes in a component CSS file = bug.
 - Do not put business logic in controllers. It goes in Application layer.
 - Do not skip domain validation. Invalid task state transitions must be caught in Domain.
 - Do not use `any` in TypeScript — the frontend should be typed (use JSDoc if not using TS).
@@ -416,7 +393,8 @@ npm run test
 
 ## Current Phase
 
-**Phase 0 — Foundation** (not started)
+**Phase 1 — Core PM Loop** (in progress)
 
-Next task: Set up Docker Compose so all three services start and the API can talk to PostgreSQL.
-Check `ROADMAP.md` for the full ordered task list.
+F0 (Foundation) is complete. F1-01 (Create org), F1-02 (Org roles) are committed. F1-03 (Invitations) is implemented locally, pending curl AC verification. Stratos design system was adopted mid-Phase-1: existing primitive CSS (Button, Input, Select, Card, Avatar) and all page CSS have been migrated to the Stratos token vocabulary and flat class naming.
+
+Check `ROADMAP.md` for the full ordered task list and `/Design Files/` for the visual reference.

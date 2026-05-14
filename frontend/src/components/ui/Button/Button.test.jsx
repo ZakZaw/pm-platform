@@ -10,7 +10,7 @@ describe('Button', () => {
 
   it('applies the requested variant class', () => {
     render(<Button variant="ghost">Ghost</Button>);
-    expect(screen.getByRole('button')).toHaveClass('btn--ghost');
+    expect(screen.getByRole('button')).toHaveClass('btn-ghost');
   });
 
   it('does not fire onClick when disabled', () => {

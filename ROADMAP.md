@@ -2,11 +2,15 @@
 
 > Stack: .NET 10 · React + Vite · PostgreSQL · Docker
 > Based on Design Document v1.0
+> Design system: **Stratos** — tokens in `frontend/src/styles/tokens.css`; reference mockups, every component variant, every screen in `/Design Files/`. CLAUDE.md → "Design System — Stratos" has the canonical token/primitive reference.
 
 Each task includes:
+
 - **Backend:** API endpoints, entities, services
-- **Frontend:** components, pages, state
+- **Frontend:** components, pages, state (always built on Stratos primitives from `components/ui/`)
 - **AC:** acceptance criteria (done when…)
+
+**Stratos primitive checklist.** When a task says "build a new UI primitive," it means adding it to `frontend/src/components/ui/<Name>/` matching the Stratos style (flat class names, theme-aware tokens), then exporting from `index.js`. Existing primitives: Button, Input, Select, Card, Avatar. Common ones still to build as features need them: Badge, StatusBadge, Priority, Modal, Dropdown/Menu, Tooltip, Toast, AIChip, AvatarStack, Icon (lucide-react wrapper).
 
 ---
 
@@ -21,6 +25,7 @@ Each task includes:
 **Backend:** `docker-compose.yml` with `db` and `pgadmin` services.
 **Frontend:** none.
 **AC:**
+
 - `docker-compose up -d` starts both containers
 - `docker ps` shows both healthy
 - pgAdmin reachable at `localhost:5050`, can connect to the `db` service
@@ -32,6 +37,7 @@ Each task includes:
 **Backend:** `Domain`, `Application`, `Infrastructure`, `Api` projects with proper reference chain. `Program.cs` builds and runs. Health check endpoint at `/health`.
 **Frontend:** none.
 **AC:**
+
 - `dotnet build` succeeds with zero warnings
 - `dotnet run --project src\Api` starts the API
 - `GET /health` returns 200 OK
@@ -44,25 +50,30 @@ Each task includes:
 **Backend:** `AppDbContext` in `Infrastructure/Persistence/`. Connection string via config. Initial empty migration created. `dotnet ef database update` applies it.
 **Frontend:** none.
 **AC:**
+
 - `dotnet ef migrations add InitialCreate` succeeds
 - `dotnet ef database update` creates the database
 - pgAdmin shows the `__EFMigrationsHistory` table in the `pmplatform` database
 
 ---
 
-### F0-04 — React + Vite scaffold + folder structure
+### F0-04 — React + Vite scaffold + Stratos foundation
 
-**Frontend:** Vite scaffold + the project folder structure. `tokens.css`, `reset.css`, `global.css` in place. `main.jsx` imports `global.css`.
+**Frontend:** Vite scaffold + the project folder structure. `tokens.css` holds the full Stratos token set (surfaces, borders, text, accents, status, priority, AI surface, spacing, radius, shadow, type, motion) with `[data-theme="light"]` overrides; `reset.css`, `global.css` in place. `main.jsx` imports `global.css`. The Stratos reference artifacts live in `/Design Files/` at the repo root and are the source of truth for any visual decision.
 **AC:**
+
 - `npm run dev` starts the dev server on port 5173
-- The page renders with the dark background from `tokens.css`
+- The page renders with the dark background sourced from `--bg-app`
+- Switching `<html data-theme="light">` flips surfaces/text without breaking layout
 - All folders listed in `CLAUDE.md` exist
 
 ---
 
 ### F0-05 — JWT auth end-to-end
 
+=[0]
 **Backend:**
+
 - `Domain/Entities/User.cs` (id, email, password_hash, full_name, created_at)
 - `Application/Features/Auth/Commands/RegisterCommand.cs`, `LoginCommand.cs`, `RefreshTokenCommand.cs`
 - `Infrastructure/Services/JwtService.cs`, `PasswordHasher.cs`
@@ -70,6 +81,7 @@ Each task includes:
 - JWT middleware in `Program.cs`, `[Authorize]` attribute working
 
 **Frontend:**
+
 - `api/auth.api.js` (Axios calls)
 - `store/authStore.js` (Zustand: user, accessToken, refreshToken, login, logout, register)
 - `pages/auth/LoginPage.jsx`, `RegisterPage.jsx`
@@ -77,6 +89,7 @@ Each task includes:
 - Axios interceptor that attaches the Bearer token and auto-refreshes on 401
 
 **AC:**
+
 - Register a new user via the UI → row appears in `users` table
 - Login → access + refresh token returned, stored in Zustand
 - Visit a protected route while logged out → redirect to `/login`
@@ -86,8 +99,9 @@ Each task includes:
 
 ### F0-06 — App layout + routing
 
-**Frontend:** `components/layout/AppShell.jsx` (sidebar + topbar + content area). React Router configured with public and protected routes.
+**Frontend:** `components/layout/AppShell.jsx` (sidebar + topbar + content area). Adopts the Stratos `.app` frame (grid: 220px 1fr × 44px 1fr) with `.app-sidebar`, `.app-topbar`, `.app-main`. React Router configured with public and protected routes.
 **AC:**
+
 - Logged in users see the AppShell with sidebar
 - Logged out users get the auth pages with no shell
 - Sidebar collapse works
@@ -100,6 +114,7 @@ Each task includes:
 **Backend:** `.github/workflows/ci.yml` runs `dotnet build` + `dotnet test` on push and PR.
 **Frontend:** same workflow runs `npm run build` + `npm run test`.
 **AC:**
+
 - A pushed commit triggers the workflow
 - Workflow passes on a clean main branch
 - Workflow fails if a test breaks
@@ -117,17 +132,20 @@ Each task includes:
 ### F1-01 (ORG-01) — Create & manage organization
 
 **Backend:**
+
 - Entities: `Organization` (id, name, slug, logo_url, plan, sso_enabled, created_at)
 - `OrgMembership` (id, org_id, user_id, org_role, joined_at)
 - Endpoints: `POST /api/v1/orgs`, `GET /api/v1/orgs/{slug}`, `PATCH /api/v1/orgs/{slug}`
 - On org creation, the creating user automatically gets an `OrgMembership` with role `Owner`
 
 **Frontend:**
+
 - `pages/onboarding/CreateOrgPage.jsx`
 - `components/ui/Avatar` (logo upload preview)
 - After creation, redirect to `/{slug}/home`
 
 **AC:**
+
 - New user lands on Create Org after signup
 - Slug uniqueness enforced (DB unique index)
 - Creator becomes Owner automatically
@@ -138,14 +156,17 @@ Each task includes:
 ### F1-02 (ORG-03) — Org-level roles
 
 **Backend:** `OrgRole` enum (Owner, Admin, Member, Guest). Permission attribute or policy on each endpoint:
+
 - `RequireOrgRole(OrgRole.Admin)` — for protected actions
 - Permissions per the design doc table (3.1.2)
 
 **Frontend:**
+
 - `hooks/useOrgRole.js` to read the current user's org role
 - Conditionally render admin-only UI
 
 **AC:**
+
 - A Member trying to access "Configure SSO" gets 403
 - An Owner can do everything in the permission table
 - Role enforcement happens server-side, never trust the client
@@ -155,6 +176,7 @@ Each task includes:
 ### F1-03 (ORG-02) — Invite members via email
 
 **Backend:**
+
 - Entity: `Invitation` (id, org_id, email, org_role, token, expires_at, accepted_at, created_by)
 - Endpoint: `POST /api/v1/orgs/{slug}/invitations` (Admin+)
 - Endpoint: `POST /api/v1/invitations/{token}/accept`
@@ -163,11 +185,13 @@ Each task includes:
 - Token = cryptographically random, 7-day expiry
 
 **Frontend:**
+
 - `pages/settings/MembersPage.jsx` — invite form (email + role select)
 - `pages/auth/AcceptInvitePage.jsx` — `/invitations/:token` route
 - New users go through register → auto-accept invite → join org
 
 **AC:**
+
 - Invitee receives email with the accept link
 - Expired or used token shows error page
 - Accepting creates `OrgMembership` with the invited role
@@ -178,14 +202,17 @@ Each task includes:
 ### F1-04 (ORG-05) — Member profile
 
 **Backend:** Add to `User`: `avatar_url`, `timezone`, `skill_tags` (text[]), `capacity_hours_per_week` (int).
+
 - Endpoint: `PATCH /api/v1/users/me`
 
 **Frontend:**
+
 - `pages/settings/ProfilePage.jsx`
-- Skill tags as multi-select chips
-- Timezone dropdown (use `Intl.supportedValuesOf('timeZone')`)
+- Skill tags as multi-select chips — build a `Chip` primitive in `components/ui/Chip/` matching the Stratos badge styling (`.badge-neutral` + close affordance)
+- Timezone dropdown using the existing `Select` primitive populated from `Intl.supportedValuesOf('timeZone')`
 
 **AC:**
+
 - User can edit all profile fields
 - Skill tags stored as array, searchable later for AI assignment suggestions
 - Timezone affects how dates display across the app (use `date-fns-tz`)
@@ -196,11 +223,14 @@ Each task includes:
 
 **Backend:** `GET /api/v1/orgs/{slug}/members` with pagination, search by name/email, filter by role.
 **Frontend:**
-- `pages/settings/MembersPage.jsx` table view
-- `components/ui/Table` (new UI primitive)
-- Search + role filter
+
+- `pages/settings/MembersPage.jsx` table view (extend the existing invite form from F1-03)
+- `components/ui/Table` — new Stratos primitive. Composition only (header + rows + cell), styled with `--bg-surface-1` rows, `--border-subtle` separators, `--font-size-dense` text. No sorting in this task — feature only.
+- Search input (existing `Input`) + role filter (existing `Select`)
+- Role chips per row use the planned `Badge` primitive (`badge-info` for Admin, `badge-purple` for Owner, `badge-neutral` for Member/Guest)
 
 **AC:**
+
 - All org members listed with role badges
 - Owners + Admins can change a member's role
 - Removing a member sets `OrgMembership.removed_at` (soft delete)
@@ -212,6 +242,7 @@ Each task includes:
 ### F1-06 (PM-01) — Create project
 
 **Backend:**
+
 - Entities: `Project` (id, org_id, name, slug, environment_type, status, target_date, ai_control_mode, created_by)
 - `ProjectMembership` (id, project_id, user_id, project_role)
 - `EnvironmentType` enum (Developer, Support, Sales, Business)
@@ -220,11 +251,13 @@ Each task includes:
 - Three creation modes: blank, template, ai-generate (the last one queues an AI job, see F1-15)
 
 **Frontend:**
+
 - `pages/project/CreateProjectPage.jsx`
 - Three-card chooser: blank / template / ✨ AI generate
 - On AI generate, route to `pages/project/AIGenerationWizard.jsx` (covered in F1-15)
 
 **AC:**
+
 - Creator becomes PM automatically
 - Slug unique within org
 - Environment type drives which integrations show up later
@@ -234,14 +267,17 @@ Each task includes:
 ### F1-07 (PM-02) — Epic CRUD
 
 **Backend:**
+
 - Entity: `Epic` (id, project_id, title, description, owner_id, target_milestone_id, status, risk_flag, environment_type, color, created_at, archived_at)
 - CRUD endpoints under `/api/v1/projects/{id}/epics`
 
 **Frontend:**
+
 - `components/epics/EpicCard.jsx`, `EpicForm.jsx`
 - `pages/project/EpicsPage.jsx` — grid of epic cards
 
 **AC:**
+
 - PMs and Team Leads can create/edit/archive epics
 - Epic shows progress % computed from child story points
 - Archived epics hidden by default, toggleable
@@ -251,6 +287,7 @@ Each task includes:
 ### F1-08 (PM-03) — Story / Task / Subtask CRUD
 
 **Backend:**
+
 - Entities: `Story` (id, project_id, epic_id, title, description, story_points, priority, status, sprint_id, assignee_id, reporter_id, due_date, created_at)
 - `Task` (id, story_id, title, description, status, assignee_id, reviewer_id, priority, time_logged_minutes, pr_url, created_at)
 - `Subtask` (id, task_id, title, completed, assignee_id)
@@ -258,12 +295,14 @@ Each task includes:
 - Endpoints: full CRUD under `/api/v1/projects/{id}/stories`, `/tasks`, `/subtasks`
 
 **Frontend:**
+
 - `components/tasks/TaskCard.jsx` (compact, used everywhere)
 - `components/tasks/TaskDetail.jsx` (modal/drawer with all fields)
 - `components/tasks/TaskForm.jsx` (create/edit)
 - `store/taskStore.js`
 
 **AC:**
+
 - Create epic → story → task → subtask hierarchy works
 - Markdown supported in description (use `react-markdown`)
 - @mentions in description trigger notifications (queue them now, ship in F2-XX)
@@ -273,6 +312,7 @@ Each task includes:
 ### F1-09 (PM-04) — Task status state machine
 
 **Backend:**
+
 - `TaskStatus` enum (Backlog, ToDo, InProgress, InReview, Blocked, Done, WontDo)
 - `TaskStatusTransition` value object that validates allowed transitions per the design doc 7.2 table
 - Invalid transitions throw `DomainException` from the entity itself, not the controller
@@ -280,11 +320,13 @@ Each task includes:
 - `Blocked` requires a reason; `WontDo` requires a reason
 
 **Frontend:**
-- `components/tasks/StatusBadge.jsx` (color-coded per status)
-- `components/tasks/StatusDropdown.jsx` — only shows valid next states based on current state
-- API errors on bad transition surface as toasts
+
+- Build the `StatusBadge` Stratos primitive in `components/ui/StatusBadge/`. Status→tone mapping (per `/Design Files/shared.jsx`): backlog→neutral·circle-dashed, todo→neutral·circle, in_progress→info·circle-dot, in_review→purple·git-pull-request, blocked→danger·octagon-x, done→success·circle-check. Wraps the planned `Badge` primitive.
+- `components/tasks/StatusDropdown.jsx` — uses the planned `Dropdown/Menu` primitive; only shows valid next states based on current state
+- API errors on bad transition surface as Stratos toasts (`Toast` primitive, `toast-danger` variant)
 
 **AC:**
+
 - All transitions in section 7.2 of the design doc work
 - Invalid transitions return 422 with a clear error
 - Status change is logged in `TaskStatusChange` audit table (created_at, from, to, by_user, reason)
@@ -295,12 +337,14 @@ Each task includes:
 
 **Backend:** `GET /api/v1/projects/{id}/board?sprint_id=...&swimlane_by=assignee|epic|priority` returns columns with cards.
 **Frontend:**
+
 - `components/kanban/KanbanBoard.jsx`, `KanbanColumn.jsx`, `KanbanCard.jsx`
 - Drag-drop with `@dnd-kit/core`
 - Optimistic update + rollback on API error
 - Swimlane toggle in board header
 
 **AC:**
+
 - Drag a card across columns → status updates in DB
 - Drop fails on invalid transition → card snaps back, error toast shown
 - Swimlanes group cards correctly
@@ -312,11 +356,13 @@ Each task includes:
 
 **Backend:** `GET /api/v1/projects/{id}/backlog` returns ordered list of stories not in active sprint.
 **Frontend:**
+
 - `pages/project/BacklogPage.jsx`
 - Drag stories up/down to reorder priority
 - Drag stories into the right-hand "active sprint" panel to add to sprint
 
 **AC:**
+
 - Reordering persists `priority_order` in DB
 - Capacity bar in active sprint panel updates live as stories are added
 
@@ -325,6 +371,7 @@ Each task includes:
 ### F1-12 (PM-07) — Sprint lifecycle
 
 **Backend:**
+
 - Entity: `Sprint` (id, project_id, name, goal, start_date, end_date, velocity_target, status, scope_baseline, created_at, closed_at)
 - `SprintStatus` enum: Planning, Active, Closed
 - `SprintStory` join table (id, sprint_id, story_id, added_at)
@@ -333,10 +380,12 @@ Each task includes:
 - Closing a sprint moves incomplete stories to backlog, records final velocity
 
 **Frontend:**
+
 - `pages/project/SprintPlanningPage.jsx`
 - Sprint header bar with name, dates, days remaining, goal
 
 **AC:**
+
 - Cannot start a sprint with zero stories
 - Cannot start a second sprint while one is active
 - Closing prompts to confirm carryovers
@@ -349,6 +398,7 @@ Each task includes:
 **Backend:** Filter the existing board endpoint by active sprint.
 **Frontend:** `pages/project/SprintBoardPage.jsx` — reuses `KanbanBoard` with a sprint header.
 **AC:**
+
 - Sprint goal banner shown at top
 - Days remaining countdown
 - Inline burndown chart placeholder (real chart in Phase 2)
@@ -358,16 +408,19 @@ Each task includes:
 ### F1-14 — SignalR real-time updates
 
 **Backend:**
+
 - `Infrastructure/Hubs/ProjectHub.cs` at `/hubs/project`
 - Clients call `JoinProject(projectId)` on connect
 - After any task/story write, server broadcasts `TaskUpdated` to the project group
 - Use MediatR notification handlers to fire SignalR events from Application layer
 
 **Frontend:**
+
 - `hooks/useSignalR.js` connects on app mount, joins current project on route change
 - Updates Zustand stores when events arrive
 
 **AC:**
+
 - Two browser tabs open on the same board → moving a card in tab A updates tab B within 1s
 - Reconnect on disconnect (built into SignalR client)
 
@@ -378,6 +431,7 @@ Each task includes:
 **Backend:** `GET /api/v1/users/me/tasks?filter=today|week|overdue` across all projects user belongs to.
 **Frontend:** `pages/dashboard/MyWorkPage.jsx` — three sections: Due Today, This Week, Overdue.
 **AC:**
+
 - Tasks span all projects the user is in
 - Tasks grouped by project with project name as header
 - Overdue tasks have a red indicator
@@ -389,6 +443,7 @@ Each task includes:
 **Backend:** Allow project to define custom statuses on top of the core enum. Entity: `ProjectStatusConfig` (id, project_id, status_key, display_name, color, order, is_done_state).
 **Frontend:** `pages/settings/WorkflowSettingsPage.jsx` — drag to reorder statuses, edit colors.
 **AC:**
+
 - Custom statuses appear as columns on the board
 - At least one status must be marked `is_done_state`
 - Existing tasks must be reassignable when a status is deleted
@@ -398,16 +453,19 @@ Each task includes:
 ### F1-17 (PM-17) — Task comments and @mentions
 
 **Backend:**
+
 - Entity: `Comment` (id, task_id, author_id, body_md, mentioned_user_ids[], created_at, edited_at)
 - Endpoints: full CRUD under `/api/v1/tasks/{id}/comments`
 - @mentions parsed server-side from markdown
 - Notification queued for each mentioned user (notification system in Phase 2)
 
 **Frontend:**
+
 - `components/tasks/CommentList.jsx`, `CommentInput.jsx`
 - `@` triggers user search dropdown
 
 **AC:**
+
 - Comments show author avatar, time, edited indicator
 - @mentions render as styled tags in the comment
 - Comment author + PM can edit/delete
@@ -419,15 +477,18 @@ Each task includes:
 ### F1-18 — IAIService abstraction
 
 **Backend:**
+
 - `Application/Interfaces/IAIService.cs` — methods like `GenerateProjectStructureAsync`, `EstimateStoryPointsAsync`, `SuggestAssigneeAsync`
 - `Infrastructure/Services/Ai/GeminiAIService.cs` — implements `IAIService` using `Google.GenAI`
 - All calls log request/response to `AIAuditLog` table (id, action_type, prompt, response, user_id, project_id, created_at, applied_by, before_state_json, after_state_json)
 - Configurable system prompts per action type, stored in `Infrastructure/Services/Ai/Prompts/`
 
 **Sample system prompt for project generation:**
+
 > You are a senior project manager. Given a plain-language project description, output a JSON object with this exact schema: { "epics": [{ "title", "description", "color", "stories": [{ "title", "description", "story_points", "priority", "acceptance_criteria": [...], "tasks": [{ "title", "description" }] }] }] }. Use 8 or fewer epics. Each story must be deliverable in a single sprint. Story points use Fibonacci scale (1, 2, 3, 5, 8, 13). Output ONLY valid JSON, no commentary.
 
 **AC:**
+
 - All AI calls go through `IAIService`, never directly to Gemini SDK from anywhere else
 - Every AI write action creates a row in `AIAuditLog` (reversible within 24h)
 
@@ -436,16 +497,19 @@ Each task includes:
 ### F1-19 (AI-01) — Project generation from plain description
 
 **Backend:**
+
 - Endpoint: `POST /api/v1/projects/generate` with `{ description, environment_type }`
 - Flow: call `GenerateProjectStructureAsync` → parse JSON → create draft `ProjectGenerationRequest` row (status=draft) → return preview to user
 - After user confirms via separate endpoint, write the full epic/story/task tree in a single transaction
 
 **Frontend:**
-- `pages/project/AIGenerationWizard.jsx` — text area + "Generate" button → loading state → preview screen
+
+- `pages/project/AIGenerationWizard.jsx` — text area + "Generate" button (use the Stratos `btn-ai` variant) → loading state → preview screen
 - Preview screen: editable epic/story/task tree with Confirm or Regenerate
-- Component: `components/ai/AISuggestionCard.jsx` (used here and reused later)
+- Component: `components/ai/AISuggestionCard.jsx` — built on the Stratos `Card` primitive with `variant="ai"` (violet/cyan gradient border + glow + `--ai-bg` wash). Plus an `AIChip` primitive in `components/ui/AIChip/` if not already built.
 
 **AC:**
+
 - Description → preview returns within 30 seconds
 - Preview is fully editable before commit
 - Confirm button creates the full project in <2s
@@ -457,15 +521,18 @@ Each task includes:
 ### F1-20 (AI-02) — Clarification dialogue
 
 **Backend:**
+
 - Before generation, call AI with a `GenerateClarifyingQuestionsAsync` prompt → returns up to 3 questions
 - Endpoint: `POST /api/v1/ai/clarify` with `{ description }` returns `{ questions: ["...", "...", "..."] }`
 - User answers feed back into the main generation prompt
 
 **Frontend:**
+
 - Wizard step 2: show questions, allow skip ("Generate with assumptions")
 - Skip → generation proceeds with original description only
 
 **AC:**
+
 - Questions are project-specific, not generic
 - Skip works at any time
 - Skipped runs are tagged `clarification_skipped=true` in audit log for later analysis
@@ -476,6 +543,7 @@ Each task includes:
 
 Already covered by F1-19's prompt schema, but verify:
 **AC:**
+
 - Every generated story has 2–5 acceptance criteria as a bullet list
 - Every generated task has a description (not just a title)
 
@@ -484,17 +552,20 @@ Already covered by F1-19's prompt schema, but verify:
 ### F1-22 (AI-13) — Effort estimation with confidence
 
 **Backend:**
+
 - `EstimateStoryPointsAsync(story_id)` — sends story details + similar past stories from same org as context
 - Returns `{ points: 5, confidence: 0.7, reasoning: "..." }`
 - Confidence below 0.5 surfaces a warning in UI
 - Endpoint: `POST /api/v1/stories/{id}/estimate`
 
 **Frontend:**
+
 - "Estimate with AI" button on story form
 - Show confidence as a colored bar
 - Reasoning shown on hover
 
 **AC:**
+
 - Estimation completes in <10s
 - Reasoning text references at least one signal (description complexity, similar tasks, team velocity)
 - Confidence < 0.5 → yellow banner suggesting human review
@@ -504,15 +575,18 @@ Already covered by F1-19's prompt schema, but verify:
 ### F1-23 (AI-14) — Sprint plan draft
 
 **Backend:**
+
 - Endpoint: `POST /api/v1/sprints/{id}/ai-fill` with `{ target_capacity_pct: 80 }`
 - AI selects highest-priority backlog stories that fit the team capacity
 - Returns suggestion list with reasoning, doesn't write until user confirms
 
 **Frontend:**
+
 - Sprint planning page → "AI fill to 80%" button
 - Suggestions appear as a confirmable list with capacity bar preview
 
 **AC:**
+
 - AI doesn't exceed team capacity (sum of `capacity_hours_per_week` for sprint members, mapped to story points)
 - Dependencies respected (won't add a story whose blocker isn't already in the sprint)
 - User can edit the suggestion list before confirming
@@ -531,11 +605,13 @@ Already covered by F1-19's prompt schema, but verify:
 
 **Backend:** `GET /api/v1/projects/{id}/roadmap` returns epics with start/end dates and dependencies.
 **Frontend:**
+
 - `components/roadmap/RoadmapView.jsx` (Gantt-style, custom SVG or `recharts` adapted)
 - Drag epic bars to adjust dates
 - Diamond markers for milestones, arrows for dependencies
 
 **AC:**
+
 - Drag end-date of epic → cascades to dependents (with confirmation)
 - Zoom levels: week / month / quarter
 - Only PMs and Team Leads can edit, others see read-only
@@ -546,12 +622,14 @@ Already covered by F1-19's prompt schema, but verify:
 
 **Backend:** Existing task endpoint, with sort/filter query params.
 **Frontend:**
+
 - `pages/project/ListPage.jsx`
 - Inline edit on click (cell-level)
 - Bulk select + bulk action menu (status change, assignee change, delete)
 - CSV export client-side
 
 **AC:**
+
 - All task fields visible as columns, columns toggleable
 - Inline edit auto-saves
 - Bulk status change validates each transition; failed ones reported individually
@@ -562,12 +640,14 @@ Already covered by F1-19's prompt schema, but verify:
 
 **Backend:** Same task endpoint, filtered by date range.
 **Frontend:**
+
 - `pages/project/CalendarPage.jsx` — month/week toggle
 - Sprint bands as background colors
 - Drag a task to reschedule its due date
 - iCal export endpoint (`GET /api/v1/projects/{id}/calendar.ics`)
 
 **AC:**
+
 - Drag-reschedule persists
 - iCal feed renders correctly in Google Calendar / Outlook
 
@@ -577,11 +657,13 @@ Already covered by F1-19's prompt schema, but verify:
 
 **Backend:** `GET /api/v1/projects/{id}/dashboard` aggregates all metrics.
 **Frontend:**
+
 - `pages/project/DashboardPage.jsx` — widget canvas with `react-grid-layout`
 - Widgets: BurndownWidget, VelocityWidget, EpicProgressWidget, WorkloadHeatmapWidget, AIHealthWidget
 - Layout saved per user per project
 
 **AC:**
+
 - User can add/remove/resize widgets
 - Layout persists in `UserDashboardLayout` table
 - Widgets refresh on SignalR events
@@ -591,15 +673,18 @@ Already covered by F1-19's prompt schema, but verify:
 ### F2-05 (PM-15) — Custom fields
 
 **Backend:**
+
 - `CustomFieldDefinition` (id, project_id, name, field_type, options, required)
 - `CustomFieldValue` (id, task_id, definition_id, value_json)
 - Field types: text, number, date, single-select, multi-select
 
 **Frontend:**
+
 - `pages/settings/CustomFieldsPage.jsx`
 - Custom fields render in TaskForm and TaskDetail
 
 **AC:**
+
 - Required fields validated on save
 - Deleting a field is a soft delete with confirmation
 - Existing values for deleted definitions kept in DB but hidden
@@ -609,15 +694,18 @@ Already covered by F1-19's prompt schema, but verify:
 ### F2-06 (PM-16) — Shareable read-only roadmap link
 
 **Backend:**
+
 - `RoadmapShareLink` (id, project_id, token, password_hash, expires_at, hide_internal_labels, hide_assignees)
 - `GET /api/v1/share/roadmap/{token}` — public, no auth, optional password
 
 **Frontend:**
+
 - `pages/share/RoadmapPublicPage.jsx`
 - Shareable URL `/share/roadmap/:token`
 - "Generate Link" modal in roadmap view with toggles
 
 **AC:**
+
 - Link works without auth
 - Expired link shows expiry message
 - Password gate works
@@ -644,15 +732,18 @@ Group these — they're small additions to existing entities:
 ### F2-08 (AI-12) — Per-project AI control modes
 
 **Backend:**
+
 - `AIControlMode` enum: Autopilot, Suggest, AskMeFirst, Off
 - Field on `Project`. Default `Suggest` for new projects.
 - All AI write actions check this before proceeding
 
 **Frontend:**
+
 - `pages/settings/AISettingsPage.jsx` — mode selector with explanations
 - Visual indicator on every AI suggestion card showing current mode
 
 **AC:**
+
 - Off mode → no AI suggestions at all, all auto-triggers disabled
 - Autopilot → silent application, audit log entry, undo button visible for 24h
 - Suggest → cards appear in a dedicated AI inbox
@@ -663,12 +754,14 @@ Group these — they're small additions to existing entities:
 ### F2-09 (AI-05) — Task → Done automations
 
 **Backend:**
+
 - MediatR notification handler on `TaskStatusChanged` to `Done`
 - Unblocks dependent tasks (sets status from Blocked back to InProgress with AI-suggest card)
 - Recomputes epic progress percentage
 - Checks if sprint goal achieved → posts celebration in project channel (when channels exist)
 
 **AC:**
+
 - Closing the last task in an epic → epic auto-completes
 - Closing a task that was blocking another → blocked task gets a suggest card
 
@@ -677,10 +770,12 @@ Group these — they're small additions to existing entities:
 ### F2-10 (AI-06) — Task → Blocked cascade check
 
 **Backend:**
+
 - On block, walk dependency graph to find downstream tasks at risk
 - Post a suggest card to PM with the impact
 
 **AC:**
+
 - Cascade analysis completes in <2s even with 100+ task project
 - PM sees affected milestones list, not just task list
 
@@ -689,15 +784,18 @@ Group these — they're small additions to existing entities:
 ### F2-11 (AI-07) — Sprint close retrospective
 
 **Backend:**
+
 - On sprint close, run `GenerateRetrospectiveAsync` with sprint data (delivered vs planned, blocker log, velocity trend)
 - Output: `{ summary, what_went_well, what_didnt, suggestions, next_sprint_draft }`
 - Saved as `SprintRetrospective` row, viewable in sprint history
 
 **Frontend:**
+
 - `pages/project/SprintRetroPage.jsx` — generated content + ability to edit
 - "Apply next sprint draft" button creates the next sprint with suggested stories
 
 **AC:**
+
 - Retro generated within 30s of close
 - All four sections present
 - Next sprint draft uses leftover backlog priority
@@ -707,6 +805,7 @@ Group these — they're small additions to existing entities:
 ### F2-12 (AI-08) — Velocity drop replan
 
 **Backend:**
+
 - Background job runs daily, compares current sprint pace vs 5-sprint average
 - If projected milestone delay >10 days, generate 3 replan options:
   1. Cut scope (which stories to descope)
@@ -715,6 +814,7 @@ Group these — they're small additions to existing entities:
 - Post as PM-only suggest card
 
 **AC:**
+
 - Each option includes concrete numbers (story points cut, days saved)
 - PM choosing an option triggers the appropriate writes (atomic)
 
@@ -723,12 +823,14 @@ Group these — they're small additions to existing entities:
 ### F2-13 (AI-09) — Member leaves / OOO
 
 **Backend:**
+
 - Trigger: user marked OOO, removed from org, or capacity dropped to 0
 - Find all their unfinished tasks
 - For each, score candidate reassignees by: skill match, current capacity, past similar tasks
 - Output ranked list per task
 
 **AC:**
+
 - Suggestions ranked by composite score
 - PM can bulk-accept or override per task
 - Audit log tracks the reassignment trigger
@@ -738,11 +840,13 @@ Group these — they're small additions to existing entities:
 ### F2-14 (AI-10) — New feature request → epic + story breakdown
 
 **Backend:**
+
 - Endpoint: `POST /api/v1/projects/{id}/ai/breakdown` with `{ description }`
 - Uses similar prompt to project generation but scoped to a single epic
 - Shows timeline impact (which milestones shift, which sprints overflow)
 
 **AC:**
+
 - User picks "Add to backlog" or "Add to sprint X"
 - Timeline impact shown before commit
 
@@ -759,6 +863,7 @@ Covered by F2-23 (GitHub integration). AC validated there.
 ### F2-16 (CM-01, CM-02, CM-03, CM-04) — Channels
 
 **Backend:**
+
 - Entity: `Channel` (id, org_id, project_id?, team_id?, name, type, archived_at)
 - `ChannelMember` (id, channel_id, user_id, joined_at, last_read_at)
 - ChannelType enum: OrgWide, Project, Team, Topic
@@ -766,10 +871,12 @@ Covered by F2-23 (GitHub integration). AC validated there.
 - Auto-archive topic channels after 30d inactivity (background job)
 
 **Frontend:**
+
 - `components/layout/ChannelSidebar.jsx`
 - `pages/chat/ChannelPage.jsx`
 
 **AC:**
+
 - Org channel: only Admins post, all members read-only consume
 - Project members auto-joined to project channel
 - Topic channels show "linked epic" badge
@@ -787,15 +894,18 @@ Covered by F2-23 (GitHub integration). AC validated there.
 ### F2-18 (CM-06, CM-07) — Messages, threads, reactions, task cards
 
 **Backend:**
+
 - Entity: `Message` (id, channel_id, parent_message_id?, author_id, body_md, attachments_json, reactions_json, created_at, edited_at)
 - SignalR push on new message
 - Markdown supported, task card embed via `[[task:123]]` syntax
 
 **Frontend:**
+
 - `components/chat/MessageList.jsx`, `MessageInput.jsx`, `Thread.jsx`
 - Task card embed renders as a mini TaskCard
 
 **AC:**
+
 - Threads work (reply opens side panel)
 - Reactions are emoji shortcodes (`:+1:` etc), use `emoji-mart`
 - Task card preview live-updates if task changes
@@ -805,17 +915,20 @@ Covered by F2-23 (GitHub integration). AC validated there.
 ### F2-19 (CM-08) — Schedule meeting
 
 **Backend:**
+
 - Entity: `Meeting` (id, project_id, type, scheduled_at, duration_minutes, recurrence_rule, agenda_md, status)
 - `MeetingAttendee` (meeting_id, user_id, response)
 - Endpoint: `POST /api/v1/projects/{id}/meetings`
 - AI pre-fills agenda from `GenerateMeetingAgendaAsync` based on project context
 
 **Frontend:**
+
 - `pages/meetings/CreateMeetingPage.jsx`
 - Recurrence picker (RRULE under the hood)
 - AI agenda placeholder, user can edit
 
 **AC:**
+
 - Calendar invite emails sent to attendees (.ics attachment)
 - Recurring meetings create a series with one logical link
 - Agenda editable up to meeting start time
@@ -825,16 +938,19 @@ Covered by F2-23 (GitHub integration). AC validated there.
 ### F2-20 (CM-09) — Built-in video (LiveKit)
 
 **Backend:**
+
 - Integrate LiveKit SDK (or Daily.co — pick one)
 - `Meeting.room_token` generated on join
 - Server-side token endpoint: `POST /api/v1/meetings/{id}/join` returns LiveKit access token
 - Recording enabled, stored to S3-compatible bucket
 
 **Frontend:**
+
 - `pages/meetings/MeetingRoomPage.jsx` using LiveKit React SDK
 - Side panel for live transcript and chat
 
 **AC:**
+
 - Video, audio, screen share all work
 - Guest join link works without account (token-based)
 - Recording starts when first 2 participants join, stops on last leave
@@ -844,15 +960,18 @@ Covered by F2-23 (GitHub integration). AC validated there.
 ### F2-21 (CM-10) — Live speaker-labeled transcript
 
 **Backend:**
+
 - Streaming ASR via Deepgram (recommended) or AssemblyAI
 - Captures audio from LiveKit, sends to ASR, broadcasts transcript chunks via SignalR
 - Stores final transcript in `MeetingTranscript` table (id, meeting_id, segments_json)
 
 **Frontend:**
+
 - Transcript panel in meeting room, auto-scroll
 - Segments labeled with speaker name (use LiveKit participant identity)
 
 **AC:**
+
 - Transcript appears within 2s of speech
 - Speaker labels accurate (uses LiveKit identity, not voice diarization)
 - Final transcript downloadable as .txt or .vtt
@@ -862,6 +981,7 @@ Covered by F2-23 (GitHub integration). AC validated there.
 ### F2-22 (CM-11, CM-12) — Post-meeting AI processing + task reflection
 
 **Backend:**
+
 - After meeting ends, `ProcessMeetingTranscriptAsync` runs:
   - Extracts: TL;DR, decisions, action items (with owner + due date), open questions, blockers
 - Action items become draft `ActionItem` rows linked to meeting
@@ -869,10 +989,12 @@ Covered by F2-23 (GitHub integration). AC validated there.
 - Endpoint: `POST /api/v1/action-items/{id}/accept` creates a task or links to existing task
 
 **Frontend:**
+
 - `pages/meetings/MeetingSummaryPage.jsx`
 - `components/meetings/TaskReflection.jsx` — each action item as a card with: match to existing task / create new / dismiss / bulk accept
 
 **AC:**
+
 - Summary generated within 2 min of meeting end
 - Action items have suggested owner + due date
 - Bulk accept creates all tasks atomically
@@ -885,6 +1007,7 @@ Covered by F2-23 (GitHub integration). AC validated there.
 ### F2-23 (INT-01) — GitHub integration
 
 **Backend:**
+
 - OAuth flow: `GET /api/v1/integrations/github/authorize` → GitHub → callback creates `Integration` row
 - `Infrastructure/ExternalAdapters/GitHub/GitHubAdapter.cs`
 - Webhook receiver: `POST /api/v1/webhooks/github`
@@ -892,10 +1015,12 @@ Covered by F2-23 (GitHub integration). AC validated there.
 - Branch name pattern parsing: `feat/PROJ-123-description` → links to task PROJ-123
 
 **Frontend:**
+
 - `pages/settings/IntegrationsPage.jsx`
 - Per-task: PR badge, CI status pill, "Open PR" button
 
 **AC:**
+
 - New branch matching pattern auto-moves task to InProgress
 - PR merged auto-closes linked task
 - Failed CI shows red badge with link to logs
@@ -906,16 +1031,19 @@ Covered by F2-23 (GitHub integration). AC validated there.
 ### F2-24 (INT-08) — Public REST API + OpenAPI
 
 **Backend:**
+
 - All existing endpoints documented with Swashbuckle
 - API key auth alternative to JWT for service-to-service
 - Rate limiting via `AspNetCoreRateLimit` (per-key, configurable)
 - API versioning under `/api/v1/`
 
 **Frontend:**
+
 - Swagger UI at `/swagger`
 - `pages/settings/ApiKeysPage.jsx` for org admins to create keys
 
 **AC:**
+
 - All resources accessible via API
 - OpenAPI spec downloadable from `/swagger/v1/swagger.json`
 - Rate limit headers in responses (`X-RateLimit-*`)
@@ -925,14 +1053,17 @@ Covered by F2-23 (GitHub integration). AC validated there.
 ### F2-25 (INT-12) — Integration health monitoring
 
 **Backend:**
+
 - Background job pings each integration every 15 min
 - `IntegrationHealth` table records status, last_synced, error_message
 - Token expiry alert 7 days before expiry
 
 **Frontend:**
+
 - `pages/settings/IntegrationsPage.jsx` — health column on integration list
 
 **AC:**
+
 - Degraded integration shows yellow indicator
 - Failed integration pauses sync, shows red, alerts PM
 
@@ -941,15 +1072,18 @@ Covered by F2-23 (GitHub integration). AC validated there.
 ### F2-26 (AN-01, AN-02, AN-03) — First charts
 
 **Backend:**
+
 - `GET /api/v1/projects/{id}/analytics/burndown?sprint_id=`
 - `GET /api/v1/projects/{id}/analytics/velocity`
 - `GET /api/v1/projects/{id}/analytics/epic-progress`
 
 **Frontend:**
+
 - `components/charts/BurndownChart.jsx`, `VelocityChart.jsx`, `EpicProgressBars.jsx` using `recharts`
 - Embedded in dashboard widgets and sprint board
 
 **AC:**
+
 - Burndown shows ideal line vs actual
 - Velocity shows last 6 sprints with rolling average overlay
 - Epic progress recomputed on every story-points change
@@ -967,12 +1101,14 @@ Covered by F2-23 (GitHub integration). AC validated there.
 ### F3-01 (ORG-08) — Audit log
 
 **Backend:**
+
 - `AuditLog` table (id, org_id, actor_id, action, target_type, target_id, before_json, after_json, ip, user_agent, created_at)
 - MediatR pipeline behavior writes audit entries automatically for every command
 - Endpoint: `GET /api/v1/orgs/{slug}/audit-log` (Owner + Admin only)
 
 **Frontend:** `pages/settings/AuditLogPage.jsx` with filters by actor, action, date range.
 **AC:**
+
 - Every write action logged
 - Logs immutable (append-only)
 - Searchable + exportable
@@ -982,12 +1118,14 @@ Covered by F2-23 (GitHub integration). AC validated there.
 ### F3-02 (ORG-09) — SSO / SAML
 
 **Backend:**
+
 - Sustainsys.Saml2 NuGet package
 - Per-org IdP configuration
 - Endpoint: `GET /sso/{slug}/initiate`, `POST /sso/{slug}/acs`
 
 **Frontend:** SSO config wizard in org settings (Owner only).
 **AC:**
+
 - SAML flow works with Okta, Azure AD, Google Workspace
 - JIT provisioning creates new users on first SSO login
 - SSO required toggle blocks non-SSO logins for the org
@@ -999,6 +1137,7 @@ Covered by F2-23 (GitHub integration). AC validated there.
 **Backend:** Add to Organization: `primary_color`, `logo_url`, `favicon_url`.
 **Frontend:** Inject color into CSS variables at runtime via `<style>` tag generated from org config.
 **AC:**
+
 - Primary color overrides `--color-primary` for that org
 - Logo appears in topbar instead of default
 
@@ -1007,11 +1146,13 @@ Covered by F2-23 (GitHub integration). AC validated there.
 ### F3-04 (ORG-11) — Member offboarding
 
 **Backend:**
+
 - Endpoint: `POST /api/v1/orgs/{slug}/members/{user_id}/offboard`
 - Triggers AI reassignment suggestions for all their open tasks (reuses F2-13)
 - Revokes their sessions, removes from org
 
 **AC:**
+
 - Offboarding wizard walks through task reassignment before removal
 - Cannot complete until all tasks reassigned or explicitly orphaned
 
@@ -1024,6 +1165,7 @@ Covered by F2-23 (GitHub integration). AC validated there.
 **Backend:** Recording from F2-20 chaptered by AI based on agenda items + topic shifts. `MeetingChapter` table.
 **Frontend:** `pages/meetings/MeetingArchivePage.jsx` with chapter timeline below video.
 **AC:**
+
 - Click chapter → video seeks to that timestamp
 - Full-text search across transcripts in archive
 - Access controlled by meeting visibility
@@ -1041,11 +1183,13 @@ Covered by F2-23 (GitHub integration). AC validated there.
 ### F3-07 (CM-16) — Notification preferences
 
 **Backend:**
+
 - Entity: `NotificationPreference` (user_id, channel_type, event_type, enabled, dnd_start, dnd_end, digest_mode)
 - Notification dispatcher checks prefs before sending
 
 **Frontend:** `pages/settings/NotificationsPage.jsx` matrix view.
 **AC:**
+
 - Granular per-event-per-channel toggles
 - Do-not-disturb schedule respects user timezone
 - Digest mode batches notifications into daily/weekly emails
@@ -1070,6 +1214,7 @@ Mirror of F2-23 for GitLab. Same feature parity.
 ### F3-10 (INT-04) — Zendesk escalation
 
 **Backend:**
+
 - Zendesk OAuth + webhook receiver
 - "Escalate to dev" → bug task pre-filled (title from ticket subject, repro from body, severity, customer ID)
 - Bidirectional: closing the bug optionally closes the ticket
@@ -1090,15 +1235,18 @@ Mirror of F2-23 for GitLab. Same feature parity.
 ### F3-12 (INT-07) — No-code automation builder
 
 **Backend:**
+
 - `AutomationRule` (id, project_id, trigger_type, conditions_json, actions_json, enabled)
 - 10+ trigger types: task created, task status changed, comment posted, sprint closed, etc.
 - 10+ action types: change status, assign user, post to Slack, create task, send notification
 
 **Frontend:**
+
 - `pages/automation/RuleBuilder.jsx` — visual when/if/then builder
 - Test mode: dry-run against historical events
 
 **AC:**
+
 - Rules run within 5s of trigger
 - Test mode shows what would have happened, no side effects
 - Rule errors logged with retry
@@ -1108,6 +1256,7 @@ Mirror of F2-23 for GitLab. Same feature parity.
 ### F3-13 (INT-09) — Outbound webhooks
 
 **Backend:**
+
 - `WebhookSubscription` (id, project_id, event_types[], url, secret, enabled)
 - HMAC-SHA256 signature header
 - Retry with exponential backoff (1m, 5m, 30m, 2h, 12h, dead-letter)
@@ -1138,6 +1287,7 @@ Mirror of F2-23 for GitLab. Same feature parity.
 ### F3-16 (AN-06) — Project health score
 
 **Backend:**
+
 - Daily background job per project
 - Composite score 0–100 from: velocity vs target, on-time delivery, blocker count, estimation accuracy, scope churn
 - Persisted in `ProjectHealthSnapshot` for trend charts
@@ -1185,29 +1335,34 @@ Mirror of F2-23 for GitLab. Same feature parity.
 ---
 
 ### F4-01 — Performance testing
+
 - API response time benchmarks (p50 <100ms, p95 <500ms for read endpoints)
 - WebSocket load test: 1000 concurrent connections per project
 - Database query analysis, missing index audit
 - **AC:** Benchmarks documented, regressions caught in CI.
 
 ### F4-02 — Accessibility audit
+
 - WCAG 2.1 AA compliance check on all pages
 - Keyboard navigation working everywhere
 - Screen reader testing (NVDA + VoiceOver)
 - **AC:** Audit report with all findings resolved or explicitly waived.
 
 ### F4-03 — Security audit + penetration test
+
 - OWASP Top 10 review
 - External pen test (third party)
 - Dependency CVE scanning automated
 - **AC:** All Critical and High findings fixed before GA.
 
 ### F4-04 — End-to-end test suite
+
 - Playwright tests covering all 9 user flows from design doc section 6
 - Run on every PR
 - **AC:** Suite passes 100% on main branch. Flaky tests <1%.
 
 ### F4-05 — Monitoring + alerting
+
 - OpenTelemetry instrumentation
 - Sentry for error tracking
 - Uptime monitoring (Better Uptime or similar)
@@ -1215,6 +1370,7 @@ Mirror of F2-23 for GitLab. Same feature parity.
 - **AC:** On-call dashboard exists. Alerts route to on-call engineer.
 
 ### F4-06 — Documentation
+
 - User docs (Docusaurus or similar)
 - API reference auto-generated from OpenAPI spec
 - Onboarding tutorial for new users

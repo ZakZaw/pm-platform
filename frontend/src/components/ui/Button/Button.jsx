@@ -2,7 +2,7 @@ import './Button.css';
 
 export function Button({
   variant = 'primary',
-  size,
+  size = 'md',
   block = false,
   type = 'button',
   className = '',
@@ -11,9 +11,9 @@ export function Button({
 }) {
   const classes = [
     'btn',
-    `btn--${variant}`,
-    size ? `btn--${size}` : '',
-    block ? 'btn--block' : '',
+    `btn-${variant}`,
+    `btn-${size}`,
+    block ? 'btn-block' : '',
     className,
   ]
     .filter(Boolean)

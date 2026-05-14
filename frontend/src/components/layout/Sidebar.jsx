@@ -19,8 +19,8 @@ export function Sidebar() {
   return (
     <aside className={sidebarClasses} aria-label="Primary navigation">
       <div className="sidebar__brand">
-        <span className="sidebar__brand-mark">pm</span>
-        {!collapsed && <span className="sidebar__brand-text">pm-platform</span>}
+        <span className="sidebar__brand-mark" aria-hidden="true" />
+        {!collapsed && <span className="sidebar__brand-text">PM Platform</span>}
       </div>
 
       <nav className="sidebar__nav">

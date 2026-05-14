@@ -1,0 +1,47 @@
+.invite {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+}
+
+.invite__card {
+  width: 100%;
+  max-width: 440px;
+}
+
+.invite__lede {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-dense);
+  margin: 0 0 var(--space-6);
+  line-height: var(--leading-norm);
+}
+
+.invite__lede strong {
+  color: var(--text-primary);
+  font-weight: var(--weight-semibold);
+}
+
+.invite__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.invite__muted {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-dense);
+  text-align: center;
+}
+
+.invite__error {
+  color: var(--status-danger);
+  font-size: var(--font-size-dense);
+  margin: 0;
+  line-height: var(--leading-norm);
+}
+
+.invite__error strong {
+  font-weight: var(--weight-semibold);
+}

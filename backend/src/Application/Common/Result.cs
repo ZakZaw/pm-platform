@@ -65,3 +65,30 @@ public static class OrgErrors
     public static readonly Error InvalidName =
         new("Org.InvalidName", "Organization name must be 2-80 characters and contain at least one letter or digit.");
 }
+
+public static class InvitationErrors
+{
+    public static readonly Error InvalidEmail =
+        new("Invitation.InvalidEmail", "A valid email address is required.");
+
+    public static readonly Error InvalidRole =
+        new("Invitation.InvalidRole", "Invitations can be sent for Admin, Member, or Guest only. Ownership is transferred separately.");
+
+    public static readonly Error AlreadyMember =
+        new("Invitation.AlreadyMember", "A user with this email is already a member of the organization.");
+
+    public static readonly Error DuplicateActive =
+        new("Invitation.DuplicateActive", "An active invitation for this email already exists.");
+
+    public static readonly Error NotFound =
+        new("Invitation.NotFound", "Invitation not found.");
+
+    public static readonly Error Expired =
+        new("Invitation.Expired", "This invitation has expired.");
+
+    public static readonly Error AlreadyAccepted =
+        new("Invitation.AlreadyAccepted", "This invitation has already been accepted.");
+
+    public static readonly Error EmailMismatch =
+        new("Invitation.EmailMismatch", "This invitation was sent to a different email address.");
+}

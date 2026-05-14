@@ -9,6 +9,7 @@ public interface IAppDbContext
     DbSet<RefreshToken> RefreshTokens { get; }
     DbSet<Organization> Organizations { get; }
     DbSet<OrgMembership> OrgMemberships { get; }
+    DbSet<Invitation> Invitations { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -28,6 +28,9 @@ public static class DependencyInjection
         services.Configure<FileStorageSettings>(configuration.GetSection("FileStorage"));
         services.AddScoped<IFileStorage, LocalFileStorage>();
 
+        services.Configure<FrontendSettings>(configuration.GetSection("Frontend"));
+        services.AddScoped<IEmailService, ConsoleEmailService>();
+
         return services;
     }
 }

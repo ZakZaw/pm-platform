@@ -1,9 +1,11 @@
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
+import { AcceptInvitePage } from '@/pages/auth/AcceptInvitePage';
 import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { CreateOrgPage } from '@/pages/onboarding/CreateOrgPage';
 import { OrgHomePage } from '@/pages/org/OrgHomePage';
+import { MembersPage } from '@/pages/settings/MembersPage';
 import { AppShell } from '@/components/layout/AppShell';
 import { useAuthStore } from '@/store/authStore';
 
@@ -28,10 +30,12 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/invitations/:token" element={<AcceptInvitePage />} />
         <Route element={<ProtectedLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/onboarding/create-org" element={<CreateOrgPage />} />
           <Route path="/:slug/home" element={<OrgHomePageKeyed />} />
+          <Route path="/:slug/settings/members" element={<MembersPage />} />
         </Route>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

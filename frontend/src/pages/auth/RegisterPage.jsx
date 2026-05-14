@@ -1,15 +1,19 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, Card, Input } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
 import './AuthPage.css';
 
 export function RegisterPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const register = useAuthStore((s) => s.register);
 
+  const inviteToken = searchParams.get('invite');
+  const inviteEmail = searchParams.get('email');
+
   const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(inviteEmail ?? '');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -20,7 +24,8 @@ export function RegisterPage() {
     setSubmitting(true);
     try {
       await register({ email, password, fullName });
-      navigate('/onboarding/create-org', { replace: true });
+      const target = inviteToken ? `/invitations/${inviteToken}` : '/onboarding/create-org';
+      navigate(target, { replace: true });
     } catch (err) {
       const detail = err.response?.data?.detail ?? 'Registration failed.';
       setError(detail);
@@ -47,6 +52,7 @@ export function RegisterPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
+            readOnly={Boolean(inviteToken)}
           />
           <Input
             label="Password"

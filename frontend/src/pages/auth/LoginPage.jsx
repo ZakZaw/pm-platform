@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Button, Card, Input } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
 import { useOrgStore } from '@/store/orgStore';
@@ -8,8 +8,11 @@ import './AuthPage.css';
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const login = useAuthStore((s) => s.login);
   const refreshOrgs = useOrgStore((s) => s.refresh);
+
+  const inviteToken = searchParams.get('invite');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,7 +27,9 @@ export function LoginPage() {
     setSubmitting(true);
     try {
       await login({ email, password });
-      if (from) {
+      if (inviteToken) {
+        navigate(`/invitations/${inviteToken}`, { replace: true });
+      } else if (from) {
         navigate(from, { replace: true });
       } else {
         const orgs = await refreshOrgs();

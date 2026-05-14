@@ -1,0 +1,28 @@
+/* Reuses .badge + .badge-<tone> from Badge.css. Adds removal affordance. */
+.chip { padding-right: 4px; }
+
+.chip__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-left: 2px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: currentColor;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: background var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out);
+}
+
+.chip__remove:hover {
+  background: rgba(255, 255, 255, 0.10);
+  opacity: 1;
+}
+
+[data-theme="light"] .chip__remove:hover {
+  background: rgba(15, 17, 23, 0.08);
+}

@@ -1,0 +1,35 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-meta);
+  font-weight: var(--weight-medium);
+  border: 1px solid transparent;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.badge-neutral { background: var(--status-neutral-bg); color: #C2C9D6; border-color: var(--status-neutral-border); }
+.badge-info    { background: var(--status-info-bg);    color: #8AB8FF; border-color: var(--status-info-border); }
+.badge-purple  { background: var(--status-purple-bg);  color: #C4B5FD; border-color: var(--status-purple-border); }
+.badge-warning { background: var(--status-warning-bg); color: #F2C97A; border-color: var(--status-warning-border); }
+.badge-danger  { background: var(--status-danger-bg);  color: #FB8B8F; border-color: var(--status-danger-border); }
+.badge-success { background: var(--status-success-bg); color: #6BD7A6; border-color: var(--status-success-border); }
+
+/* Light theme — Stratos uses darker text against the soft tinted bg */
+[data-theme="light"] .badge-neutral { color: #43485A; }
+[data-theme="light"] .badge-info    { color: #1F66C8; }
+[data-theme="light"] .badge-purple  { color: #6A4FD8; }
+[data-theme="light"] .badge-warning { color: #9C6A14; }
+[data-theme="light"] .badge-danger  { color: #B82026; }
+[data-theme="light"] .badge-success { color: #1F8A5B; }

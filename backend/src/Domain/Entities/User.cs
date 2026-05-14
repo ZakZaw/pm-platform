@@ -6,6 +6,10 @@ public class User
     public required string Email { get; set; }
     public required string PasswordHash { get; set; }
     public required string FullName { get; set; }
+    public string? AvatarUrl { get; set; }
+    public string Timezone { get; set; } = "UTC";
+    public string[] SkillTags { get; set; } = [];
+    public int CapacityHoursPerWeek { get; set; } = 40;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<OrgMembership> OrgMemberships { get; set; } = [];

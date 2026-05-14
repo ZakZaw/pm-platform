@@ -6,6 +6,7 @@ import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { CreateOrgPage } from '@/pages/onboarding/CreateOrgPage';
 import { OrgHomePage } from '@/pages/org/OrgHomePage';
 import { MembersPage } from '@/pages/settings/MembersPage';
+import { ProfilePage } from '@/pages/settings/ProfilePage';
 import { AppShell } from '@/components/layout/AppShell';
 import { useAuthStore } from '@/store/authStore';
 
@@ -36,6 +37,7 @@ function App() {
           <Route path="/onboarding/create-org" element={<CreateOrgPage />} />
           <Route path="/:slug/home" element={<OrgHomePageKeyed />} />
           <Route path="/:slug/settings/members" element={<MembersPage />} />
+          <Route path="/settings/profile" element={<ProfilePage />} />
         </Route>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

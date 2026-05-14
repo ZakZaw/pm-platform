@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1600" />
+<title>Stratos — All Screens Board</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="components.css" />
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@0.453.0/dist/umd/lucide.min.js"></script>
+
+<style>
+  /* Force dark theme on the board so the design canvas warm bg contrasts cleanly */
+  html, body { margin:0; padding:0; background: #f0eee9; }
+  /* Suppress per-screen mock-label padding (we'll show artboard labels instead) */
+  .board-art .mock-label { display: none; }
+  .board-art .mock { box-shadow: none; border: 0; border-radius: 0; }
+  /* Each board artboard is its own dark surface */
+  .board-art {
+    background: var(--bg-app);
+    color: var(--text-primary);
+    font-family: var(--font-ui);
+    font-size: var(--font-size-body);
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  .board-art > * { width: 100%; height: 100%; }
+  .board-art > * > .mock { width: 100%; height: 100%; }
+  .board-art .app { height: 100% !important; }
+  /* Force every artboard into dark theme via scoping */
+  .board-art {
+    --bg-app:        #0F1117;
+    --bg-base:       #0F1117;
+    --bg-surface-1:  #181C27;
+    --bg-surface-2:  #1E2235;
+    --bg-surface-3:  #242843;
+    --border-subtle:  #232739;
+    --border-default: #2A2F45;
+    --border-strong:  #353B58;
+    --text-primary:   #E8EAF2;
+    --text-secondary: #A4ABC4;
+    --text-tertiary:  #8B91A8;
+    --text-muted:     #5E647A;
+  }
+
+  /* Header strip above the canvas */
+  .board-header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    height: 56px;
+    background: rgba(240, 238, 233, 0.85);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    display: flex; align-items: center;
+    padding: 0 20px;
+    gap: 16px;
+    font-family: var(--font-ui);
+  }
+  .board-header .logo {
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    background: conic-gradient(from 220deg, #7A6BFF, #4FD1E0, #5B6AF0, #7A6BFF);
+    position: relative;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+  }
+  .board-header .logo::after {
+    content: ""; position: absolute; inset: 5px;
+    background: #f0eee9; border-radius: 3px;
+  }
+  .board-header .title {
+    font-size: 15px; font-weight: 600; color: #2a251f; letter-spacing: -0.01em;
+  }
+  .board-header .meta {
+    font-size: 12px; color: rgba(60,50,40,0.65);
+  }
+  .board-header .spacer { flex: 1; }
+  .board-header a.back {
+    font-size: 13px; color: #2a251f; text-decoration: none;
+    padding: 6px 12px; border-radius: 6px; background: rgba(0,0,0,0.06);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .board-header a.back:hover { background: rgba(0,0,0,0.10); }
+
+  /* Push canvas down past the header */
+  body > div#root { padding-top: 56px; }
+</style>
+</head>
+<body>
+<div class="board-header">
+  <span class="logo"></span>
+  <span class="title">Stratos · All screens</span>
+  <span class="meta">9 mockups · pan with space-drag · zoom with ⌘+wheel · click <strong>↗</strong> to focus</span>
+  <span class="spacer"></span>
+  <a class="back" href="index.html">← Back to design system</a>
+</div>
+
+<div id="root"></div>
+
+<script type="text/babel" data-presets="env,react" src="shared.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="screen-shell.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="screen-kanban.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="screen-task.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="screen-ai-wizard.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="screen-ai-suggest.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="screen-roadmap.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="screen-meeting.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="screen-dashboard.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="screen-chat.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="design-canvas.jsx"></script>
+
+<script type="text/babel" data-presets="env,react">
+// Wrap each screen in a fixed-size container that matches its natural mock height
+function Wrap({ children }) {
+  return <div className="board-art">{children}</div>;
+}
+
+const SCREENS = [
+  { id: "shell",      label: "01 · App Shell",            w: 1280, h: 720, Comp: ScreenShell },
+  { id: "kanban",     label: "02 · Kanban Board",         w: 1440, h: 760, Comp: ScreenKanban },
+  { id: "task",       label: "03 · Task Detail",          w: 1280, h: 760, Comp: ScreenTask },
+  { id: "dashboard",  label: "08 · Project Dashboard",    w: 1440, h: 760, Comp: ScreenDashboard },
+  { id: "roadmap",    label: "06 · Roadmap",              w: 1440, h: 720, Comp: ScreenRoadmap },
+  { id: "meeting",    label: "07 · Meeting Room",         w: 1280, h: 760, Comp: ScreenMeeting },
+  { id: "chat",       label: "09 · Chat Channel",         w: 1280, h: 760, Comp: ScreenChat },
+  { id: "ai_wizard",  label: "04 · AI Generation Wizard", w: 1100, h: 880, Comp: ScreenAIWizard },
+  { id: "ai_suggest", label: "05 · AI Suggestion Card",   w: 1100, h: 720, Comp: ScreenAISuggest },
+];
+
+function App() {
+  React.useEffect(() => {
+    document.documentElement.setAttribute("data-theme", "dark");
+  }, []);
+
+  // Organize by row
+  const groups = {
+    "Core product surfaces": ["shell","kanban","task","dashboard"],
+    "Planning & cross-team":  ["roadmap","meeting","chat"],
+    "AI workflows":           ["ai_wizard","ai_suggest"],
+  };
+
+  return (
+    <DesignCanvas>
+      {Object.entries(groups).map(([title, ids]) => (
+        <DCSection
+          key={title}
+          id={title.replace(/\s+/g,"-").toLowerCase()}
+          title={title}
+          subtitle={ids.length + " screens"}
+        >
+          {ids.map(id => {
+            const s = SCREENS.find(x => x.id === id);
+            return (
+              <DCArtboard key={s.id} id={s.id} label={s.label} width={s.w} height={s.h}>
+                <Wrap><s.Comp/></Wrap>
+              </DCArtboard>
+            );
+          })}
+        </DCSection>
+      ))}
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

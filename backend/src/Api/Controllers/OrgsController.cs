@@ -1,7 +1,9 @@
+using Api.Authorization;
 using Application.Common;
 using Application.Features.Organizations;
 using Application.Features.Organizations.Commands;
 using Application.Features.Organizations.Queries;
+using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -42,6 +44,7 @@ public class OrgsController(ISender mediator) : ControllerBase
     }
 
     [HttpGet("{slug}")]
+    [RequireOrgRole(OrgRole.Member)]
     public async Task<ActionResult<OrganizationDto>> GetBySlug(string slug, CancellationToken ct)
     {
         var result = await mediator.Send(new GetOrganizationBySlugQuery(slug), ct);
@@ -49,9 +52,18 @@ public class OrgsController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("{slug}")]
+    [RequireOrgRole(OrgRole.Admin)]
     public async Task<ActionResult<OrganizationDto>> Update(string slug, [FromBody] UpdateOrgBodyDto body, CancellationToken ct)
     {
         var result = await mediator.Send(new UpdateOrganizationCommand(slug, body.Name), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpPut("{slug}/sso")]
+    [RequireOrgRole(OrgRole.Owner)]
+    public async Task<ActionResult<OrganizationDto>> SetSso(string slug, [FromBody] SetSsoBodyDto body, CancellationToken ct)
+    {
+        var result = await mediator.Send(new SetOrgSsoCommand(slug, body.Enabled), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
@@ -61,8 +73,6 @@ public class OrgsController(ISender mediator) : ControllerBase
         {
             "Auth.NotAuthenticated" => StatusCodes.Status401Unauthorized,
             "Org.NotFound" => StatusCodes.Status404NotFound,
-            "Org.NotAMember" => StatusCodes.Status403Forbidden,
-            "Org.NotOwner" => StatusCodes.Status403Forbidden,
             "Org.LogoTooLarge" => StatusCodes.Status413PayloadTooLarge,
             "Org.LogoInvalidType" => StatusCodes.Status415UnsupportedMediaType,
             _ => StatusCodes.Status400BadRequest
@@ -73,3 +83,4 @@ public class OrgsController(ISender mediator) : ControllerBase
 
 public record CreateOrgFormDto(string Name, IFormFile? Logo);
 public record UpdateOrgBodyDto(string Name);
+public record SetSsoBodyDto(bool Enabled);

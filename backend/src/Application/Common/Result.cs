@@ -56,12 +56,6 @@ public static class OrgErrors
     public static readonly Error NotFound =
         new("Org.NotFound", "Organization not found.");
 
-    public static readonly Error NotAMember =
-        new("Org.NotAMember", "You do not have access to this organization.");
-
-    public static readonly Error NotOwner =
-        new("Org.NotOwner", "Only the organization owner can perform this action.");
-
     public static readonly Error LogoTooLarge =
         new("Org.LogoTooLarge", "Logo file must be 2 MB or less.");
 

@@ -18,7 +18,7 @@ public class GetMyOrganizationsQueryHandler(
             return Result.Failure<IReadOnlyList<OrgSummary>>(AuthErrors.NotAuthenticated);
 
         var rows = await db.OrgMemberships
-            .Where(m => m.UserId == userId)
+            .Where(m => m.UserId == userId && m.RemovedAt == null)
             .OrderBy(m => m.JoinedAt)
             .Select(m => new OrgSummary(
                 m.Organization.Id,

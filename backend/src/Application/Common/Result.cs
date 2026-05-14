@@ -64,6 +64,21 @@ public static class OrgErrors
 
     public static readonly Error InvalidName =
         new("Org.InvalidName", "Organization name must be 2-80 characters and contain at least one letter or digit.");
+
+    public static readonly Error MemberNotFound =
+        new("Org.MemberNotFound", "Member not found in this organization.");
+
+    public static readonly Error InvalidRole =
+        new("Org.InvalidRole", "Role must be Owner, Admin, Member, or Guest.");
+
+    public static readonly Error CannotModifyOwner =
+        new("Org.CannotModifyOwner", "Only an Owner can change another Owner's role or remove an Owner.");
+
+    public static readonly Error CannotPromoteToOwner =
+        new("Org.CannotPromoteToOwner", "Only an Owner can promote a member to Owner.");
+
+    public static readonly Error LastOwner =
+        new("Org.LastOwner", "An organization must have at least one Owner.");
 }
 
 public static class UserErrors

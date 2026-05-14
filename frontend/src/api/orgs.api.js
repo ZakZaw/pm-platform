@@ -9,6 +9,19 @@ export const orgsApi = {
 
   update: (slug, body) => apiClient.patch(`/orgs/${slug}`, body).then((r) => r.data),
 
+  listMembers: (slug, { page = 1, pageSize = 20, search, role } = {}) => {
+    const params = { page, pageSize };
+    if (search) params.search = search;
+    if (role) params.role = role;
+    return apiClient.get(`/orgs/${slug}/members`, { params }).then((r) => r.data);
+  },
+
+  updateMemberRole: (slug, userId, role) =>
+    apiClient.patch(`/orgs/${slug}/members/${userId}/role`, { role }).then((r) => r.data),
+
+  removeMember: (slug, userId) =>
+    apiClient.delete(`/orgs/${slug}/members/${userId}`).then((r) => r.data),
+
   create: async ({ name, logo }) => {
     const form = new FormData();
     form.append('name', name);

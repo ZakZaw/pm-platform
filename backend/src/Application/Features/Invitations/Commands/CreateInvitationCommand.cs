@@ -40,7 +40,9 @@ public class CreateInvitationCommandHandler(
             return Result.Failure<InvitationDto>(OrgErrors.NotFound);
 
         var alreadyMember = await db.OrgMemberships
-            .AnyAsync(m => m.OrganizationId == org.Id && m.User.Email == normalisedEmail, ct);
+            .AnyAsync(m => m.OrganizationId == org.Id
+                        && m.RemovedAt == null
+                        && m.User.Email == normalisedEmail, ct);
         if (alreadyMember)
             return Result.Failure<InvitationDto>(InvitationErrors.AlreadyMember);
 

@@ -1,5 +1,5 @@
 .members {
-  max-width: 640px;
+  max-width: 960px;
 }
 
 .members__title {
@@ -19,10 +19,60 @@
   gap: var(--space-4);
 }
 
+.members__filters {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.members__table {
+  margin-top: var(--space-2);
+}
+
+.members__person {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.members__person-name {
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+}
+
+.members__person-email {
+  font-size: var(--font-size-meta);
+  color: var(--text-tertiary);
+}
+
+.members__row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}
+
+.members__row-actions .select {
+  width: 130px;
+}
+
+.members__pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-4);
+}
+
+.members__pager-info {
+  font-size: var(--font-size-meta);
+  color: var(--text-tertiary);
+}
+
 .members__error {
   color: var(--status-danger);
   font-size: var(--font-size-dense);
-  margin: 0;
+  margin: 0 0 var(--space-3);
 }
 
 .members__success {
@@ -34,4 +84,8 @@
 .members__placeholder {
   color: var(--text-tertiary);
   font-size: var(--font-size-dense);
+}
+
+.members__dim {
+  color: var(--text-muted);
 }

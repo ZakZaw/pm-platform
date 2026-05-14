@@ -2,6 +2,9 @@ using Api.Authorization;
 using Application.Common;
 using Application.Features.Organizations;
 using Application.Features.Organizations.Commands;
+using Application.Features.Organizations.Members;
+using Application.Features.Organizations.Members.Commands;
+using Application.Features.Organizations.Members.Queries;
 using Application.Features.Organizations.Queries;
 using Domain.Enums;
 using MediatR;
@@ -67,12 +70,61 @@ public class OrgsController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    [HttpGet("{slug}/members")]
+    [RequireOrgRole(OrgRole.Member)]
+    public async Task<ActionResult<OrgMembersPage>> ListMembers(
+        string slug,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? search = null,
+        [FromQuery] string? role = null,
+        CancellationToken ct = default)
+    {
+        OrgRole? roleFilter = null;
+        if (!string.IsNullOrWhiteSpace(role))
+        {
+            if (!Enum.TryParse<OrgRole>(role, ignoreCase: true, out var parsed))
+                return ToProblem(OrgErrors.InvalidRole);
+            roleFilter = parsed;
+        }
+
+        var result = await mediator.Send(new ListOrgMembersQuery(slug, page, pageSize, search, roleFilter), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpPatch("{slug}/members/{userId:guid}/role")]
+    [RequireOrgRole(OrgRole.Admin)]
+    public async Task<ActionResult<OrgMemberDto>> UpdateMemberRole(
+        string slug,
+        Guid userId,
+        [FromBody] UpdateMemberRoleBodyDto body,
+        CancellationToken ct)
+    {
+        if (!Enum.TryParse<OrgRole>(body.Role, ignoreCase: true, out var role))
+            return ToProblem(OrgErrors.InvalidRole);
+
+        var result = await mediator.Send(new UpdateMemberRoleCommand(slug, userId, role), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpDelete("{slug}/members/{userId:guid}")]
+    [RequireOrgRole(OrgRole.Admin)]
+    public async Task<ActionResult> RemoveMember(string slug, Guid userId, CancellationToken ct)
+    {
+        var result = await mediator.Send(new RemoveOrgMemberCommand(slug, userId), ct);
+        return result.IsSuccess ? NoContent() : ToProblem(result.Error!);
+    }
+
     private ObjectResult ToProblem(Error error)
     {
         var status = error.Code switch
         {
             "Auth.NotAuthenticated" => StatusCodes.Status401Unauthorized,
             "Org.NotFound" => StatusCodes.Status404NotFound,
+            "Org.MemberNotFound" => StatusCodes.Status404NotFound,
+            "Org.CannotModifyOwner" => StatusCodes.Status403Forbidden,
+            "Org.CannotPromoteToOwner" => StatusCodes.Status403Forbidden,
+            "Org.LastOwner" => StatusCodes.Status409Conflict,
             "Org.LogoTooLarge" => StatusCodes.Status413PayloadTooLarge,
             "Org.LogoInvalidType" => StatusCodes.Status415UnsupportedMediaType,
             _ => StatusCodes.Status400BadRequest
@@ -84,3 +136,4 @@ public class OrgsController(ISender mediator) : ControllerBase
 public record CreateOrgFormDto(string Name, IFormFile? Logo);
 public record UpdateOrgBodyDto(string Name);
 public record SetSsoBodyDto(bool Enabled);
+public record UpdateMemberRoleBodyDto(string Role);

@@ -40,7 +40,9 @@ public class RequireOrgRoleAttribute(OrgRole minimum) : Attribute, IAsyncActionF
 
         var db = services.GetRequiredService<IAppDbContext>();
         var role = await db.OrgMemberships
-            .Where(m => m.UserId == userId && m.Organization.Slug == slug)
+            .Where(m => m.UserId == userId
+                     && m.RemovedAt == null
+                     && m.Organization.Slug == slug)
             .Select(m => (OrgRole?)m.Role)
             .FirstOrDefaultAsync(ctx.HttpContext.RequestAborted);
 

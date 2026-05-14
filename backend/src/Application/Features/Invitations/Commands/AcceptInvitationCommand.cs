@@ -39,7 +39,9 @@ public class AcceptInvitationCommandHandler(
             return Result.Failure<AcceptInvitationResultDto>(InvitationErrors.EmailMismatch);
 
         var alreadyMember = await db.OrgMemberships
-            .AnyAsync(m => m.OrganizationId == invitation.OrganizationId && m.UserId == userId, ct);
+            .AnyAsync(m => m.OrganizationId == invitation.OrganizationId
+                        && m.UserId == userId
+                        && m.RemovedAt == null, ct);
         if (alreadyMember)
             return Result.Failure<AcceptInvitationResultDto>(InvitationErrors.AlreadyMember);
 

@@ -16,8 +16,13 @@ public class OrgMembershipConfiguration : IEntityTypeConfiguration<OrgMembership
         builder.Property(m => m.UserId).IsRequired();
         builder.Property(m => m.Role).HasConversion<string>().HasMaxLength(20);
         builder.Property(m => m.JoinedAt).IsRequired();
+        builder.Property(m => m.RemovedAt);
 
-        builder.HasIndex(m => new { m.OrganizationId, m.UserId }).IsUnique();
+        // Partial unique index: only enforce uniqueness across active memberships.
+        // A removed user can be re-invited; the new row reuses the same (OrgId, UserId).
+        builder.HasIndex(m => new { m.OrganizationId, m.UserId })
+            .IsUnique()
+            .HasFilter("\"RemovedAt\" IS NULL");
 
         builder.HasOne(m => m.Organization)
             .WithMany(o => o.Memberships)

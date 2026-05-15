@@ -8,6 +8,15 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// .env.example exposes GEMINI_API_KEY as a flat env var, but our config
+// reads it from AI:GeminiApiKey. Bridge the two here so devs don't have
+// to learn the AI__GeminiApiKey convention.
+var geminiEnv = Environment.GetEnvironmentVariable("GEMINI_API_KEY");
+if (!string.IsNullOrWhiteSpace(geminiEnv))
+{
+    builder.Configuration["AI:GeminiApiKey"] = geminiEnv;
+}
+
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 

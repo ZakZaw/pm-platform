@@ -27,6 +27,8 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Sprint> Sprints => Set<Sprint>();
     public DbSet<ProjectStatusConfig> ProjectStatusConfigs => Set<ProjectStatusConfig>();
     public DbSet<Comment> Comments => Set<Comment>();
+    public DbSet<AIAuditLog> AIAuditLogs => Set<AIAuditLog>();
+    public DbSet<AIGenerationRequest> AIGenerationRequests => Set<AIGenerationRequest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

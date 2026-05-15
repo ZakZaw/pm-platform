@@ -4,6 +4,7 @@ export { Select } from './Select/Select';
 export { Card } from './Card/Card';
 export { Avatar } from './Avatar/Avatar';
 export { Badge } from './Badge/Badge';
+export { AIChip } from './AIChip/AIChip';
 export { Chip } from './Chip/Chip';
 export { Table } from './Table/Table';
 export { StatusBadge } from './StatusBadge/StatusBadge';

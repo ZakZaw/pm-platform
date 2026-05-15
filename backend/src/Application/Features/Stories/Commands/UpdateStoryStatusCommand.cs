@@ -14,7 +14,7 @@ namespace Application.Features.Stories.Commands;
 /// </summary>
 public record UpdateStoryStatusCommand(Guid StoryId, string To) : IRequest<Result<StoryDto>>;
 
-public class UpdateStoryStatusCommandHandler(IAppDbContext db)
+public class UpdateStoryStatusCommandHandler(IAppDbContext db, IProjectEventBus events)
     : IRequestHandler<UpdateStoryStatusCommand, Result<StoryDto>>
 {
     public async Task<Result<StoryDto>> Handle(UpdateStoryStatusCommand request, CancellationToken ct)
@@ -28,6 +28,8 @@ public class UpdateStoryStatusCommandHandler(IAppDbContext db)
 
         story.Status = target;
         await db.SaveChangesAsync(ct);
+        await events.PublishAsync(story.ProjectId, "board.changed",
+            new { storyId = story.Id, status = target.ToString() }, ct);
         return Result.Success(CreateStoryCommandHandler.ToDto(story));
     }
 }

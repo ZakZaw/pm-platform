@@ -7,7 +7,7 @@ namespace Application.Features.Sprints.Commands;
 
 public record AddStoryToSprintCommand(Guid SprintId, Guid StoryId) : IRequest<Result>;
 
-public class AddStoryToSprintCommandHandler(IAppDbContext db)
+public class AddStoryToSprintCommandHandler(IAppDbContext db, IProjectEventBus events)
     : IRequestHandler<AddStoryToSprintCommand, Result>
 {
     public async Task<Result> Handle(AddStoryToSprintCommand request, CancellationToken ct)
@@ -20,13 +20,15 @@ public class AddStoryToSprintCommandHandler(IAppDbContext db)
 
         story.SprintId = sprint.Id;
         await db.SaveChangesAsync(ct);
+        await events.PublishAsync(story.ProjectId, "board.changed",
+            new { storyId = story.Id, sprintId = sprint.Id }, ct);
         return Result.Success();
     }
 }
 
 public record RemoveStoryFromSprintCommand(Guid StoryId) : IRequest<Result>;
 
-public class RemoveStoryFromSprintCommandHandler(IAppDbContext db)
+public class RemoveStoryFromSprintCommandHandler(IAppDbContext db, IProjectEventBus events)
     : IRequestHandler<RemoveStoryFromSprintCommand, Result>
 {
     public async Task<Result> Handle(RemoveStoryFromSprintCommand request, CancellationToken ct)
@@ -35,6 +37,8 @@ public class RemoveStoryFromSprintCommandHandler(IAppDbContext db)
         if (story is null) return Result.Failure(StoryErrors.NotFound);
         story.SprintId = null;
         await db.SaveChangesAsync(ct);
+        await events.PublishAsync(story.ProjectId, "board.changed",
+            new { storyId = story.Id, sprintId = (Guid?)null }, ct);
         return Result.Success();
     }
 }

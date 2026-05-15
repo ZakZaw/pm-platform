@@ -19,6 +19,7 @@ import { Badge, Button, Card, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { boardApi } from '@/api/board.api';
 import { sprintsApi } from '@/api/sprints.api';
+import { useProjectHub } from '@/hooks/useProjectHub';
 import './BacklogPage.css';
 
 export function BacklogPage() {
@@ -63,6 +64,12 @@ export function BacklogPage() {
   }, [orgSlug, projectSlug, refresh]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+
+  useProjectHub(project?.id, (name) => {
+    if (name === 'board.changed' || name === 'sprint.changed') {
+      refresh(project.id).catch(() => {});
+    }
+  });
 
   const sprintTotal = useMemo(
     () => sprintStories.reduce((sum, s) => sum + (s.storyPoints ?? 0), 0),

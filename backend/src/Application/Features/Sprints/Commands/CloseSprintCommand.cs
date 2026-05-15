@@ -10,7 +10,7 @@ namespace Application.Features.Sprints.Commands;
 public record CloseSprintCommand(Guid SprintId, bool MoveCarryoversToBacklog = true)
     : IRequest<Result<SprintDto>>;
 
-public class CloseSprintCommandHandler(IAppDbContext db)
+public class CloseSprintCommandHandler(IAppDbContext db, IProjectEventBus events)
     : IRequestHandler<CloseSprintCommand, Result<SprintDto>>
 {
     public async Task<Result<SprintDto>> Handle(CloseSprintCommand request, CancellationToken ct)
@@ -41,6 +41,8 @@ public class CloseSprintCommandHandler(IAppDbContext db)
         sprint.ClosedAt = DateTime.UtcNow;
 
         await db.SaveChangesAsync(ct);
+        await events.PublishAsync(sprint.ProjectId, "sprint.changed",
+            new { sprintId = sprint.Id, status = "Closed", finalVelocity = donePts }, ct);
 
         var totalPts = stories.Sum(s => s.StoryPoints ?? 0);
         return Result.Success(SprintMapper.ToDto(sprint, stories.Count, totalPts, donePts));

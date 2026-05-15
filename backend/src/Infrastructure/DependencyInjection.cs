@@ -1,7 +1,6 @@
 using Application.Interfaces;
 using Infrastructure.Persistence;
 using Infrastructure.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +29,8 @@ public static class DependencyInjection
 
         services.Configure<FrontendSettings>(configuration.GetSection("Frontend"));
         services.AddScoped<IEmailService, ConsoleEmailService>();
+
+        services.AddSingleton<IProjectEventBus, SignalRProjectEventBus>();
 
         return services;
     }

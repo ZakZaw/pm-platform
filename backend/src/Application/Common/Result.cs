@@ -189,6 +189,30 @@ public static class SubtaskErrors
         new("Subtask.InvalidTitle", "Subtask title must be 1-200 characters.");
 }
 
+public static class SprintErrors
+{
+    public static readonly Error NotFound =
+        new("Sprint.NotFound", "Sprint not found.");
+
+    public static readonly Error InvalidName =
+        new("Sprint.InvalidName", "Sprint name must be 2-120 characters.");
+
+    public static readonly Error InvalidDates =
+        new("Sprint.InvalidDates", "Sprint end date must be after start date.");
+
+    public static readonly Error EmptyScope =
+        new("Sprint.EmptyScope", "Cannot start a sprint with zero stories. Add stories first.");
+
+    public static readonly Error ActiveSprintExists =
+        new("Sprint.ActiveExists", "Another sprint is already active in this project. Close it first.");
+
+    public static readonly Error NotPlanning =
+        new("Sprint.NotPlanning", "Only sprints in Planning status can be started.");
+
+    public static readonly Error NotActive =
+        new("Sprint.NotActive", "Only an Active sprint can be closed.");
+}
+
 public static class InvitationErrors
 {
     public static readonly Error InvalidEmail =

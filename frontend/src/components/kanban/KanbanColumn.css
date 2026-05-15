@@ -1,0 +1,36 @@
+.kanban-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  min-height: 200px;
+  transition: border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out);
+}
+
+.kanban-col.is-over {
+  border-color: var(--accent-primary);
+  background: var(--bg-selected);
+}
+
+.kanban-col__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kanban-col__count {
+  font-size: var(--font-size-meta);
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+}
+
+.kanban-col__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+}

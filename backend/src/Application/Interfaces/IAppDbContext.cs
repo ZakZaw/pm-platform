@@ -18,6 +18,7 @@ public interface IAppDbContext
     DbSet<TaskEntity> Tasks { get; }
     DbSet<Subtask> Subtasks { get; }
     DbSet<TaskStatusChange> TaskStatusChanges { get; }
+    DbSet<Sprint> Sprints { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

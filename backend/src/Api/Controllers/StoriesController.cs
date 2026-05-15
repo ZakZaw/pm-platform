@@ -65,12 +65,21 @@ public class StoriesController(ISender mediator) : ControllerBase
         return result.IsSuccess ? NoContent() : ToProblem(result.Error!);
     }
 
+    [HttpPatch("api/v1/stories/{id:guid}/status")]
+    public async Task<ActionResult<StoryDto>> ChangeStatus(
+        Guid id, [FromBody] ChangeStoryStatusBodyDto body, CancellationToken ct)
+    {
+        var result = await mediator.Send(new UpdateStoryStatusCommand(id, body.To), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     private ObjectResult ToProblem(Error error)
     {
         var status = error.Code switch
         {
             "Auth.NotAuthenticated" => StatusCodes.Status401Unauthorized,
             "Story.NotFound" => StatusCodes.Status404NotFound,
+            "Task.InvalidStatus" => StatusCodes.Status422UnprocessableEntity,
             "Project.NotAMember" => StatusCodes.Status403Forbidden,
             "Project.InsufficientRole" => StatusCodes.Status403Forbidden,
             _ => StatusCodes.Status400BadRequest
@@ -98,3 +107,5 @@ public record UpdateStoryBodyDto(
     Guid? AssigneeId,
     DateTime? DueDate,
     string[]? AcceptanceCriteria);
+
+public record ChangeStoryStatusBodyDto(string To);

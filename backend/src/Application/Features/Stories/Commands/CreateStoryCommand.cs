@@ -68,7 +68,7 @@ public class CreateStoryCommandHandler(IAppDbContext db, ICurrentUser currentUse
     }
 
     internal static StoryDto ToDto(Story s) => new(
-        s.Id, s.ProjectId, s.EpicId, s.Title, s.Description, s.StoryPoints,
+        s.Id, s.ProjectId, s.EpicId, s.SprintId, s.Title, s.Description, s.StoryPoints,
         s.Priority.ToString(), s.Status.ToString(),
         s.AssigneeId, s.ReporterId, s.DueDate, s.PriorityOrder,
         s.AcceptanceCriteria, s.CreatedByAi, s.CreatedAt);

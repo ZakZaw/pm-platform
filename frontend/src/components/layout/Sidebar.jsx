@@ -4,10 +4,13 @@ import {
   Briefcase,
   ChevronLeft,
   ChevronRight,
+  ClipboardList,
   Home,
+  KanbanSquare,
   Layers,
   LayoutDashboard,
   ListTodo,
+  Repeat,
   Users,
   UserCircle,
 } from 'lucide-react';
@@ -130,6 +133,30 @@ export function Sidebar() {
             >
               <Layers className="sidebar__link-icon" aria-hidden="true" />
               {!collapsed && <span className="sidebar__link-label">Epics</span>}
+            </NavLink>
+            <NavLink
+              to={`/${slug}/projects/${projectSlug}/board`}
+              className={linkClass}
+              title={collapsed ? 'Board' : undefined}
+            >
+              <KanbanSquare className="sidebar__link-icon" aria-hidden="true" />
+              {!collapsed && <span className="sidebar__link-label">Board</span>}
+            </NavLink>
+            <NavLink
+              to={`/${slug}/projects/${projectSlug}/backlog`}
+              className={linkClass}
+              title={collapsed ? 'Backlog' : undefined}
+            >
+              <ClipboardList className="sidebar__link-icon" aria-hidden="true" />
+              {!collapsed && <span className="sidebar__link-label">Backlog</span>}
+            </NavLink>
+            <NavLink
+              to={`/${slug}/projects/${projectSlug}/sprints`}
+              className={linkClass}
+              title={collapsed ? 'Sprints' : undefined}
+            >
+              <Repeat className="sidebar__link-icon" aria-hidden="true" />
+              {!collapsed && <span className="sidebar__link-label">Sprints</span>}
             </NavLink>
             <NavLink
               to={`/${slug}/projects/${projectSlug}/stories`}

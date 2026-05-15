@@ -1,0 +1,40 @@
+.sprint-board__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.sprint-board__title {
+  font-size: var(--font-size-h1);
+  font-weight: var(--weight-semibold);
+  margin: 0;
+}
+
+.sprint-board__goal {
+  color: var(--text-secondary);
+  margin: var(--space-1) 0 0;
+  font-size: var(--font-size-dense);
+}
+
+.sprint-board__stats {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.sprint-board__burndown {
+  height: 6px;
+  background: var(--bg-surface-3);
+  border-radius: var(--radius-pill);
+  margin-bottom: var(--space-4);
+  overflow: hidden;
+}
+
+.sprint-board__burndown-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ai-violet), var(--ai-cyan));
+  transition: width var(--dur-med) var(--ease-out);
+}
+
+.sprint-board__placeholder { color: var(--text-tertiary); }

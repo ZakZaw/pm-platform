@@ -1,0 +1,21 @@
+.board-page__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.board-page__title {
+  font-size: var(--font-size-h1);
+  font-weight: var(--weight-semibold);
+  margin: 0;
+}
+
+.board-page__sub {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-meta);
+  margin: var(--space-1) 0 0;
+}
+
+.board-page__placeholder { color: var(--text-tertiary); }

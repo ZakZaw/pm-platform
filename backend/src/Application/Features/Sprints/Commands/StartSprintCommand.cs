@@ -9,7 +9,7 @@ namespace Application.Features.Sprints.Commands;
 
 public record StartSprintCommand(Guid SprintId) : IRequest<Result<SprintDto>>;
 
-public class StartSprintCommandHandler(IAppDbContext db)
+public class StartSprintCommandHandler(IAppDbContext db, IProjectEventBus events)
     : IRequestHandler<StartSprintCommand, Result<SprintDto>>
 {
     public async Task<Result<SprintDto>> Handle(StartSprintCommand request, CancellationToken ct)
@@ -37,6 +37,8 @@ public class StartSprintCommandHandler(IAppDbContext db)
         sprint.Status = SprintStatus.Active;
 
         await db.SaveChangesAsync(ct);
+        await events.PublishAsync(sprint.ProjectId, "sprint.changed",
+            new { sprintId = sprint.Id, status = "Active" }, ct);
 
         var totalPts = stories.Sum(s => s.StoryPoints ?? 0);
         return Result.Success(SprintMapper.ToDto(sprint, stories.Count, totalPts, donePts: 0));

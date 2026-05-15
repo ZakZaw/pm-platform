@@ -10,7 +10,10 @@ namespace Application.Features.Tasks.Commands;
 public record UpdateTaskStatusCommand(Guid TaskId, string To, string? Reason)
     : IRequest<Result<TaskDto>>;
 
-public class UpdateTaskStatusCommandHandler(IAppDbContext db, ICurrentUser currentUser)
+public class UpdateTaskStatusCommandHandler(
+    IAppDbContext db,
+    ICurrentUser currentUser,
+    IProjectEventBus events)
     : IRequestHandler<UpdateTaskStatusCommand, Result<TaskDto>>
 {
     public async Task<Result<TaskDto>> Handle(UpdateTaskStatusCommand request, CancellationToken ct)
@@ -36,6 +39,15 @@ public class UpdateTaskStatusCommandHandler(IAppDbContext db, ICurrentUser curre
         }
 
         await db.SaveChangesAsync(ct);
+
+        var projectId = await db.Stories
+            .Where(s => s.Id == task.StoryId)
+            .Select(s => s.ProjectId)
+            .FirstOrDefaultAsync(ct);
+        if (projectId != Guid.Empty)
+        {
+            await events.PublishAsync(projectId, "board.changed", new { taskId = task.Id }, ct);
+        }
         return Result.Success(CreateTaskCommandHandler.ToDto(task));
     }
 

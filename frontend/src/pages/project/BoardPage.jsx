@@ -4,6 +4,7 @@ import { Select } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { boardApi } from '@/api/board.api';
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
+import { useProjectHub } from '@/hooks/useProjectHub';
 import './BoardPage.css';
 
 const SWIMLANE_OPTIONS = [
@@ -39,6 +40,14 @@ export function BoardPage() {
     })();
     return () => { cancelled = true; };
   }, [orgSlug, projectSlug, swimlane, load]);
+
+  // Live updates: when anyone in the project moves a card or changes
+  // a sprint, re-fetch the board.
+  useProjectHub(project?.id, (name) => {
+    if (name === 'board.changed' || name === 'sprint.changed') {
+      load(project.id, swimlane).catch(() => {});
+    }
+  });
 
   if (error) return <p className="board-page__placeholder">{error}</p>;
   if (!project || !board) return <p className="board-page__placeholder">Loading…</p>;

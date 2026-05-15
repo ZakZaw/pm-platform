@@ -5,6 +5,7 @@ import { projectsApi } from '@/api/projects.api';
 import { sprintsApi } from '@/api/sprints.api';
 import { boardApi } from '@/api/board.api';
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
+import { useProjectHub } from '@/hooks/useProjectHub';
 import './SprintBoardPage.css';
 
 export function SprintBoardPage() {
@@ -38,6 +39,12 @@ export function SprintBoardPage() {
     })();
     return () => { cancelled = true; };
   }, [orgSlug, projectSlug, load]);
+
+  useProjectHub(project?.id, (name) => {
+    if (name === 'board.changed' || name === 'sprint.changed') {
+      load(project.id).catch(() => {});
+    }
+  });
 
   if (error) return <p className="sprint-board__placeholder">{error}</p>;
   if (!project || !board) return <p className="sprint-board__placeholder">Loading…</p>;

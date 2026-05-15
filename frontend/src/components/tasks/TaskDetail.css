@@ -134,3 +134,7 @@
   border-top: 1px solid var(--border-subtle);
   padding-top: var(--space-3);
 }
+
+.task-detail__comment-input {
+  margin-top: var(--space-3);
+}

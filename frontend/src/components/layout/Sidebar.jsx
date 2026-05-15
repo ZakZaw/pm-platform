@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   ListTodo,
   Repeat,
+  Settings,
   Users,
   UserCircle,
 } from 'lucide-react';
@@ -165,6 +166,14 @@ export function Sidebar() {
             >
               <ListTodo className="sidebar__link-icon" aria-hidden="true" />
               {!collapsed && <span className="sidebar__link-label">Stories</span>}
+            </NavLink>
+            <NavLink
+              to={`/${slug}/projects/${projectSlug}/settings/workflow`}
+              className={linkClass}
+              title={collapsed ? 'Workflow' : undefined}
+            >
+              <Settings className="sidebar__link-icon" aria-hidden="true" />
+              {!collapsed && <span className="sidebar__link-label">Workflow</span>}
             </NavLink>
           </>
         )}

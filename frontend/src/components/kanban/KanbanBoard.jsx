@@ -12,7 +12,7 @@ import './KanbanBoard.css';
  * override that shadows it during a drag, and clear back to null on
  * success (after parent refetches) or on error.
  */
-export function KanbanBoard({ board, onChanged }) {
+export function KanbanBoard({ board, onChanged, statusConfigs }) {
   const toast = useToast();
   const [optimistic, setOptimistic] = useState(null);
   const displayed = optimistic ?? board;
@@ -87,13 +87,22 @@ export function KanbanBoard({ board, onChanged }) {
               <div className="kanban__lane-label">{lane.label}</div>
             )}
             <div className="kanban__columns">
-              {lane.columns.map((col) => (
-                <KanbanColumn key={col.status} status={col.status} count={col.cards.length}>
-                  {col.cards.map((card) => (
-                    <KanbanCard key={card.storyId} card={card} />
-                  ))}
-                </KanbanColumn>
-              ))}
+              {lane.columns.map((col) => {
+                const cfg = statusConfigs?.find((c) => c.status === col.status);
+                return (
+                  <KanbanColumn
+                    key={col.status}
+                    status={col.status}
+                    count={col.cards.length}
+                    displayName={cfg?.displayName}
+                    tone={cfg?.color}
+                  >
+                    {col.cards.map((card) => (
+                      <KanbanCard key={card.storyId} card={card} />
+                    ))}
+                  </KanbanColumn>
+                );
+              })}
             </div>
           </div>
         ))}

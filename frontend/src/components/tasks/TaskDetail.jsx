@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Trash2, X } from 'lucide-react';
 import { Button, useToast } from '@/components/ui';
 import { tasksApi } from '@/api/tasks.api';
 import { subtasksApi } from '@/api/subtasks.api';
+import { commentsApi } from '@/api/comments.api';
 import { StatusDropdown } from './StatusDropdown';
+import { CommentList } from './CommentList';
+import { CommentInput } from './CommentInput';
 import './TaskDetail.css';
 
 /**
@@ -12,10 +15,11 @@ import './TaskDetail.css';
  * via onUpdated so the parent stays the single source of truth for the
  * task object.
  */
-export function TaskDetail({ task, onClose, onUpdated, onDeleted }) {
+export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
   const toast = useToast();
   const [subtasks, setSubtasks] = useState([]);
   const [newSub, setNewSub] = useState('');
+  const [comments, setComments] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -29,6 +33,43 @@ export function TaskDetail({ task, onClose, onUpdated, onDeleted }) {
       cancelled = true;
     };
   }, [task.id]);
+
+  const refreshComments = useCallback(async () => {
+    try {
+      const list = await commentsApi.listForTask(task.id);
+      setComments(list);
+    } catch {
+      /* surfaced by the section if needed */
+    }
+  }, [task.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const list = await commentsApi.listForTask(task.id);
+        if (!cancelled) setComments(list);
+      } catch {
+        /* leave list empty on failure */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [task.id]);
+
+  async function postComment(body) {
+    try {
+      const created = await commentsApi.create(task.id, body);
+      setComments((cur) => [...cur, created]);
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        message: err.response?.data?.detail ?? 'Could not post comment.',
+      });
+      throw err;
+    }
+  }
 
   async function changeStatus(to) {
     let reason = null;
@@ -156,6 +197,18 @@ export function TaskDetail({ task, onClose, onUpdated, onDeleted }) {
           />
           <Button size="sm" type="submit" disabled={newSub.trim().length === 0}>Add</Button>
         </form>
+      </section>
+
+      <section className="task-detail__section">
+        <h3 className="task-detail__heading">Comments</h3>
+        <CommentList
+          projectId={projectId}
+          comments={comments}
+          onChanged={refreshComments}
+        />
+        <div className="task-detail__comment-input">
+          <CommentInput projectId={projectId} onSubmit={postComment} />
+        </div>
       </section>
 
       <footer className="task-detail__foot">

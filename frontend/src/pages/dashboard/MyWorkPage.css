@@ -1,0 +1,142 @@
+.mywork__title {
+  font-size: var(--font-size-h1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.mywork__subtitle {
+  color: var(--text-tertiary);
+  margin-top: var(--space-2);
+  font-size: var(--font-size-dense);
+}
+
+.mywork__sections {
+  margin-top: var(--space-6);
+  display: grid;
+  gap: var(--space-6);
+}
+
+.mywork__section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.mywork__section-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.mywork__section-title {
+  font-size: var(--font-size-h3);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.mywork__section-title.is-danger {
+  color: var(--status-danger);
+}
+
+.mywork__section-count {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-meta);
+}
+
+.mywork__project-group {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.mywork__project-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-meta);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+}
+
+.mywork__project-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.mywork__project-link:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
+.mywork__items {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.mywork__item {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  transition: background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.mywork__item:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-default);
+}
+
+.mywork__item.is-overdue {
+  border-left: 3px solid var(--status-danger);
+}
+
+.mywork__item-title {
+  display: grid;
+  gap: 2px;
+}
+
+.mywork__item-name {
+  font-size: var(--font-size-body);
+  color: var(--text-primary);
+  font-weight: var(--weight-medium);
+}
+
+.mywork__item-story {
+  font-size: var(--font-size-meta);
+  color: var(--text-tertiary);
+}
+
+.mywork__due {
+  font-size: var(--font-size-meta);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.mywork__due.is-overdue {
+  color: var(--status-danger);
+  font-weight: var(--weight-medium);
+}
+
+.mywork__empty {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-dense);
+  padding: var(--space-3);
+  background: var(--bg-surface-1);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.mywork__placeholder {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-dense);
+}

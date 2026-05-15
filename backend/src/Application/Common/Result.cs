@@ -213,6 +213,36 @@ public static class SprintErrors
         new("Sprint.NotActive", "Only an Active sprint can be closed.");
 }
 
+public static class CommentErrors
+{
+    public static readonly Error NotFound =
+        new("Comment.NotFound", "Comment not found.");
+
+    public static readonly Error InvalidBody =
+        new("Comment.InvalidBody", "Comment body must be 1-4000 characters.");
+
+    public static readonly Error Forbidden =
+        new("Comment.Forbidden", "Only the author or a project PM can modify this comment.");
+}
+
+public static class WorkflowErrors
+{
+    public static readonly Error ConfigNotFound =
+        new("Workflow.ConfigNotFound", "Status configuration not found for this project.");
+
+    public static readonly Error InvalidDisplayName =
+        new("Workflow.InvalidDisplayName", "Status display name must be 1-60 characters.");
+
+    public static readonly Error InvalidColor =
+        new("Workflow.InvalidColor", "Status color must be one of neutral, info, purple, warning, danger, or success.");
+
+    public static readonly Error InvalidReorder =
+        new("Workflow.InvalidReorder", "Reorder requires a non-empty list of config ids.");
+
+    public static readonly Error NeedOneDoneState =
+        new("Workflow.NeedOneDoneState", "At least one status must be marked as a done state.");
+}
+
 public static class InvitationErrors
 {
     public static readonly Error InvalidEmail =

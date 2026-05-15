@@ -12,7 +12,7 @@ public record GetBoardQuery(Guid ProjectId, Guid? SprintId, string? SwimlaneBy)
 public class GetBoardQueryHandler(IAppDbContext db)
     : IRequestHandler<GetBoardQuery, Result<BoardDto>>
 {
-    private static readonly string[] CoreStatuses =
+    private static readonly string[] FallbackStatuses =
         [nameof(DomainTaskStatus.ToDo), nameof(DomainTaskStatus.InProgress),
          nameof(DomainTaskStatus.InReview), nameof(DomainTaskStatus.Blocked),
          nameof(DomainTaskStatus.Done)];
@@ -45,17 +45,28 @@ public class GetBoardQueryHandler(IAppDbContext db)
             r.Id, r.Title, r.Priority, r.Status, r.StoryPoints, r.AssigneeId, r.EpicId,
             r.TaskCount, r.CompletedTaskCount)).ToList();
 
-        var swimlanes = BuildSwimlanes(cards, request.SwimlaneBy);
+        // Honour the project's status-config column order/visibility when set;
+        // otherwise fall back to the legacy 5-column board for projects that
+        // never opened the workflow settings page.
+        var columnOrder = await db.ProjectStatusConfigs
+            .Where(c => c.ProjectId == request.ProjectId && c.IsVisible)
+            .OrderBy(c => c.OrderIndex)
+            .Select(c => c.Status.ToString())
+            .ToListAsync(ct);
+        if (columnOrder.Count == 0)
+            columnOrder = FallbackStatuses.ToList();
+
+        var swimlanes = BuildSwimlanes(cards, request.SwimlaneBy, columnOrder);
 
         return Result.Success(new BoardDto(request.ProjectId, request.SprintId, request.SwimlaneBy, swimlanes));
     }
 
     private static IReadOnlyList<SwimlaneDto> BuildSwimlanes(
-        IReadOnlyList<BoardCardDto> cards, string? swimlaneBy)
+        IReadOnlyList<BoardCardDto> cards, string? swimlaneBy, IReadOnlyList<string> columnOrder)
     {
         // No swimlanes: one synthetic lane with all columns.
         if (string.IsNullOrEmpty(swimlaneBy))
-            return new[] { new SwimlaneDto("all", "All", ToColumns(cards)) };
+            return new[] { new SwimlaneDto("all", "All", ToColumns(cards, columnOrder)) };
 
         IEnumerable<IGrouping<string, BoardCardDto>> groups = swimlaneBy.ToLowerInvariant() switch
         {
@@ -68,13 +79,14 @@ public class GetBoardQueryHandler(IAppDbContext db)
         return groups
             .OrderBy(g => g.Key == "unassigned" || g.Key == "no-epic" ? 1 : 0)
             .ThenBy(g => g.Key)
-            .Select(g => new SwimlaneDto(g.Key, g.Key, ToColumns(g.ToList())))
+            .Select(g => new SwimlaneDto(g.Key, g.Key, ToColumns(g.ToList(), columnOrder)))
             .ToList();
     }
 
-    private static IReadOnlyList<BoardColumnDto> ToColumns(IReadOnlyList<BoardCardDto> cards)
+    private static IReadOnlyList<BoardColumnDto> ToColumns(
+        IReadOnlyList<BoardCardDto> cards, IReadOnlyList<string> columnOrder)
     {
-        return CoreStatuses.Select(status => new BoardColumnDto(
+        return columnOrder.Select(status => new BoardColumnDto(
             status,
             cards.Where(c => c.Status == status).ToList()
         )).ToList();

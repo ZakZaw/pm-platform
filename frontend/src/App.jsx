@@ -2,7 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation, useParams } from '
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { AcceptInvitePage } from '@/pages/auth/AcceptInvitePage';
-import { DashboardPage } from '@/pages/dashboard/DashboardPage';
+import { MyWorkPage } from '@/pages/dashboard/MyWorkPage';
 import { CreateOrgPage } from '@/pages/onboarding/CreateOrgPage';
 import { OrgHomePage } from '@/pages/org/OrgHomePage';
 import { MembersPage } from '@/pages/settings/MembersPage';
@@ -16,6 +16,7 @@ import { BoardPage } from '@/pages/project/BoardPage';
 import { BacklogPage } from '@/pages/project/BacklogPage';
 import { SprintsPage } from '@/pages/project/SprintsPage';
 import { SprintBoardPage } from '@/pages/project/SprintBoardPage';
+import { WorkflowSettingsPage } from '@/pages/project/WorkflowSettingsPage';
 import { AppShell } from '@/components/layout/AppShell';
 import { ToastProvider } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
@@ -45,7 +46,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/invitations/:token" element={<AcceptInvitePage />} />
           <Route element={<ProtectedLayout />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/dashboard" element={<MyWorkPage />} />
             <Route path="/onboarding/create-org" element={<CreateOrgPage />} />
             <Route
               path="/:slug/home"
@@ -84,6 +85,10 @@ function App() {
             <Route
               path="/:slug/projects/:projectSlug/sprints/:sprintId/board"
               element={<Keyed paramKey="sprintId"><SprintBoardPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/settings/workflow"
+              element={<Keyed paramKey="projectSlug"><WorkflowSettingsPage /></Keyed>}
             />
             <Route path="/settings/profile" element={<ProfilePage />} />
           </Route>

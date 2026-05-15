@@ -1,8 +1,8 @@
 import { useDroppable } from '@dnd-kit/core';
-import { StatusBadge } from '@/components/ui';
+import { Badge, StatusBadge } from '@/components/ui';
 import './KanbanColumn.css';
 
-export function KanbanColumn({ status, count, children }) {
+export function KanbanColumn({ status, count, displayName, tone, children }) {
   const { isOver, setNodeRef } = useDroppable({ id: `col:${status}` });
   return (
     <div
@@ -10,7 +10,11 @@ export function KanbanColumn({ status, count, children }) {
       className={['kanban-col', isOver ? 'is-over' : ''].filter(Boolean).join(' ')}
     >
       <header className="kanban-col__head">
-        <StatusBadge status={status} />
+        {displayName ? (
+          <Badge tone={tone ?? 'neutral'}>{displayName}</Badge>
+        ) : (
+          <StatusBadge status={status} />
+        )}
         <span className="kanban-col__count">{count}</span>
       </header>
       <div className="kanban-col__body">{children}</div>

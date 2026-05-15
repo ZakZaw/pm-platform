@@ -110,6 +110,7 @@ export function StoryDetailPage() {
             {openTask && (
               <TaskDetail
                 task={openTask}
+                projectId={story.projectId}
                 onClose={() => setOpenTask(null)}
                 onUpdated={(updated) => {
                   setTasks((cur) => cur.map((t) => (t.id === updated.id ? updated : t)));

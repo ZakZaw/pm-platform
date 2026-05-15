@@ -61,6 +61,15 @@ public class UsersController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    [HttpGet("me/tasks")]
+    public async Task<ActionResult<IReadOnlyList<MyWorkItemDto>>> MyTasks(
+        [FromQuery(Name = "filter")] string? filter,
+        CancellationToken ct)
+    {
+        var result = await mediator.Send(new GetMyWorkQuery(filter), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     private ObjectResult ToProblem(Error error)
     {
         var status = error.Code switch

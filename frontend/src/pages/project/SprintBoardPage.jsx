@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { sprintsApi } from '@/api/sprints.api';
 import { boardApi } from '@/api/board.api';
+import { workflowApi } from '@/api/workflow.api';
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
 import { useProjectHub } from '@/hooks/useProjectHub';
 import './SprintBoardPage.css';
@@ -13,6 +14,7 @@ export function SprintBoardPage() {
   const [project, setProject] = useState(null);
   const [sprint, setSprint] = useState(null);
   const [board, setBoard] = useState(null);
+  const [statusConfigs, setStatusConfigs] = useState([]);
   const [error, setError] = useState(null);
 
   const load = useCallback(async (projectId) => {
@@ -32,7 +34,12 @@ export function SprintBoardPage() {
         const p = await projectsApi.getBySlug(orgSlug, projectSlug);
         if (cancelled) return;
         setProject(p);
-        await load(p.id);
+        const [, configs] = await Promise.all([
+          load(p.id),
+          workflowApi.list(p.id),
+        ]);
+        if (cancelled) return;
+        setStatusConfigs(configs);
       } catch (err) {
         if (!cancelled) setError(err.response?.data?.detail ?? 'Could not load sprint board.');
       }
@@ -78,7 +85,11 @@ export function SprintBoardPage() {
         <div className="sprint-board__burndown-fill" style={{ width: `${pct}%` }} />
       </div>
 
-      <KanbanBoard board={board} onChanged={() => load(project.id)} />
+      <KanbanBoard
+        board={board}
+        statusConfigs={statusConfigs}
+        onChanged={() => load(project.id)}
+      />
     </div>
   );
 }

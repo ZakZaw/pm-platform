@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Select } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { boardApi } from '@/api/board.api';
+import { workflowApi } from '@/api/workflow.api';
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
 import { useProjectHub } from '@/hooks/useProjectHub';
 import './BoardPage.css';
@@ -18,6 +19,7 @@ export function BoardPage() {
   const { slug: orgSlug, projectSlug } = useParams();
   const [project, setProject] = useState(null);
   const [board, setBoard] = useState(null);
+  const [statusConfigs, setStatusConfigs] = useState([]);
   const [swimlane, setSwimlane] = useState('');
   const [error, setError] = useState(null);
 
@@ -33,7 +35,12 @@ export function BoardPage() {
         const p = await projectsApi.getBySlug(orgSlug, projectSlug);
         if (cancelled) return;
         setProject(p);
-        await load(p.id, swimlane);
+        const [, configs] = await Promise.all([
+          load(p.id, swimlane),
+          workflowApi.list(p.id),
+        ]);
+        if (cancelled) return;
+        setStatusConfigs(configs);
       } catch (err) {
         if (!cancelled) setError(err.response?.data?.detail ?? 'Could not load board.');
       }
@@ -67,7 +74,11 @@ export function BoardPage() {
         />
       </header>
 
-      <KanbanBoard board={board} onChanged={() => load(project.id, swimlane)} />
+      <KanbanBoard
+        board={board}
+        statusConfigs={statusConfigs}
+        onChanged={() => load(project.id, swimlane)}
+      />
     </div>
   );
 }

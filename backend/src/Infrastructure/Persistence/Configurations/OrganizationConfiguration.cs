@@ -21,7 +21,6 @@ public class OrganizationConfiguration : IEntityTypeConfiguration<Organization>
         builder.Property(o => o.SsoEnabled).IsRequired();
         builder.Property(o => o.CreatedAt).IsRequired();
 
-        builder.Ignore(o => o.Projects);
         builder.Ignore(o => o.Teams);
     }
 }

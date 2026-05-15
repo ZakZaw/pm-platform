@@ -1,5 +1,6 @@
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using TaskEntity = Domain.Entities.Task;
 
 namespace Application.Interfaces;
 
@@ -10,6 +11,13 @@ public interface IAppDbContext
     DbSet<Organization> Organizations { get; }
     DbSet<OrgMembership> OrgMemberships { get; }
     DbSet<Invitation> Invitations { get; }
+    DbSet<Project> Projects { get; }
+    DbSet<ProjectMembership> ProjectMemberships { get; }
+    DbSet<Epic> Epics { get; }
+    DbSet<Story> Stories { get; }
+    DbSet<TaskEntity> Tasks { get; }
+    DbSet<Subtask> Subtasks { get; }
+    DbSet<TaskStatusChange> TaskStatusChanges { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

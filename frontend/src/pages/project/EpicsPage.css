@@ -1,0 +1,41 @@
+.epics-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+}
+
+.epics-page__title {
+  font-size: var(--font-size-h1);
+  font-weight: var(--weight-semibold);
+  margin: 0;
+}
+
+.epics-page__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.epics-page__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--font-size-dense);
+}
+
+.epics-page__form-card {
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.epics-page__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-3);
+}
+
+.epics-page__placeholder {
+  color: var(--text-tertiary);
+}

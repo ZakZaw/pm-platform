@@ -2,6 +2,7 @@ using System.Reflection;
 using Application.Interfaces;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using TaskEntity = Domain.Entities.Task;
 
 namespace Infrastructure.Persistence;
 
@@ -16,15 +17,19 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<OrgMembership> OrgMemberships => Set<OrgMembership>();
     public DbSet<Invitation> Invitations => Set<Invitation>();
+    public DbSet<Project> Projects => Set<Project>();
+    public DbSet<ProjectMembership> ProjectMemberships => Set<ProjectMembership>();
+    public DbSet<Epic> Epics => Set<Epic>();
+    public DbSet<Story> Stories => Set<Story>();
+    public DbSet<TaskEntity> Tasks => Set<TaskEntity>();
+    public DbSet<Subtask> Subtasks => Set<Subtask>();
+    public DbSet<TaskStatusChange> TaskStatusChanges => Set<TaskStatusChange>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Domain entities scaffolded ahead of their F-task are excluded from
-        // the model until their owning task registers them with proper
-        // configurations. Remove the relevant Ignore call when adding the
-        // DbSet/IEntityTypeConfiguration for that entity.
-        modelBuilder.Ignore<Project>();
-        modelBuilder.Ignore<ProjectMembership>();
+        // Team / TeamMembership stay ignored until the team-management
+        // feature lands. Remove the Ignore call when their owning
+        // F-task registers them with proper configurations.
         modelBuilder.Ignore<Team>();
         modelBuilder.Ignore<TeamMembership>();
 

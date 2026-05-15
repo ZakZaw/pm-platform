@@ -7,7 +7,13 @@ import { CreateOrgPage } from '@/pages/onboarding/CreateOrgPage';
 import { OrgHomePage } from '@/pages/org/OrgHomePage';
 import { MembersPage } from '@/pages/settings/MembersPage';
 import { ProfilePage } from '@/pages/settings/ProfilePage';
+import { CreateProjectPage } from '@/pages/project/CreateProjectPage';
+import { ProjectHomePage } from '@/pages/project/ProjectHomePage';
+import { EpicsPage } from '@/pages/project/EpicsPage';
+import { StoriesPage } from '@/pages/project/StoriesPage';
+import { StoryDetailPage } from '@/pages/project/StoryDetailPage';
 import { AppShell } from '@/components/layout/AppShell';
+import { ToastProvider } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
 
 function ProtectedLayout() {
@@ -19,30 +25,53 @@ function ProtectedLayout() {
   return <AppShell />;
 }
 
-// Forces OrgHomePage to remount when slug changes so its useState resets cleanly.
-function OrgHomePageKeyed() {
-  const { slug } = useParams();
-  return <OrgHomePage key={slug} />;
+// Forces a page to remount when its key changes so component-local state
+// resets cleanly. Used for slug-keyed routes whose pages cache fetched data.
+function Keyed({ children, paramKey }) {
+  const params = useParams();
+  return <div key={params[paramKey]}>{children}</div>;
 }
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/invitations/:token" element={<AcceptInvitePage />} />
-        <Route element={<ProtectedLayout />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/onboarding/create-org" element={<CreateOrgPage />} />
-          <Route path="/:slug/home" element={<OrgHomePageKeyed />} />
-          <Route path="/:slug/settings/members" element={<MembersPage />} />
-          <Route path="/settings/profile" element={<ProfilePage />} />
-        </Route>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <ToastProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/invitations/:token" element={<AcceptInvitePage />} />
+          <Route element={<ProtectedLayout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/onboarding/create-org" element={<CreateOrgPage />} />
+            <Route
+              path="/:slug/home"
+              element={<Keyed paramKey="slug"><OrgHomePage /></Keyed>}
+            />
+            <Route path="/:slug/settings/members" element={<MembersPage />} />
+            <Route path="/:slug/projects/new" element={<CreateProjectPage />} />
+            <Route
+              path="/:slug/projects/:projectSlug"
+              element={<Keyed paramKey="projectSlug"><ProjectHomePage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/epics"
+              element={<Keyed paramKey="projectSlug"><EpicsPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/stories"
+              element={<Keyed paramKey="projectSlug"><StoriesPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/stories/:storyId"
+              element={<Keyed paramKey="storyId"><StoryDetailPage /></Keyed>}
+            />
+            <Route path="/settings/profile" element={<ProfilePage />} />
+          </Route>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </ToastProvider>
   );
 }
 

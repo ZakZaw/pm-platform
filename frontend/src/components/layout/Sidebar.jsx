@@ -1,10 +1,13 @@
 import { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
+  Briefcase,
   ChevronLeft,
   ChevronRight,
   Home,
+  Layers,
   LayoutDashboard,
+  ListTodo,
   Users,
   UserCircle,
 } from 'lucide-react';
@@ -54,6 +57,15 @@ export function Sidebar() {
     urlOrg ?? orgs.find((o) => o.slug === lastOrgSlug) ?? orgs[0] ?? null;
   const slug = currentOrg?.slug ?? null;
 
+  // Pull the project slug from /:slug/projects/:projectSlug/... so the
+  // sidebar can show project-scoped nav (Epics, Stories, etc.) without
+  // every page having to manage the sidebar state itself.
+  const pathSegments = location.pathname.split('/').filter(Boolean);
+  const projectSlug =
+    pathSegments[0] === slug && pathSegments[1] === 'projects' && pathSegments[2] && pathSegments[2] !== 'new'
+      ? pathSegments[2]
+      : null;
+
   const sidebarClasses = ['sidebar', collapsed ? 'sidebar--collapsed' : '']
     .filter(Boolean)
     .join(' ');
@@ -95,6 +107,37 @@ export function Sidebar() {
             <NavLink to={`/${slug}/settings/members`} className={linkClass} title={collapsed ? 'Members' : undefined}>
               <Users className="sidebar__link-icon" aria-hidden="true" />
               {!collapsed && <span className="sidebar__link-label">Members</span>}
+            </NavLink>
+          </>
+        )}
+
+        {projectSlug && (
+          <>
+            {!collapsed && <div className="sidebar__section">Project</div>}
+            <NavLink
+              to={`/${slug}/projects/${projectSlug}`}
+              className={linkClass}
+              end
+              title={collapsed ? 'Overview' : undefined}
+            >
+              <Briefcase className="sidebar__link-icon" aria-hidden="true" />
+              {!collapsed && <span className="sidebar__link-label">Overview</span>}
+            </NavLink>
+            <NavLink
+              to={`/${slug}/projects/${projectSlug}/epics`}
+              className={linkClass}
+              title={collapsed ? 'Epics' : undefined}
+            >
+              <Layers className="sidebar__link-icon" aria-hidden="true" />
+              {!collapsed && <span className="sidebar__link-label">Epics</span>}
+            </NavLink>
+            <NavLink
+              to={`/${slug}/projects/${projectSlug}/stories`}
+              className={linkClass}
+              title={collapsed ? 'Stories' : undefined}
+            >
+              <ListTodo className="sidebar__link-icon" aria-hidden="true" />
+              {!collapsed && <span className="sidebar__link-label">Stories</span>}
             </NavLink>
           </>
         )}

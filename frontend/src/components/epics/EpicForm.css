@@ -1,0 +1,65 @@
+.epic-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.epic-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.epic-form__label {
+  font-size: var(--font-size-meta);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+}
+
+.epic-form__textarea {
+  font-family: inherit;
+  font-size: var(--font-size-dense);
+  color: var(--text-primary);
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  resize: vertical;
+  min-height: 60px;
+}
+.epic-form__textarea:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-focus);
+}
+
+.epic-form__colors {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.epic-form__color {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+}
+.epic-form__color.is-active {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 2px var(--bg-base);
+}
+
+.epic-form__error {
+  color: var(--status-danger);
+  font-size: var(--font-size-meta);
+  margin: 0;
+}
+
+.epic-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}

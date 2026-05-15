@@ -1,0 +1,48 @@
+.task-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  width: 100%;
+  transition: border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out);
+}
+.task-card:hover { border-color: var(--border-strong); background: var(--bg-hover); }
+.task-card.is-compact { padding: var(--space-2) var(--space-3); }
+
+.task-card__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.task-card__row--meta { color: var(--text-tertiary); }
+
+.task-card__title {
+  flex: 1;
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+  font-size: var(--font-size-dense);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-card__prio {
+  width: 3px;
+  height: 14px;
+  border-radius: var(--radius-pill);
+  background: var(--text-muted);
+  flex-shrink: 0;
+}
+.task-card__prio.prio-urgent { background: var(--prio-urgent); }
+.task-card__prio.prio-high { background: var(--prio-high); }
+.task-card__prio.prio-med { background: var(--prio-med); }
+.task-card__prio.prio-low { background: var(--prio-low); }

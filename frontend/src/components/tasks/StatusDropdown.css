@@ -1,0 +1,19 @@
+.status-dropdown__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 4px var(--space-2);
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: inherit;
+}
+.status-dropdown__trigger:hover:not(:disabled) { background: var(--bg-hover); }
+.status-dropdown__trigger:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.status-dropdown__current {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-meta);
+}

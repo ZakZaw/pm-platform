@@ -6,3 +6,7 @@ export { Avatar } from './Avatar/Avatar';
 export { Badge } from './Badge/Badge';
 export { Chip } from './Chip/Chip';
 export { Table } from './Table/Table';
+export { StatusBadge } from './StatusBadge/StatusBadge';
+export { TASK_STATUSES, STATUS_LABELS } from './StatusBadge/constants';
+export { Dropdown } from './Dropdown/Dropdown';
+export { ToastProvider, useToast } from './Toast';

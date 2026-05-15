@@ -108,6 +108,87 @@ public static class UserErrors
         new("User.AvatarInvalidType", "Avatar must be a PNG, JPEG, or WebP image.");
 }
 
+public static class ProjectErrors
+{
+    public static readonly Error NotFound =
+        new("Project.NotFound", "Project not found.");
+
+    public static readonly Error InvalidName =
+        new("Project.InvalidName", "Project name must be 2-120 characters.");
+
+    public static readonly Error InvalidEnvironmentType =
+        new("Project.InvalidEnvironmentType", "Environment type must be Developer, Support, Sales, or Business.");
+
+    public static readonly Error InvalidAIControlMode =
+        new("Project.InvalidAIControlMode", "AI control mode must be Autopilot, Suggest, AskMeFirst, or Off.");
+
+    public static readonly Error NotAMember =
+        new("Project.NotAMember", "You are not a member of this project.");
+
+    public static readonly Error InsufficientProjectRole =
+        new("Project.InsufficientRole", "Your project role does not allow this action.");
+}
+
+public static class EpicErrors
+{
+    public static readonly Error NotFound =
+        new("Epic.NotFound", "Epic not found.");
+
+    public static readonly Error InvalidTitle =
+        new("Epic.InvalidTitle", "Epic title must be 2-200 characters.");
+
+    public static readonly Error InvalidStatus =
+        new("Epic.InvalidStatus", "Epic status must be Planning, InProgress, Done, or Archived.");
+}
+
+public static class StoryErrors
+{
+    public static readonly Error NotFound =
+        new("Story.NotFound", "Story not found.");
+
+    public static readonly Error InvalidTitle =
+        new("Story.InvalidTitle", "Story title must be 2-200 characters.");
+
+    public static readonly Error InvalidPriority =
+        new("Story.InvalidPriority", "Priority must be Low, Medium, High, or Urgent.");
+
+    public static readonly Error InvalidStoryPoints =
+        new("Story.InvalidStoryPoints", "Story points must be 0 or greater.");
+}
+
+public static class TaskErrors
+{
+    public static readonly Error NotFound =
+        new("Task.NotFound", "Task not found.");
+
+    public static readonly Error InvalidTitle =
+        new("Task.InvalidTitle", "Task title must be 2-200 characters.");
+
+    public static readonly Error InvalidStatus =
+        new("Task.InvalidStatus", "Task status must be Backlog, ToDo, InProgress, InReview, Blocked, Done, or WontDo.");
+
+    public static readonly Error InvalidPriority =
+        new("Task.InvalidPriority", "Priority must be Low, Medium, High, or Urgent.");
+
+    public static Error InvalidTransition(string from, string to) =>
+        new("Task.InvalidTransition", $"Cannot move a task from {from} to {to}.");
+
+    public static Error ReasonRequired(string to) =>
+        new("Task.ReasonRequired", $"Moving a task to {to} requires a reason.");
+
+    public static readonly Error NoOpTransition =
+        new("Task.NoOpTransition", "Task is already in that status.");
+}
+
+public static class SubtaskErrors
+{
+    public static readonly Error NotFound =
+        new("Subtask.NotFound", "Subtask not found.");
+
+    public static readonly Error InvalidTitle =
+        new("Subtask.InvalidTitle", "Subtask title must be 1-200 characters.");
+}
+
 public static class InvitationErrors
 {
     public static readonly Error InvalidEmail =

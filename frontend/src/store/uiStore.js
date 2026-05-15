@@ -8,10 +8,16 @@ export const useUiStore = create(
       toggleSidebar: () =>
         set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
       setSidebarCollapsed: (value) => set({ sidebarCollapsed: Boolean(value) }),
+
+      lastOrgSlug: null,
+      setLastOrgSlug: (slug) => set({ lastOrgSlug: slug || null }),
     }),
     {
       name: 'pm-ui',
-      partialize: (state) => ({ sidebarCollapsed: state.sidebarCollapsed }),
+      partialize: (state) => ({
+        sidebarCollapsed: state.sidebarCollapsed,
+        lastOrgSlug: state.lastOrgSlug,
+      }),
     },
   ),
 );

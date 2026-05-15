@@ -1,20 +1,67 @@
-import { NavLink } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, LayoutDashboard } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { useEffect } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Home,
+  LayoutDashboard,
+  Users,
+  UserCircle,
+} from 'lucide-react';
+import { Avatar, Button } from '@/components/ui';
+import { useOrgStore } from '@/store/orgStore';
 import { useUiStore } from '@/store/uiStore';
 import './Sidebar.css';
 
-const navItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-];
-
 export function Sidebar() {
+  const location = useLocation();
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggle = useUiStore((s) => s.toggleSidebar);
+
+  const orgs = useOrgStore((s) => s.orgs);
+  const orgsLoaded = useOrgStore((s) => s.loaded);
+  const refreshOrgs = useOrgStore((s) => s.refresh);
+  const lastOrgSlug = useUiStore((s) => s.lastOrgSlug);
+  const setLastOrgSlug = useUiStore((s) => s.setLastOrgSlug);
+
+  // orgStore isn't persisted, so on a hard reload it's empty until we
+  // refresh. The Sidebar is the right place for this because it's the only
+  // always-mounted consumer of the org list inside the protected shell.
+  useEffect(() => {
+    if (!orgsLoaded) {
+      refreshOrgs().catch(() => {});
+    }
+  }, [orgsLoaded, refreshOrgs]);
+
+  // useParams() inside a layout returns the parent Route's params, not the
+  // matched child's, so we read the slug from the URL directly and verify
+  // it against the loaded org list. Segments like "dashboard", "onboarding",
+  // "settings", "invitations" won't match any org slug.
+  const firstSegment = location.pathname.split('/').filter(Boolean)[0];
+  const urlOrg = orgs.find((o) => o.slug === firstSegment) ?? null;
+
+  // Remember the last org the user was actually inside so user-scoped
+  // pages (/dashboard, /settings/profile) can keep showing the org nav.
+  useEffect(() => {
+    if (urlOrg && urlOrg.slug !== lastOrgSlug) {
+      setLastOrgSlug(urlOrg.slug);
+    }
+  }, [urlOrg, lastOrgSlug, setLastOrgSlug]);
+
+  // Every user has at least one org, so we always have something to show:
+  // URL org → last visited → first org in the list.
+  const currentOrg =
+    urlOrg ?? orgs.find((o) => o.slug === lastOrgSlug) ?? orgs[0] ?? null;
+  const slug = currentOrg?.slug ?? null;
 
   const sidebarClasses = ['sidebar', collapsed ? 'sidebar--collapsed' : '']
     .filter(Boolean)
     .join(' ');
+
+  const linkClass = ({ isActive }) =>
+    ['sidebar__link', isActive ? 'sidebar__link--active' : '']
+      .filter(Boolean)
+      .join(' ');
 
   return (
     <aside className={sidebarClasses} aria-label="Primary navigation">
@@ -23,22 +70,44 @@ export function Sidebar() {
         {!collapsed && <span className="sidebar__brand-text">PM Platform</span>}
       </div>
 
+      {currentOrg && !collapsed && (
+        <NavLink
+          to={`/${currentOrg.slug}/home`}
+          className="sidebar__org"
+          title={currentOrg.name}
+        >
+          <Avatar src={currentOrg.logoUrl} name={currentOrg.name} size="md" />
+          <div className="sidebar__org-info">
+            <div className="sidebar__org-name">{currentOrg.name}</div>
+            <div className="sidebar__org-role">{currentOrg.role}</div>
+          </div>
+        </NavLink>
+      )}
+
       <nav className="sidebar__nav">
-        {navItems.map(({ to, label, icon: Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              ['sidebar__link', isActive ? 'sidebar__link--active' : '']
-                .filter(Boolean)
-                .join(' ')
-            }
-            title={collapsed ? label : undefined}
-          >
-            <Icon className="sidebar__link-icon" aria-hidden="true" />
-            {!collapsed && <span className="sidebar__link-label">{label}</span>}
-          </NavLink>
-        ))}
+        {slug && (
+          <>
+            {!collapsed && <div className="sidebar__section">Workspace</div>}
+            <NavLink to={`/${slug}/home`} className={linkClass} end title={collapsed ? 'Home' : undefined}>
+              <Home className="sidebar__link-icon" aria-hidden="true" />
+              {!collapsed && <span className="sidebar__link-label">Home</span>}
+            </NavLink>
+            <NavLink to={`/${slug}/settings/members`} className={linkClass} title={collapsed ? 'Members' : undefined}>
+              <Users className="sidebar__link-icon" aria-hidden="true" />
+              {!collapsed && <span className="sidebar__link-label">Members</span>}
+            </NavLink>
+          </>
+        )}
+
+        {!collapsed && <div className="sidebar__section">You</div>}
+        <NavLink to="/dashboard" className={linkClass} title={collapsed ? 'My work' : undefined}>
+          <LayoutDashboard className="sidebar__link-icon" aria-hidden="true" />
+          {!collapsed && <span className="sidebar__link-label">My work</span>}
+        </NavLink>
+        <NavLink to="/settings/profile" className={linkClass} title={collapsed ? 'Profile' : undefined}>
+          <UserCircle className="sidebar__link-icon" aria-hidden="true" />
+          {!collapsed && <span className="sidebar__link-label">Profile</span>}
+        </NavLink>
       </nav>
 
       <div className="sidebar__footer">

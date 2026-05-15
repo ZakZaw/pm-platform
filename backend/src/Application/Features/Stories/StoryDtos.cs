@@ -4,6 +4,7 @@ public record StoryDto(
     Guid Id,
     Guid ProjectId,
     Guid? EpicId,
+    Guid? SprintId,
     string Title,
     string? Description,
     int? StoryPoints,

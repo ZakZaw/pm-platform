@@ -27,6 +27,7 @@ public class StoryConfiguration : IEntityTypeConfiguration<Story>
 
         builder.HasIndex(s => new { s.ProjectId, s.Status });
         builder.HasIndex(s => s.EpicId);
+        builder.HasIndex(s => s.SprintId);
 
         builder.HasOne(s => s.Project)
             .WithMany()
@@ -36,6 +37,11 @@ public class StoryConfiguration : IEntityTypeConfiguration<Story>
         builder.HasOne(s => s.Epic)
             .WithMany(e => e.Stories)
             .HasForeignKey(s => s.EpicId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(s => s.Sprint)
+            .WithMany(sp => sp.Stories)
+            .HasForeignKey(s => s.SprintId)
             .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasOne(s => s.Assignee)

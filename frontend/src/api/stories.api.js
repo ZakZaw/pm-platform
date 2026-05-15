@@ -15,4 +15,7 @@ export const storiesApi = {
     apiClient.patch(`/stories/${storyId}`, body).then((r) => r.data),
 
   remove: (storyId) => apiClient.delete(`/stories/${storyId}`).then((r) => r.data),
+
+  changeStatus: (storyId, { to }) =>
+    apiClient.patch(`/stories/${storyId}/status`, { to }).then((r) => r.data),
 };

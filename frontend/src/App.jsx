@@ -12,6 +12,10 @@ import { ProjectHomePage } from '@/pages/project/ProjectHomePage';
 import { EpicsPage } from '@/pages/project/EpicsPage';
 import { StoriesPage } from '@/pages/project/StoriesPage';
 import { StoryDetailPage } from '@/pages/project/StoryDetailPage';
+import { BoardPage } from '@/pages/project/BoardPage';
+import { BacklogPage } from '@/pages/project/BacklogPage';
+import { SprintsPage } from '@/pages/project/SprintsPage';
+import { SprintBoardPage } from '@/pages/project/SprintBoardPage';
 import { AppShell } from '@/components/layout/AppShell';
 import { ToastProvider } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
@@ -64,6 +68,22 @@ function App() {
             <Route
               path="/:slug/projects/:projectSlug/stories/:storyId"
               element={<Keyed paramKey="storyId"><StoryDetailPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/board"
+              element={<Keyed paramKey="projectSlug"><BoardPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/backlog"
+              element={<Keyed paramKey="projectSlug"><BacklogPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/sprints"
+              element={<Keyed paramKey="projectSlug"><SprintsPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/sprints/:sprintId/board"
+              element={<Keyed paramKey="sprintId"><SprintBoardPage /></Keyed>}
             />
             <Route path="/settings/profile" element={<ProfilePage />} />
           </Route>

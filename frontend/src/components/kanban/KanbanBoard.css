@@ -1,0 +1,21 @@
+.kanban {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.kanban__lane-label {
+  font-size: var(--font-size-meta);
+  font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: var(--space-2);
+}
+
+.kanban__columns {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(220px, 1fr));
+  gap: var(--space-3);
+  overflow-x: auto;
+}

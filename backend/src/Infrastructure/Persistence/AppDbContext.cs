@@ -24,6 +24,7 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<TaskEntity> Tasks => Set<TaskEntity>();
     public DbSet<Subtask> Subtasks => Set<Subtask>();
     public DbSet<TaskStatusChange> TaskStatusChanges => Set<TaskStatusChange>();
+    public DbSet<Sprint> Sprints => Set<Sprint>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

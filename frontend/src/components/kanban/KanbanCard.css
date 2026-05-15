@@ -1,0 +1,48 @@
+.kanban-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  cursor: grab;
+  user-select: none;
+}
+
+.kanban-card:active { cursor: grabbing; }
+
+.kanban-card__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.kanban-card__title {
+  flex: 1;
+  font-weight: var(--weight-medium);
+  font-size: var(--font-size-dense);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kanban-card__prio {
+  width: 3px;
+  height: 14px;
+  border-radius: var(--radius-pill);
+  background: var(--text-muted);
+  flex-shrink: 0;
+}
+.kanban-card__prio.prio-urgent { background: var(--prio-urgent); }
+.kanban-card__prio.prio-high { background: var(--prio-high); }
+.kanban-card__prio.prio-med { background: var(--prio-med); }
+.kanban-card__prio.prio-low { background: var(--prio-low); }
+
+.kanban-card__meta {
+  font-size: var(--font-size-meta);
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  gap: var(--space-3);
+}

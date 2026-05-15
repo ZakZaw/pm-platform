@@ -213,6 +213,33 @@ public static class SprintErrors
         new("Sprint.NotActive", "Only an Active sprint can be closed.");
 }
 
+public static class AIErrors
+{
+    public static readonly Error InvalidDescription =
+        new("AI.InvalidDescription", "Project description must be 10-2000 characters.");
+
+    public static readonly Error EmptyResult =
+        new("AI.EmptyResult", "AI did not return any epics. Try a more descriptive prompt.");
+
+    public static readonly Error MissingAcceptanceCriteria =
+        new("AI.MissingAcceptanceCriteria", "Every story must have 2-5 acceptance criteria.");
+
+    public static readonly Error InvalidPayload =
+        new("AI.InvalidPayload", "The generation payload is missing required fields.");
+
+    public static readonly Error RequestNotFound =
+        new("AI.RequestNotFound", "AI generation request not found.");
+
+    public static readonly Error RequestAlreadyApplied =
+        new("AI.RequestAlreadyApplied", "This AI generation request has already been applied.");
+
+    public static readonly Error ProviderFailed =
+        new("AI.ProviderFailed", "The AI provider rejected or failed to answer the request.");
+
+    public static readonly Error InvalidProjectName =
+        new("AI.InvalidProjectName", "Project name must be 2-120 characters.");
+}
+
 public static class CommentErrors
 {
     public static readonly Error NotFound =

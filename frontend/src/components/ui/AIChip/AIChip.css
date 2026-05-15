@@ -1,0 +1,22 @@
+.ai-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-meta);
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.ai-chip-gradient {
+  background: linear-gradient(135deg, var(--ai-violet), var(--ai-cyan));
+  color: var(--text-on-accent);
+}
+
+.ai-chip-soft {
+  background: var(--ai-bg);
+  color: var(--ai-violet);
+  border: 1px solid var(--ai-border);
+}

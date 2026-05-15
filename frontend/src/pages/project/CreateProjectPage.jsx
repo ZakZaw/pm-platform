@@ -48,12 +48,7 @@ export function CreateProjectPage() {
   const onSubmit = async (e) => {
     e.preventDefault();
     if (mode === 'ai') {
-      // The AI wizard lands in F1-19. For now, flag and bail.
-      toast.show({
-        tone: 'info',
-        title: 'AI generation coming soon',
-        message: 'The AI generation wizard ships with F1-19.',
-      });
+      navigate(`/${orgSlug}/projects/new/ai`);
       return;
     }
     if (mode === 'template') {

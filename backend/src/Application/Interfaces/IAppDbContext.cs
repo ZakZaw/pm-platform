@@ -21,6 +21,8 @@ public interface IAppDbContext
     DbSet<Sprint> Sprints { get; }
     DbSet<ProjectStatusConfig> ProjectStatusConfigs { get; }
     DbSet<Comment> Comments { get; }
+    DbSet<AIAuditLog> AIAuditLogs { get; }
+    DbSet<AIGenerationRequest> AIGenerationRequests { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

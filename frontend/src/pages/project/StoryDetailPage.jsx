@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Badge, Button, Card, useToast } from '@/components/ui';
+import { Sparkles } from 'lucide-react';
+import { AIChip, Badge, Button, Card, useToast } from '@/components/ui';
 import { storiesApi } from '@/api/stories.api';
 import { tasksApi } from '@/api/tasks.api';
+import { aiApi } from '@/api/ai.api';
 import { TaskCard } from '@/components/tasks/TaskCard';
 import { TaskForm } from '@/components/tasks/TaskForm';
 import { TaskDetail } from '@/components/tasks/TaskDetail';
@@ -18,6 +20,8 @@ export function StoryDetailPage() {
   const [openTask, setOpenTask] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [error, setError] = useState(null);
+  const [estimate, setEstimate] = useState(null);
+  const [estimating, setEstimating] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -39,6 +43,36 @@ export function StoryDetailPage() {
     };
   }, [storyId, refreshKey]);
 
+  async function runEstimate() {
+    setEstimating(true);
+    try {
+      const e = await aiApi.estimateStory(storyId);
+      setEstimate(e);
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        message: err.response?.data?.detail ?? 'Could not estimate.',
+      });
+    } finally {
+      setEstimating(false);
+    }
+  }
+
+  async function applyEstimate() {
+    if (!estimate) return;
+    try {
+      const updated = await storiesApi.update(storyId, { storyPoints: estimate.points });
+      setStory(updated);
+      setEstimate(null);
+      toast.show({ tone: 'success', message: `Saved ${estimate.points} pts.` });
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        message: err.response?.data?.detail ?? 'Could not save estimate.',
+      });
+    }
+  }
+
   if (error) return <p className="story-page__placeholder">{error}</p>;
   if (!story) return <p className="story-page__placeholder">Loading…</p>;
 
@@ -58,8 +92,42 @@ export function StoryDetailPage() {
           {story.storyPoints != null && (
             <Badge tone="purple">{story.storyPoints} pts</Badge>
           )}
+          <Button
+            variant="ai"
+            size="sm"
+            onClick={runEstimate}
+            disabled={estimating}
+            title="Estimate story points with AI"
+          >
+            <Sparkles size={14} aria-hidden="true" />
+            {estimating ? 'Estimating…' : 'Estimate with AI'}
+          </Button>
         </div>
       </header>
+
+      {estimate && (
+        <Card variant="ai" className="story-page__estimate">
+          <div className="story-page__estimate-head">
+            <AIChip label="Suggestion" />
+            <Badge tone="purple">{estimate.points} pts</Badge>
+            <ConfidenceBar value={estimate.confidence} />
+          </div>
+          <p className="story-page__estimate-text">{estimate.reasoning}</p>
+          {estimate.confidence < 0.5 && (
+            <p className="story-page__estimate-warn">
+              Confidence is low — consider a quick human sanity check before committing.
+            </p>
+          )}
+          <div className="story-page__estimate-actions">
+            <Button variant="ghost" size="sm" onClick={() => setEstimate(null)}>
+              Dismiss
+            </Button>
+            <Button variant="ai" size="sm" onClick={applyEstimate}>
+              Apply {estimate.points} pts
+            </Button>
+          </div>
+        </Card>
+      )}
 
       {story.description && (
         <Card className="story-page__desc">
@@ -126,5 +194,22 @@ export function StoryDetailPage() {
         )}
       </section>
     </div>
+  );
+}
+
+function ConfidenceBar({ value }) {
+  const pct = Math.round(Math.max(0, Math.min(1, value)) * 100);
+  const tone = value >= 0.7 ? 'high' : value >= 0.5 ? 'mid' : 'low';
+  return (
+    <span
+      className={`story-page__confidence is-${tone}`}
+      title={`Confidence ${pct}%`}
+      aria-label={`Confidence ${pct} percent`}
+    >
+      <span className="story-page__confidence-bar">
+        <span className="story-page__confidence-fill" style={{ width: `${pct}%` }} />
+      </span>
+      {pct}%
+    </span>
   );
 }

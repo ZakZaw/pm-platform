@@ -17,6 +17,7 @@ import { BacklogPage } from '@/pages/project/BacklogPage';
 import { SprintsPage } from '@/pages/project/SprintsPage';
 import { SprintBoardPage } from '@/pages/project/SprintBoardPage';
 import { WorkflowSettingsPage } from '@/pages/project/WorkflowSettingsPage';
+import { AIGenerationWizard } from '@/pages/project/AIGenerationWizard';
 import { AppShell } from '@/components/layout/AppShell';
 import { ToastProvider } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
@@ -54,6 +55,7 @@ function App() {
             />
             <Route path="/:slug/settings/members" element={<MembersPage />} />
             <Route path="/:slug/projects/new" element={<CreateProjectPage />} />
+            <Route path="/:slug/projects/new/ai" element={<AIGenerationWizard />} />
             <Route
               path="/:slug/projects/:projectSlug"
               element={<Keyed paramKey="projectSlug"><ProjectHomePage /></Keyed>}

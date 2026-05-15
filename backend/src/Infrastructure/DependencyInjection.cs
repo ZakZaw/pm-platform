@@ -1,6 +1,7 @@
 using Application.Interfaces;
 using Infrastructure.Persistence;
 using Infrastructure.Services;
+using Infrastructure.Services.Ai;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,6 +32,21 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, ConsoleEmailService>();
 
         services.AddSingleton<IProjectEventBus, SignalRProjectEventBus>();
+
+        // AI provider: real Gemini when GEMINI_API_KEY is set, stub otherwise
+        // so dev environments without a key still get a usable wizard. The
+        // audit log records which provider answered, so this is traceable.
+        var aiSection = configuration.GetSection("AI");
+        services.Configure<AISettings>(aiSection);
+        var geminiKey = aiSection["GeminiApiKey"];
+        if (!string.IsNullOrWhiteSpace(geminiKey))
+        {
+            services.AddScoped<IAIService, GeminiAIService>();
+        }
+        else
+        {
+            services.AddScoped<IAIService, StubAIService>();
+        }
 
         return services;
     }

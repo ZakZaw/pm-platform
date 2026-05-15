@@ -14,11 +14,12 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
-import { Badge, Button, Card, useToast } from '@/components/ui';
+import { GripVertical, Sparkles } from 'lucide-react';
+import { AIChip, Badge, Button, Card, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { boardApi } from '@/api/board.api';
 import { sprintsApi } from '@/api/sprints.api';
+import { aiApi } from '@/api/ai.api';
 import { useProjectHub } from '@/hooks/useProjectHub';
 import './BacklogPage.css';
 
@@ -31,6 +32,8 @@ export function BacklogPage() {
   const [activeSprint, setActiveSprint] = useState(null);
   const [sprintStories, setSprintStories] = useState([]);
   const [error, setError] = useState(null);
+  const [aiPlan, setAiPlan] = useState(null);
+  const [aiBusy, setAiBusy] = useState(false);
 
   const refresh = useCallback(async (projectId) => {
     const [bl, active] = await Promise.all([
@@ -123,6 +126,61 @@ export function BacklogPage() {
     }
   }
 
+  async function aiFill(targetPct) {
+    if (!activeSprint) {
+      toast.show({ tone: 'info', message: 'Start or create a sprint first.' });
+      return;
+    }
+    setAiBusy(true);
+    try {
+      const plan = await aiApi.aiFillSprint(activeSprint.id, targetPct);
+      setAiPlan(plan);
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        message: err.response?.data?.detail ?? 'AI fill failed.',
+      });
+    } finally {
+      setAiBusy(false);
+    }
+  }
+
+  async function applyAiPlan() {
+    if (!aiPlan || !activeSprint) return;
+    setAiBusy(true);
+    let added = 0;
+    let failed = 0;
+    // Sequential adds so the server-side scope-baseline order is stable
+    // and so a 422 on one pick doesn't abort the whole batch.
+    for (const pick of aiPlan.picks) {
+      try {
+        await sprintsApi.addStory(activeSprint.id, pick.storyId);
+        added += 1;
+      } catch {
+        failed += 1;
+      }
+    }
+    setAiBusy(false);
+    setAiPlan(null);
+    toast.show({
+      tone: failed === 0 ? 'success' : 'info',
+      message: failed === 0
+        ? `Added ${added} stories to the sprint.`
+        : `Added ${added}, ${failed} failed.`,
+    });
+    await refresh(project.id);
+  }
+
+  function removeFromPlan(storyId) {
+    setAiPlan((p) =>
+      p ? { ...p, picks: p.picks.filter((x) => x.storyId !== storyId),
+             selectedPoints: p.picks
+               .filter((x) => x.storyId !== storyId)
+               .reduce((sum, x) => sum + x.points, 0) }
+        : p,
+    );
+  }
+
   if (error) return <p className="backlog-page__placeholder">{error}</p>;
   if (!project) return <p className="backlog-page__placeholder">Loading…</p>;
 
@@ -166,6 +224,74 @@ export function BacklogPage() {
               {activeSprint.goal && (
                 <p className="backlog-page__sprint-goal">{activeSprint.goal}</p>
               )}
+              <div className="backlog-page__ai-row">
+                <Button
+                  variant="ai"
+                  size="sm"
+                  onClick={() => aiFill(80)}
+                  disabled={aiBusy}
+                  title="Let AI pick a sprint's worth of stories"
+                >
+                  <Sparkles size={14} aria-hidden="true" />
+                  {aiBusy && !aiPlan ? 'Thinking…' : 'AI fill to 80%'}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => aiFill(100)}
+                  disabled={aiBusy}
+                >
+                  Or fill to 100%
+                </Button>
+              </div>
+
+              {aiPlan && (
+                <Card variant="ai" className="backlog-page__ai-plan">
+                  <div className="backlog-page__ai-plan-head">
+                    <AIChip label="Suggested" />
+                    <Badge tone="purple">
+                      {aiPlan.selectedPoints}/{aiPlan.targetCapacityPoints} pts
+                    </Badge>
+                  </div>
+                  <p className="backlog-page__ai-plan-reasoning">{aiPlan.reasoning}</p>
+                  {aiPlan.picks.length === 0 ? (
+                    <p className="backlog-page__placeholder">
+                      No backlog stories fit the target. Add stories or raise the cap.
+                    </p>
+                  ) : (
+                    <ul className="backlog-page__ai-plan-list">
+                      {aiPlan.picks.map((pick) => (
+                        <li key={pick.storyId} className="backlog-page__ai-plan-item">
+                          <span className="backlog-page__ai-plan-title">{pick.title}</span>
+                          <Badge tone="purple">{pick.points} pts</Badge>
+                          <span className="backlog-page__ai-plan-why">{pick.reasoning}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeFromPlan(pick.storyId)}
+                          >
+                            Drop
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <div className="backlog-page__ai-plan-actions">
+                    <Button variant="ghost" size="sm" onClick={() => setAiPlan(null)}>
+                      Dismiss
+                    </Button>
+                    <Button
+                      variant="ai"
+                      size="sm"
+                      onClick={applyAiPlan}
+                      disabled={aiBusy || aiPlan.picks.length === 0}
+                    >
+                      {aiBusy ? 'Adding…' : `Add ${aiPlan.picks.length} stories`}
+                    </Button>
+                  </div>
+                </Card>
+              )}
+
               {sprintStories.length === 0 ? (
                 <p className="backlog-page__placeholder">No stories yet. Add some from the left.</p>
               ) : (

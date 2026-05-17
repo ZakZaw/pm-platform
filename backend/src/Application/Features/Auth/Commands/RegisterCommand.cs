@@ -40,6 +40,21 @@ public class RegisterCommandHandler(
         };
         db.Users.Add(user);
 
+        // Auto-provision the user's private Personal project. Lives outside
+        // any org and is reached only via the "me/personal-project" endpoint.
+        db.Projects.Add(new Project
+        {
+            OrganizationId = null,
+            OwnerUserId = user.Id,
+            IsPersonal = true,
+            Name = "Personal",
+            Slug = $"personal-{user.Id:N}",
+            EnvironmentType = Domain.Enums.EnvironmentType.Business,
+            Status = Domain.Enums.ProjectStatus.Active,
+            AIControlMode = Domain.Enums.AIControlMode.Off,
+            CreatedBy = user.Id,
+        });
+
         var accessToken = jwt.GenerateAccessToken(user);
         var (plainRefresh, refreshHash, refreshExpiresAt) = jwt.GenerateRefreshToken();
         db.RefreshTokens.Add(new RefreshToken
@@ -55,6 +70,7 @@ public class RegisterCommandHandler(
             user.Id,
             user.Email,
             user.FullName,
+            user.AvatarUrl,
             accessToken,
             plainRefresh,
             DateTime.UtcNow.AddMinutes(15),

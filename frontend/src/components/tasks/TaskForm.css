@@ -33,6 +33,19 @@
   box-shadow: var(--shadow-focus);
 }
 
+.task-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-3);
+  align-items: end;
+}
+
+@media (max-width: 700px) {
+  .task-form__row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .task-form__error {
   color: var(--status-danger);
   font-size: var(--font-size-meta);

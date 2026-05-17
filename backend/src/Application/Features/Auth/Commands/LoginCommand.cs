@@ -47,6 +47,7 @@ public class LoginCommandHandler(
             user.Id,
             user.Email,
             user.FullName,
+            user.AvatarUrl,
             accessToken,
             plainRefresh,
             DateTime.UtcNow.AddMinutes(15),

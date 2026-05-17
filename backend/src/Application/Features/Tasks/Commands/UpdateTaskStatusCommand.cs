@@ -40,14 +40,7 @@ public class UpdateTaskStatusCommandHandler(
 
         await db.SaveChangesAsync(ct);
 
-        var projectId = await db.Stories
-            .Where(s => s.Id == task.StoryId)
-            .Select(s => s.ProjectId)
-            .FirstOrDefaultAsync(ct);
-        if (projectId != Guid.Empty)
-        {
-            await events.PublishAsync(projectId, "board.changed", new { taskId = task.Id }, ct);
-        }
+        await events.PublishAsync(task.ProjectId, "board.changed", new { taskId = task.Id }, ct);
         return Result.Success(CreateTaskCommandHandler.ToDto(task));
     }
 

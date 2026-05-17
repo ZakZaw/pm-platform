@@ -32,7 +32,7 @@ public class SprintConfiguration : IEntityTypeConfiguration<Sprint>
             .HasDatabaseName("ix_sprints_one_active_per_project");
 
         builder.HasOne(s => s.Project)
-            .WithMany()
+            .WithMany(p => p.Sprints)
             .HasForeignKey(s => s.ProjectId)
             .OnDelete(DeleteBehavior.Cascade);
     }

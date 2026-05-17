@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Pencil } from 'lucide-react';
 import { Badge, Card } from '@/components/ui';
 import './EpicCard.css';
 
@@ -14,19 +15,22 @@ export function EpicCard({ epic, orgSlug, projectSlug, onEdit }) {
       <div className="epic-card__head">
         <span className="epic-card__color" style={{ background: epic.color || 'var(--accent-primary)' }} />
         <div className="epic-card__title">
-          <Link
-            to={`/${orgSlug}/projects/${projectSlug}/epics/${epic.id}`}
-            onClick={(e) => {
-              if (onEdit) {
-                e.preventDefault();
-                onEdit(epic);
-              }
-            }}
-          >
+          <Link to={`/${orgSlug}/projects/${projectSlug}/epics/${epic.id}`}>
             {epic.title}
           </Link>
         </div>
         <Badge tone={statusTone(epic.status)}>{epic.status}</Badge>
+        {onEdit && (
+          <button
+            type="button"
+            className="epic-card__edit"
+            onClick={() => onEdit(epic)}
+            aria-label="Edit epic"
+            title="Edit"
+          >
+            <Pencil size={14} aria-hidden="true" />
+          </button>
+        )}
       </div>
 
       {epic.description && (
@@ -34,7 +38,7 @@ export function EpicCard({ epic, orgSlug, projectSlug, onEdit }) {
       )}
 
       <div className="epic-card__meta">
-        <span>{epic.storyCount} {epic.storyCount === 1 ? 'story' : 'stories'}</span>
+        <span>{epic.taskCount} {epic.taskCount === 1 ? 'task' : 'tasks'}</span>
         <span>·</span>
         <span>{epic.doneStoryPoints}/{epic.totalStoryPoints} pts</span>
       </div>

@@ -7,11 +7,13 @@ using DomainTaskStatus = Domain.Enums.TaskStatus;
 namespace Application.Features.Users.Queries;
 
 /// <summary>
-/// Cross-project task list for the current user. Optional filter narrows
-/// by due-date bucket (in the user's configured timezone). The full list
-/// is also fine — the frontend can bucket client-side.
+/// Cross-project task list for the current user. Optional filters:
+/// time bucket (overdue/today/week), project, sprint.
 /// </summary>
-public record GetMyWorkQuery(string? Filter) : IRequest<Result<IReadOnlyList<MyWorkItemDto>>>;
+public record GetMyWorkQuery(
+    string? Filter,
+    Guid? ProjectId,
+    Guid? SprintId) : IRequest<Result<IReadOnlyList<MyWorkItemDto>>>;
 
 public class GetMyWorkQueryHandler(IAppDbContext db, ICurrentUser currentUser)
     : IRequestHandler<GetMyWorkQuery, Result<IReadOnlyList<MyWorkItemDto>>>
@@ -22,30 +24,36 @@ public class GetMyWorkQueryHandler(IAppDbContext db, ICurrentUser currentUser)
         if (currentUser.UserId is not { } userId)
             return Result.Failure<IReadOnlyList<MyWorkItemDto>>(AuthErrors.NotAuthenticated);
 
-        // Open tasks only — Done / WontDo are terminal and clutter My Work.
         var query = from t in db.Tasks
-                    join s in db.Stories on t.StoryId equals s.Id
-                    join p in db.Projects on s.ProjectId equals p.Id
-                    join o in db.Organizations on p.OrganizationId equals o.Id
+                    join p in db.Projects on t.ProjectId equals p.Id
                     where t.AssigneeId == userId
                           && t.Status != DomainTaskStatus.Done
                           && t.Status != DomainTaskStatus.WontDo
-                    select new MyWorkItemDto(
-                        t.Id,
-                        s.Id,
-                        s.Title,
-                        t.Title,
-                        t.Description,
-                        t.Status.ToString(),
-                        t.Priority.ToString(),
-                        s.DueDate,
-                        p.Id,
-                        p.Slug,
-                        p.Name,
-                        o.Slug,
-                        t.CreatedAt);
+                    select new
+                    {
+                        t.Id, t.Title, t.Description,
+                        Status = t.Status.ToString(),
+                        Priority = t.Priority.ToString(),
+                        t.DueDate,
+                        ProjectId = p.Id,
+                        ProjectSlug = p.Slug,
+                        ProjectName = p.Name,
+                        ProjectIsPersonal = p.IsPersonal,
+                        OrgSlug = p.Organization != null ? p.Organization.Slug : null,
+                        t.SprintId,
+                        t.CreatedAt
+                    };
 
-        var items = await query.ToListAsync(ct);
+        if (request.ProjectId.HasValue)
+            query = query.Where(x => x.ProjectId == request.ProjectId);
+        if (request.SprintId.HasValue)
+            query = query.Where(x => x.SprintId == request.SprintId);
+
+        var raw = await query.ToListAsync(ct);
+        var items = raw.Select(x => new MyWorkItemDto(
+            x.Id, x.Title, x.Description, x.Status, x.Priority, x.DueDate,
+            x.ProjectId, x.ProjectSlug, x.ProjectName, x.ProjectIsPersonal,
+            x.OrgSlug, x.SprintId, x.CreatedAt)).ToList();
 
         if (!string.IsNullOrWhiteSpace(request.Filter))
         {
@@ -54,17 +62,13 @@ public class GetMyWorkQueryHandler(IAppDbContext db, ICurrentUser currentUser)
             var (overdueCutoff, todayEnd, weekEnd) = ComputeBoundaries(tz);
             items = request.Filter.ToLowerInvariant() switch
             {
-                "overdue" => items
-                    .Where(i => i.DueDate is { } d && d < overdueCutoff).ToList(),
-                "today" => items
-                    .Where(i => i.DueDate is { } d && d >= overdueCutoff && d < todayEnd).ToList(),
-                "week" => items
-                    .Where(i => i.DueDate is { } d && d >= todayEnd && d < weekEnd).ToList(),
+                "overdue" => items.Where(i => i.DueDate is { } d && d < overdueCutoff).ToList(),
+                "today" => items.Where(i => i.DueDate is { } d && d >= overdueCutoff && d < todayEnd).ToList(),
+                "week" => items.Where(i => i.DueDate is { } d && d >= todayEnd && d < weekEnd).ToList(),
                 _ => items,
             };
         }
 
-        // Stable ordering: due date ascending, nulls last, then created.
         items = items
             .OrderBy(i => i.DueDate is null)
             .ThenBy(i => i.DueDate)

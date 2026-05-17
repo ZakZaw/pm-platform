@@ -8,6 +8,21 @@
   margin: 0;
 }
 
+.backlog-page__subtitle {
+  margin: var(--space-1) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-dense);
+}
+
+.backlog-page__unassigned {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px dashed var(--border-default);
+  flex-shrink: 0;
+}
+
 .backlog-page__grid {
   display: grid;
   grid-template-columns: 1fr 360px;
@@ -58,6 +73,85 @@
   border-radius: var(--radius-md);
   background: var(--bg-surface-1);
   border: 1px solid var(--border-subtle);
+}
+
+.backlog-page__item.is-interactive {
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.backlog-page__item.is-interactive:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+.backlog-page__item.is-interactive:focus-visible {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-focus);
+}
+
+.backlog-page__sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.backlog-page__section {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.backlog-page__section--primary {
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface-1);
+}
+
+.backlog-page__section-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.backlog-page__section-title {
+  font-size: var(--font-size-h3);
+  font-weight: var(--weight-semibold);
+  margin: 0;
+  flex: 1;
+}
+
+.backlog-page__epic-color {
+  width: 3px;
+  height: 16px;
+  border-radius: var(--radius-pill);
+  flex-shrink: 0;
+}
+
+.backlog-page__subtasks {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-meta);
+  color: var(--text-tertiary);
+}
+
+.backlog-page__create {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.backlog-page__create-input {
+  flex: 1;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  padding: 6px var(--space-3);
+  font-family: inherit;
+  font-size: var(--font-size-dense);
+}
+.backlog-page__create-input:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-focus);
 }
 
 .backlog-page__handle {

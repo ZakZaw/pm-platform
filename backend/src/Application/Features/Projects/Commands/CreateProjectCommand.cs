@@ -74,7 +74,8 @@ public class CreateProjectCommandHandler(IAppDbContext db, ICurrentUser currentU
             project.Status.ToString(),
             project.TargetDate,
             project.AIControlMode.ToString(),
-            project.CreatedBy, project.CreatedAt));
+            project.CreatedBy, project.CreatedAt,
+            project.IsPersonal));
     }
 
     private async Task<string> ResolveUniqueSlugAsync(Guid orgId, string baseSlug, CancellationToken ct)

@@ -53,6 +53,7 @@ public class RefreshTokenCommandHandler(
             stored.User.Id,
             stored.User.Email,
             stored.User.FullName,
+            stored.User.AvatarUrl,
             accessToken,
             newPlain,
             DateTime.UtcNow.AddMinutes(15),

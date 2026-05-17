@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
@@ -10,17 +11,18 @@ import { ProfilePage } from '@/pages/settings/ProfilePage';
 import { CreateProjectPage } from '@/pages/project/CreateProjectPage';
 import { ProjectHomePage } from '@/pages/project/ProjectHomePage';
 import { EpicsPage } from '@/pages/project/EpicsPage';
-import { StoriesPage } from '@/pages/project/StoriesPage';
-import { StoryDetailPage } from '@/pages/project/StoryDetailPage';
+import { EpicDetailPage } from '@/pages/project/EpicDetailPage';
 import { BoardPage } from '@/pages/project/BoardPage';
 import { BacklogPage } from '@/pages/project/BacklogPage';
 import { SprintsPage } from '@/pages/project/SprintsPage';
 import { SprintBoardPage } from '@/pages/project/SprintBoardPage';
 import { WorkflowSettingsPage } from '@/pages/project/WorkflowSettingsPage';
+import { ProjectMembersPage } from '@/pages/project/ProjectMembersPage';
 import { AIGenerationWizard } from '@/pages/project/AIGenerationWizard';
 import { AppShell } from '@/components/layout/AppShell';
 import { ToastProvider } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
+import { useUiStore } from '@/store/uiStore';
 
 function ProtectedLayout() {
   const isAuthenticated = useAuthStore((s) => Boolean(s.accessToken && s.user));
@@ -39,6 +41,11 @@ function Keyed({ children, paramKey }) {
 }
 
 function App() {
+  const theme = useUiStore((s) => s.theme);
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme === 'light' ? 'light' : 'dark';
+  }, [theme]);
+
   return (
     <ToastProvider>
       <BrowserRouter>
@@ -65,12 +72,8 @@ function App() {
               element={<Keyed paramKey="projectSlug"><EpicsPage /></Keyed>}
             />
             <Route
-              path="/:slug/projects/:projectSlug/stories"
-              element={<Keyed paramKey="projectSlug"><StoriesPage /></Keyed>}
-            />
-            <Route
-              path="/:slug/projects/:projectSlug/stories/:storyId"
-              element={<Keyed paramKey="storyId"><StoryDetailPage /></Keyed>}
+              path="/:slug/projects/:projectSlug/epics/:epicId"
+              element={<Keyed paramKey="epicId"><EpicDetailPage /></Keyed>}
             />
             <Route
               path="/:slug/projects/:projectSlug/board"
@@ -91,6 +94,10 @@ function App() {
             <Route
               path="/:slug/projects/:projectSlug/settings/workflow"
               element={<Keyed paramKey="projectSlug"><WorkflowSettingsPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/settings/members"
+              element={<Keyed paramKey="projectSlug"><ProjectMembersPage /></Keyed>}
             />
             <Route path="/settings/profile" element={<ProfilePage />} />
           </Route>

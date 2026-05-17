@@ -2,8 +2,8 @@ namespace Application.Features.Projects;
 
 public record ProjectDto(
     Guid Id,
-    Guid OrganizationId,
-    string OrgSlug,
+    Guid? OrganizationId,
+    string? OrgSlug,
     string Name,
     string Slug,
     string EnvironmentType,
@@ -11,7 +11,8 @@ public record ProjectDto(
     DateTime? TargetDate,
     string AIControlMode,
     Guid CreatedBy,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    bool IsPersonal);
 
 public record ProjectSummary(
     Guid Id,

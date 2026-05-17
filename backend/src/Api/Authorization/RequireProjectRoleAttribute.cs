@@ -38,6 +38,24 @@ public class RequireProjectRoleAttribute(ProjectRole minimum) : Attribute, IAsyn
         }
 
         var db = services.GetRequiredService<IAppDbContext>();
+
+        // Personal projects bypass org membership: only the owner has access,
+        // and the owner is implicitly PM.
+        var personal = await db.Projects
+            .Where(p => p.Id == projectId && p.IsPersonal)
+            .Select(p => new { p.OwnerUserId })
+            .FirstOrDefaultAsync(ctx.HttpContext.RequestAborted);
+        if (personal is not null)
+        {
+            if (personal.OwnerUserId != userId)
+            {
+                ctx.Result = ForbidProblem("Project.NotAMember", "You do not have access to this project.");
+                return;
+            }
+            await next();
+            return;
+        }
+
         var role = await db.ProjectMemberships
             .Where(m => m.ProjectId == projectId && m.UserId == userId)
             .Select(m => (ProjectRole?)m.Role)

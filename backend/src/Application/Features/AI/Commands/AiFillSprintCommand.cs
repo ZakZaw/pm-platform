@@ -8,7 +8,7 @@ using DomainTaskStatus = Domain.Enums.TaskStatus;
 
 namespace Application.Features.AI.Commands;
 
-public record SprintFillPickDto(Guid StoryId, string Title, int Points, string Reasoning);
+public record SprintFillPickDto(Guid TaskId, string Title, int Points, string Reasoning);
 
 public record SprintFillPlanDto(
     int TargetCapacityPoints,
@@ -31,6 +31,9 @@ public class AiFillSprintCommandHandler(
         if (currentUser.UserId is not { } userId)
             return Result.Failure<SprintFillPlanDto>(AuthErrors.NotAuthenticated);
 
+        if (!ai.IsConfigured)
+            return Result.Failure<SprintFillPlanDto>(AIErrors.NotConfigured);
+
         var sprint = await db.Sprints
             .Where(s => s.Id == request.SprintId)
             .Select(s => new { s.Id, s.ProjectId })
@@ -38,10 +41,6 @@ public class AiFillSprintCommandHandler(
         if (sprint is null)
             return Result.Failure<SprintFillPlanDto>(SprintErrors.NotFound);
 
-        // Capacity model: sum the project members' weekly capacity hours,
-        // map to points using a 4 hrs/point heuristic, then apply the target
-        // percentage. Phase 1 has no per-sprint capacity field so this is
-        // the best proxy.
         var totalHours = await db.ProjectMemberships
             .Where(m => m.ProjectId == sprint.ProjectId)
             .Join(db.Users, m => m.UserId, u => u.Id, (m, u) => u.CapacityHoursPerWeek)
@@ -49,31 +48,31 @@ public class AiFillSprintCommandHandler(
         var capacityPoints = Math.Max(1,
             (int)Math.Round(totalHours / 4.0 * Math.Clamp(request.TargetCapacityPercent, 10, 100) / 100.0));
 
-        var alreadyInSprint = await db.Stories
-            .Where(s => s.SprintId == sprint.Id)
-            .Select(s => s.Id)
+        var alreadyInSprint = await db.Tasks
+            .Where(t => t.SprintId == sprint.Id)
+            .Select(t => t.Id)
             .ToListAsync(ct);
 
-        var backlogQuery = await db.Stories
-            .Where(s => s.ProjectId == sprint.ProjectId
-                         && s.SprintId == null
-                         && s.Status == DomainTaskStatus.Backlog)
-            .OrderBy(s => s.PriorityOrder)
-            .Select(s => new
+        var backlog = await db.Tasks
+            .Where(t => t.ProjectId == sprint.ProjectId
+                         && t.SprintId == null
+                         && t.Status == DomainTaskStatus.Backlog)
+            .OrderBy(t => t.PriorityOrder)
+            .Select(t => new
             {
-                s.Id,
-                s.Title,
-                Points = s.StoryPoints ?? 3,
-                Priority = s.Priority.ToString(),
+                t.Id,
+                t.Title,
+                Points = t.StoryPoints ?? 3,
+                Priority = t.Priority.ToString(),
             })
             .ToListAsync(ct);
 
-        var titleById = backlogQuery.ToDictionary(b => b.Id, b => b.Title);
-        var pointsById = backlogQuery.ToDictionary(b => b.Id, b => b.Points);
+        var titleById = backlog.ToDictionary(b => b.Id, b => b.Title);
+        var pointsById = backlog.ToDictionary(b => b.Id, b => b.Points);
 
         var aiInput = new AI.AISprintFillInput(
             capacityPoints,
-            backlogQuery.Select(b => new AI.AISprintFillCandidate(
+            backlog.Select(b => new AI.AISprintFillCandidate(
                 b.Id, b.Title, b.Points, b.Priority, [])).ToList(),
             alreadyInSprint);
 
@@ -88,9 +87,9 @@ public class AiFillSprintCommandHandler(
         }
 
         var pickDtos = plan.Picks
-            .Where(p => titleById.ContainsKey(p.StoryId))
+            .Where(p => titleById.ContainsKey(p.TaskId))
             .Select(p => new SprintFillPickDto(
-                p.StoryId, titleById[p.StoryId], pointsById[p.StoryId], p.Reasoning))
+                p.TaskId, titleById[p.TaskId], pointsById[p.TaskId], p.Reasoning))
             .ToList();
 
         db.AIAuditLogs.Add(new AIAuditLog

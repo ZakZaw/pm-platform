@@ -12,6 +12,6 @@ public record EpicDto(
     string? Color,
     DateTime CreatedAt,
     DateTime? ArchivedAt,
-    int StoryCount,
+    int TaskCount,
     int TotalStoryPoints,
     int DoneStoryPoints);

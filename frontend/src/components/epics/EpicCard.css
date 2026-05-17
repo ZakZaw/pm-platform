@@ -35,6 +35,24 @@
 }
 .epic-card__title a:hover { color: var(--accent-primary); }
 
+.epic-card__edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.epic-card__edit:hover {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  border-color: var(--border-subtle);
+}
+
 .epic-card__desc {
   color: var(--text-secondary);
   font-size: var(--font-size-dense);

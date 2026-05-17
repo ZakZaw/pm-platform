@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { useAuthStore } from '@/store/authStore';
 
@@ -14,15 +14,24 @@ import { useAuthStore } from '@/store/authStore';
  * The connection is rebuilt only if the projectId changes; on unmount or
  * id change the previous group is left and the connection stopped to
  * avoid leaking handlers across pages.
+ *
+ * Returns `{ status }` where status is one of:
+ *   'idle' | 'connecting' | 'connected' | 'reconnecting' | 'failed'
+ * Pages can render this for users to spot when live updates are down.
  */
 export function useProjectHub(projectId, onEvent) {
   const handlerRef = useRef(onEvent);
+  const [status, setStatus] = useState('idle');
+
   useEffect(() => {
     handlerRef.current = onEvent;
   }, [onEvent]);
 
   useEffect(() => {
-    if (!projectId) return undefined;
+    if (!projectId) {
+      setStatus('idle');
+      return undefined;
+    }
 
     let cancelled = false;
     const connection = new HubConnectionBuilder()
@@ -38,6 +47,20 @@ export function useProjectHub(projectId, onEvent) {
     connection.on('board.changed', (payload) => handlerRef.current?.('board.changed', payload));
     connection.on('sprint.changed', (payload) => handlerRef.current?.('sprint.changed', payload));
 
+    connection.onreconnecting(() => {
+      if (!cancelled) setStatus('reconnecting');
+    });
+    connection.onreconnected(() => {
+      if (!cancelled) {
+        setStatus('connected');
+        connection.invoke('JoinProject', projectId).catch(() => {});
+      }
+    });
+    connection.onclose(() => {
+      if (!cancelled) setStatus('failed');
+    });
+
+    setStatus('connecting');
     (async () => {
       try {
         await connection.start();
@@ -46,10 +69,12 @@ export function useProjectHub(projectId, onEvent) {
           return;
         }
         await connection.invoke('JoinProject', projectId);
+        setStatus('connected');
       } catch (err) {
         // SignalR is best-effort UX. A failure here just means no
         // real-time updates; the UI still works via manual refresh.
         console.warn('[useProjectHub] connection failed:', err);
+        if (!cancelled) setStatus('failed');
       }
     })();
 
@@ -61,4 +86,6 @@ export function useProjectHub(projectId, onEvent) {
       }
     };
   }, [projectId]);
+
+  return { status };
 }

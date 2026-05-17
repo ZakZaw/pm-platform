@@ -13,6 +13,14 @@ public interface IAIService
     string ProviderName { get; }
     string Model { get; }
 
+    /// <summary>
+    /// True when the provider has the credentials it needs to answer
+    /// requests. Command handlers check this before calling and surface
+    /// AI.NotConfigured (503) when false, instead of attempting a call
+    /// that's guaranteed to fail.
+    /// </summary>
+    bool IsConfigured { get; }
+
     Task<AIGeneratedProject> GenerateProjectStructureAsync(
         string description,
         string environmentType,

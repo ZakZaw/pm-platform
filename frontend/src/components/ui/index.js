@@ -10,4 +10,5 @@ export { Table } from './Table/Table';
 export { StatusBadge } from './StatusBadge/StatusBadge';
 export { TASK_STATUSES, STATUS_LABELS } from './StatusBadge/constants';
 export { Dropdown } from './Dropdown/Dropdown';
+export { AssigneePicker } from './AssigneePicker/AssigneePicker';
 export { ToastProvider, useToast } from './Toast';

@@ -26,21 +26,21 @@ public class StartSprintCommandHandler(IAppDbContext db, IProjectEventBus events
         if (alreadyActive)
             return Result.Failure<SprintDto>(SprintErrors.ActiveSprintExists);
 
-        var stories = await db.Stories
-            .Where(s => s.SprintId == sprint.Id)
-            .Select(s => new ScopeBaselineStory(s.Id, s.Title, s.StoryPoints))
+        var tasks = await db.Tasks
+            .Where(t => t.SprintId == sprint.Id)
+            .Select(t => new ScopeBaselineTask(t.Id, t.Title, t.StoryPoints))
             .ToListAsync(ct);
-        if (stories.Count == 0)
+        if (tasks.Count == 0)
             return Result.Failure<SprintDto>(SprintErrors.EmptyScope);
 
-        sprint.ScopeBaselineJson = JsonSerializer.Serialize(stories);
+        sprint.ScopeBaselineJson = JsonSerializer.Serialize(tasks);
         sprint.Status = SprintStatus.Active;
 
         await db.SaveChangesAsync(ct);
         await events.PublishAsync(sprint.ProjectId, "sprint.changed",
             new { sprintId = sprint.Id, status = "Active" }, ct);
 
-        var totalPts = stories.Sum(s => s.StoryPoints ?? 0);
-        return Result.Success(SprintMapper.ToDto(sprint, stories.Count, totalPts, donePts: 0));
+        var totalPts = tasks.Sum(t => t.StoryPoints ?? 0);
+        return Result.Success(SprintMapper.ToDto(sprint, tasks.Count, totalPts, donePts: 0));
     }
 }

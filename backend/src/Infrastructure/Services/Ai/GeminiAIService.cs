@@ -19,11 +19,21 @@ public class GeminiAIService(IOptions<AISettings> options, ILogger<GeminiAIServi
 {
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
     private readonly AISettings _settings = options.Value;
-    private readonly Client _client = new(apiKey: options.Value.GeminiApiKey
-        ?? throw new InvalidOperationException("Gemini API key is required for GeminiAIService."));
+    private Client? _clientCache;
 
     public string ProviderName => "gemini";
     public string Model => _settings.Model;
+    public bool IsConfigured => !string.IsNullOrWhiteSpace(_settings.GeminiApiKey);
+
+    private Client GetClient()
+    {
+        if (_clientCache is not null) return _clientCache;
+        if (string.IsNullOrWhiteSpace(_settings.GeminiApiKey))
+            throw new AINotConfiguredException(
+                "AI is not configured. Set GEMINI_API_KEY in the backend environment.");
+        _clientCache = new Client(apiKey: _settings.GeminiApiKey);
+        return _clientCache;
+    }
 
     public async Task<AIGeneratedProject> GenerateProjectStructureAsync(
         string description, string environmentType,
@@ -79,7 +89,8 @@ public class GeminiAIService(IOptions<AISettings> options, ILogger<GeminiAIServi
         {
             foreach (var el in picksArr.EnumerateArray())
             {
-                if (!el.TryGetProperty("storyId", out var sid)) continue;
+                if (!el.TryGetProperty("taskId", out var sid)
+                    && !el.TryGetProperty("storyId", out sid)) continue;
                 if (!Guid.TryParse(sid.GetString(), out var sg)) continue;
                 var why = el.TryGetProperty("reasoning", out var r) ? r.GetString() ?? "" : "";
                 picks.Add(new AISprintFillPick(sg, why));
@@ -87,12 +98,12 @@ public class GeminiAIService(IOptions<AISettings> options, ILogger<GeminiAIServi
         }
 
         // Enforce capacity client-side too — the model occasionally overshoots.
-        var pointsByStory = input.Backlog.ToDictionary(b => b.StoryId, b => b.Points);
+        var pointsByTask = input.Backlog.ToDictionary(b => b.TaskId, b => b.Points);
         var kept = new List<AISprintFillPick>();
         var total = 0;
         foreach (var pick in picks)
         {
-            if (!pointsByStory.TryGetValue(pick.StoryId, out var pts)) continue;
+            if (!pointsByTask.TryGetValue(pick.TaskId, out var pts)) continue;
             if (total + pts > input.CapacityPoints) continue;
             kept.Add(pick);
             total += pts;
@@ -116,9 +127,10 @@ public class GeminiAIService(IOptions<AISettings> options, ILogger<GeminiAIServi
             ResponseMimeType = "application/json",
         };
 
+        var client = GetClient();
         try
         {
-            var response = await _client.Models.GenerateContentAsync(
+            var response = await client.Models.GenerateContentAsync(
                 model: _settings.Model, contents: content, config: config);
             var text = response.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text;
             if (string.IsNullOrWhiteSpace(text))
@@ -143,15 +155,13 @@ public class GeminiAIService(IOptions<AISettings> options, ILogger<GeminiAIServi
                 e.Title ?? "Untitled epic",
                 e.Description ?? string.Empty,
                 e.Color,
-                (e.Stories ?? []).Select(s => new AIGeneratedStory(
-                    s.Title ?? "Untitled story",
-                    s.Description ?? string.Empty,
-                    SnapToFib(s.StoryPoints ?? 3),
-                    NormalisePriority(s.Priority),
-                    (s.AcceptanceCriteria ?? []).Where(x => !string.IsNullOrWhiteSpace(x)).ToList(),
-                    (s.Tasks ?? []).Select(t => new AIGeneratedTask(
-                        t.Title ?? "Untitled task",
-                        t.Description ?? string.Empty)).ToList())).ToList())).ToList();
+                (e.Tasks ?? []).Select(t => new AIGeneratedTask(
+                    t.Title ?? "Untitled task",
+                    t.Description ?? string.Empty,
+                    SnapToFib(t.StoryPoints ?? 3),
+                    NormalisePriority(t.Priority),
+                    (t.AcceptanceCriteria ?? []).Where(x => !string.IsNullOrWhiteSpace(x)).ToList()
+                )).ToList())).ToList();
             return new AIGeneratedProject(raw.SuggestedName ?? "New project", epics);
         }
         catch (JsonException jex)
@@ -189,21 +199,15 @@ public class GeminiAIService(IOptions<AISettings> options, ILogger<GeminiAIServi
         public string? Title { get; set; }
         public string? Description { get; set; }
         public string? Color { get; set; }
-        public List<RawStory>? Stories { get; set; }
-    }
-    private sealed class RawStory
-    {
-        public string? Title { get; set; }
-        public string? Description { get; set; }
-        public int? StoryPoints { get; set; }
-        public string? Priority { get; set; }
-        public List<string>? AcceptanceCriteria { get; set; }
         public List<RawTask>? Tasks { get; set; }
     }
     private sealed class RawTask
     {
         public string? Title { get; set; }
         public string? Description { get; set; }
+        public int? StoryPoints { get; set; }
+        public string? Priority { get; set; }
+        public List<string>? AcceptanceCriteria { get; set; }
     }
 }
 
@@ -211,4 +215,14 @@ public class AIServiceException : Exception
 {
     public AIServiceException(string message) : base(message) { }
     public AIServiceException(string message, Exception inner) : base(message, inner) { }
+}
+
+/// <summary>
+/// Thrown when the AI provider has no API key configured. Distinct from
+/// AIServiceException so command handlers can map it to AI.NotConfigured
+/// (503) and surface a precise error to the user.
+/// </summary>
+public class AINotConfiguredException : AIServiceException
+{
+    public AINotConfiguredException(string message) : base(message) { }
 }

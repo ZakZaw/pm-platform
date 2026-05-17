@@ -85,39 +85,26 @@ public class ApplyProjectGenerationCommandHandler(IAppDbContext db, ICurrentUser
             };
             db.Epics.Add(epic);
 
-            foreach (var storyDto in epicDto.Stories)
+            foreach (var taskDto in epicDto.Tasks ?? [])
             {
-                var priority = ParsePriority(storyDto.Priority);
-                var story = new Story
+                var priority = ParsePriority(taskDto.Priority);
+                db.Tasks.Add(new TaskEntity
                 {
                     ProjectId = project.Id,
                     EpicId = epic.Id,
-                    Title = TrimOrDefault(storyDto.Title, "Untitled story"),
-                    Description = storyDto.Description,
-                    StoryPoints = storyDto.StoryPoints > 0 ? storyDto.StoryPoints : null,
+                    Title = TrimOrDefault(taskDto.Title, "Untitled task"),
+                    Description = taskDto.Description,
+                    StoryPoints = taskDto.StoryPoints > 0 ? taskDto.StoryPoints : null,
                     Priority = priority,
                     Status = DomainTaskStatus.Backlog,
-                    PriorityOrder = priorityOrder++,
-                    AcceptanceCriteria = (storyDto.AcceptanceCriteria ?? [])
+                    PriorityOrder = ++priorityOrder,
+                    AcceptanceCriteria = (taskDto.AcceptanceCriteria ?? [])
                         .Where(ac => !string.IsNullOrWhiteSpace(ac))
                         .Select(ac => ac.Trim())
                         .ToArray(),
+                    ReporterId = userId,
                     CreatedByAi = true,
-                };
-                db.Stories.Add(story);
-
-                foreach (var taskDto in storyDto.Tasks ?? [])
-                {
-                    db.Tasks.Add(new TaskEntity
-                    {
-                        StoryId = story.Id,
-                        Title = TrimOrDefault(taskDto.Title, "Untitled task"),
-                        Description = taskDto.Description,
-                        Priority = priority,
-                        Status = DomainTaskStatus.Backlog,
-                        CreatedByAi = true,
-                    });
-                }
+                });
             }
         }
 
@@ -136,8 +123,7 @@ public class ApplyProjectGenerationCommandHandler(IAppDbContext db, ICurrentUser
             {
                 projectId = project.Id,
                 epicCount = request.Epics.Count,
-                storyCount = request.Epics.Sum(e => e.Stories.Count),
-                taskCount = request.Epics.Sum(e => e.Stories.Sum(s => s.Tasks.Count)),
+                taskCount = request.Epics.Sum(e => e.Tasks.Count),
             }, JsonOpts),
             Applied = true,
             AppliedAt = DateTime.UtcNow,
@@ -154,7 +140,8 @@ public class ApplyProjectGenerationCommandHandler(IAppDbContext db, ICurrentUser
             project.Status.ToString(),
             project.TargetDate,
             project.AIControlMode.ToString(),
-            project.CreatedBy, project.CreatedAt));
+            project.CreatedBy, project.CreatedAt,
+            project.IsPersonal));
     }
 
     private static string TrimOrDefault(string? s, string fallback)

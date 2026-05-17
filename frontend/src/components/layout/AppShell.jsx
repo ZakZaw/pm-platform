@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
+import { QuickCreateTaskModal } from '@/components/tasks/QuickCreateTaskModal';
 import './AppShell.css';
 
 export function AppShell() {
@@ -13,6 +14,7 @@ export function AppShell() {
           <Outlet />
         </main>
       </div>
+      <QuickCreateTaskModal />
     </div>
   );
 }

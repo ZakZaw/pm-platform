@@ -40,6 +40,13 @@ public class EpicsController(ISender mediator) : ControllerBase
             : ToProblem(result.Error!);
     }
 
+    [HttpGet("api/v1/epics/{id:guid}")]
+    public async Task<ActionResult<EpicDto>> Get(Guid id, CancellationToken ct)
+    {
+        var result = await mediator.Send(new GetEpicQuery(id), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     [HttpPatch("api/v1/epics/{id:guid}")]
     public async Task<ActionResult<EpicDto>> Update(
         Guid id,

@@ -370,12 +370,20 @@ namespace Infrastructure.Persistence.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<bool>("IsPersonal")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
 
-                    b.Property<Guid>("OrganizationId")
+                    b.Property<Guid?>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("OwnerUserId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Slug")
@@ -393,8 +401,11 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("OwnerUserId");
+
                     b.HasIndex("OrganizationId", "Slug")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"OrganizationId\" IS NOT NULL");
 
                     b.ToTable("projects", (string)null);
                 });
@@ -469,8 +480,7 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.HasIndex("ProjectId", "Status")
-                        .IsUnique();
+                    b.HasIndex("ProjectId", "Status");
 
                     b.ToTable("project_status_configs", (string)null);
                 });
@@ -565,81 +575,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.ToTable("sprints", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Entities.Story", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.PrimitiveCollection<string[]>("AcceptanceCriteria")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text[]")
-                        .HasDefaultValueSql("ARRAY[]::text[]");
-
-                    b.Property<Guid?>("AssigneeId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("CreatedByAi")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("DueDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("EpicId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Priority")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<int>("PriorityOrder")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("ProjectId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("ReporterId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("SprintId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<int?>("StoryPoints")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AssigneeId");
-
-                    b.HasIndex("EpicId");
-
-                    b.HasIndex("ReporterId");
-
-                    b.HasIndex("SprintId");
-
-                    b.HasIndex("ProjectId", "Status");
-
-                    b.ToTable("stories", (string)null);
-                });
-
             modelBuilder.Entity("Domain.Entities.Subtask", b =>
                 {
                     b.Property<Guid>("Id")
@@ -681,6 +616,12 @@ namespace Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.PrimitiveCollection<string[]>("AcceptanceCriteria")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasDefaultValueSql("ARRAY[]::text[]");
+
                     b.Property<Guid?>("AssigneeId")
                         .HasColumnType("uuid");
 
@@ -693,6 +634,12 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("EpicId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("PrUrl")
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)");
@@ -702,7 +649,19 @@ namespace Infrastructure.Persistence.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<int>("PriorityOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ReporterId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid?>("ReviewerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("SprintId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Status")
@@ -710,8 +669,8 @@ namespace Infrastructure.Persistence.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<Guid>("StoryId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("StoryPoints")
+                        .HasColumnType("integer");
 
                     b.Property<int>("TimeLoggedMinutes")
                         .HasColumnType("integer");
@@ -725,9 +684,15 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasIndex("AssigneeId");
 
+                    b.HasIndex("EpicId");
+
+                    b.HasIndex("ReporterId");
+
                     b.HasIndex("ReviewerId");
 
-                    b.HasIndex("StoryId");
+                    b.HasIndex("SprintId");
+
+                    b.HasIndex("ProjectId", "Status");
 
                     b.ToTable("tasks", (string)null);
                 });
@@ -851,7 +816,7 @@ namespace Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("Domain.Entities.Project", "Project")
-                        .WithMany()
+                        .WithMany("Epics")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -904,10 +869,16 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasOne("Domain.Entities.Organization", "Organization")
                         .WithMany("Projects")
                         .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Domain.Entities.User", "OwnerUser")
+                        .WithMany()
+                        .HasForeignKey("OwnerUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Organization");
+
+                    b.Navigation("OwnerUser");
                 });
 
             modelBuilder.Entity("Domain.Entities.ProjectMembership", b =>
@@ -954,51 +925,12 @@ namespace Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Domain.Entities.Sprint", b =>
                 {
                     b.HasOne("Domain.Entities.Project", "Project")
-                        .WithMany()
+                        .WithMany("Sprints")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Project");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Story", b =>
-                {
-                    b.HasOne("Domain.Entities.User", "Assignee")
-                        .WithMany()
-                        .HasForeignKey("AssigneeId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Domain.Entities.Epic", "Epic")
-                        .WithMany("Stories")
-                        .HasForeignKey("EpicId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Domain.Entities.Project", "Project")
-                        .WithMany()
-                        .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.User", "Reporter")
-                        .WithMany()
-                        .HasForeignKey("ReporterId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Domain.Entities.Sprint", "Sprint")
-                        .WithMany("Stories")
-                        .HasForeignKey("SprintId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Assignee");
-
-                    b.Navigation("Epic");
-
-                    b.Navigation("Project");
-
-                    b.Navigation("Reporter");
-
-                    b.Navigation("Sprint");
                 });
 
             modelBuilder.Entity("Domain.Entities.Subtask", b =>
@@ -1026,22 +958,43 @@ namespace Infrastructure.Persistence.Migrations
                         .HasForeignKey("AssigneeId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("Domain.Entities.Epic", "Epic")
+                        .WithMany("Tasks")
+                        .HasForeignKey("EpicId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Domain.Entities.Project", "Project")
+                        .WithMany("Tasks")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.User", "Reporter")
+                        .WithMany()
+                        .HasForeignKey("ReporterId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Domain.Entities.User", "Reviewer")
                         .WithMany()
                         .HasForeignKey("ReviewerId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("Domain.Entities.Story", "Story")
+                    b.HasOne("Domain.Entities.Sprint", "Sprint")
                         .WithMany("Tasks")
-                        .HasForeignKey("StoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("SprintId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Assignee");
 
+                    b.Navigation("Epic");
+
+                    b.Navigation("Project");
+
+                    b.Navigation("Reporter");
+
                     b.Navigation("Reviewer");
 
-                    b.Navigation("Story");
+                    b.Navigation("Sprint");
                 });
 
             modelBuilder.Entity("Domain.Entities.TaskStatusChange", b =>
@@ -1065,7 +1018,7 @@ namespace Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.Epic", b =>
                 {
-                    b.Navigation("Stories");
+                    b.Navigation("Tasks");
                 });
 
             modelBuilder.Entity("Domain.Entities.Organization", b =>
@@ -1077,15 +1030,16 @@ namespace Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.Project", b =>
                 {
+                    b.Navigation("Epics");
+
                     b.Navigation("Memberships");
+
+                    b.Navigation("Sprints");
+
+                    b.Navigation("Tasks");
                 });
 
             modelBuilder.Entity("Domain.Entities.Sprint", b =>
-                {
-                    b.Navigation("Stories");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Story", b =>
                 {
                     b.Navigation("Tasks");
                 });

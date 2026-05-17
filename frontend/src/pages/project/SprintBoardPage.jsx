@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Badge } from '@/components/ui';
+import { RefreshCw } from 'lucide-react';
+import { Badge, Button } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { sprintsApi } from '@/api/sprints.api';
 import { boardApi } from '@/api/board.api';
 import { workflowApi } from '@/api/workflow.api';
+import { epicsApi } from '@/api/epics.api';
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
+import { LiveIndicator } from '@/components/kanban/LiveIndicator';
+import { TaskDetailDrawer } from '@/components/tasks/TaskDetailDrawer';
 import { useProjectHub } from '@/hooks/useProjectHub';
 import './SprintBoardPage.css';
 
@@ -15,7 +19,9 @@ export function SprintBoardPage() {
   const [sprint, setSprint] = useState(null);
   const [board, setBoard] = useState(null);
   const [statusConfigs, setStatusConfigs] = useState([]);
+  const [epics, setEpics] = useState([]);
   const [error, setError] = useState(null);
+  const [openedTaskId, setOpenedTaskId] = useState(null);
 
   const load = useCallback(async (projectId) => {
     const [sprints, b] = await Promise.all([
@@ -34,12 +40,14 @@ export function SprintBoardPage() {
         const p = await projectsApi.getBySlug(orgSlug, projectSlug);
         if (cancelled) return;
         setProject(p);
-        const [, configs] = await Promise.all([
+        const [, configs, eps] = await Promise.all([
           load(p.id),
           workflowApi.list(p.id),
+          epicsApi.listForProject(p.id),
         ]);
         if (cancelled) return;
         setStatusConfigs(configs);
+        setEpics(eps);
       } catch (err) {
         if (!cancelled) setError(err.response?.data?.detail ?? 'Could not load sprint board.');
       }
@@ -47,7 +55,7 @@ export function SprintBoardPage() {
     return () => { cancelled = true; };
   }, [orgSlug, projectSlug, load]);
 
-  useProjectHub(project?.id, (name) => {
+  const { status: hubStatus } = useProjectHub(project?.id, (name) => {
     if (name === 'board.changed' || name === 'sprint.changed') {
       load(project.id).catch(() => {});
     }
@@ -69,6 +77,16 @@ export function SprintBoardPage() {
           {sprint?.goal && <p className="sprint-board__goal">{sprint.goal}</p>}
         </div>
         <div className="sprint-board__stats">
+          <LiveIndicator status={hubStatus} />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => load(project.id).catch(() => {})}
+            aria-label="Refresh sprint board"
+            title="Refresh"
+          >
+            <RefreshCw size={14} aria-hidden="true" />
+          </Button>
           <Badge tone={daysLeft <= 2 ? 'warning' : 'info'}>
             {daysLeft != null ? `${daysLeft} days left` : '—'}
           </Badge>
@@ -88,6 +106,17 @@ export function SprintBoardPage() {
       <KanbanBoard
         board={board}
         statusConfigs={statusConfigs}
+        projectId={project.id}
+        epics={epics}
+        defaultSprintId={sprintId}
+        onChanged={() => load(project.id)}
+        onOpenTask={setOpenedTaskId}
+      />
+
+      <TaskDetailDrawer
+        taskId={openedTaskId}
+        projectId={project.id}
+        onClose={() => setOpenedTaskId(null)}
         onChanged={() => load(project.id)}
       />
     </div>

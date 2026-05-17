@@ -32,6 +32,9 @@ public class GenerateProjectPreviewCommandHandler(
         if (description.Length is < 10 or > 2000)
             return Result.Failure<AIGenerationPreviewDto>(AIErrors.InvalidDescription);
 
+        if (!ai.IsConfigured)
+            return Result.Failure<AIGenerationPreviewDto>(AIErrors.NotConfigured);
+
         var org = await db.Organizations
             .Where(o => o.Slug == request.OrgSlug)
             .Select(o => new { o.Id })
@@ -79,14 +82,15 @@ public class GenerateProjectPreviewCommandHandler(
             return Result.Failure<AIGenerationPreviewDto>(AIErrors.EmptyResult);
         }
 
-        // F1-21: every story must have 2-5 AC; every task needs a description.
+        // Each generated task must carry 2-5 acceptance criteria (F1-21 rule
+        // re-homed onto tasks now that Stories are gone).
         foreach (var epic in generated.Epics)
         {
-            foreach (var story in epic.Stories)
+            foreach (var task in epic.Tasks)
             {
-                if (story.AcceptanceCriteria.Count is < 2 or > 5)
+                if (task.AcceptanceCriteria.Count is < 2 or > 5)
                 {
-                    audit.ErrorMessage = "AC count out of range for story: " + story.Title;
+                    audit.ErrorMessage = "AC count out of range for task: " + task.Title;
                     await db.SaveChangesAsync(ct);
                     return Result.Failure<AIGenerationPreviewDto>(AIErrors.MissingAcceptanceCriteria);
                 }
@@ -125,13 +129,8 @@ public class GenerateProjectPreviewCommandHandler(
             e.Title,
             e.Description,
             e.Color,
-            e.Stories.Select(s => new AIGeneratedStoryDto(
-                s.Title,
-                s.Description,
-                s.StoryPoints,
-                s.Priority,
-                s.AcceptanceCriteria,
-                s.Tasks.Select(t => new AIGeneratedTaskDto(t.Title, t.Description)).ToList()
+            e.Tasks.Select(t => new AIGeneratedTaskDto(
+                t.Title, t.Description, t.StoryPoints, t.Priority, t.AcceptanceCriteria
             )).ToList()
         )).ToList();
         return new AIGenerationPreviewDto(

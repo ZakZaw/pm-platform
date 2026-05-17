@@ -11,12 +11,22 @@ export const useUiStore = create(
 
       lastOrgSlug: null,
       setLastOrgSlug: (slug) => set({ lastOrgSlug: slug || null }),
+
+      theme: 'dark',
+      toggleTheme: () =>
+        set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
+      setTheme: (value) => set({ theme: value === 'light' ? 'light' : 'dark' }),
+
+      quickCreateOpen: false,
+      openQuickCreate: () => set({ quickCreateOpen: true }),
+      closeQuickCreate: () => set({ quickCreateOpen: false }),
     }),
     {
       name: 'pm-ui',
       partialize: (state) => ({
         sidebarCollapsed: state.sidebarCollapsed,
         lastOrgSlug: state.lastOrgSlug,
+        theme: state.theme,
       }),
     },
   ),

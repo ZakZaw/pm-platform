@@ -29,15 +29,12 @@ public class CreateCommentCommandHandler(
 
         var task = await db.Tasks
             .Where(t => t.Id == request.TaskId)
-            .Select(t => new { t.Id, t.StoryId })
+            .Select(t => new { t.Id, t.ProjectId })
             .FirstOrDefaultAsync(ct);
         if (task is null)
             return Result.Failure<CommentDto>(TaskErrors.NotFound);
 
-        var projectId = await db.Stories
-            .Where(s => s.Id == task.StoryId)
-            .Select(s => s.ProjectId)
-            .FirstOrDefaultAsync(ct);
+        var projectId = task.ProjectId;
 
         var parsed = MentionParser.Extract(body);
         var mentions = new HashSet<Guid>(parsed);
@@ -82,7 +79,7 @@ public class CreateCommentCommandHandler(
             .Where(p => p.Id == projectId)
             .Select(p => p.OrganizationId)
             .FirstOrDefaultAsync(ct);
-        if (orgId == Guid.Empty) return [];
+        if (orgId is null || orgId == Guid.Empty) return [];
         return await db.OrgMemberships
             .Where(m => m.OrganizationId == orgId
                          && m.RemovedAt == null

@@ -33,13 +33,45 @@
 
 .workflow__row {
   display: grid;
-  grid-template-columns: auto auto minmax(160px, 1fr) 180px auto auto auto;
+  grid-template-columns: auto auto minmax(160px, 1fr) 180px auto auto auto auto;
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3);
   background: var(--bg-surface-1);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
+}
+
+.workflow__delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.workflow__delete:hover {
+  background: var(--status-danger-bg);
+  color: var(--status-danger);
+  border-color: var(--status-danger-border);
+}
+
+.workflow__add {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(180px, 1fr) minmax(120px, 200px) auto;
+  align-items: end;
+  gap: var(--space-3);
+}
+
+@media (max-width: 900px) {
+  .workflow__add {
+    grid-template-columns: 1fr;
+  }
 }
 
 .workflow__handle {

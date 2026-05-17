@@ -21,6 +21,26 @@ public class WorkflowController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    [HttpPost]
+    public async Task<ActionResult<StatusConfigDto>> Create(
+        Guid projectId,
+        [FromBody] CreateStatusConfigBodyDto body,
+        CancellationToken ct)
+    {
+        var result = await mediator.Send(new CreateStatusConfigCommand(
+            projectId, body.BaseStatus ?? string.Empty, body.DisplayName ?? string.Empty,
+            body.Color, body.IsDoneState ?? false), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpDelete("{configId:guid}")]
+    public async Task<ActionResult> Delete(
+        Guid projectId, Guid configId, CancellationToken ct)
+    {
+        var result = await mediator.Send(new DeleteStatusConfigCommand(projectId, configId), ct);
+        return result.IsSuccess ? NoContent() : ToProblem(result.Error!);
+    }
+
     [HttpPatch("{configId:guid}")]
     public async Task<ActionResult<StatusConfigDto>> Update(
         Guid projectId,
@@ -52,6 +72,8 @@ public class WorkflowController(ISender mediator) : ControllerBase
             "Project.NotFound" => StatusCodes.Status404NotFound,
             "Workflow.ConfigNotFound" => StatusCodes.Status404NotFound,
             "Workflow.NeedOneDoneState" => StatusCodes.Status422UnprocessableEntity,
+            "Workflow.ColumnNotEmpty" => StatusCodes.Status422UnprocessableEntity,
+            "Task.InvalidStatus" => StatusCodes.Status422UnprocessableEntity,
             "Workflow.InvalidDisplayName" => StatusCodes.Status422UnprocessableEntity,
             "Workflow.InvalidColor" => StatusCodes.Status422UnprocessableEntity,
             "Workflow.InvalidReorder" => StatusCodes.Status422UnprocessableEntity,
@@ -68,3 +90,9 @@ public record UpdateStatusConfigBodyDto(
     bool? IsVisible);
 
 public record ReorderStatusConfigBodyDto(IReadOnlyList<Guid>? OrderedConfigIds);
+
+public record CreateStatusConfigBodyDto(
+    string? BaseStatus,
+    string? DisplayName,
+    string? Color,
+    bool? IsDoneState);

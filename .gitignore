@@ -6,6 +6,7 @@
 **/bin/
 **/obj/
 *.user
+*.lscache
 backend/src/Api/wwwroot/uploads/
 
 # Frontend
@@ -18,6 +19,7 @@ dist/
 !.vscode/settings.json
 !.vscode/extensions.json
 .idea/
+.claude/
 
 # OS
 Thumbs.db

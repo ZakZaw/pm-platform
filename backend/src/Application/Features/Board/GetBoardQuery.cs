@@ -19,35 +19,34 @@ public class GetBoardQueryHandler(IAppDbContext db)
 
     public async Task<Result<BoardDto>> Handle(GetBoardQuery request, CancellationToken ct)
     {
-        var storiesQuery = db.Stories.Where(s => s.ProjectId == request.ProjectId);
+        var tasksQuery = db.Tasks.Where(t => t.ProjectId == request.ProjectId);
         if (request.SprintId.HasValue)
-            storiesQuery = storiesQuery.Where(s => s.SprintId == request.SprintId);
+            tasksQuery = tasksQuery.Where(t => t.SprintId == request.SprintId);
         else
-            storiesQuery = storiesQuery.Where(s => s.Status != DomainTaskStatus.Backlog);
+            tasksQuery = tasksQuery.Where(t => t.Status != DomainTaskStatus.Backlog);
 
-        var rows = await storiesQuery
-            .OrderBy(s => s.PriorityOrder)
-            .Select(s => new
+        var rows = await tasksQuery
+            .OrderBy(t => t.PriorityOrder)
+            .Select(t => new
             {
-                s.Id,
-                s.Title,
-                Priority = s.Priority.ToString(),
-                Status = s.Status.ToString(),
-                s.StoryPoints,
-                s.AssigneeId,
-                s.EpicId,
-                TaskCount = db.Tasks.Count(t => t.StoryId == s.Id),
-                CompletedTaskCount = db.Tasks.Count(t => t.StoryId == s.Id && t.Status == DomainTaskStatus.Done)
+                t.Id,
+                t.Title,
+                Priority = t.Priority.ToString(),
+                Status = t.Status.ToString(),
+                t.StoryPoints,
+                t.AssigneeId,
+                t.EpicId,
+                t.SprintId,
+                SubtaskCount = db.Subtasks.Count(st => st.TaskId == t.Id),
+                CompletedSubtaskCount = db.Subtasks.Count(st => st.TaskId == t.Id && st.Completed)
             })
             .ToListAsync(ct);
 
         var cards = rows.Select(r => new BoardCardDto(
-            r.Id, r.Title, r.Priority, r.Status, r.StoryPoints, r.AssigneeId, r.EpicId,
-            r.TaskCount, r.CompletedTaskCount)).ToList();
+            r.Id, r.Title, r.Priority, r.Status, r.StoryPoints,
+            r.AssigneeId, r.EpicId, r.SprintId,
+            r.SubtaskCount, r.CompletedSubtaskCount)).ToList();
 
-        // Honour the project's status-config column order/visibility when set;
-        // otherwise fall back to the legacy 5-column board for projects that
-        // never opened the workflow settings page.
         var columnOrder = await db.ProjectStatusConfigs
             .Where(c => c.ProjectId == request.ProjectId && c.IsVisible)
             .OrderBy(c => c.OrderIndex)
@@ -64,7 +63,6 @@ public class GetBoardQueryHandler(IAppDbContext db)
     private static IReadOnlyList<SwimlaneDto> BuildSwimlanes(
         IReadOnlyList<BoardCardDto> cards, string? swimlaneBy, IReadOnlyList<string> columnOrder)
     {
-        // No swimlanes: one synthetic lane with all columns.
         if (string.IsNullOrEmpty(swimlaneBy))
             return new[] { new SwimlaneDto("all", "All", ToColumns(cards, columnOrder)) };
 

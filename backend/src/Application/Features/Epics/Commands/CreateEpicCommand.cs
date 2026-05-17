@@ -52,6 +52,6 @@ public class CreateEpicCommandHandler(IAppDbContext db, ICurrentUser currentUser
             epic.Status.ToString(), epic.RiskFlag,
             epic.EnvironmentType?.ToString(), epic.Color,
             epic.CreatedAt, epic.ArchivedAt,
-            StoryCount: 0, TotalStoryPoints: 0, DoneStoryPoints: 0));
+            TaskCount: 0, TotalStoryPoints: 0, DoneStoryPoints: 0));
     }
 }

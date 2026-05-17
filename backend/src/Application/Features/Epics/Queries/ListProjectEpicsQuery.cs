@@ -32,20 +32,20 @@ public class ListProjectEpicsQueryHandler(IAppDbContext db)
                 e.Color,
                 e.CreatedAt,
                 e.ArchivedAt,
-                Stories = db.Stories.Where(s => s.EpicId == e.Id)
-                    .Select(s => new { s.StoryPoints, s.Status }).ToList()
+                Tasks = db.Tasks.Where(t => t.EpicId == e.Id)
+                    .Select(t => new { t.StoryPoints, t.Status }).ToList()
             })
             .ToListAsync(ct);
 
         var list = rows.Select(r =>
         {
-            var total = r.Stories.Sum(s => s.StoryPoints ?? 0);
-            var done = r.Stories.Where(s => s.Status == DomainTaskStatus.Done).Sum(s => s.StoryPoints ?? 0);
+            var total = r.Tasks.Sum(t => t.StoryPoints ?? 0);
+            var done = r.Tasks.Where(t => t.Status == DomainTaskStatus.Done).Sum(t => t.StoryPoints ?? 0);
             return new EpicDto(
                 r.Id, r.ProjectId, r.Title, r.Description, r.OwnerId,
                 r.Status, r.RiskFlag, r.Env, r.Color,
                 r.CreatedAt, r.ArchivedAt,
-                r.Stories.Count, total, done);
+                r.Tasks.Count, total, done);
         }).ToList();
 
         return Result.Success<IReadOnlyList<EpicDto>>(list);

@@ -1,13 +1,13 @@
 import { apiClient } from './client';
 
 export const tasksApi = {
-  listForStory: (storyId) =>
-    apiClient.get(`/stories/${storyId}/tasks`).then((r) => r.data),
+  listForProject: (projectId, params) =>
+    apiClient.get(`/projects/${projectId}/tasks`, { params }).then((r) => r.data),
 
   get: (taskId) => apiClient.get(`/tasks/${taskId}`).then((r) => r.data),
 
-  create: (storyId, body) =>
-    apiClient.post(`/stories/${storyId}/tasks`, body).then((r) => r.data),
+  create: (projectId, body) =>
+    apiClient.post(`/projects/${projectId}/tasks`, body).then((r) => r.data),
 
   update: (taskId, body) =>
     apiClient.patch(`/tasks/${taskId}`, body).then((r) => r.data),

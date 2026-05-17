@@ -2,21 +2,21 @@ import { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   Briefcase,
+  CheckSquare,
   ChevronLeft,
   ChevronRight,
   ClipboardList,
   Home,
   KanbanSquare,
   Layers,
-  LayoutDashboard,
-  ListTodo,
-  Repeat,
+  Plus,
+  Rocket,
   Settings,
   Users,
-  UserCircle,
 } from 'lucide-react';
 import { Avatar, Button } from '@/components/ui';
 import { useOrgStore } from '@/store/orgStore';
+import { useProjectStore } from '@/store/projectStore';
 import { useUiStore } from '@/store/uiStore';
 import './Sidebar.css';
 
@@ -28,6 +28,9 @@ export function Sidebar() {
   const orgs = useOrgStore((s) => s.orgs);
   const orgsLoaded = useOrgStore((s) => s.loaded);
   const refreshOrgs = useOrgStore((s) => s.refresh);
+  const projectsByOrg = useProjectStore((s) => s.byOrg);
+  const projectsLoadedByOrg = useProjectStore((s) => s.loadedByOrg);
+  const refreshProjects = useProjectStore((s) => s.refreshForOrg);
   const lastOrgSlug = useUiStore((s) => s.lastOrgSlug);
   const setLastOrgSlug = useUiStore((s) => s.setLastOrgSlug);
 
@@ -70,6 +73,16 @@ export function Sidebar() {
       ? pathSegments[2]
       : null;
 
+  // Lazy-load the project list for the current org so it shows in the
+  // sidebar regardless of which page the user is on.
+  useEffect(() => {
+    if (slug && !projectsLoadedByOrg[slug]) {
+      refreshProjects(slug).catch(() => {});
+    }
+  }, [slug, projectsLoadedByOrg, refreshProjects]);
+
+  const projects = slug ? projectsByOrg[slug] ?? [] : [];
+
   const sidebarClasses = ['sidebar', collapsed ? 'sidebar--collapsed' : '']
     .filter(Boolean)
     .join(' ');
@@ -101,6 +114,11 @@ export function Sidebar() {
       )}
 
       <nav className="sidebar__nav">
+        <NavLink to="/dashboard" className={linkClass} title={collapsed ? 'My work' : undefined}>
+          <CheckSquare className="sidebar__link-icon" aria-hidden="true" />
+          {!collapsed && <span className="sidebar__link-label">My work</span>}
+        </NavLink>
+
         {slug && (
           <>
             {!collapsed && <div className="sidebar__section">Workspace</div>}
@@ -115,78 +133,67 @@ export function Sidebar() {
           </>
         )}
 
-        {projectSlug && (
+        {slug && (
           <>
-            {!collapsed && <div className="sidebar__section">Project</div>}
+            {!collapsed && <div className="sidebar__section">Projects</div>}
+            {projects.length === 0 && !collapsed && (
+              <div className="sidebar__empty">No projects yet</div>
+            )}
+            {projects.map((p) => {
+              const isCurrent = p.slug === projectSlug;
+              return (
+                <div key={p.id} className="sidebar__project">
+                  <NavLink
+                    to={`/${slug}/projects/${p.slug}`}
+                    className={linkClass}
+                    end
+                    title={collapsed ? p.name : undefined}
+                  >
+                    <Briefcase className="sidebar__link-icon" aria-hidden="true" />
+                    {!collapsed && <span className="sidebar__link-label">{p.name}</span>}
+                  </NavLink>
+                  {isCurrent && !collapsed && (
+                    <div className="sidebar__sub">
+                      <NavLink to={`/${slug}/projects/${p.slug}/epics`} className={linkClass}>
+                        <Layers className="sidebar__link-icon" aria-hidden="true" />
+                        <span className="sidebar__link-label">Epics</span>
+                      </NavLink>
+                      <NavLink to={`/${slug}/projects/${p.slug}/board`} className={linkClass}>
+                        <KanbanSquare className="sidebar__link-icon" aria-hidden="true" />
+                        <span className="sidebar__link-label">Board</span>
+                      </NavLink>
+                      <NavLink to={`/${slug}/projects/${p.slug}/backlog`} className={linkClass}>
+                        <ClipboardList className="sidebar__link-icon" aria-hidden="true" />
+                        <span className="sidebar__link-label">Backlog</span>
+                      </NavLink>
+                      <NavLink to={`/${slug}/projects/${p.slug}/sprints`} className={linkClass}>
+                        <Rocket className="sidebar__link-icon" aria-hidden="true" />
+                        <span className="sidebar__link-label">Sprints</span>
+                      </NavLink>
+                      <NavLink to={`/${slug}/projects/${p.slug}/settings/members`} className={linkClass}>
+                        <Users className="sidebar__link-icon" aria-hidden="true" />
+                        <span className="sidebar__link-label">Members</span>
+                      </NavLink>
+                      <NavLink to={`/${slug}/projects/${p.slug}/settings/workflow`} className={linkClass}>
+                        <Settings className="sidebar__link-icon" aria-hidden="true" />
+                        <span className="sidebar__link-label">Workflow</span>
+                      </NavLink>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
             <NavLink
-              to={`/${slug}/projects/${projectSlug}`}
+              to={`/${slug}/projects/new`}
               className={linkClass}
-              end
-              title={collapsed ? 'Overview' : undefined}
+              title={collapsed ? 'New project' : undefined}
             >
-              <Briefcase className="sidebar__link-icon" aria-hidden="true" />
-              {!collapsed && <span className="sidebar__link-label">Overview</span>}
-            </NavLink>
-            <NavLink
-              to={`/${slug}/projects/${projectSlug}/epics`}
-              className={linkClass}
-              title={collapsed ? 'Epics' : undefined}
-            >
-              <Layers className="sidebar__link-icon" aria-hidden="true" />
-              {!collapsed && <span className="sidebar__link-label">Epics</span>}
-            </NavLink>
-            <NavLink
-              to={`/${slug}/projects/${projectSlug}/board`}
-              className={linkClass}
-              title={collapsed ? 'Board' : undefined}
-            >
-              <KanbanSquare className="sidebar__link-icon" aria-hidden="true" />
-              {!collapsed && <span className="sidebar__link-label">Board</span>}
-            </NavLink>
-            <NavLink
-              to={`/${slug}/projects/${projectSlug}/backlog`}
-              className={linkClass}
-              title={collapsed ? 'Backlog' : undefined}
-            >
-              <ClipboardList className="sidebar__link-icon" aria-hidden="true" />
-              {!collapsed && <span className="sidebar__link-label">Backlog</span>}
-            </NavLink>
-            <NavLink
-              to={`/${slug}/projects/${projectSlug}/sprints`}
-              className={linkClass}
-              title={collapsed ? 'Sprints' : undefined}
-            >
-              <Repeat className="sidebar__link-icon" aria-hidden="true" />
-              {!collapsed && <span className="sidebar__link-label">Sprints</span>}
-            </NavLink>
-            <NavLink
-              to={`/${slug}/projects/${projectSlug}/stories`}
-              className={linkClass}
-              title={collapsed ? 'Stories' : undefined}
-            >
-              <ListTodo className="sidebar__link-icon" aria-hidden="true" />
-              {!collapsed && <span className="sidebar__link-label">Stories</span>}
-            </NavLink>
-            <NavLink
-              to={`/${slug}/projects/${projectSlug}/settings/workflow`}
-              className={linkClass}
-              title={collapsed ? 'Workflow' : undefined}
-            >
-              <Settings className="sidebar__link-icon" aria-hidden="true" />
-              {!collapsed && <span className="sidebar__link-label">Workflow</span>}
+              <Plus className="sidebar__link-icon" aria-hidden="true" />
+              {!collapsed && <span className="sidebar__link-label">New project</span>}
             </NavLink>
           </>
         )}
 
-        {!collapsed && <div className="sidebar__section">You</div>}
-        <NavLink to="/dashboard" className={linkClass} title={collapsed ? 'My work' : undefined}>
-          <LayoutDashboard className="sidebar__link-icon" aria-hidden="true" />
-          {!collapsed && <span className="sidebar__link-label">My work</span>}
-        </NavLink>
-        <NavLink to="/settings/profile" className={linkClass} title={collapsed ? 'Profile' : undefined}>
-          <UserCircle className="sidebar__link-icon" aria-hidden="true" />
-          {!collapsed && <span className="sidebar__link-label">Profile</span>}
-        </NavLink>
       </nav>
 
       <div className="sidebar__footer">

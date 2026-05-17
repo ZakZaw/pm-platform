@@ -114,12 +114,27 @@ export function ProfilePage() {
         capacityHoursPerWeek: capacity,
       });
       setProfile(updated);
-      updateAuthUser?.({ id: updated.id, email: updated.email, fullName: updated.fullName });
+      updateAuthUser?.({ id: updated.id, email: updated.email, fullName: updated.fullName, avatarUrl: updated.avatarUrl });
       setSaveSuccess(true);
     } catch (err) {
       setSaveError(err.response?.data?.detail ?? 'Could not save profile.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const onResetAvatar = async () => {
+    setAvatarError(null);
+    setAvatarPreview(null);
+    setAvatarUploading(true);
+    try {
+      const updated = await usersApi.deleteAvatar();
+      setProfile(updated);
+      updateAuthUser?.({ id: updated.id, email: updated.email, fullName: updated.fullName, avatarUrl: updated.avatarUrl });
+    } catch (err) {
+      setAvatarError(err.response?.data?.detail ?? 'Could not reset avatar.');
+    } finally {
+      setAvatarUploading(false);
     }
   };
 
@@ -142,7 +157,7 @@ export function ProfilePage() {
     try {
       const updated = await usersApi.uploadAvatar(file);
       setProfile(updated);
-      updateAuthUser?.({ id: updated.id, email: updated.email, fullName: updated.fullName });
+      updateAuthUser?.({ id: updated.id, email: updated.email, fullName: updated.fullName, avatarUrl: updated.avatarUrl });
     } catch (err) {
       setAvatarError(err.response?.data?.detail ?? 'Could not upload avatar.');
       setAvatarPreview(null);
@@ -164,15 +179,28 @@ export function ProfilePage() {
         <div className="profile__avatar-row">
           <Avatar src={displayAvatar} name={fullName || profile.email} size="xl" />
           <div>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={avatarUploading}
-            >
-              {avatarUploading ? 'Uploading…' : displayAvatar ? 'Replace avatar' : 'Upload avatar'}
-            </Button>
+            <div className="profile__avatar-actions">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={avatarUploading}
+              >
+                {avatarUploading ? 'Working…' : displayAvatar ? 'Replace avatar' : 'Upload avatar'}
+              </Button>
+              {displayAvatar && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={onResetAvatar}
+                  disabled={avatarUploading}
+                >
+                  Reset to default
+                </Button>
+              )}
+            </div>
             <p className="profile__hint">PNG, JPEG, or WebP. Max 2 MB.</p>
             <input
               ref={fileInputRef}

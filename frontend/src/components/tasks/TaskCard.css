@@ -46,3 +46,11 @@
 .task-card__prio.prio-high { background: var(--prio-high); }
 .task-card__prio.prio-med { background: var(--prio-med); }
 .task-card__prio.prio-low { background: var(--prio-low); }
+
+.task-card__unassigned {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px dashed var(--border-default);
+  flex-shrink: 0;
+}

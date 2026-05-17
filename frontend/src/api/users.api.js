@@ -21,4 +21,12 @@ export const usersApi = {
     });
     return response.data;
   },
+
+  deleteAvatar: () => apiClient.delete('/users/me/avatar').then((r) => r.data),
+
+  personalProject: () =>
+    apiClient.get('/users/me/personal-project').then((r) => r.data),
+
+  myWork: (params) =>
+    apiClient.get('/users/me/tasks', { params }).then((r) => r.data),
 };

@@ -33,20 +33,12 @@ public static class DependencyInjection
 
         services.AddSingleton<IProjectEventBus, SignalRProjectEventBus>();
 
-        // AI provider: real Gemini when GEMINI_API_KEY is set, stub otherwise
-        // so dev environments without a key still get a usable wizard. The
-        // audit log records which provider answered, so this is traceable.
-        var aiSection = configuration.GetSection("AI");
-        services.Configure<AISettings>(aiSection);
-        var geminiKey = aiSection["GeminiApiKey"];
-        if (!string.IsNullOrWhiteSpace(geminiKey))
-        {
-            services.AddScoped<IAIService, GeminiAIService>();
-        }
-        else
-        {
-            services.AddScoped<IAIService, StubAIService>();
-        }
+        // Real Gemini is the only AI provider. The constructor doesn't throw
+        // when the key is missing — every call surfaces AINotConfiguredException,
+        // which the AI commands map to AI.NotConfigured (503). That keeps the
+        // app bootable without a key but makes the failure obvious to the user.
+        services.Configure<AISettings>(configuration.GetSection("AI"));
+        services.AddScoped<IAIService, GeminiAIService>();
 
         return services;
     }

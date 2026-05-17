@@ -13,15 +13,19 @@ public class GetProjectBySlugQueryHandler(IAppDbContext db)
     public async Task<Result<ProjectDto>> Handle(GetProjectBySlugQuery request, CancellationToken ct)
     {
         var project = await db.Projects
-            .Where(p => p.Organization.Slug == request.OrgSlug && p.Slug == request.ProjectSlug)
+            .Where(p => !p.IsPersonal
+                         && p.Organization != null
+                         && p.Organization.Slug == request.OrgSlug
+                         && p.Slug == request.ProjectSlug)
             .Select(p => new ProjectDto(
-                p.Id, p.OrganizationId, p.Organization.Slug,
+                p.Id, p.OrganizationId, p.Organization!.Slug,
                 p.Name, p.Slug,
                 p.EnvironmentType.ToString(),
                 p.Status.ToString(),
                 p.TargetDate,
                 p.AIControlMode.ToString(),
-                p.CreatedBy, p.CreatedAt))
+                p.CreatedBy, p.CreatedAt,
+                p.IsPersonal))
             .FirstOrDefaultAsync(ct);
 
         return project is null

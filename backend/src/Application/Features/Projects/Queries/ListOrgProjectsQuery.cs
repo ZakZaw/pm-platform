@@ -20,7 +20,7 @@ public class ListOrgProjectsQueryHandler(IAppDbContext db)
             return Result.Failure<IReadOnlyList<ProjectSummary>>(OrgErrors.NotFound);
 
         var projects = await db.Projects
-            .Where(p => p.OrganizationId == orgId)
+            .Where(p => p.OrganizationId == orgId && !p.IsPersonal)
             .OrderByDescending(p => p.CreatedAt)
             .Select(p => new ProjectSummary(
                 p.Id, p.Name, p.Slug,

@@ -74,7 +74,7 @@ export function SprintsPage() {
   }
 
   async function closeSprint(sprint) {
-    const move = window.confirm(`Close ${sprint.name}? Incomplete stories will move back to the backlog.`);
+    const move = window.confirm(`Close ${sprint.name}? Incomplete tasks will move back to the backlog.`);
     if (!move) return;
     try {
       await sprintsApi.close(sprint.id, { moveCarryoversToBacklog: true });
@@ -150,7 +150,7 @@ export function SprintsPage() {
                   {new Date(s.endDate).toLocaleDateString()}
                 </div>
                 <div className="sprints-page__cell sprints-page__cell-meta">
-                  {s.storyCount} stories · {s.donePoints}/{s.totalPoints} pts
+                  {s.taskCount} tasks · {s.donePoints}/{s.totalPoints} pts
                 </div>
                 <div className="sprints-page__cell sprints-page__actions">
                   {s.status === 'Planning' && (

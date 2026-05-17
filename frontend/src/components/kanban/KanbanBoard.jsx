@@ -3,7 +3,7 @@ import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { KanbanColumn } from './KanbanColumn';
 import { KanbanCard } from './KanbanCard';
 import { useToast } from '@/components/ui';
-import { storiesApi } from '@/api/stories.api';
+import { tasksApi } from '@/api/tasks.api';
 import './KanbanBoard.css';
 
 /**
@@ -12,17 +12,49 @@ import './KanbanBoard.css';
  * override that shadows it during a drag, and clear back to null on
  * success (after parent refetches) or on error.
  */
-export function KanbanBoard({ board, onChanged, statusConfigs }) {
+export function KanbanBoard({ board, onChanged, statusConfigs, projectId, defaultSprintId, onOpenTask, epics }) {
+  const epicById = (() => {
+    const map = {};
+    for (const e of epics ?? []) map[e.id] = e;
+    return map;
+  })();
   const toast = useToast();
   const [optimistic, setOptimistic] = useState(null);
   const displayed = optimistic ?? board;
+
+  async function addTaskInColumn(status, title) {
+    if (!projectId) return;
+    try {
+      const created = await tasksApi.create(projectId, {
+        title,
+        priority: 'Medium',
+        sprintId: defaultSprintId ?? undefined,
+      });
+      // New tasks start in Backlog; if the column isn't Backlog, transition.
+      if (status !== created.status) {
+        try {
+          await tasksApi.changeStatus(created.id, { to: status });
+        } catch {
+          // Status machine may reject the jump (e.g. Backlog → Done). Leave
+          // the card in Backlog and let the user drag it.
+        }
+      }
+      await onChanged?.();
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        title: 'Could not create task',
+        message: err.response?.data?.detail ?? 'Server rejected the request.',
+      });
+    }
+  }
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
   async function handleDragEnd(e) {
     const { active, over } = e;
     if (!over) return;
-    const storyId = String(active.id).split(':')[1];
+    const taskId = String(active.id).split(':')[1];
     const targetStatus = parseColumnId(String(over.id));
     if (!targetStatus) return;
 
@@ -31,7 +63,7 @@ export function KanbanBoard({ board, onChanged, statusConfigs }) {
     let sourceColumn = null;
     for (const lane of displayed.swimlanes) {
       for (const col of lane.columns) {
-        const found = col.cards.find((c) => c.storyId === storyId);
+        const found = col.cards.find((c) => c.taskId === taskId);
         if (found) {
           card = found;
           sourceLane = lane;
@@ -50,7 +82,7 @@ export function KanbanBoard({ board, onChanged, statusConfigs }) {
           ...lane,
           columns: lane.columns.map((col) => {
             if (col === sourceColumn) {
-              return { ...col, cards: col.cards.filter((c) => c.storyId !== storyId) };
+              return { ...col, cards: col.cards.filter((c) => c.taskId !== taskId) };
             }
             if (col.status === targetStatus) {
               return { ...col, cards: [...col.cards, { ...card, status: targetStatus }] };
@@ -63,16 +95,14 @@ export function KanbanBoard({ board, onChanged, statusConfigs }) {
     setOptimistic(next);
 
     try {
-      await storiesApi.changeStatus(storyId, { to: targetStatus });
-      // Parent re-fetches via onChanged; clear the overlay so the new prop
-      // becomes the source of truth.
+      await tasksApi.changeStatus(taskId, { to: targetStatus });
       await onChanged?.();
       setOptimistic(null);
     } catch (err) {
       setOptimistic(null);
       toast.show({
         tone: 'danger',
-        title: 'Could not move story',
+        title: 'Could not move task',
         message: err.response?.data?.detail ?? 'Server rejected the transition.',
       });
     }
@@ -96,9 +126,15 @@ export function KanbanBoard({ board, onChanged, statusConfigs }) {
                     count={col.cards.length}
                     displayName={cfg?.displayName}
                     tone={cfg?.color}
+                    onAddTask={projectId ? (title) => addTaskInColumn(col.status, title) : undefined}
                   >
                     {col.cards.map((card) => (
-                      <KanbanCard key={card.storyId} card={card} />
+                      <KanbanCard
+                        key={card.taskId}
+                        card={card}
+                        onOpen={onOpenTask}
+                        epic={card.epicId ? epicById[card.epicId] : null}
+                      />
                     ))}
                   </KanbanColumn>
                 );

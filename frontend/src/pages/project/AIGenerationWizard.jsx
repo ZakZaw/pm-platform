@@ -54,7 +54,7 @@ export function AIGenerationWizard() {
       setQuestions(qs ?? []);
       setStep('clarify');
     } catch (err) {
-      setError(err.response?.data?.detail ?? 'AI service did not respond.');
+      setError(describeAiError(err, 'AI service did not respond.'));
     } finally {
       setLoading(false);
     }
@@ -77,7 +77,7 @@ export function AIGenerationWizard() {
       setProjectName(data.suggestedName);
       setStep('preview');
     } catch (err) {
-      setError(err.response?.data?.detail ?? 'Could not generate. Try a different prompt.');
+      setError(describeAiError(err, 'Could not generate. Try a different prompt.'));
     } finally {
       setLoading(false);
     }
@@ -102,7 +102,7 @@ export function AIGenerationWizard() {
       toast.show({ tone: 'success', message: 'Project created.' });
       navigate(`/${orgSlug}/projects/${project.slug}`);
     } catch (err) {
-      setError(err.response?.data?.detail ?? 'Could not create the project. Please try again.');
+      setError(describeAiError(err, 'Could not create the project. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -120,7 +120,7 @@ export function AIGenerationWizard() {
       epics: p.epics.filter((_, i) => i !== epicIdx),
     }));
   }
-  function updateStory(epicIdx, storyIdx, patch) {
+  function updateTask(epicIdx, taskIdx, patch) {
     setPreview((p) => ({
       ...p,
       epics: p.epics.map((e, i) =>
@@ -128,33 +128,16 @@ export function AIGenerationWizard() {
           ? e
           : {
               ...e,
-              stories: e.stories.map((s, j) => (j === storyIdx ? { ...s, ...patch } : s)),
+              tasks: e.tasks.map((t, j) => (j === taskIdx ? { ...t, ...patch } : t)),
             },
       ),
     }));
   }
-  function removeStory(epicIdx, storyIdx) {
+  function removeTask(epicIdx, taskIdx) {
     setPreview((p) => ({
       ...p,
       epics: p.epics.map((e, i) =>
-        i !== epicIdx ? e : { ...e, stories: e.stories.filter((_, j) => j !== storyIdx) },
-      ),
-    }));
-  }
-  function removeTask(epicIdx, storyIdx, taskIdx) {
-    setPreview((p) => ({
-      ...p,
-      epics: p.epics.map((e, i) =>
-        i !== epicIdx
-          ? e
-          : {
-              ...e,
-              stories: e.stories.map((s, j) =>
-                j !== storyIdx
-                  ? s
-                  : { ...s, tasks: s.tasks.filter((_, k) => k !== taskIdx) },
-              ),
-            },
+        i !== epicIdx ? e : { ...e, tasks: e.tasks.filter((_, j) => j !== taskIdx) },
       ),
     }));
   }
@@ -168,8 +151,8 @@ export function AIGenerationWizard() {
           <AIChip label={preview?.provider ?? 'AI'} />
         </div>
         <p className="ai-wizard__subtitle">
-          Describe the project in plain English. AI proposes epics, stories, and tasks; you edit
-          before committing.
+          Describe the project in plain English. AI proposes epics and tasks; you edit before
+          committing.
         </p>
         <ol className="ai-wizard__steps">
           {STEPS.map((s, i) => (
@@ -277,9 +260,8 @@ export function AIGenerationWizard() {
                 epic={epic}
                 onChange={(patch) => updateEpic(ei, patch)}
                 onRemove={() => removeEpic(ei)}
-                onChangeStory={(si, patch) => updateStory(ei, si, patch)}
-                onRemoveStory={(si) => removeStory(ei, si)}
-                onRemoveTask={(si, ti) => removeTask(ei, si, ti)}
+                onChangeTask={(ti, patch) => updateTask(ei, ti, patch)}
+                onRemoveTask={(ti) => removeTask(ei, ti)}
               />
             ))}
             {preview.epics.length === 0 && (
@@ -314,7 +296,23 @@ function labelFor(s) {
   return 'Review & confirm';
 }
 
-function EpicEditor({ epic, onChange, onRemove, onChangeStory, onRemoveStory, onRemoveTask }) {
+function describeAiError(err, fallback) {
+  const detail = err?.response?.data?.detail;
+  const title = err?.response?.data?.title;
+  const status = err?.response?.status;
+  if (status === 503 || title === 'AI.NotConfigured') {
+    return 'AI is not configured on the server. Set GEMINI_API_KEY in the backend environment and restart the API.';
+  }
+  if (status === 502 || title === 'AI.ProviderFailed') {
+    return 'The AI provider rejected the request. Check the backend logs and try again.';
+  }
+  if (status === 422 && title === 'AI.MissingAcceptanceCriteria') {
+    return 'AI returned tasks without 2–5 acceptance criteria. Regenerate and try again.';
+  }
+  return detail ?? fallback;
+}
+
+function EpicEditor({ epic, onChange, onRemove, onChangeTask, onRemoveTask }) {
   const [open, setOpen] = useState(true);
   return (
     <Card className="ai-wizard__epic">
@@ -332,7 +330,7 @@ function EpicEditor({ epic, onChange, onRemove, onChangeStory, onRemoveStory, on
           onChange={(e) => onChange({ title: e.target.value })}
           aria-label="Epic title"
         />
-        <Badge tone="purple">{epic.stories.length} stories</Badge>
+        <Badge tone="purple">{epic.tasks.length} tasks</Badge>
         <button
           type="button"
           className="ai-wizard__remove"
@@ -345,13 +343,12 @@ function EpicEditor({ epic, onChange, onRemove, onChangeStory, onRemoveStory, on
       {open && (
         <div className="ai-wizard__epic-body">
           {epic.description && <p className="ai-wizard__epic-desc">{epic.description}</p>}
-          {epic.stories.map((story, si) => (
-            <StoryEditor
-              key={si}
-              story={story}
-              onChange={(patch) => onChangeStory(si, patch)}
-              onRemove={() => onRemoveStory(si)}
-              onRemoveTask={(ti) => onRemoveTask(si, ti)}
+          {epic.tasks.map((task, ti) => (
+            <TaskEditor
+              key={ti}
+              task={task}
+              onChange={(patch) => onChangeTask(ti, patch)}
+              onRemove={() => onRemoveTask(ti)}
             />
           ))}
         </div>
@@ -360,7 +357,7 @@ function EpicEditor({ epic, onChange, onRemove, onChangeStory, onRemoveStory, on
   );
 }
 
-function StoryEditor({ story, onChange, onRemove, onRemoveTask }) {
+function TaskEditor({ task, onChange, onRemove }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="ai-wizard__story">
@@ -369,58 +366,35 @@ function StoryEditor({ story, onChange, onRemove, onRemoveTask }) {
           type="button"
           className="ai-wizard__collapse"
           onClick={() => setOpen((v) => !v)}
-          aria-label={open ? 'Collapse story' : 'Expand story'}
+          aria-label={open ? 'Collapse task' : 'Expand task'}
         >
           {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
         </button>
         <Input
-          value={story.title}
+          value={task.title}
           onChange={(e) => onChange({ title: e.target.value })}
-          aria-label="Story title"
+          aria-label="Task title"
         />
-        <Badge tone="info">{story.priority}</Badge>
-        <Badge tone="purple">{story.storyPoints} pts</Badge>
+        <Badge tone="info">{task.priority}</Badge>
+        <Badge tone="purple">{task.storyPoints} pts</Badge>
         <button
           type="button"
           className="ai-wizard__remove"
           onClick={onRemove}
-          aria-label="Remove story"
+          aria-label="Remove task"
         >
           <Trash2 size={14} aria-hidden="true" />
         </button>
       </div>
       {open && (
         <div className="ai-wizard__story-body">
-          {story.description && <p className="ai-wizard__story-desc">{story.description}</p>}
-          {story.acceptanceCriteria?.length > 0 && (
+          {task.description && <p className="ai-wizard__story-desc">{task.description}</p>}
+          {task.acceptanceCriteria?.length > 0 && (
             <>
               <div className="ai-wizard__sublabel">Acceptance criteria</div>
               <ul className="ai-wizard__ac">
-                {story.acceptanceCriteria.map((ac, i) => (
+                {task.acceptanceCriteria.map((ac, i) => (
                   <li key={i}>{ac}</li>
-                ))}
-              </ul>
-            </>
-          )}
-          {story.tasks?.length > 0 && (
-            <>
-              <div className="ai-wizard__sublabel">Tasks</div>
-              <ul className="ai-wizard__tasks">
-                {story.tasks.map((task, ti) => (
-                  <li key={ti} className="ai-wizard__task">
-                    <span className="ai-wizard__task-title">{task.title}</span>
-                    {task.description && (
-                      <span className="ai-wizard__task-desc">{task.description}</span>
-                    )}
-                    <button
-                      type="button"
-                      className="ai-wizard__remove"
-                      onClick={() => onRemoveTask(ti)}
-                      aria-label="Remove task"
-                    >
-                      <Trash2 size={12} aria-hidden="true" />
-                    </button>
-                  </li>
                 ))}
               </ul>
             </>

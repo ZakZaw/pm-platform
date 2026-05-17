@@ -5,7 +5,7 @@ namespace Domain.Entities;
 public class Project
 {
     public Guid Id { get; set; } = Guid.NewGuid();
-    public Guid OrganizationId { get; set; }
+    public Guid? OrganizationId { get; set; }
     public required string Name { get; set; }
     public required string Slug { get; set; }
     public EnvironmentType EnvironmentType { get; set; }
@@ -15,6 +15,16 @@ public class Project
     public Guid CreatedBy { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    public Organization Organization { get; set; } = null!;
+    /// <summary>True when this is a user's private "Personal" project,
+    /// auto-provisioned at register. Personal projects are hidden from
+    /// normal project lists and only their owner can see/use them.</summary>
+    public bool IsPersonal { get; set; }
+    public Guid? OwnerUserId { get; set; }
+
+    public Organization? Organization { get; set; }
+    public User? OwnerUser { get; set; }
     public ICollection<ProjectMembership> Memberships { get; set; } = [];
+    public ICollection<Epic> Epics { get; set; } = [];
+    public ICollection<Sprint> Sprints { get; set; } = [];
+    public ICollection<Task> Tasks { get; set; } = [];
 }

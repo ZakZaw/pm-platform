@@ -46,6 +46,25 @@
 
 .task-detail__priority { color: var(--text-secondary); }
 
+.task-detail__people {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-top: var(--space-1);
+}
+
+.task-detail__person {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.task-detail__person-label {
+  font-size: var(--font-size-meta);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+}
+
 .task-detail__section { display: flex; flex-direction: column; gap: var(--space-2); }
 
 .task-detail__heading {

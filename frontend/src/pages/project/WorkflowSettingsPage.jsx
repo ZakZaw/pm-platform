@@ -14,8 +14,8 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
-import { Badge, Card, Input, Select, useToast } from '@/components/ui';
+import { GripVertical, Plus, Trash2 } from 'lucide-react';
+import { Badge, Button, Card, Input, Select, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { workflowApi } from '@/api/workflow.api';
 import './WorkflowSettingsPage.css';
@@ -27,6 +27,16 @@ const COLOR_OPTIONS = [
   { value: 'warning', label: 'Warning (amber)' },
   { value: 'danger', label: 'Danger (red)' },
   { value: 'success', label: 'Success (green)' },
+];
+
+const BASE_STATUS_OPTIONS = [
+  { value: 'Backlog', label: 'Backlog (waiting)' },
+  { value: 'ToDo', label: 'To do (ready)' },
+  { value: 'InProgress', label: 'In progress (active)' },
+  { value: 'InReview', label: 'In review' },
+  { value: 'Blocked', label: 'Blocked' },
+  { value: 'Done', label: 'Done (terminal)' },
+  { value: 'WontDo', label: "Won't do (terminal)" },
 ];
 
 export function WorkflowSettingsPage() {
@@ -98,6 +108,31 @@ export function WorkflowSettingsPage() {
     }
   }
 
+  async function addStatus(body) {
+    try {
+      const created = await workflowApi.create(project.id, body);
+      setConfigs((cur) => [...cur, created]);
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        message: err.response?.data?.detail ?? 'Could not add status.',
+      });
+    }
+  }
+
+  async function deleteStatus(cfg) {
+    if (!window.confirm(`Delete "${cfg.displayName}"?`)) return;
+    try {
+      await workflowApi.remove(project.id, cfg.id);
+      setConfigs((cur) => cur.filter((c) => c.id !== cfg.id));
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        message: err.response?.data?.detail ?? 'Could not delete status.',
+      });
+    }
+  }
+
   if (loading) return <p className="workflow__placeholder">Loading…</p>;
   if (error) return <p className="workflow__placeholder">{error}</p>;
 
@@ -118,21 +153,77 @@ export function WorkflowSettingsPage() {
           >
             <ul className="workflow__list">
               {configs.map((cfg) => (
-                <Row key={cfg.id} cfg={cfg} onPatch={(body) => patch(cfg, body)} />
+                <Row
+                  key={cfg.id}
+                  cfg={cfg}
+                  onPatch={(body) => patch(cfg, body)}
+                  onDelete={() => deleteStatus(cfg)}
+                />
               ))}
             </ul>
           </SortableContext>
         </DndContext>
       </Card>
+
+      <AddStatusCard onAdd={addStatus} />
     </div>
   );
 }
 
-function Row({ cfg, onPatch }) {
-  return <RowInner key={cfg.displayName} cfg={cfg} onPatch={onPatch} />;
+function AddStatusCard({ onAdd }) {
+  const [name, setName] = useState('');
+  const [base, setBase] = useState('ToDo');
+  const [color, setColor] = useState('neutral');
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e) {
+    e.preventDefault();
+    if (name.trim().length < 1 || busy) return;
+    setBusy(true);
+    try {
+      await onAdd({ baseStatus: base, displayName: name.trim(), color, isDoneState: false });
+      setName('');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Card className="workflow__card" title="Add a status">
+      <form className="workflow__add" onSubmit={submit}>
+        <Input
+          label="Display name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. Verifying"
+          maxLength={60}
+        />
+        <Select
+          label="Behaves like"
+          options={BASE_STATUS_OPTIONS}
+          value={base}
+          onChange={(e) => setBase(e.target.value)}
+          help="Maps to the state-machine bucket tasks transition between."
+        />
+        <Select
+          label="Color"
+          options={COLOR_OPTIONS}
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+        />
+        <Button type="submit" disabled={busy || name.trim().length < 1}>
+          <Plus size={14} aria-hidden="true" /> Add status
+        </Button>
+      </form>
+    </Card>
+  );
 }
 
-function RowInner({ cfg, onPatch }) {
+function Row({ cfg, onPatch, onDelete }) {
+  return <RowInner key={cfg.displayName} cfg={cfg} onPatch={onPatch} onDelete={onDelete} />;
+}
+
+function RowInner({ cfg, onPatch, onDelete }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: cfg.id,
   });
@@ -209,6 +300,16 @@ function RowInner({ cfg, onPatch }) {
       </label>
 
       <span className="workflow__system">{cfg.status}</span>
+
+      <button
+        type="button"
+        className="workflow__delete"
+        onClick={onDelete}
+        aria-label={`Delete ${cfg.displayName}`}
+        title="Delete this column"
+      >
+        <Trash2 size={14} aria-hidden="true" />
+      </button>
     </li>
   );
 }

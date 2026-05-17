@@ -11,6 +11,6 @@ export const boardApi = {
   backlog: (projectId) =>
     apiClient.get(`/projects/${projectId}/backlog`).then((r) => r.data),
 
-  reorderBacklog: (projectId, storyIds) =>
-    apiClient.post(`/projects/${projectId}/backlog/reorder`, { storyIds }).then((r) => r.data),
+  reorderBacklog: (projectId, taskIds) =>
+    apiClient.post(`/projects/${projectId}/backlog/reorder`, { taskIds }).then((r) => r.data),
 };

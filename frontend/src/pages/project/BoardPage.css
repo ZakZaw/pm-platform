@@ -1,9 +1,16 @@
+.board-page {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 44px - var(--space-12));
+}
+
 .board-page__header {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: var(--space-3);
   margin-bottom: var(--space-4);
+  flex-shrink: 0;
 }
 
 .board-page__title {
@@ -19,3 +26,21 @@
 }
 
 .board-page__placeholder { color: var(--text-tertiary); }
+
+.board-page__head-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.board-page__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}

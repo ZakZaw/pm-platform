@@ -51,11 +51,11 @@ public class AIController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
-    [HttpPost("api/v1/stories/{storyId:guid}/estimate")]
-    public async Task<ActionResult<StoryEstimateDto>> Estimate(
-        Guid storyId, CancellationToken ct)
+    [HttpPost("api/v1/tasks/{taskId:guid}/estimate")]
+    public async Task<ActionResult<TaskEstimateDto>> Estimate(
+        Guid taskId, CancellationToken ct)
     {
-        var result = await mediator.Send(new EstimateStoryPointsCommand(storyId), ct);
+        var result = await mediator.Send(new EstimateTaskPointsCommand(taskId), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
@@ -76,7 +76,7 @@ public class AIController(ISender mediator) : ControllerBase
         {
             "Auth.NotAuthenticated" => StatusCodes.Status401Unauthorized,
             "Org.NotFound" => StatusCodes.Status404NotFound,
-            "Story.NotFound" => StatusCodes.Status404NotFound,
+            "Task.NotFound" => StatusCodes.Status404NotFound,
             "Sprint.NotFound" => StatusCodes.Status404NotFound,
             "AI.RequestNotFound" => StatusCodes.Status404NotFound,
             "AI.InvalidDescription" => StatusCodes.Status422UnprocessableEntity,
@@ -86,6 +86,7 @@ public class AIController(ISender mediator) : ControllerBase
             "AI.EmptyResult" => StatusCodes.Status422UnprocessableEntity,
             "AI.RequestAlreadyApplied" => StatusCodes.Status409Conflict,
             "AI.ProviderFailed" => StatusCodes.Status502BadGateway,
+            "AI.NotConfigured" => StatusCodes.Status503ServiceUnavailable,
             "Project.InvalidEnvironmentType" => StatusCodes.Status422UnprocessableEntity,
             _ => StatusCodes.Status400BadRequest,
         };

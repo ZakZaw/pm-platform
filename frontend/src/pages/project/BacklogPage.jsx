@@ -1,26 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import {
-  DndContext,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  arrayMove,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Sparkles } from 'lucide-react';
-import { AIChip, Badge, Button, Card, useToast } from '@/components/ui';
+import { Plus } from 'lucide-react';
+import { Avatar, Badge, Button, Card, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { boardApi } from '@/api/board.api';
 import { sprintsApi } from '@/api/sprints.api';
-import { aiApi } from '@/api/ai.api';
+import { epicsApi } from '@/api/epics.api';
+import { tasksApi } from '@/api/tasks.api';
 import { useProjectHub } from '@/hooks/useProjectHub';
+import { useOrgMembers } from '@/hooks/useOrgMembers';
+import { TaskDetailDrawer } from '@/components/tasks/TaskDetailDrawer';
 import './BacklogPage.css';
 
 export function BacklogPage() {
@@ -28,27 +17,31 @@ export function BacklogPage() {
   const toast = useToast();
 
   const [project, setProject] = useState(null);
-  const [stories, setStories] = useState([]);
-  const [activeSprint, setActiveSprint] = useState(null);
-  const [sprintStories, setSprintStories] = useState([]);
+  const [backlog, setBacklog] = useState({ sprints: [], unassigned: [] });
+  const [epics, setEpics] = useState([]);
   const [error, setError] = useState(null);
-  const [aiPlan, setAiPlan] = useState(null);
-  const [aiBusy, setAiBusy] = useState(false);
+  const [openedTaskId, setOpenedTaskId] = useState(null);
+  const [creating, setCreating] = useState(false);
+
+  const { members } = useOrgMembers(orgSlug);
+  const memberById = useMemo(() => {
+    const map = {};
+    for (const m of members) map[m.userId] = m;
+    return map;
+  }, [members]);
+  const epicById = useMemo(() => {
+    const map = {};
+    for (const e of epics) map[e.id] = e;
+    return map;
+  }, [epics]);
 
   const refresh = useCallback(async (projectId) => {
-    const [bl, active] = await Promise.all([
+    const [bl, eps] = await Promise.all([
       boardApi.backlog(projectId),
-      sprintsApi.getActive(projectId),
+      epicsApi.listForProject(projectId),
     ]);
-    setStories(bl);
-    setActiveSprint(active);
-    if (active) {
-      const board = await boardApi.get(projectId, { sprintId: active.id });
-      const cards = board.swimlanes.flatMap((l) => l.columns.flatMap((c) => c.cards));
-      setSprintStories(cards);
-    } else {
-      setSprintStories([]);
-    }
+    setBacklog(bl);
+    setEpics(eps);
   }, []);
 
   useEffect(() => {
@@ -66,57 +59,15 @@ export function BacklogPage() {
     return () => { cancelled = true; };
   }, [orgSlug, projectSlug, refresh]);
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
-
   useProjectHub(project?.id, (name) => {
     if (name === 'board.changed' || name === 'sprint.changed') {
       refresh(project.id).catch(() => {});
     }
   });
 
-  const sprintTotal = useMemo(
-    () => sprintStories.reduce((sum, s) => sum + (s.storyPoints ?? 0), 0),
-    [sprintStories],
-  );
-
-  async function handleReorder(e) {
-    const { active, over } = e;
-    if (!over || active.id === over.id) return;
-    const oldIndex = stories.findIndex((s) => s.id === active.id);
-    const newIndex = stories.findIndex((s) => s.id === over.id);
-    if (oldIndex < 0 || newIndex < 0) return;
-    const reordered = arrayMove(stories, oldIndex, newIndex);
-    setStories(reordered);
+  async function removeFromSprint(taskId) {
     try {
-      await boardApi.reorderBacklog(project.id, reordered.map((s) => s.id));
-    } catch (err) {
-      toast.show({
-        tone: 'danger',
-        message: err.response?.data?.detail ?? 'Could not save order.',
-      });
-      await refresh(project.id);
-    }
-  }
-
-  async function addToSprint(storyId) {
-    if (!activeSprint) {
-      toast.show({ tone: 'info', message: 'Start or create a sprint first.' });
-      return;
-    }
-    try {
-      await sprintsApi.addStory(activeSprint.id, storyId);
-      await refresh(project.id);
-    } catch (err) {
-      toast.show({
-        tone: 'danger',
-        message: err.response?.data?.detail ?? 'Could not add to sprint.',
-      });
-    }
-  }
-
-  async function removeFromSprint(storyId) {
-    try {
-      await sprintsApi.removeStory(storyId);
+      await sprintsApi.removeTask(taskId);
       await refresh(project.id);
     } catch (err) {
       toast.show({
@@ -126,222 +77,201 @@ export function BacklogPage() {
     }
   }
 
-  async function aiFill(targetPct) {
-    if (!activeSprint) {
-      toast.show({ tone: 'info', message: 'Start or create a sprint first.' });
-      return;
-    }
-    setAiBusy(true);
+  async function createTask(title) {
+    const t = (title ?? '').trim();
+    if (t.length < 2) return;
+    setCreating(true);
     try {
-      const plan = await aiApi.aiFillSprint(activeSprint.id, targetPct);
-      setAiPlan(plan);
+      await tasksApi.create(project.id, { title: t, priority: 'Medium' });
+      await refresh(project.id);
     } catch (err) {
       toast.show({
         tone: 'danger',
-        message: err.response?.data?.detail ?? 'AI fill failed.',
+        message: err.response?.data?.detail ?? 'Could not create task.',
       });
     } finally {
-      setAiBusy(false);
+      setCreating(false);
     }
-  }
-
-  async function applyAiPlan() {
-    if (!aiPlan || !activeSprint) return;
-    setAiBusy(true);
-    let added = 0;
-    let failed = 0;
-    // Sequential adds so the server-side scope-baseline order is stable
-    // and so a 422 on one pick doesn't abort the whole batch.
-    for (const pick of aiPlan.picks) {
-      try {
-        await sprintsApi.addStory(activeSprint.id, pick.storyId);
-        added += 1;
-      } catch {
-        failed += 1;
-      }
-    }
-    setAiBusy(false);
-    setAiPlan(null);
-    toast.show({
-      tone: failed === 0 ? 'success' : 'info',
-      message: failed === 0
-        ? `Added ${added} stories to the sprint.`
-        : `Added ${added}, ${failed} failed.`,
-    });
-    await refresh(project.id);
-  }
-
-  function removeFromPlan(storyId) {
-    setAiPlan((p) =>
-      p ? { ...p, picks: p.picks.filter((x) => x.storyId !== storyId),
-             selectedPoints: p.picks
-               .filter((x) => x.storyId !== storyId)
-               .reduce((sum, x) => sum + x.points, 0) }
-        : p,
-    );
   }
 
   if (error) return <p className="backlog-page__placeholder">{error}</p>;
   if (!project) return <p className="backlog-page__placeholder">Loading…</p>;
 
+  const totalBacklog = backlog.unassigned?.length ?? 0;
+
   return (
     <div className="backlog-page">
       <header className="backlog-page__header">
-        <h1 className="backlog-page__title">Backlog</h1>
+        <div>
+          <h1 className="backlog-page__title">Backlog</h1>
+          <p className="backlog-page__subtitle">
+            Unscheduled tasks come first. Add them to a sprint when you're ready.
+          </p>
+        </div>
       </header>
 
-      <div className="backlog-page__grid">
-        <Card className="backlog-page__list">
-          <header className="backlog-page__list-head">
-            <h2 className="backlog-page__list-title">Stories</h2>
-            <span className="backlog-page__count">{stories.length}</span>
-          </header>
-          {stories.length === 0 ? (
-            <p className="backlog-page__placeholder">No backlog stories.</p>
-          ) : (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleReorder}>
-              <SortableContext items={stories.map((s) => s.id)} strategy={verticalListSortingStrategy}>
-                <ul className="backlog-page__items">
-                  {stories.map((s) => (
-                    <BacklogItem key={s.id} story={s} onAdd={() => addToSprint(s.id)} canAdd={Boolean(activeSprint)} />
-                  ))}
-                </ul>
-              </SortableContext>
-            </DndContext>
-          )}
-        </Card>
-
-        <Card className="backlog-page__sprint">
-          <header className="backlog-page__sprint-head">
-            <h2 className="backlog-page__list-title">Active sprint</h2>
-            {activeSprint && (
-              <span className="backlog-page__count">{sprintStories.length} · {sprintTotal} pts</span>
-            )}
-          </header>
-          {activeSprint ? (
-            <>
-              <div className="backlog-page__sprint-name">{activeSprint.name}</div>
-              {activeSprint.goal && (
-                <p className="backlog-page__sprint-goal">{activeSprint.goal}</p>
-              )}
-              <div className="backlog-page__ai-row">
-                <Button
-                  variant="ai"
-                  size="sm"
-                  onClick={() => aiFill(80)}
-                  disabled={aiBusy}
-                  title="Let AI pick a sprint's worth of stories"
-                >
-                  <Sparkles size={14} aria-hidden="true" />
-                  {aiBusy && !aiPlan ? 'Thinking…' : 'AI fill to 80%'}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => aiFill(100)}
-                  disabled={aiBusy}
-                >
-                  Or fill to 100%
-                </Button>
-              </div>
-
-              {aiPlan && (
-                <Card variant="ai" className="backlog-page__ai-plan">
-                  <div className="backlog-page__ai-plan-head">
-                    <AIChip label="Suggested" />
-                    <Badge tone="purple">
-                      {aiPlan.selectedPoints}/{aiPlan.targetCapacityPoints} pts
-                    </Badge>
-                  </div>
-                  <p className="backlog-page__ai-plan-reasoning">{aiPlan.reasoning}</p>
-                  {aiPlan.picks.length === 0 ? (
-                    <p className="backlog-page__placeholder">
-                      No backlog stories fit the target. Add stories or raise the cap.
-                    </p>
-                  ) : (
-                    <ul className="backlog-page__ai-plan-list">
-                      {aiPlan.picks.map((pick) => (
-                        <li key={pick.storyId} className="backlog-page__ai-plan-item">
-                          <span className="backlog-page__ai-plan-title">{pick.title}</span>
-                          <Badge tone="purple">{pick.points} pts</Badge>
-                          <span className="backlog-page__ai-plan-why">{pick.reasoning}</span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeFromPlan(pick.storyId)}
-                          >
-                            Drop
-                          </Button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  <div className="backlog-page__ai-plan-actions">
-                    <Button variant="ghost" size="sm" onClick={() => setAiPlan(null)}>
-                      Dismiss
-                    </Button>
-                    <Button
-                      variant="ai"
-                      size="sm"
-                      onClick={applyAiPlan}
-                      disabled={aiBusy || aiPlan.picks.length === 0}
-                    >
-                      {aiBusy ? 'Adding…' : `Add ${aiPlan.picks.length} stories`}
-                    </Button>
-                  </div>
-                </Card>
-              )}
-
-              {sprintStories.length === 0 ? (
-                <p className="backlog-page__placeholder">No stories yet. Add some from the left.</p>
-              ) : (
-                <ul className="backlog-page__items">
-                  {sprintStories.map((s) => (
-                    <li key={s.storyId} className="backlog-page__sprint-item">
-                      <span className="backlog-page__item-title">{s.title}</span>
-                      <div className="backlog-page__item-meta">
-                        {s.storyPoints != null && <Badge tone="purple">{s.storyPoints}</Badge>}
-                        <Button size="sm" variant="ghost" onClick={() => removeFromSprint(s.storyId)}>
-                          Remove
-                        </Button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </>
-          ) : (
-            <p className="backlog-page__placeholder">
-              No active sprint. Create one on the sprints page.
-            </p>
-          )}
-        </Card>
+      <div className="backlog-page__sections">
+        <BacklogSection
+          tasks={backlog.unassigned}
+          memberById={memberById}
+          epicById={epicById}
+          onOpen={setOpenedTaskId}
+          onCreate={createTask}
+          creating={creating}
+          count={totalBacklog}
+        />
+        {backlog.sprints.map((s) => (
+          <SprintSection
+            key={s.sprintId}
+            section={s}
+            memberById={memberById}
+            epicById={epicById}
+            onRemove={removeFromSprint}
+            onOpen={setOpenedTaskId}
+          />
+        ))}
       </div>
+
+      <TaskDetailDrawer
+        taskId={openedTaskId}
+        projectId={project.id}
+        onClose={() => setOpenedTaskId(null)}
+        onChanged={() => refresh(project.id)}
+      />
     </div>
   );
 }
 
-function BacklogItem({ story, onAdd, canAdd }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: story.id,
-  });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.6 : 1,
-  };
+function BacklogSection({ tasks, memberById, epicById, onOpen, onCreate, creating, count }) {
+  const [newTitle, setNewTitle] = useState('');
+
+  async function submit(e) {
+    e.preventDefault();
+    await onCreate(newTitle);
+    setNewTitle('');
+  }
+
   return (
-    <li ref={setNodeRef} style={style} className="backlog-page__item">
-      <button type="button" className="backlog-page__handle" {...listeners} {...attributes} aria-label="Drag to reorder">
-        <GripVertical size={14} aria-hidden="true" />
-      </button>
-      <span className="backlog-page__item-title">{story.title}</span>
+    <Card className="backlog-page__section backlog-page__section--primary">
+      <header className="backlog-page__section-head">
+        <h2 className="backlog-page__section-title">Backlog</h2>
+        <span className="backlog-page__count">{count} tasks</span>
+      </header>
+
+      <form className="backlog-page__create" onSubmit={submit}>
+        <input
+          type="text"
+          className="backlog-page__create-input"
+          placeholder="Add a task to the backlog…"
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          maxLength={200}
+        />
+        <Button
+          type="submit"
+          size="sm"
+          disabled={creating || newTitle.trim().length < 2}
+        >
+          <Plus size={14} aria-hidden="true" /> Add
+        </Button>
+      </form>
+
+      {tasks.length === 0 ? (
+        <p className="backlog-page__placeholder">Backlog is empty.</p>
+      ) : (
+        <ul className="backlog-page__items">
+          {tasks.map((t) => (
+            <TaskRow
+              key={t.id}
+              task={t}
+              assignee={t.assigneeId ? memberById[t.assigneeId] : null}
+              epic={t.epicId ? epicById[t.epicId] : null}
+              onOpen={onOpen}
+            />
+          ))}
+        </ul>
+      )}
+    </Card>
+  );
+}
+
+function SprintSection({ section, memberById, epicById, onRemove, onOpen }) {
+  return (
+    <Card className="backlog-page__section">
+      <header className="backlog-page__section-head">
+        <h2 className="backlog-page__section-title">{section.name}</h2>
+        <Badge tone={section.status === 'Active' ? 'success' : 'neutral'}>{section.status}</Badge>
+        <span className="backlog-page__count">
+          {section.tasks.length} · {section.donePoints}/{section.totalPoints} pts
+        </span>
+      </header>
+      {section.goal && <p className="backlog-page__sprint-goal">{section.goal}</p>}
+      {section.tasks.length === 0 ? (
+        <p className="backlog-page__placeholder">No tasks in this sprint.</p>
+      ) : (
+        <ul className="backlog-page__items">
+          {section.tasks.map((t) => (
+            <TaskRow
+              key={t.id}
+              task={t}
+              assignee={t.assigneeId ? memberById[t.assigneeId] : null}
+              epic={t.epicId ? epicById[t.epicId] : null}
+              onOpen={onOpen}
+              right={
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={(e) => { e.stopPropagation(); onRemove(t.id); }}
+                >
+                  Remove
+                </Button>
+              }
+            />
+          ))}
+        </ul>
+      )}
+    </Card>
+  );
+}
+
+function TaskRow({ task, assignee, epic, right, onOpen }) {
+  return (
+    <li
+      className="backlog-page__item is-interactive"
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpen?.(task.id)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onOpen?.(task.id);
+        }
+      }}
+    >
+      {epic && (
+        <span
+          className="backlog-page__epic-color"
+          style={{ background: epic.color || 'var(--accent-primary)' }}
+          title={epic.title}
+          aria-label={`Epic: ${epic.title}`}
+        />
+      )}
+      <span className="backlog-page__item-title">{task.title}</span>
       <div className="backlog-page__item-meta">
-        <Badge tone="info">{story.priority}</Badge>
-        {story.storyPoints != null && <Badge tone="purple">{story.storyPoints}</Badge>}
-        {canAdd && (
-          <Button size="sm" variant="ghost" onClick={onAdd}>Add to sprint</Button>
+        {epic && <Badge tone="neutral">{epic.title}</Badge>}
+        <Badge tone="info">{task.priority}</Badge>
+        {task.storyPoints != null && <Badge tone="purple">{task.storyPoints} pts</Badge>}
+        {task.subtaskCount > 0 && (
+          <span className="backlog-page__subtasks">
+            {task.completedSubtaskCount}/{task.subtaskCount}
+          </span>
         )}
+        {assignee ? (
+          <Avatar src={assignee.avatarUrl} name={assignee.fullName} size="xs" />
+        ) : (
+          <span className="backlog-page__unassigned" title="Unassigned" />
+        )}
+        {right}
       </div>
     </li>
   );

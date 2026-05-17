@@ -1,0 +1,36 @@
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-meta);
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-subtle);
+}
+
+.live-indicator__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+}
+
+.live-indicator.is-connected .live-indicator__dot {
+  background: var(--status-success);
+  box-shadow: 0 0 0 2px var(--status-success-bg);
+}
+.live-indicator.is-connecting .live-indicator__dot,
+.live-indicator.is-reconnecting .live-indicator__dot {
+  background: var(--status-warning);
+}
+.live-indicator.is-failed {
+  color: var(--status-danger);
+  border-color: var(--status-danger-border);
+  background: var(--status-danger-bg);
+}
+.live-indicator.is-failed .live-indicator__dot {
+  background: var(--status-danger);
+}

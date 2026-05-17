@@ -23,7 +23,7 @@ public class ListMentionableUsersQueryHandler(IAppDbContext db)
             .Where(p => p.Id == request.ProjectId)
             .Select(p => p.OrganizationId)
             .FirstOrDefaultAsync(ct);
-        if (orgId == Guid.Empty)
+        if (orgId is null || orgId == Guid.Empty)
             return Result.Failure<IReadOnlyList<MentionableUserDto>>(ProjectErrors.NotFound);
 
         var baseQuery = db.OrgMemberships

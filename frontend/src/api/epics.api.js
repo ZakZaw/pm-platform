@@ -16,4 +16,6 @@ export const epicsApi = {
     apiClient
       .patch(`/epics/${epicId}`, { status: 'Archived' })
       .then((r) => r.data),
+
+  get: (epicId) => apiClient.get(`/epics/${epicId}`).then((r) => r.data),
 };

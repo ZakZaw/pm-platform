@@ -1,0 +1,47 @@
+.task-drawer__backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 60;
+  animation: task-drawer-fade var(--dur-fast) var(--ease-out);
+}
+
+.task-drawer {
+  width: min(520px, 100vw);
+  height: 100vh;
+  background: var(--bg-base);
+  border-left: 1px solid var(--border-default);
+  box-shadow: var(--shadow-xl);
+  overflow-y: auto;
+  animation: task-drawer-slide var(--dur-med) var(--ease-out);
+}
+
+.task-drawer .task-detail {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  min-height: 100%;
+}
+
+.task-drawer__placeholder {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-dense);
+  padding: var(--space-6);
+  margin: 0;
+}
+
+@keyframes task-drawer-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes task-drawer-slide {
+  from { transform: translateX(16px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@media (max-width: 640px) {
+  .task-drawer { width: 100vw; }
+}

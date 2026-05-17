@@ -48,6 +48,47 @@ public class ProjectsController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    [HttpGet("api/v1/projects/{projectId:guid}/members")]
+    [RequireProjectRole(ProjectRole.Viewer)]
+    public async Task<ActionResult<IReadOnlyList<ProjectMemberDto>>> ListMembers(
+        Guid projectId, CancellationToken ct)
+    {
+        var result = await mediator.Send(new ListProjectMembersQuery(projectId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpPost("api/v1/projects/{projectId:guid}/members")]
+    [RequireProjectRole(ProjectRole.PM)]
+    public async Task<ActionResult<ProjectMemberDto>> AddMember(
+        Guid projectId,
+        [FromBody] AddProjectMemberBodyDto body,
+        CancellationToken ct)
+    {
+        var result = await mediator.Send(
+            new AddProjectMemberCommand(projectId, body.UserId, body.Role), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpPatch("api/v1/projects/{projectId:guid}/members/{userId:guid}")]
+    [RequireProjectRole(ProjectRole.PM)]
+    public async Task<ActionResult<ProjectMemberDto>> UpdateMemberRole(
+        Guid projectId, Guid userId,
+        [FromBody] UpdateProjectMemberRoleBodyDto body,
+        CancellationToken ct)
+    {
+        var result = await mediator.Send(
+            new UpdateProjectMemberRoleCommand(projectId, userId, body.Role ?? string.Empty), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpDelete("api/v1/projects/{projectId:guid}/members/{userId:guid}")]
+    [RequireProjectRole(ProjectRole.PM)]
+    public async Task<ActionResult> RemoveMember(Guid projectId, Guid userId, CancellationToken ct)
+    {
+        var result = await mediator.Send(new RemoveProjectMemberCommand(projectId, userId), ct);
+        return result.IsSuccess ? NoContent() : ToProblem(result.Error!);
+    }
+
     private ObjectResult ToProblem(Error error)
     {
         var status = error.Code switch
@@ -57,6 +98,11 @@ public class ProjectsController(ISender mediator) : ControllerBase
             "Project.NotFound" => StatusCodes.Status404NotFound,
             "Project.NotAMember" => StatusCodes.Status403Forbidden,
             "Project.InsufficientRole" => StatusCodes.Status403Forbidden,
+            "Project.NotOrgMember" => StatusCodes.Status422UnprocessableEntity,
+            "Project.AlreadyMember" => StatusCodes.Status409Conflict,
+            "Project.MemberNotFound" => StatusCodes.Status404NotFound,
+            "Project.InvalidProjectRole" => StatusCodes.Status422UnprocessableEntity,
+            "Project.LastPM" => StatusCodes.Status422UnprocessableEntity,
             _ => StatusCodes.Status400BadRequest
         };
         return Problem(title: error.Code, detail: error.Message, statusCode: status);
@@ -68,3 +114,6 @@ public record CreateProjectBodyDto(
     string EnvironmentType,
     string? AIControlMode,
     DateTime? TargetDate);
+
+public record AddProjectMemberBodyDto(Guid UserId, string? Role);
+public record UpdateProjectMemberRoleBodyDto(string? Role);

@@ -1,20 +1,17 @@
 namespace Application.Features.AI;
 
-public record AIGeneratedTask(string Title, string Description);
-
-public record AIGeneratedStory(
+public record AIGeneratedTask(
     string Title,
     string Description,
     int StoryPoints,
     string Priority,
-    IReadOnlyList<string> AcceptanceCriteria,
-    IReadOnlyList<AIGeneratedTask> Tasks);
+    IReadOnlyList<string> AcceptanceCriteria);
 
 public record AIGeneratedEpic(
     string Title,
     string Description,
     string? Color,
-    IReadOnlyList<AIGeneratedStory> Stories);
+    IReadOnlyList<AIGeneratedTask> Tasks);
 
 public record AIGeneratedProject(
     string SuggestedName,
@@ -33,18 +30,18 @@ public record AIEstimationSample(string Title, int Points);
 public record AIEffortEstimate(int Points, double Confidence, string Reasoning);
 
 public record AISprintFillCandidate(
-    Guid StoryId,
+    Guid TaskId,
     string Title,
     int Points,
     string Priority,
-    IReadOnlyList<Guid> BlockedByStoryIds);
+    IReadOnlyList<Guid> BlockedByTaskIds);
 
 public record AISprintFillInput(
     int CapacityPoints,
     IReadOnlyList<AISprintFillCandidate> Backlog,
     IReadOnlyList<Guid> AlreadyInSprint);
 
-public record AISprintFillPick(Guid StoryId, string Reasoning);
+public record AISprintFillPick(Guid TaskId, string Reasoning);
 
 public record AISprintFillPlan(
     int TargetCapacityPoints,

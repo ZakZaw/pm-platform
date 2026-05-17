@@ -2,8 +2,6 @@ namespace Application.Features.Users;
 
 public record MyWorkItemDto(
     Guid Id,
-    Guid StoryId,
-    string StoryTitle,
     string Title,
     string? Description,
     string Status,
@@ -12,5 +10,7 @@ public record MyWorkItemDto(
     Guid ProjectId,
     string ProjectSlug,
     string ProjectName,
-    string OrgSlug,
+    bool ProjectIsPersonal,
+    string? OrgSlug,
+    Guid? SprintId,
     DateTime CreatedAt);

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Trash2, X } from 'lucide-react';
-import { Button, useToast } from '@/components/ui';
+import { AssigneePicker, Button, useToast } from '@/components/ui';
 import { tasksApi } from '@/api/tasks.api';
 import { subtasksApi } from '@/api/subtasks.api';
 import { commentsApi } from '@/api/comments.api';
@@ -16,6 +17,7 @@ import './TaskDetail.css';
  * task object.
  */
 export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
+  const { slug: orgSlug } = useParams();
   const toast = useToast();
   const [subtasks, setSubtasks] = useState([]);
   const [newSub, setNewSub] = useState('');
@@ -68,6 +70,36 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
         message: err.response?.data?.detail ?? 'Could not post comment.',
       });
       throw err;
+    }
+  }
+
+  async function changeAssignee(userId) {
+    const body = userId == null
+      ? { clearAssignee: true }
+      : { assigneeId: userId };
+    try {
+      const updated = await tasksApi.update(task.id, body);
+      onUpdated?.(updated);
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        message: err.response?.data?.detail ?? 'Could not change assignee.',
+      });
+    }
+  }
+
+  async function changeReviewer(userId) {
+    const body = userId == null
+      ? { clearReviewer: true }
+      : { reviewerId: userId };
+    try {
+      const updated = await tasksApi.update(task.id, body);
+      onUpdated?.(updated);
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        message: err.response?.data?.detail ?? 'Could not change reviewer.',
+      });
     }
   }
 
@@ -150,6 +182,24 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
         <div className="task-detail__head-row">
           <StatusDropdown status={task.status} onChange={changeStatus} />
           <span className="task-detail__priority">Priority: {task.priority}</span>
+        </div>
+        <div className="task-detail__people">
+          <div className="task-detail__person">
+            <span className="task-detail__person-label">Assignee</span>
+            <AssigneePicker
+              orgSlug={orgSlug}
+              value={task.assigneeId ?? null}
+              onChange={changeAssignee}
+            />
+          </div>
+          <div className="task-detail__person">
+            <span className="task-detail__person-label">Reviewer</span>
+            <AssigneePicker
+              orgSlug={orgSlug}
+              value={task.reviewerId ?? null}
+              onChange={changeReviewer}
+            />
+          </div>
         </div>
       </header>
 

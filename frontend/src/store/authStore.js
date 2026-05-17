@@ -14,7 +14,12 @@ export const useAuthStore = create(
       register: async ({ email, password, fullName }) => {
         const data = await authApi.register({ email, password, fullName });
         set({
-          user: { id: data.userId, email: data.email, fullName: data.fullName },
+          user: {
+            id: data.userId,
+            email: data.email,
+            fullName: data.fullName,
+            avatarUrl: data.avatarUrl ?? null,
+          },
           accessToken: data.accessToken,
           refreshToken: data.refreshToken,
         });
@@ -23,7 +28,12 @@ export const useAuthStore = create(
       login: async ({ email, password }) => {
         const data = await authApi.login({ email, password });
         set({
-          user: { id: data.userId, email: data.email, fullName: data.fullName },
+          user: {
+            id: data.userId,
+            email: data.email,
+            fullName: data.fullName,
+            avatarUrl: data.avatarUrl ?? null,
+          },
           accessToken: data.accessToken,
           refreshToken: data.refreshToken,
         });
@@ -34,7 +44,12 @@ export const useAuthStore = create(
         if (!refreshToken) throw new Error('No refresh token');
         const data = await rawRefresh(refreshToken);
         set({
-          user: { id: data.userId, email: data.email, fullName: data.fullName },
+          user: {
+            id: data.userId,
+            email: data.email,
+            fullName: data.fullName,
+            avatarUrl: data.avatarUrl ?? null,
+          },
           accessToken: data.accessToken,
           refreshToken: data.refreshToken,
         });
@@ -42,8 +57,8 @@ export const useAuthStore = create(
 
       // Used by ProfilePage to keep the cached user in sync after a profile
       // update / avatar upload. Only updates user fields, never the tokens.
-      setUserFromProfile: ({ id, email, fullName }) =>
-        set({ user: { id, email, fullName } }),
+      setUserFromProfile: ({ id, email, fullName, avatarUrl }) =>
+        set({ user: { id, email, fullName, avatarUrl: avatarUrl ?? null } }),
 
       logout: () => set({ user: null, accessToken: null, refreshToken: null }),
     }),

@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore;
 namespace Application.Features.Sprints.Commands;
 
 /// <summary>
-/// Sets the absolute order of all backlog stories in the given project.
-/// The caller sends the full ordered list of story IDs after their drag
+/// Sets the absolute order of all backlog tasks in the given project.
+/// The caller sends the full ordered list of task IDs after their drag
 /// operation; we re-number PriorityOrder from 1..N in that order. Atomic.
 /// </summary>
-public record ReorderBacklogCommand(Guid ProjectId, IReadOnlyList<Guid> OrderedStoryIds)
+public record ReorderBacklogCommand(Guid ProjectId, IReadOnlyList<Guid> OrderedTaskIds)
     : IRequest<Result>;
 
 public class ReorderBacklogCommandHandler(IAppDbContext db)
@@ -18,16 +18,16 @@ public class ReorderBacklogCommandHandler(IAppDbContext db)
 {
     public async Task<Result> Handle(ReorderBacklogCommand request, CancellationToken ct)
     {
-        var stories = await db.Stories
-            .Where(s => s.ProjectId == request.ProjectId && request.OrderedStoryIds.Contains(s.Id))
+        var tasks = await db.Tasks
+            .Where(t => t.ProjectId == request.ProjectId && request.OrderedTaskIds.Contains(t.Id))
             .ToListAsync(ct);
 
-        var byId = stories.ToDictionary(s => s.Id);
-        for (var i = 0; i < request.OrderedStoryIds.Count; i++)
+        var byId = tasks.ToDictionary(t => t.Id);
+        for (var i = 0; i < request.OrderedTaskIds.Count; i++)
         {
-            if (byId.TryGetValue(request.OrderedStoryIds[i], out var story))
+            if (byId.TryGetValue(request.OrderedTaskIds[i], out var task))
             {
-                story.PriorityOrder = i + 1;
+                task.PriorityOrder = i + 1;
             }
         }
 

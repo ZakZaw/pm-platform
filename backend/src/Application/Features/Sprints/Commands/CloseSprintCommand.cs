@@ -21,17 +21,17 @@ public class CloseSprintCommandHandler(IAppDbContext db, IProjectEventBus events
         if (sprint.Status != SprintStatus.Active)
             return Result.Failure<SprintDto>(SprintErrors.NotActive);
 
-        var stories = await db.Stories.Where(s => s.SprintId == sprint.Id).ToListAsync(ct);
+        var tasks = await db.Tasks.Where(t => t.SprintId == sprint.Id).ToListAsync(ct);
 
-        var donePts = stories.Where(s => s.Status == DomainTaskStatus.Done).Sum(s => s.StoryPoints ?? 0);
+        var donePts = tasks.Where(t => t.Status == DomainTaskStatus.Done).Sum(t => t.StoryPoints ?? 0);
 
         if (request.MoveCarryoversToBacklog)
         {
-            foreach (var s in stories)
+            foreach (var t in tasks)
             {
-                if (s.Status != DomainTaskStatus.Done)
+                if (t.Status != DomainTaskStatus.Done)
                 {
-                    s.SprintId = null;
+                    t.SprintId = null;
                 }
             }
         }
@@ -44,7 +44,7 @@ public class CloseSprintCommandHandler(IAppDbContext db, IProjectEventBus events
         await events.PublishAsync(sprint.ProjectId, "sprint.changed",
             new { sprintId = sprint.Id, status = "Closed", finalVelocity = donePts }, ct);
 
-        var totalPts = stories.Sum(s => s.StoryPoints ?? 0);
-        return Result.Success(SprintMapper.ToDto(sprint, stories.Count, totalPts, donePts));
+        var totalPts = tasks.Sum(t => t.StoryPoints ?? 0);
+        return Result.Success(SprintMapper.ToDto(sprint, tasks.Count, totalPts, donePts));
     }
 }

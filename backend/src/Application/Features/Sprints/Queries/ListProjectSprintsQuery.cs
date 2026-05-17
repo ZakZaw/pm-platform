@@ -19,16 +19,16 @@ public class ListProjectSprintsQueryHandler(IAppDbContext db)
             .Select(s => new
             {
                 Sprint = s,
-                Stories = db.Stories.Where(st => st.SprintId == s.Id)
-                    .Select(st => new { st.StoryPoints, st.Status }).ToList()
+                Tasks = db.Tasks.Where(t => t.SprintId == s.Id)
+                    .Select(t => new { t.StoryPoints, t.Status }).ToList()
             })
             .ToListAsync(ct);
 
         var dtos = rows.Select(r =>
         {
-            var total = r.Stories.Sum(s => s.StoryPoints ?? 0);
-            var done = r.Stories.Where(s => s.Status == DomainTaskStatus.Done).Sum(s => s.StoryPoints ?? 0);
-            return SprintMapper.ToDto(r.Sprint, r.Stories.Count, total, done);
+            var total = r.Tasks.Sum(t => t.StoryPoints ?? 0);
+            var done = r.Tasks.Where(t => t.Status == DomainTaskStatus.Done).Sum(t => t.StoryPoints ?? 0);
+            return SprintMapper.ToDto(r.Sprint, r.Tasks.Count, total, done);
         }).ToList();
 
         return Result.Success<IReadOnlyList<SprintDto>>(dtos);
@@ -47,11 +47,11 @@ public class GetActiveSprintQueryHandler(IAppDbContext db)
             .FirstOrDefaultAsync(ct);
         if (sprint is null) return Result.Success<SprintDto?>(null);
 
-        var stories = await db.Stories.Where(s => s.SprintId == sprint.Id)
-            .Select(s => new { s.StoryPoints, s.Status }).ToListAsync(ct);
-        var total = stories.Sum(s => s.StoryPoints ?? 0);
-        var done = stories.Where(s => s.Status == DomainTaskStatus.Done).Sum(s => s.StoryPoints ?? 0);
+        var tasks = await db.Tasks.Where(t => t.SprintId == sprint.Id)
+            .Select(t => new { t.StoryPoints, t.Status }).ToListAsync(ct);
+        var total = tasks.Sum(t => t.StoryPoints ?? 0);
+        var done = tasks.Where(t => t.Status == DomainTaskStatus.Done).Sum(t => t.StoryPoints ?? 0);
 
-        return Result.Success<SprintDto?>(SprintMapper.ToDto(sprint, stories.Count, total, done));
+        return Result.Success<SprintDto?>(SprintMapper.ToDto(sprint, tasks.Count, total, done));
     }
 }

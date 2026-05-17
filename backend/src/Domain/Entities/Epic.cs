@@ -19,5 +19,5 @@ public class Epic
 
     public Project Project { get; set; } = null!;
     public User? Owner { get; set; }
-    public ICollection<Story> Stories { get; set; } = [];
+    public ICollection<Task> Tasks { get; set; } = [];
 }

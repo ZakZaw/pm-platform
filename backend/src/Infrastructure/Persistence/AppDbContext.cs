@@ -20,7 +20,6 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<ProjectMembership> ProjectMemberships => Set<ProjectMembership>();
     public DbSet<Epic> Epics => Set<Epic>();
-    public DbSet<Story> Stories => Set<Story>();
     public DbSet<TaskEntity> Tasks => Set<TaskEntity>();
     public DbSet<Subtask> Subtasks => Set<Subtask>();
     public DbSet<TaskStatusChange> TaskStatusChanges => Set<TaskStatusChange>();

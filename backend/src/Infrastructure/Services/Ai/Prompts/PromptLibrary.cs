@@ -18,14 +18,13 @@ internal static class PromptLibrary
               "title": "...",
               "description": "...",
               "color": "indigo|blue|emerald|amber|rose|violet",
-              "stories": [
+              "tasks": [
                 {
                   "title": "...",
                   "description": "...",
                   "storyPoints": 1|2|3|5|8|13,
                   "priority": "Low|Medium|High|Urgent",
-                  "acceptanceCriteria": ["...", "...", "..."],
-                  "tasks": [{ "title": "...", "description": "..." }]
+                  "acceptanceCriteria": ["...", "...", "..."]
                 }
               ]
             }
@@ -34,9 +33,8 @@ internal static class PromptLibrary
 
         Rules:
         - Use 8 or fewer epics.
-        - Each story must be deliverable in a single sprint (storyPoints in {1,2,3,5,8,13}).
-        - Every story must have 2-5 acceptanceCriteria.
-        - Every task must have a non-empty description.
+        - Each task must be deliverable in a single sprint (storyPoints in {1,2,3,5,8,13}).
+        - Every task must have 2-5 acceptanceCriteria and a non-empty description.
         - Output ONLY valid JSON. No commentary, no markdown fences.
         """;
 
@@ -58,7 +56,7 @@ internal static class PromptLibrary
 
     internal const string EffortEstimation = """
         You estimate story points on a Fibonacci scale (1, 2, 3, 5, 8, 13). Given a
-        story and a small history of similar stories with known points, return the
+        task and a small history of similar tasks with known points, return the
         estimate with a confidence in [0,1] and one short reasoning paragraph.
 
         Output ONLY a JSON object with this shape:
@@ -74,20 +72,20 @@ internal static class PromptLibrary
         """;
 
     internal const string SprintFill = """
-        You select stories to add to a sprint, given a target capacity in story points
+        You select tasks to add to a sprint, given a target capacity in story points
         and a prioritised backlog. Prefer higher priority and lower point cost, never
-        exceed the target capacity, and never pick a story whose blocker isn't already
+        exceed the target capacity, and never pick a task whose blocker isn't already
         in the sprint.
 
         Output ONLY a JSON object with this shape:
         {
-          "picks": [{ "storyId": "<uuid>", "reasoning": "..." }],
+          "picks": [{ "taskId": "<uuid>", "reasoning": "..." }],
           "reasoning": "..."
         }
 
         Rules:
-        - Sum of picked story points must be <= the target capacity.
-        - Skip a story whose "blockedByStoryIds" includes any id NOT already in the
+        - Sum of picked task points must be <= the target capacity.
+        - Skip a task whose "blockedByTaskIds" includes any id NOT already in the
           sprint and NOT already in your picks.
         - Output ONLY valid JSON. No commentary, no markdown fences.
         """;

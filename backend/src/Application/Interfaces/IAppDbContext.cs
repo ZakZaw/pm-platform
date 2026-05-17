@@ -14,7 +14,6 @@ public interface IAppDbContext
     DbSet<Project> Projects { get; }
     DbSet<ProjectMembership> ProjectMemberships { get; }
     DbSet<Epic> Epics { get; }
-    DbSet<Story> Stories { get; }
     DbSet<TaskEntity> Tasks { get; }
     DbSet<Subtask> Subtasks { get; }
     DbSet<TaskStatusChange> TaskStatusChanges { get; }

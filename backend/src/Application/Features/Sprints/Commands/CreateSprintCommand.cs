@@ -36,6 +36,6 @@ public class CreateSprintCommandHandler(IAppDbContext db)
         db.Sprints.Add(sprint);
         await db.SaveChangesAsync(ct);
 
-        return Result.Success(SprintMapper.ToDto(sprint, storyCount: 0, totalPts: 0, donePts: 0));
+        return Result.Success(SprintMapper.ToDto(sprint, taskCount: 0, totalPts: 0, donePts: 0));
     }
 }

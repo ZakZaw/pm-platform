@@ -16,9 +16,9 @@ export const sprintsApi = {
   close: (sprintId, body = { moveCarryoversToBacklog: true }) =>
     apiClient.post(`/sprints/${sprintId}/close`, body).then((r) => r.data),
 
-  addStory: (sprintId, storyId) =>
-    apiClient.post(`/sprints/${sprintId}/stories/${storyId}`).then((r) => r.data),
+  addTask: (sprintId, taskId) =>
+    apiClient.post(`/sprints/${sprintId}/tasks/${taskId}`).then((r) => r.data),
 
-  removeStory: (storyId) =>
-    apiClient.delete(`/sprints/stories/${storyId}`).then((r) => r.data),
+  removeTask: (taskId) =>
+    apiClient.delete(`/sprints/tasks/${taskId}`).then((r) => r.data),
 };

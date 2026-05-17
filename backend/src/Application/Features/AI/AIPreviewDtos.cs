@@ -1,20 +1,17 @@
 namespace Application.Features.AI;
 
-public record AIGeneratedTaskDto(string Title, string Description);
-
-public record AIGeneratedStoryDto(
+public record AIGeneratedTaskDto(
     string Title,
     string Description,
     int StoryPoints,
     string Priority,
-    IReadOnlyList<string> AcceptanceCriteria,
-    IReadOnlyList<AIGeneratedTaskDto> Tasks);
+    IReadOnlyList<string> AcceptanceCriteria);
 
 public record AIGeneratedEpicDto(
     string Title,
     string Description,
     string? Color,
-    IReadOnlyList<AIGeneratedStoryDto> Stories);
+    IReadOnlyList<AIGeneratedTaskDto> Tasks);
 
 public record AIGenerationPreviewDto(
     Guid RequestId,

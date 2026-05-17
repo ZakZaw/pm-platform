@@ -1,15 +1,16 @@
 namespace Application.Features.Board;
 
 public record BoardCardDto(
-    Guid StoryId,
+    Guid TaskId,
     string Title,
     string Priority,
     string Status,
     int? StoryPoints,
     Guid? AssigneeId,
     Guid? EpicId,
-    int TaskCount,
-    int CompletedTaskCount);
+    Guid? SprintId,
+    int SubtaskCount,
+    int CompletedSubtaskCount);
 
 public record BoardColumnDto(string Status, IReadOnlyList<BoardCardDto> Cards);
 
@@ -21,12 +22,32 @@ public record BoardDto(
     string? Swimlane,
     IReadOnlyList<SwimlaneDto> Swimlanes);
 
-public record BacklogStoryDto(
+public record BacklogTaskDto(
     Guid Id,
     string Title,
     string Priority,
     string Status,
     int? StoryPoints,
     Guid? EpicId,
+    Guid? SprintId,
     Guid? AssigneeId,
-    int PriorityOrder);
+    DateTime? DueDate,
+    int PriorityOrder,
+    int SubtaskCount,
+    int CompletedSubtaskCount);
+
+public record BacklogSprintSectionDto(
+    Guid SprintId,
+    string Name,
+    string? Goal,
+    string Status,
+    DateTime StartDate,
+    DateTime EndDate,
+    int TotalPoints,
+    int DonePoints,
+    IReadOnlyList<BacklogTaskDto> Tasks);
+
+public record BacklogDto(
+    Guid ProjectId,
+    IReadOnlyList<BacklogSprintSectionDto> Sprints,
+    IReadOnlyList<BacklogTaskDto> Unassigned);

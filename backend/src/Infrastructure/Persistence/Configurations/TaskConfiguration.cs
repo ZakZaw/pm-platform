@@ -12,23 +12,40 @@ public class TaskConfiguration : IEntityTypeConfiguration<TaskEntity>
 
         builder.HasKey(t => t.Id);
 
-        builder.Property(t => t.StoryId).IsRequired();
+        builder.Property(t => t.ProjectId).IsRequired();
         builder.Property(t => t.Title).IsRequired().HasMaxLength(200);
         builder.Property(t => t.Description);
+        builder.Property(t => t.StoryPoints);
         builder.Property(t => t.Status).HasConversion<string>().HasMaxLength(20);
         builder.Property(t => t.Priority).HasConversion<string>().HasMaxLength(20);
+        builder.Property(t => t.PriorityOrder).IsRequired();
+        builder.Property(t => t.AcceptanceCriteria)
+            .HasColumnType("text[]")
+            .HasDefaultValueSql("ARRAY[]::text[]");
         builder.Property(t => t.TimeLoggedMinutes).IsRequired();
         builder.Property(t => t.PrUrl).HasMaxLength(512);
         builder.Property(t => t.CreatedByAi).IsRequired();
         builder.Property(t => t.CreatedAt).IsRequired();
 
-        builder.HasIndex(t => t.StoryId);
+        builder.HasIndex(t => new { t.ProjectId, t.Status });
+        builder.HasIndex(t => t.EpicId);
+        builder.HasIndex(t => t.SprintId);
         builder.HasIndex(t => t.AssigneeId);
 
-        builder.HasOne(t => t.Story)
-            .WithMany(s => s.Tasks)
-            .HasForeignKey(t => t.StoryId)
+        builder.HasOne(t => t.Project)
+            .WithMany(p => p.Tasks)
+            .HasForeignKey(t => t.ProjectId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(t => t.Epic)
+            .WithMany(e => e.Tasks)
+            .HasForeignKey(t => t.EpicId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(t => t.Sprint)
+            .WithMany(s => s.Tasks)
+            .HasForeignKey(t => t.SprintId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasOne(t => t.Assignee)
             .WithMany()
@@ -38,6 +55,11 @@ public class TaskConfiguration : IEntityTypeConfiguration<TaskEntity>
         builder.HasOne(t => t.Reviewer)
             .WithMany()
             .HasForeignKey(t => t.ReviewerId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(t => t.Reporter)
+            .WithMany()
+            .HasForeignKey(t => t.ReporterId)
             .OnDelete(DeleteBehavior.SetNull);
     }
 }

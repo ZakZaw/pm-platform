@@ -54,6 +54,13 @@ public class UsersController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    [HttpDelete("me/avatar")]
+    public async Task<ActionResult<UserProfileDto>> DeleteAvatar(CancellationToken ct)
+    {
+        var result = await mediator.Send(new DeleteMyAvatarCommand(), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     [HttpGet("me/orgs")]
     public async Task<ActionResult<IReadOnlyList<OrgSummary>>> MyOrgs(CancellationToken ct)
     {
@@ -64,9 +71,18 @@ public class UsersController(ISender mediator) : ControllerBase
     [HttpGet("me/tasks")]
     public async Task<ActionResult<IReadOnlyList<MyWorkItemDto>>> MyTasks(
         [FromQuery(Name = "filter")] string? filter,
-        CancellationToken ct)
+        [FromQuery(Name = "project_id")] Guid? projectId,
+        [FromQuery(Name = "sprint_id")] Guid? sprintId,
+        CancellationToken ct = default)
     {
-        var result = await mediator.Send(new GetMyWorkQuery(filter), ct);
+        var result = await mediator.Send(new GetMyWorkQuery(filter, projectId, sprintId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpGet("me/personal-project")]
+    public async Task<ActionResult<Application.Features.Projects.ProjectDto>> MyPersonalProject(CancellationToken ct)
+    {
+        var result = await mediator.Send(new Application.Features.Projects.Queries.GetMyPersonalProjectQuery(), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 

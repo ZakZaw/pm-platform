@@ -10,10 +10,10 @@ public record SprintDto(
     int? VelocityTarget,
     string Status,
     int? FinalVelocity,
-    int StoryCount,
+    int TaskCount,
     int TotalPoints,
     int DonePoints,
     DateTime CreatedAt,
     DateTime? ClosedAt);
 
-public record ScopeBaselineStory(Guid StoryId, string Title, int? StoryPoints);
+public record ScopeBaselineTask(Guid TaskId, string Title, int? StoryPoints);

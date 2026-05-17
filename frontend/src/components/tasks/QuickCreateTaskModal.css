@@ -1,0 +1,91 @@
+.qct-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  display: grid;
+  place-items: center;
+  z-index: 100;
+}
+
+.qct-modal {
+  width: min(520px, calc(100vw - var(--space-6)));
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  display: flex;
+  flex-direction: column;
+}
+
+.qct-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.qct-modal__title {
+  margin: 0;
+  font-size: var(--font-size-h3);
+  font-weight: var(--weight-semibold);
+}
+
+.qct-modal__close {
+  background: transparent;
+  border: 0;
+  font-size: 22px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 var(--space-2);
+}
+
+.qct-modal__close:hover {
+  color: var(--text-primary);
+}
+
+.qct-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+}
+
+.qct-modal__label {
+  font-size: var(--font-size-meta);
+  color: var(--text-secondary);
+  font-weight: var(--weight-medium);
+}
+
+.qct-modal__textarea {
+  width: 100%;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-size-dense);
+  font-family: inherit;
+  padding: var(--space-2) var(--space-3);
+  resize: vertical;
+  min-height: 72px;
+}
+
+.qct-modal__textarea:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-focus);
+}
+
+.qct-modal__error {
+  color: var(--status-danger);
+  font-size: var(--font-size-meta);
+  margin: 0;
+}
+
+.qct-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}

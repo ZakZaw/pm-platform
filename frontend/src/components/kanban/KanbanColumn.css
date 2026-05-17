@@ -6,7 +6,9 @@
   background: var(--bg-surface-1);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  min-height: 200px;
+  flex: 0 0 280px;
+  min-width: 280px;
+  max-height: 100%;
   transition: border-color var(--dur-fast) var(--ease-out),
     background var(--dur-fast) var(--ease-out);
 }
@@ -20,6 +22,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 
 .kanban-col__count {
@@ -32,5 +35,61 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  flex: 1;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.kanban-col__footer {
+  flex-shrink: 0;
+  padding-top: var(--space-2);
+  border-top: 1px dashed var(--border-subtle);
+}
+
+.kanban-col__add-trigger {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  background: transparent;
+  border: 0;
+  color: var(--text-tertiary);
+  font-size: var(--font-size-meta);
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.kanban-col__add-trigger:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.kanban-col__add-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.kanban-col__add-input {
+  width: 100%;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: var(--font-size-dense);
+  padding: var(--space-2);
+  outline: none;
+}
+
+.kanban-col__add-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-focus);
+}
+
+.kanban-col__add-actions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
 }

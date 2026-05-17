@@ -17,6 +17,9 @@ public class GenerateClarifyingQuestionsCommandHandler(IAIService ai)
         if (description.Length is < 10 or > 2000)
             return Result.Failure<IReadOnlyList<string>>(AIErrors.InvalidDescription);
 
+        if (!ai.IsConfigured)
+            return Result.Failure<IReadOnlyList<string>>(AIErrors.NotConfigured);
+
         try
         {
             var qs = await ai.GenerateClarifyingQuestionsAsync(

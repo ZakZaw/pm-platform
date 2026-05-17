@@ -24,8 +24,8 @@ export const aiApi = {
       })
       .then((r) => r.data),
 
-  estimateStory: (storyId) =>
-    apiClient.post(`/stories/${storyId}/estimate`).then((r) => r.data),
+  estimateTask: (taskId) =>
+    apiClient.post(`/tasks/${taskId}/estimate`).then((r) => r.data),
 
   aiFillSprint: (sprintId, target) =>
     apiClient

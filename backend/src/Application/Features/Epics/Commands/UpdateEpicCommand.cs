@@ -48,17 +48,17 @@ public class UpdateEpicCommandHandler(IAppDbContext db)
 
         await db.SaveChangesAsync(ct);
 
-        var stories = await db.Stories.Where(s => s.EpicId == epic.Id)
-            .Select(s => new { s.StoryPoints, s.Status })
+        var tasks = await db.Tasks.Where(t => t.EpicId == epic.Id)
+            .Select(t => new { t.StoryPoints, t.Status })
             .ToListAsync(ct);
-        var total = stories.Sum(s => s.StoryPoints ?? 0);
-        var done = stories.Where(s => s.Status == DomainTaskStatus.Done).Sum(s => s.StoryPoints ?? 0);
+        var total = tasks.Sum(t => t.StoryPoints ?? 0);
+        var done = tasks.Where(t => t.Status == DomainTaskStatus.Done).Sum(t => t.StoryPoints ?? 0);
 
         return Result.Success(new EpicDto(
             epic.Id, epic.ProjectId, epic.Title, epic.Description, epic.OwnerId,
             epic.Status.ToString(), epic.RiskFlag,
             epic.EnvironmentType?.ToString(), epic.Color,
             epic.CreatedAt, epic.ArchivedAt,
-            stories.Count, total, done));
+            tasks.Count, total, done));
     }
 }

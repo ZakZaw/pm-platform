@@ -21,7 +21,7 @@ public class ProjectStatusConfigConfiguration : IEntityTypeConfiguration<Project
         builder.Property(c => c.IsVisible).IsRequired();
         builder.Property(c => c.CreatedAt).IsRequired();
 
-        builder.HasIndex(c => new { c.ProjectId, c.Status }).IsUnique();
+        builder.HasIndex(c => new { c.ProjectId, c.Status });
         builder.HasIndex(c => c.ProjectId);
 
         builder.HasOne(c => c.Project)

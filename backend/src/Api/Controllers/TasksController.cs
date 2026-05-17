@@ -12,21 +12,31 @@ namespace Api.Controllers;
 [Authorize]
 public class TasksController(ISender mediator) : ControllerBase
 {
-    [HttpGet("api/v1/stories/{storyId:guid}/tasks")]
-    public async Task<ActionResult<IReadOnlyList<TaskDto>>> ListForStory(Guid storyId, CancellationToken ct)
+    [HttpGet("api/v1/projects/{projectId:guid}/tasks")]
+    public async Task<ActionResult<IReadOnlyList<TaskDto>>> ListForProject(
+        Guid projectId,
+        [FromQuery(Name = "epic_id")] Guid? epicId = null,
+        [FromQuery(Name = "sprint_id")] Guid? sprintId = null,
+        [FromQuery(Name = "assignee_id")] Guid? assigneeId = null,
+        [FromQuery(Name = "include_done")] bool includeDone = false,
+        CancellationToken ct = default)
     {
-        var result = await mediator.Send(new ListStoryTasksQuery(storyId), ct);
+        var result = await mediator.Send(
+            new ListProjectTasksQuery(projectId, epicId, sprintId, assigneeId, includeDone), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
-    [HttpPost("api/v1/stories/{storyId:guid}/tasks")]
+    [HttpPost("api/v1/projects/{projectId:guid}/tasks")]
     public async Task<ActionResult<TaskDto>> Create(
-        Guid storyId,
+        Guid projectId,
         [FromBody] CreateTaskBodyDto body,
         CancellationToken ct)
     {
         var result = await mediator.Send(new CreateTaskCommand(
-            storyId, body.Title, body.Description, body.Priority, body.AssigneeId, body.ReviewerId), ct);
+            projectId, body.EpicId, body.SprintId,
+            body.Title, body.Description, body.Priority, body.StoryPoints,
+            body.AssigneeId, body.ReviewerId, body.DueDate,
+            body.AcceptanceCriteria), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
@@ -44,8 +54,14 @@ public class TasksController(ISender mediator) : ControllerBase
         CancellationToken ct)
     {
         var result = await mediator.Send(new UpdateTaskCommand(
-            id, body.Title, body.Description, body.Priority,
-            body.AssigneeId, body.ReviewerId, body.TimeLoggedMinutes, body.PrUrl), ct);
+            id, body.Title, body.Description, body.Priority, body.StoryPoints,
+            body.EpicId, body.ClearEpic ?? false,
+            body.SprintId, body.ClearSprint ?? false,
+            body.AssigneeId, body.ClearAssignee ?? false,
+            body.ReviewerId, body.ClearReviewer ?? false,
+            body.DueDate, body.ClearDueDate ?? false,
+            body.TimeLoggedMinutes, body.PrUrl,
+            body.AcceptanceCriteria), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
@@ -72,9 +88,11 @@ public class TasksController(ISender mediator) : ControllerBase
         {
             "Auth.NotAuthenticated" => StatusCodes.Status401Unauthorized,
             "Task.NotFound" => StatusCodes.Status404NotFound,
+            "Project.NotFound" => StatusCodes.Status404NotFound,
             "Task.InvalidTransition" => StatusCodes.Status422UnprocessableEntity,
             "Task.NoOpTransition" => StatusCodes.Status422UnprocessableEntity,
             "Task.ReasonRequired" => StatusCodes.Status422UnprocessableEntity,
+            "Task.PersonalAssigneeLocked" => StatusCodes.Status403Forbidden,
             _ => StatusCodes.Status400BadRequest
         };
         return Problem(title: error.Code, detail: error.Message, statusCode: status);
@@ -85,16 +103,31 @@ public record CreateTaskBodyDto(
     string Title,
     string? Description,
     string? Priority,
+    int? StoryPoints,
+    Guid? EpicId,
+    Guid? SprintId,
     Guid? AssigneeId,
-    Guid? ReviewerId);
+    Guid? ReviewerId,
+    DateTime? DueDate,
+    string[]? AcceptanceCriteria);
 
 public record UpdateTaskBodyDto(
     string? Title,
     string? Description,
     string? Priority,
+    int? StoryPoints,
+    Guid? EpicId,
+    bool? ClearEpic,
+    Guid? SprintId,
+    bool? ClearSprint,
     Guid? AssigneeId,
+    bool? ClearAssignee,
     Guid? ReviewerId,
+    bool? ClearReviewer,
+    DateTime? DueDate,
+    bool? ClearDueDate,
     int? TimeLoggedMinutes,
-    string? PrUrl);
+    string? PrUrl,
+    string[]? AcceptanceCriteria);
 
 public record ChangeTaskStatusBodyDto(string To, string? Reason);

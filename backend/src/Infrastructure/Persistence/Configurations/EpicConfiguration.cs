@@ -25,7 +25,7 @@ public class EpicConfiguration : IEntityTypeConfiguration<Epic>
         builder.HasIndex(e => e.ProjectId);
 
         builder.HasOne(e => e.Project)
-            .WithMany()
+            .WithMany(p => p.Epics)
             .HasForeignKey(e => e.ProjectId)
             .OnDelete(DeleteBehavior.Cascade);
 

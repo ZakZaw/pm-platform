@@ -61,7 +61,7 @@ internal static class CommentPermissions
 
         var projectId = await db.Tasks
             .Where(t => t.Id == comment.TaskId)
-            .Join(db.Stories, t => t.StoryId, s => s.Id, (t, s) => s.ProjectId)
+            .Select(t => t.ProjectId)
             .FirstOrDefaultAsync(ct);
         if (projectId == Guid.Empty) return false;
 

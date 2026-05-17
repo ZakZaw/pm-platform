@@ -55,17 +55,17 @@ public class SprintsController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
-    [HttpPost("api/v1/sprints/{id:guid}/stories/{storyId:guid}")]
-    public async Task<ActionResult> AddStory(Guid id, Guid storyId, CancellationToken ct)
+    [HttpPost("api/v1/sprints/{id:guid}/tasks/{taskId:guid}")]
+    public async Task<ActionResult> AddTask(Guid id, Guid taskId, CancellationToken ct)
     {
-        var result = await mediator.Send(new AddStoryToSprintCommand(id, storyId), ct);
+        var result = await mediator.Send(new AddTaskToSprintCommand(id, taskId), ct);
         return result.IsSuccess ? NoContent() : ToProblem(result.Error!);
     }
 
-    [HttpDelete("api/v1/sprints/stories/{storyId:guid}")]
-    public async Task<ActionResult> RemoveStory(Guid storyId, CancellationToken ct)
+    [HttpDelete("api/v1/sprints/tasks/{taskId:guid}")]
+    public async Task<ActionResult> RemoveTask(Guid taskId, CancellationToken ct)
     {
-        var result = await mediator.Send(new RemoveStoryFromSprintCommand(storyId), ct);
+        var result = await mediator.Send(new RemoveTaskFromSprintCommand(taskId), ct);
         return result.IsSuccess ? NoContent() : ToProblem(result.Error!);
     }
 
@@ -75,11 +75,12 @@ public class SprintsController(ISender mediator) : ControllerBase
         {
             "Auth.NotAuthenticated" => StatusCodes.Status401Unauthorized,
             "Sprint.NotFound" => StatusCodes.Status404NotFound,
-            "Story.NotFound" => StatusCodes.Status404NotFound,
+            "Task.NotFound" => StatusCodes.Status404NotFound,
             "Sprint.EmptyScope" => StatusCodes.Status422UnprocessableEntity,
             "Sprint.ActiveExists" => StatusCodes.Status409Conflict,
             "Sprint.NotPlanning" => StatusCodes.Status422UnprocessableEntity,
             "Sprint.NotActive" => StatusCodes.Status422UnprocessableEntity,
+            "Task.SprintNotInProject" => StatusCodes.Status422UnprocessableEntity,
             "Project.NotAMember" => StatusCodes.Status403Forbidden,
             "Project.InsufficientRole" => StatusCodes.Status403Forbidden,
             _ => StatusCodes.Status400BadRequest

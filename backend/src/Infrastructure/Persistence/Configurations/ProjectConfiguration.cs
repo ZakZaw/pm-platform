@@ -12,7 +12,7 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
 
         builder.HasKey(p => p.Id);
 
-        builder.Property(p => p.OrganizationId).IsRequired();
+        builder.Property(p => p.OrganizationId);
         builder.Property(p => p.Name).IsRequired().HasMaxLength(120);
         builder.Property(p => p.Slug).IsRequired().HasMaxLength(80);
 
@@ -23,12 +23,23 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
         builder.Property(p => p.TargetDate);
         builder.Property(p => p.CreatedBy).IsRequired();
         builder.Property(p => p.CreatedAt).IsRequired();
+        builder.Property(p => p.IsPersonal).IsRequired().HasDefaultValue(false);
+        builder.Property(p => p.OwnerUserId);
 
-        builder.HasIndex(p => new { p.OrganizationId, p.Slug }).IsUnique();
+        builder.HasIndex(p => new { p.OrganizationId, p.Slug })
+            .IsUnique()
+            .HasFilter("\"OrganizationId\" IS NOT NULL");
+        builder.HasIndex(p => p.OwnerUserId);
 
         builder.HasOne(p => p.Organization)
             .WithMany(o => o.Projects)
             .HasForeignKey(p => p.OrganizationId)
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(p => p.OwnerUser)
+            .WithMany()
+            .HasForeignKey(p => p.OwnerUserId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

@@ -127,6 +127,21 @@ public static class ProjectErrors
 
     public static readonly Error InsufficientProjectRole =
         new("Project.InsufficientRole", "Your project role does not allow this action.");
+
+    public static readonly Error InvalidProjectRole =
+        new("Project.InvalidProjectRole", "Role must be PM, TeamLead, Contributor, or Viewer.");
+
+    public static readonly Error NotOrgMember =
+        new("Project.NotOrgMember", "Only members of this organisation can be added to its projects.");
+
+    public static readonly Error AlreadyMember =
+        new("Project.AlreadyMember", "This user is already a member of the project.");
+
+    public static readonly Error MemberNotFound =
+        new("Project.MemberNotFound", "Member not found on this project.");
+
+    public static readonly Error LastPM =
+        new("Project.LastPM", "A project must have at least one PM.");
 }
 
 public static class EpicErrors
@@ -139,21 +154,6 @@ public static class EpicErrors
 
     public static readonly Error InvalidStatus =
         new("Epic.InvalidStatus", "Epic status must be Planning, InProgress, Done, or Archived.");
-}
-
-public static class StoryErrors
-{
-    public static readonly Error NotFound =
-        new("Story.NotFound", "Story not found.");
-
-    public static readonly Error InvalidTitle =
-        new("Story.InvalidTitle", "Story title must be 2-200 characters.");
-
-    public static readonly Error InvalidPriority =
-        new("Story.InvalidPriority", "Priority must be Low, Medium, High, or Urgent.");
-
-    public static readonly Error InvalidStoryPoints =
-        new("Story.InvalidStoryPoints", "Story points must be 0 or greater.");
 }
 
 public static class TaskErrors
@@ -169,6 +169,18 @@ public static class TaskErrors
 
     public static readonly Error InvalidPriority =
         new("Task.InvalidPriority", "Priority must be Low, Medium, High, or Urgent.");
+
+    public static readonly Error InvalidStoryPoints =
+        new("Task.InvalidStoryPoints", "Story points must be 0 or greater.");
+
+    public static readonly Error EpicNotInProject =
+        new("Task.EpicNotInProject", "The epic does not belong to the given project.");
+
+    public static readonly Error SprintNotInProject =
+        new("Task.SprintNotInProject", "The sprint does not belong to the given project.");
+
+    public static readonly Error PersonalAssigneeLocked =
+        new("Task.PersonalAssigneeLocked", "Tasks in your Personal project can only be assigned to you.");
 
     public static Error InvalidTransition(string from, string to) =>
         new("Task.InvalidTransition", $"Cannot move a task from {from} to {to}.");
@@ -201,7 +213,7 @@ public static class SprintErrors
         new("Sprint.InvalidDates", "Sprint end date must be after start date.");
 
     public static readonly Error EmptyScope =
-        new("Sprint.EmptyScope", "Cannot start a sprint with zero stories. Add stories first.");
+        new("Sprint.EmptyScope", "Cannot start a sprint with zero tasks. Add tasks first.");
 
     public static readonly Error ActiveSprintExists =
         new("Sprint.ActiveExists", "Another sprint is already active in this project. Close it first.");
@@ -236,6 +248,9 @@ public static class AIErrors
     public static readonly Error ProviderFailed =
         new("AI.ProviderFailed", "The AI provider rejected or failed to answer the request.");
 
+    public static readonly Error NotConfigured =
+        new("AI.NotConfigured", "AI is not configured on the server. Set GEMINI_API_KEY in the backend environment.");
+
     public static readonly Error InvalidProjectName =
         new("AI.InvalidProjectName", "Project name must be 2-120 characters.");
 }
@@ -268,6 +283,9 @@ public static class WorkflowErrors
 
     public static readonly Error NeedOneDoneState =
         new("Workflow.NeedOneDoneState", "At least one status must be marked as a done state.");
+
+    public static readonly Error ColumnNotEmpty =
+        new("Workflow.ColumnNotEmpty", "Cannot delete a status column that still contains tasks. Move them first.");
 }
 
 public static class InvitationErrors

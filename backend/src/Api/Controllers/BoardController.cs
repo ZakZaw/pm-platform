@@ -27,7 +27,7 @@ public class BoardController(ISender mediator) : ControllerBase
 
     [HttpGet("api/v1/projects/{projectId:guid}/backlog")]
     [RequireProjectRole(ProjectRole.Viewer)]
-    public async Task<ActionResult<IReadOnlyList<BacklogStoryDto>>> GetBacklog(
+    public async Task<ActionResult<BacklogDto>> GetBacklog(
         Guid projectId, CancellationToken ct)
     {
         var result = await mediator.Send(new GetBacklogQuery(projectId), ct);
@@ -39,7 +39,7 @@ public class BoardController(ISender mediator) : ControllerBase
     public async Task<ActionResult> Reorder(
         Guid projectId, [FromBody] ReorderBacklogBodyDto body, CancellationToken ct)
     {
-        var result = await mediator.Send(new ReorderBacklogCommand(projectId, body.StoryIds), ct);
+        var result = await mediator.Send(new ReorderBacklogCommand(projectId, body.TaskIds), ct);
         return result.IsSuccess ? NoContent() : ToProblem(result.Error!);
     }
 
@@ -56,4 +56,4 @@ public class BoardController(ISender mediator) : ControllerBase
     }
 }
 
-public record ReorderBacklogBodyDto(IReadOnlyList<Guid> StoryIds);
+public record ReorderBacklogBodyDto(IReadOnlyList<Guid> TaskIds);

@@ -1,16 +1,23 @@
 using System.Text;
 using Application;
+using DotNetEnv;
 using Infrastructure;
 using Infrastructure.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 
+// Load the repo-root .env into process env so local `dotnet watch run`
+// behaves like docker-compose (which reads .env natively). TraversePath
+// walks up from the working directory until it finds a .env file —
+// matches "backend/src/Api -> repo root" without hardcoding the depth.
+Env.TraversePath().Load();
+
 var builder = WebApplication.CreateBuilder(args);
 
-// .env.example exposes GEMINI_API_KEY as a flat env var, but our config
-// reads it from AI:GeminiApiKey. Bridge the two here so devs don't have
-// to learn the AI__GeminiApiKey convention.
+// .env exposes GEMINI_API_KEY as a flat env var, but our config reads it
+// from AI:GeminiApiKey. Bridge the two here so devs don't have to learn
+// the AI__GeminiApiKey convention.
 var geminiEnv = Environment.GetEnvironmentVariable("GEMINI_API_KEY");
 if (!string.IsNullOrWhiteSpace(geminiEnv))
 {

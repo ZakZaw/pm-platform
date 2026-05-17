@@ -1,0 +1,203 @@
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.dashboard__placeholder {
+  color: var(--text-tertiary);
+  padding: var(--space-6);
+}
+
+.dashboard__note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  background: var(--bg-surface-1);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.dashboard__note em { color: var(--text-secondary); font-style: normal; }
+
+.dashboard__grid {
+  padding: 18px;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 14px;
+  align-content: start;
+}
+
+.dashboard__kpi { grid-column: span 3; padding: 14px; }
+.dashboard__wide { grid-column: span 6; padding: 16px; }
+.dashboard__col-4 { grid-column: span 4; padding: 16px; }
+.dashboard__col-8 { grid-column: span 8; padding: 16px; }
+
+@media (max-width: 1100px) {
+  .dashboard__kpi { grid-column: span 6; }
+  .dashboard__wide { grid-column: span 12; }
+  .dashboard__col-4 { grid-column: span 6; }
+  .dashboard__col-8 { grid-column: span 12; }
+}
+@media (max-width: 640px) {
+  .dashboard__kpi,
+  .dashboard__col-4,
+  .dashboard__col-8 { grid-column: span 12; }
+}
+
+/* KPI tile */
+.dashboard__kpi-head {
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.dashboard__kpi-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.dashboard__kpi-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+.dashboard__kpi-body {
+  justify-content: space-between;
+  align-items: baseline;
+}
+.dashboard__kpi-value {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.dashboard__kpi-delta { font-size: 11px; }
+
+/* Widget head shared between cards */
+.dashboard__widget-head {
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 12px;
+}
+.dashboard__widget-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.dashboard__widget-sub {
+  font-size: 11px;
+}
+.dashboard__sample {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: var(--weight-regular);
+  text-transform: none;
+  letter-spacing: 0;
+  font-style: italic;
+}
+.dashboard__legend {
+  gap: 10px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+.dashboard__legend > span { gap: 4px; }
+.dashboard__legend-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.dashboard__chart-wrap {
+  overflow-x: auto;
+}
+
+/* Health card */
+.dashboard__health {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.dashboard__signals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  width: 100%;
+  margin-top: 8px;
+  font-size: 11px;
+}
+.dashboard__signal {
+  justify-content: space-between;
+  padding: 3px 6px;
+}
+.dashboard__signal-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Epic progress */
+.dashboard__epic-head {
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 12px;
+  gap: var(--space-2);
+}
+.dashboard__epic-head .truncate { max-width: 180px; }
+.dashboard__epic-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.dashboard__epic-track {
+  height: 6px;
+  background: var(--bg-surface-3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.dashboard__epic-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width var(--dur-med) var(--ease-out);
+}
+
+/* AI insight card */
+.dashboard__insight-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  margin-bottom: 6px;
+}
+.dashboard__insight-body {
+  font-size: 12px;
+  line-height: 1.55;
+  margin-bottom: 10px;
+}
+
+/* Activity */
+.dashboard__activity {
+  gap: 8px;
+  font-size: 12px;
+}
+.dashboard__activity-text {
+  flex: 1;
+  line-height: 1.5;
+  min-width: 0;
+}
+.dashboard__activity-time { font-size: 11px; }
+.dashboard__ai-mark {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--ai-violet), var(--accent-primary));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}

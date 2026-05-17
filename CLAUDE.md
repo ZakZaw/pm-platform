@@ -75,14 +75,15 @@ Read this before writing any code, creating any file, or making any architectura
 │   │   │       ├── Table/
 │   │   │       ├── Tooltip/
 │   │   │       ├── Toast/
-│   │   │       ├── Icon/           # planned — lucide-react wrapper
+│   │   │       ├── Icon/           # kebab-case lucide-react wrapper (explicit REGISTRY for tree-shaking)
 │   │   │       └── index.js        # Re-exports every UI component
 │   │   │
 │   │   ├── components/
 │   │   │   ├── layout/             # AppShell, Sidebar, Topbar, PageWrapper
 │   │   │   ├── tasks/              # TaskCard, TaskDetail, TaskForm, StatusBadge
 │   │   │   ├── kanban/             # KanbanBoard, KanbanColumn, KanbanCard
-│   │   │   ├── sprint/             # SprintBoard, BurndownChart, SprintPlanning
+│   │   │   ├── charts/             # BurndownChart, VelocityChart, HealthGauge, WorkloadHeatmap
+│   │   │   ├── sprint/             # SprintBoard, SprintPlanning
 │   │   │   ├── roadmap/            # RoadmapView, EpicBar, MilestoneMarker
 │   │   │   ├── ai/                 # AISuggestionCard, AIChat, PlanningWizard
 │   │   │   └── meetings/           # MeetingRoom, Transcript, TaskReflection
@@ -212,7 +213,8 @@ These are the canonical primitives. Build new ones in `frontend/src/components/u
 | `Spinner` | inline loading indicator | ✅ |
 | `Table` | header + rows wrapper | ✅ |
 | `Tabs` / `Tab` | flat-class `.tabs > .tab.is-active` lives in `stratos.css`; wrap in a primitive when reused | ⏳ |
-| `Icon` | thin wrapper over `lucide-react` | ⏳ |
+| `Icon` | `name` (kebab-case), `size`, `color`, `strokeWidth` — explicit lucide-react REGISTRY for tree-shaking. Add to the registry when you use a new icon. | ✅ |
+| **Chart widgets** (under `components/charts/`) — `BurndownChart`, `VelocityChart`, `HealthGauge`, `WorkloadHeatmap` | All accept token-styled props and render token-colored SVG; reused by the project Dashboard | ✅ |
 
 ```js
 // components/ui/index.js
@@ -423,6 +425,8 @@ npm run test
 
 F0 (Foundation) is complete. F1-01 → F1-23 are implemented and shipped — see recent commits for the exact batches. The **Story entity was dropped** during the Phase 1 rework; tasks now sit directly under epics, and the AC list on a task is rendered from subtasks. The AI generation wizard is wired end-to-end (Gemini in dev). All four built-out screens (App Shell, Kanban Board with sprint banner, Task Detail drawer, AI Generation Wizard) match the `/Design Files/` Stratos mockups — see [Visual polish baseline](ROADMAP.md#visual-polish-baseline-2026-05) in ROADMAP.md for the conventions every new screen must follow.
 
-**Still missing in Phase 1:** the analytics/widgets dashboard from `screen-dashboard.jsx`, AI suggestion cards (`screen-ai-suggest.jsx`). Roadmap, chat, and meeting screens belong to Phase 2 (require backend infra not yet built).
+The project-scoped **Dashboard** page (matching `screen-dashboard.jsx`) is live at `/:slug/projects/:projectSlug/dashboard` with the four chart widgets. Open-tasks count and epic progress use live data; velocity, workload, health gauge, AI insight, and activity feed render sample data with a banner flag until the analytics backend lands.
+
+**Still missing in Phase 1:** AI suggestion cards (`screen-ai-suggest.jsx`). Roadmap, chat, and meeting screens belong to Phase 2 (require backend infra not yet built).
 
 Check `ROADMAP.md` for the full ordered task list and `/Design Files/` for the visual reference. Open `AppShell.jsx`, `BoardPage.jsx`, `TaskDetail.jsx`, or `AIGenerationWizard.jsx` for live examples of the conventions.

@@ -8,6 +8,36 @@
 
 ---
 
+## 2026-05-17 — Project Dashboard page added
+
+A new project-scoped Dashboard at `/:slug/projects/:projectSlug/dashboard` matching `/Design Files/screen-dashboard.jsx`. Added to the project sub-nav between Board and Backlog.
+
+**Live data:**
+- KPI tile **Open tasks** (count of cards in any non-Done / non-WontDo column for the project)
+- **Sprint burndown** total/done/days-left (when an active sprint exists; falls back to a sample shape otherwise)
+- **Epic progress** bars (real epics, real task counts from the board)
+
+**Sample data, flagged in the UI with a `· sample` suffix and a banner at the top of the page** — backend doesn't yet expose:
+- Velocity (last 7 sprints, committed vs completed)
+- Project health gauge + 6 component signals
+- Team workload heatmap (people × days)
+- AI Weekly Insight card
+- Recent activity feed
+- KPIs: On track, Bug ratio, Avg cycle time
+
+These widgets will swap to live data when the analytics endpoints from F2-04 / F2-26 / F3-16 ship. The visual shells stay the same.
+
+**New chart components** (in `frontend/src/components/charts/`, all token-styled SVG, accept tabular props):
+
+- `BurndownChart({ total, actual[], today, days })`
+- `VelocityChart({ sprints[{ name, committed, completed, current }] })`
+- `HealthGauge({ score, size, stroke })`
+- `WorkloadHeatmap({ days, data[{ name, load[] }] })`
+
+**New `Icon` primitive** at `components/ui/Icon/Icon.jsx` — kebab-case wrapper over `lucide-react` (e.g. `<Icon name="bar-chart-3" />`) matching the design-file API. Uses an explicit per-icon registry (not a `import * as` namespace) so the bundle tree-shakes — initially loaded with ~60 commonly used icons; add new ones as you reach for them. Direct `lucide-react` named imports still work — Icon is for places where the design-file mockup uses the kebab API.
+
+---
+
 ## 2026-05-17 — Phase 1 polish & Stratos shell adoption
 
 ### UI — App Shell rebuilt on the Stratos grid

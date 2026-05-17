@@ -13,6 +13,7 @@ import { ProjectHomePage } from '@/pages/project/ProjectHomePage';
 import { EpicsPage } from '@/pages/project/EpicsPage';
 import { EpicDetailPage } from '@/pages/project/EpicDetailPage';
 import { BoardPage } from '@/pages/project/BoardPage';
+import { DashboardPage } from '@/pages/project/DashboardPage';
 import { BacklogPage } from '@/pages/project/BacklogPage';
 import { SprintsPage } from '@/pages/project/SprintsPage';
 import { SprintBoardPage } from '@/pages/project/SprintBoardPage';
@@ -78,6 +79,10 @@ function App() {
             <Route
               path="/:slug/projects/:projectSlug/board"
               element={<Keyed paramKey="projectSlug"><BoardPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/dashboard"
+              element={<Keyed paramKey="projectSlug"><DashboardPage /></Keyed>}
             />
             <Route
               path="/:slug/projects/:projectSlug/backlog"

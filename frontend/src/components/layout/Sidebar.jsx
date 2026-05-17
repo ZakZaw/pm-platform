@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
+  BarChart3,
   Briefcase,
   ChevronsUpDown,
   ClipboardList,
@@ -147,6 +148,10 @@ export function Sidebar() {
                   <NavLink to={`/${slug}/projects/${p.slug}/board`} className={sideClass}>
                     <FolderKanban size={13} aria-hidden="true" />
                     <span className="side-item__label">Board</span>
+                  </NavLink>
+                  <NavLink to={`/${slug}/projects/${p.slug}/dashboard`} className={sideClass}>
+                    <BarChart3 size={13} aria-hidden="true" />
+                    <span className="side-item__label">Dashboard</span>
                   </NavLink>
                   <NavLink to={`/${slug}/projects/${p.slug}/backlog`} className={sideClass}>
                     <ClipboardList size={13} aria-hidden="true" />

@@ -8,6 +8,7 @@ export { AIChip } from './AIChip/AIChip';
 export { Priority } from './Priority/Priority';
 export { AvatarStack } from './AvatarStack/AvatarStack';
 export { Sparkline } from './Sparkline/Sparkline';
+export { Icon } from './Icon/Icon';
 export { Chip } from './Chip/Chip';
 export { Table } from './Table/Table';
 export { StatusBadge } from './StatusBadge/StatusBadge';

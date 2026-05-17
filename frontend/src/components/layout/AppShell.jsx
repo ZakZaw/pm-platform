@@ -2,18 +2,20 @@ import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { QuickCreateTaskModal } from '@/components/tasks/QuickCreateTaskModal';
+import { useUiStore } from '@/store/uiStore';
 import './AppShell.css';
 
 export function AppShell() {
+  const collapsed = useUiStore((s) => s.sidebarCollapsed);
   return (
-    <div className="app-shell">
+    <div className={['app', collapsed ? 'is-collapsed' : ''].filter(Boolean).join(' ')}>
       <Sidebar />
-      <div className="app-shell__main">
-        <Topbar />
-        <main className="app-shell__content">
+      <Topbar />
+      <main className="app-main">
+        <div className="app-main__scroll">
           <Outlet />
-        </main>
-      </div>
+        </div>
+      </main>
       <QuickCreateTaskModal />
     </div>
   );

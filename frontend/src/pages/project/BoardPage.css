@@ -1,36 +1,50 @@
 .board-page {
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 44px - var(--space-12));
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
-.board-page__header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
+.board-page__sprint {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto auto;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0;
 }
 
-.board-page__title {
-  font-size: var(--font-size-h1);
-  font-weight: var(--weight-semibold);
-  margin: 0;
-}
-
-.board-page__sub {
-  color: var(--text-tertiary);
-  font-size: var(--font-size-meta);
-  margin: var(--space-1) 0 0;
-}
-
-.board-page__placeholder { color: var(--text-tertiary); }
-
-.board-page__head-actions {
-  display: flex;
+.board-page__kpi {
   align-items: flex-end;
-  gap: var(--space-2);
+  gap: 2px;
+  white-space: nowrap;
+}
+.board-page__kpi--bordered {
+  padding-left: 16px;
+  border-left: 1px solid var(--border-subtle);
+}
+.kpi-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.04em;
+}
+.board-page__kpi-value {
+  font-size: 18px;
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+.board-page__kpi-suffix {
+  font-size: 13px;
+  font-weight: var(--weight-regular);
+}
+
+.board-page__filter-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-primary);
 }
 
 .board-page__filters {
@@ -38,9 +52,28 @@
   flex-wrap: wrap;
   align-items: flex-end;
   gap: var(--space-3);
-  margin-bottom: var(--space-3);
-  padding: var(--space-3);
+  padding: var(--space-3) 20px;
+  border-bottom: 1px solid var(--border-subtle);
   background: var(--bg-surface-1);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.board-page__board {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 16px;
+  overflow: hidden;
+  display: flex;
+}
+
+.board-page__placeholder {
+  color: var(--text-tertiary);
+  padding: var(--space-6);
+}
+
+@media (max-width: 1100px) {
+  .board-page__sprint {
+    grid-template-columns: 1fr auto;
+  }
+  .board-page__kpi--bordered { border-left: 0; padding-left: 0; }
 }

@@ -119,11 +119,13 @@ export function KanbanBoard({ board, onChanged, statusConfigs, projectId, defaul
             <div className="kanban__columns">
               {lane.columns.map((col) => {
                 const cfg = statusConfigs?.find((c) => c.status === col.status);
+                const pts = col.cards.reduce((s, c) => s + (c.storyPoints ?? 0), 0);
                 return (
                   <KanbanColumn
                     key={col.status}
                     status={col.status}
                     count={col.cards.length}
+                    points={pts > 0 ? pts : null}
                     displayName={cfg?.displayName}
                     tone={cfg?.color}
                     onAddTask={projectId ? (title) => addTaskInColumn(col.status, title) : undefined}

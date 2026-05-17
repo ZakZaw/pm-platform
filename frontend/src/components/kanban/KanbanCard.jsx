@@ -1,24 +1,19 @@
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { useParams } from 'react-router-dom';
-import { CheckSquare } from 'lucide-react';
-import { Avatar } from '@/components/ui';
+import { Link, MessageSquare, Paperclip } from 'lucide-react';
+import { Avatar, Priority } from '@/components/ui';
 import { useOrgMembers } from '@/hooks/useOrgMembers';
 import './KanbanCard.css';
 
-const PRIORITY_TONE = {
-  Urgent: 'prio-urgent',
-  High: 'prio-high',
-  Medium: 'prio-med',
-  Low: 'prio-low',
-};
-
-const PRIORITY_LABEL = {
-  Urgent: 'Urgent',
-  High: 'High',
-  Medium: 'Medium',
-  Low: 'Low',
-};
+// Short, stable display key for a task. Real tasks don't have a per-project
+// counter yet (Phase 1 backend uses uuids), so we derive a 4-char tail. When
+// the backend exposes a numeric key (e.g. ATLAS-247) we'll swap this out.
+function shortKey(card) {
+  if (card.key) return card.key;
+  const id = String(card.taskId ?? '');
+  return id ? id.slice(0, 4).toUpperCase() : '—';
+}
 
 export function KanbanCard({ card, onOpen, epic }) {
   const { slug: orgSlug } = useParams();
@@ -36,13 +31,15 @@ export function KanbanCard({ card, onOpen, epic }) {
     if (isDragging) return;
     onOpen?.(card.taskId);
   }
-
   function handleKey(e) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       onOpen?.(card.taskId);
     }
   }
+
+  const comments = card.commentCount ?? 0;
+  const files = card.attachmentCount ?? 0;
 
   return (
     <div
@@ -52,58 +49,66 @@ export function KanbanCard({ card, onOpen, epic }) {
       {...attributes}
       onClick={handleClick}
       onKeyDown={handleKey}
-      className="kanban-card"
+      className="card kanban-card"
       role="button"
       tabIndex={0}
-      aria-label={`${card.title} — ${PRIORITY_LABEL[card.priority]} priority`}
+      aria-label={`${card.title} — ${card.priority} priority`}
     >
-      {epic?.color && (
-        <span
-          className="kanban-card__epic-stripe"
-          style={{ background: epic.color }}
-          aria-hidden="true"
-        />
-      )}
-      <div className="kanban-card__body">
-        <div className="kanban-card__head">
+      <div className="hstack kanban-card__top">
+        <span className="mono dim kanban-card__key">{shortKey(card)}</span>
+        <Priority level={card.priority} />
+      </div>
+
+      <div className="kanban-card__title">{card.title}</div>
+
+      {epic && (
+        <div className="hstack kanban-card__epic" title={epic.title}>
           <span
-            className={['kanban-card__prio', PRIORITY_TONE[card.priority]].join(' ')}
-            title={`${PRIORITY_LABEL[card.priority]} priority`}
-            aria-hidden="true"
+            className="kanban-card__epic-dot"
+            style={{ background: epic.color || 'var(--accent-primary)' }}
           />
-          <span className="kanban-card__title">{card.title}</span>
+          <span className="truncate kanban-card__epic-name">{epic.title}</span>
         </div>
-        {epic && (
-          <div className="kanban-card__epic" title={epic.title}>
-            <span className="kanban-card__epic-dot" style={{ background: epic.color || 'var(--accent-primary)' }} />
-            <span className="kanban-card__epic-name">{epic.title}</span>
-          </div>
+      )}
+
+      {card.blockerKey && (
+        <div className="hstack kanban-card__blocker">
+          <Link size={11} aria-hidden="true" />
+          <span>Blocked by</span>
+          <span className="mono">{card.blockerKey}</span>
+        </div>
+      )}
+
+      <div className="hstack kanban-card__foot">
+        {assignee ? (
+          <Avatar
+            src={assignee.avatarUrl}
+            name={assignee.fullName}
+            size="xs"
+            alt={`Assigned to ${assignee.fullName}`}
+          />
+        ) : (
+          <span className="kanban-card__unassigned" title="Unassigned" />
         )}
-        <div className="kanban-card__foot">
-          <div className="kanban-card__chips">
-            {card.storyPoints != null && (
-              <span className="kanban-card__pts" title="Story points">
-                {card.storyPoints} pts
-              </span>
-            )}
-            {card.subtaskCount > 0 && (
-              <span className="kanban-card__tasks" title="Subtasks complete">
-                <CheckSquare size={11} aria-hidden="true" />
-                {card.completedSubtaskCount}/{card.subtaskCount}
-              </span>
-            )}
-          </div>
-          {assignee ? (
-            <Avatar
-              src={assignee.avatarUrl}
-              name={assignee.fullName}
-              size="xs"
-              alt={`Assigned to ${assignee.fullName}`}
-            />
-          ) : (
-            <span className="kanban-card__unassigned" title="Unassigned" />
+        <span className="hstack kanban-card__meta">
+          {comments > 0 && (
+            <span className="hstack kanban-card__meta-item" title={`${comments} comments`}>
+              <MessageSquare size={11} aria-hidden="true" />
+              {comments}
+            </span>
           )}
-        </div>
+          {files > 0 && (
+            <span className="hstack kanban-card__meta-item" title={`${files} attachments`}>
+              <Paperclip size={11} aria-hidden="true" />
+              {files}
+            </span>
+          )}
+          {card.storyPoints != null && (
+            <span className="mono kanban-card__pts" title="Story points">
+              {card.storyPoints}
+            </span>
+          )}
+        </span>
       </div>
     </div>
   );

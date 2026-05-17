@@ -1,82 +1,27 @@
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  height: 44px;
-  padding: 0 var(--space-4);
-  background: var(--bg-base);
-  border-bottom: 1px solid var(--border-subtle);
-  flex-shrink: 0;
-}
+/* Topbar shell lives in stratos.css (.app-topbar, .crumb, .icon-btn, .search-mini).
+   This file holds the user-menu trigger only. */
 
-.topbar__breadcrumb {
-  font-size: var(--font-size-dense);
-  color: var(--text-tertiary);
-}
-
-.topbar__user {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.topbar__user-name {
-  font-size: var(--font-size-dense);
-  color: var(--text-primary);
-}
-
-.topbar__user-menu {
+.topbar-user {
   position: relative;
 }
 
-.topbar__user-trigger {
+.topbar-user__trigger {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 4px;
   background: transparent;
   border: 0;
-  padding: var(--space-1) var(--space-2);
+  padding: 2px 4px;
   border-radius: var(--radius-md);
   color: var(--text-primary);
   cursor: pointer;
 }
+.topbar-user__trigger:hover { background: var(--bg-hover); }
 
-.topbar__user-trigger:hover {
-  background: var(--bg-hover);
-}
-
-.topbar__menu {
+.topbar-user__menu {
   position: absolute;
-  top: calc(100% + var(--space-1));
+  top: calc(100% + 6px);
   right: 0;
-  min-width: 180px;
-  background: var(--bg-surface-2);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  padding: var(--space-1);
-  display: flex;
-  flex-direction: column;
   z-index: 50;
-}
-
-.topbar__menu-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  background: transparent;
-  border: 0;
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  font-size: var(--font-size-dense);
-  text-decoration: none;
-  cursor: pointer;
-  width: 100%;
-  text-align: left;
-}
-
-.topbar__menu-item:hover {
-  background: var(--bg-hover);
+  min-width: 200px;
 }

@@ -1,18 +1,6 @@
-.app-shell {
-  display: flex;
-  min-height: 100vh;
+/* Shell layout lives in stratos.css (.app, .app-main).
+   This file holds shell-only overrides. */
+
+.app .app-main__scroll {
   background: var(--bg-app);
-}
-
-.app-shell__main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.app-shell__content {
-  flex: 1;
-  padding: var(--space-6);
-  overflow: auto;
 }

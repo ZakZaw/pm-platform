@@ -61,14 +61,20 @@ Read this before writing any code, creating any file, or making any architectura
 │   │   │       ├── Select/
 │   │   │       ├── Card/
 │   │   │       ├── Avatar/
-│   │   │       ├── Badge/          # planned — Stratos tones (neutral/info/purple/warning/danger/success)
-│   │   │       ├── StatusBadge/    # planned — task-status pill
-│   │   │       ├── Priority/       # planned — urgent/high/med/low bars
-│   │   │       ├── AIChip/         # planned
-│   │   │       ├── Modal/          # planned
-│   │   │       ├── Dropdown/       # planned (.menu)
-│   │   │       ├── Tooltip/        # planned
-│   │   │       ├── Toast/          # planned
+│   │   │       ├── AvatarStack/
+│   │   │       ├── Badge/          # Stratos tones (neutral/info/purple/warning/danger/success)
+│   │   │       ├── StatusBadge/    # task-status pill
+│   │   │       ├── Priority/       # urgent/high/med/low bars
+│   │   │       ├── Sparkline/      # compact line chart for sprint banner + KPI tiles
+│   │   │       ├── AIChip/         # gradient + soft variants
+│   │   │       ├── Chip/
+│   │   │       ├── Modal/
+│   │   │       ├── Dropdown/       # uses .menu / .menu-item / .menu-section
+│   │   │       ├── AssigneePicker/
+│   │   │       ├── Spinner/
+│   │   │       ├── Table/
+│   │   │       ├── Tooltip/
+│   │   │       ├── Toast/
 │   │   │       ├── Icon/           # planned — lucide-react wrapper
 │   │   │       └── index.js        # Re-exports every UI component
 │   │   │
@@ -107,8 +113,9 @@ Read this before writing any code, creating any file, or making any architectura
 │   │   │
 │   │   ├── styles/
 │   │   │   ├── tokens.css          # ← ALL design tokens (colors, spacing, typography, shadows)
+│   │   │   ├── stratos.css         # ← Layout primitives + shell classes (.app, .app-sidebar, .app-topbar, .menu, .tabs, .hstack, …)
 │   │   │   ├── reset.css
-│   │   │   └── global.css
+│   │   │   └── global.css          # imports the other three
 │   │   │
 │   │   ├── utils/                  # Pure utility functions (dates, formatting, etc.)
 │   │   ├── constants/              # Enums, route paths, config values
@@ -189,16 +196,22 @@ These are the canonical primitives. Build new ones in `frontend/src/components/u
 | `Select` | `label`, `error`, `help`, `options` or children | ✅ |
 | `Card` | `variant`: default, elevated, ai · `title`, `subtitle` | ✅ |
 | `Avatar` | `name`, `src`, `size`: xs/sm/md/lg/xl · `color`: 1–8 · `status`: online/busy/away/offline | ✅ |
-| `Badge` | `tone`: neutral/info/purple/warning/danger/success · `dot`, `icon` | ⏳ build when first needed |
-| `Priority` | `level`: urgent/high/med/low | ⏳ |
-| `StatusBadge` | `status`: backlog/todo/in_progress/in_review/blocked/done | ⏳ |
-| `AvatarStack` | `people`, `max`, `size` | ⏳ |
-| `AIChip` | wraps "AI" with violet/cyan gradient pill | ⏳ |
-| `Tabs` / `Tab` | flat-class `.tabs > .tab.is-active` | ⏳ |
-| `Modal` | `.modal-backdrop`, `.modal-header/body/footer` | ⏳ |
-| `Dropdown` / `Menu` | `.menu > .menu-item / .menu-section / .menu-divider` | ⏳ |
-| `Tooltip` | `.tooltip` with arrow | ⏳ |
-| `Toast` | `.toast.toast-{success,danger,info}` | ⏳ |
+| `Badge` | `tone`: neutral/info/purple/warning/danger/success · `dot`, children | ✅ |
+| `Priority` | `level`: urgent/high/med/low (or Urgent/High/Medium/Low) | ✅ |
+| `StatusBadge` | `status`: Backlog/ToDo/InProgress/InReview/Blocked/Done/WontDo | ✅ |
+| `Avatar` | already shown — also has `Avatar` palette `av-1..8` | ✅ |
+| `AvatarStack` | `people`, `max`, `size` — overlapped avatars with `+N` overflow | ✅ |
+| `AIChip` | `label`, `variant`: gradient / soft | ✅ |
+| `Sparkline` | `points`, `width`, `height`, `ideal`, `stroke` — compact line chart | ✅ |
+| `Chip` | small selectable pill (used for filters) | ✅ |
+| `Modal` | `.modal-backdrop`, `.modal-header/body/footer` | ✅ |
+| `Dropdown` | uses `.menu` / `.menu-item` / `.menu-section` / `.menu-divider` from `stratos.css` | ✅ |
+| `Tooltip` | `.tooltip` with arrow | ✅ |
+| `Toast` | `.toast.toast-{success,danger,info}` · `useToast()` hook | ✅ |
+| `AssigneePicker` | searchable picker bound to org membership | ✅ |
+| `Spinner` | inline loading indicator | ✅ |
+| `Table` | header + rows wrapper | ✅ |
+| `Tabs` / `Tab` | flat-class `.tabs > .tab.is-active` lives in `stratos.css`; wrap in a primitive when reused | ⏳ |
 | `Icon` | thin wrapper over `lucide-react` | ⏳ |
 
 ```js
@@ -214,9 +227,20 @@ export { Avatar } from './Avatar/Avatar';
 import { Button, Card, Avatar } from '@/components/ui';
 ```
 
-### App frame classes
+### App frame & shared layout classes
 
-The app shell uses Stratos layout classes directly (no component wrapper required): `.app` (grid 220px 1fr × 44px 1fr), `.app-sidebar`, `.app-topbar`, `.app-main`, `.page-header`. Sidebar items use `.side-item / .side-item.active`. Search the design files for any pattern you need before inventing one.
+The app shell uses Stratos layout classes directly (no component wrapper required). All of them live in `frontend/src/styles/stratos.css` — **reuse, don't recreate.** When you need a new pattern, search `/Design Files/components.css` first; only invent a class when nothing matches.
+
+| Family | Classes | Notes |
+|---|---|---|
+| Shell grid | `.app` (`grid-template-rows: 44px 1fr` × `grid-template-columns: 220px 1fr`) · `.app.is-collapsed` (56px sidebar) · `.app-sidebar` (spans both rows) · `.app-topbar` · `.app-main` + `.app-main__scroll` | The shell is grid-based; sidebar spans both rows. |
+| Sidebar | `.org` + `.org-mark` / `.org-name` / `.org-plan` · `.side-section` · `.side-item` / `.side-item.is-active` · `.side-item__label` / `.side-item__swatch` / `.count` / `.pip` · `.side-footer` + `.side-footer__name` / `.side-footer__email` | Sidebar collapses to a 56px icon rail via `.app.is-collapsed`. |
+| Topbar | `.crumb` + `.crumb-link` / `.sep` / `.here` · `.search-mini` / `.input-search` · `.icon-btn` / `.icon-btn-sm` + `.indicator` · `.topbar-spacer` / `.topbar-actions` · `.divider-y` · `.kbd` | Breadcrumb is derived from the URL; `Topbar.jsx` owns the mapping. |
+| Page chrome | `.page-header` + `.page-title` / `.page-meta` · `.subsection` · `.subsection-eyebrow` (uppercase 12px tertiary label, used above each task-drawer section) | KPI tiles use `.kpi-label` + a large numeric span; see `BoardPage.css`. |
+| Overlays | `.menu` + `.menu-section` / `.menu-item` / `.menu-item.is-selected` / `.menu-item.is-danger` / `.menu-divider` · `.tabs` + `.tab` / `.tab.is-active` / `.tab .count` · `.card-ai` (gradient-border AI surface) | The Dropdown primitive renders `.menu`; build a `Tabs` primitive when reused. |
+| Utility | `.hstack` / `.vstack` / `.grow` / `.mono` / `.truncate` / `.muted` / `.dim` · `.grid-2` / `.grid-3` / `.grid-4` · `.spark` · `.prio` (+ `.prio-urgent/high/med/low`) · `.avatar-stack` | Inline flex helpers — prefer these over per-component layout CSS for one-off rows/stacks. |
+
+The four built-out Phase 1 screens use these classes throughout — when in doubt, open `AppShell.jsx`, `BoardPage.jsx`, `TaskDetail.jsx`, or `AIGenerationWizard.jsx` and copy the structure.
 
 ---
 
@@ -272,7 +296,7 @@ Api/
 - Run migrations: `dotnet ef database update` from `Infrastructure/`
 - Schema clusters (from design doc):
   - Cluster 1: Org & Access (Organization, User, OrgMembership, Project, ProjectMembership, Team, TeamMembership)
-  - Cluster 2: Project Work (Epic, Story, Task, Subtask, Sprint, SprintTask, Comment, Attachment)
+  - Cluster 2: Project Work (Epic, Task, Subtask, Sprint, SprintTask, Comment, Attachment) — **Story was dropped in Phase 1 rework; tasks sit directly under epics. `StoryPoints` remains as a field on Task (it's a unit, not an entity link).**
   - Cluster 3: AI & Events (AIAction, AIAuditLog, Notification, ActivityLog)
   - Cluster 4: Comms (Channel, ChannelMember, Message, Meeting, MeetingTranscript, ActionItem)
 
@@ -314,7 +338,7 @@ AI calls are made **only from the backend** (`Infrastructure/Services/AIService.
 The Application layer defines an `IAIService` interface. Only the Infrastructure implementation differs between dev and prod — nothing else in the codebase changes when you switch providers.
 
 Key AI features (see `ROADMAP.md` for priority):
-- Project generation from description → epics, stories, tasks
+- Project generation from description → epics, tasks (with acceptance criteria as subtasks)
 - Effort estimation with confidence scores
 - Sprint retrospective generation
 - Meeting transcript → action item extraction
@@ -357,9 +381,11 @@ Key variables:
 ## What NOT to Do
 
 - Do not call the Anthropic API from the frontend. Backend only.
-- Do not write inline styles. All styles go through Stratos tokens + component CSS in `/components/ui/`.
+- Do not write inline styles. All styles go through Stratos tokens + component CSS in `/components/ui/` or `stratos.css`.
 - Do not duplicate UI primitives. If it doesn't exist in `ui/`, create it there first — and match the Stratos vocabulary in `/Design Files/` (flat class names, theme-aware tokens).
+- Do not recreate shell/layout classes (`.app-sidebar`, `.app-topbar`, `.icon-btn`, `.menu`, `.tabs`, `.hstack`, `.crumb`, etc.) inside page CSS. They live in `stratos.css` — import + use them.
 - Do not hardcode colors, font sizes, spacing values, radii, shadows, or durations. Use the token (`var(--accent-primary)`, `var(--space-4)`, etc.). Hex codes in a component CSS file = bug.
+- Do not introduce a `Story` entity, table, or endpoint. Story was removed in the Phase 1 rework — tasks attach directly to epics, and `StoryPoints` stays as a unit field on `Task`.
 - Do not put business logic in controllers. It goes in Application layer.
 - Do not skip domain validation. Invalid task state transitions must be caught in Domain.
 - Do not use `any` in TypeScript — the frontend should be typed (use JSDoc if not using TS).
@@ -393,8 +419,10 @@ npm run test
 
 ## Current Phase
 
-**Phase 1 — Core PM Loop** (in progress)
+**Phase 1 — Core PM Loop** (in progress, late stage)
 
-F0 (Foundation) is complete. F1-01 (Create org), F1-02 (Org roles) are committed. F1-03 (Invitations) is implemented locally, pending curl AC verification. Stratos design system was adopted mid-Phase-1: existing primitive CSS (Button, Input, Select, Card, Avatar) and all page CSS have been migrated to the Stratos token vocabulary and flat class naming.
+F0 (Foundation) is complete. F1-01 → F1-23 are implemented and shipped — see recent commits for the exact batches. The **Story entity was dropped** during the Phase 1 rework; tasks now sit directly under epics, and the AC list on a task is rendered from subtasks. The AI generation wizard is wired end-to-end (Gemini in dev). All four built-out screens (App Shell, Kanban Board with sprint banner, Task Detail drawer, AI Generation Wizard) match the `/Design Files/` Stratos mockups — see [Visual polish baseline](ROADMAP.md#visual-polish-baseline-2026-05) in ROADMAP.md for the conventions every new screen must follow.
 
-Check `ROADMAP.md` for the full ordered task list and `/Design Files/` for the visual reference.
+**Still missing in Phase 1:** the analytics/widgets dashboard from `screen-dashboard.jsx`, AI suggestion cards (`screen-ai-suggest.jsx`). Roadmap, chat, and meeting screens belong to Phase 2 (require backend infra not yet built).
+
+Check `ROADMAP.md` for the full ordered task list and `/Design Files/` for the visual reference. Open `AppShell.jsx`, `BoardPage.jsx`, `TaskDetail.jsx`, or `AIGenerationWizard.jsx` for live examples of the conventions.

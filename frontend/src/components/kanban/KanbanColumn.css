@@ -1,69 +1,55 @@
 .kanban-col {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  background: var(--bg-surface-1);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  flex: 0 0 280px;
-  min-width: 280px;
+  gap: 8px;
+  min-width: 0;
   max-height: 100%;
-  transition: border-color var(--dur-fast) var(--ease-out),
-    background var(--dur-fast) var(--ease-out);
+  transition: background var(--dur-fast) var(--ease-out);
 }
-
 .kanban-col.is-over {
-  border-color: var(--accent-primary);
   background: var(--bg-selected);
+  border-radius: var(--radius-md);
 }
 
 .kanban-col__head {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
+  padding: 4px 4px 4px 6px;
   flex-shrink: 0;
 }
 
-.kanban-col__count {
-  font-size: var(--font-size-meta);
-  font-family: var(--font-mono);
-  color: var(--text-tertiary);
-}
+.kanban-col__count { font-size: 11px; }
 
 .kanban-col__body {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 8px;
   flex: 1 1 auto;
   overflow-y: auto;
   min-height: 0;
+  padding-right: 2px;
 }
 
-.kanban-col__footer {
-  flex-shrink: 0;
-  padding-top: var(--space-2);
-  border-top: 1px dashed var(--border-subtle);
-}
+.kanban-col__footer { flex-shrink: 0; }
 
 .kanban-col__add-trigger {
   width: 100%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1);
+  gap: 4px;
   background: transparent;
-  border: 0;
-  color: var(--text-tertiary);
-  font-size: var(--font-size-meta);
-  padding: var(--space-2);
-  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-default);
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
   cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out);
 }
-
 .kanban-col__add-trigger:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
+  border-color: var(--border-strong);
+  color: var(--text-secondary);
 }
 
 .kanban-col__add-form {
@@ -73,19 +59,9 @@
 }
 
 .kanban-col__add-input {
-  width: 100%;
-  background: var(--bg-base);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  font-size: var(--font-size-dense);
+  height: auto;
   padding: var(--space-2);
-  outline: none;
-}
-
-.kanban-col__add-input:focus {
-  border-color: var(--border-focus);
-  box-shadow: var(--shadow-focus);
+  font-size: var(--font-size-dense);
 }
 
 .kanban-col__add-actions {

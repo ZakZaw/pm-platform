@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import { Plus } from 'lucide-react';
+import { MoreHorizontal, Plus } from 'lucide-react';
 import { Badge, Button, StatusBadge } from '@/components/ui';
 import './KanbanColumn.css';
 
 export function KanbanColumn({
   status,
   count,
+  points,
   displayName,
   tone,
   children,
@@ -41,22 +42,45 @@ export function KanbanColumn({
       ref={setNodeRef}
       className={['kanban-col', isOver ? 'is-over' : ''].filter(Boolean).join(' ')}
     >
-      <header className="kanban-col__head">
-        {displayName ? (
-          <Badge tone={tone ?? 'neutral'}>{displayName}</Badge>
-        ) : (
-          <StatusBadge status={status} />
-        )}
-        <span className="kanban-col__count">{count}</span>
+      <header className="hstack kanban-col__head">
+        <div className="hstack" style={{ gap: 8 }}>
+          {displayName ? (
+            <Badge tone={tone ?? 'neutral'}>{displayName}</Badge>
+          ) : (
+            <StatusBadge status={status} />
+          )}
+          <span className="mono dim kanban-col__count">
+            {count}
+            {points != null && ` · ${points}pt`}
+          </span>
+        </div>
+        <div className="hstack" style={{ gap: 2 }}>
+          {onAddTask && (
+            <button
+              type="button"
+              className="icon-btn icon-btn-sm"
+              onClick={() => setAdding(true)}
+              aria-label="Add task"
+              title="Add task"
+            >
+              <Plus size={12} aria-hidden="true" />
+            </button>
+          )}
+          <span className="icon-btn icon-btn-sm" aria-hidden="true">
+            <MoreHorizontal size={12} />
+          </span>
+        </div>
       </header>
+
       <div className="kanban-col__body">{children}</div>
+
       {onAddTask && (
         <div className="kanban-col__footer">
           {adding ? (
             <form className="kanban-col__add-form" onSubmit={submit}>
               <input
                 ref={inputRef}
-                className="kanban-col__add-input"
+                className="input kanban-col__add-input"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 onKeyDown={(e) => {
@@ -80,11 +104,7 @@ export function KanbanColumn({
                 >
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={busy || title.trim().length < 2}
-                >
+                <Button type="submit" size="sm" disabled={busy || title.trim().length < 2}>
                   {busy ? 'Adding…' : 'Add'}
                 </Button>
               </div>
@@ -95,7 +115,7 @@ export function KanbanColumn({
               className="kanban-col__add-trigger"
               onClick={() => setAdding(true)}
             >
-              <Plus size={14} aria-hidden="true" /> Add task
+              + Add task
             </button>
           )}
         </div>

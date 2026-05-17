@@ -1,27 +1,76 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Trash2, X } from 'lucide-react';
-import { AssigneePicker, Button, useToast } from '@/components/ui';
+import {
+  ArrowUpRight,
+  Check,
+  Copy,
+  Edit3,
+  Eye,
+  GitCommit,
+  GitPullRequest,
+  History,
+  Layers,
+  Maximize2,
+  MessageSquare,
+  MoreHorizontal,
+  Trash2,
+  User,
+  X,
+} from 'lucide-react';
+import {
+  AssigneePicker,
+  Badge,
+  Button,
+  Priority,
+  StatusBadge,
+  useToast,
+} from '@/components/ui';
 import { tasksApi } from '@/api/tasks.api';
 import { subtasksApi } from '@/api/subtasks.api';
 import { commentsApi } from '@/api/comments.api';
+import { useOrgMembers } from '@/hooks/useOrgMembers';
 import { StatusDropdown } from './StatusDropdown';
 import { CommentList } from './CommentList';
 import { CommentInput } from './CommentInput';
 import './TaskDetail.css';
 
-/**
- * Drawer-style task detail. Shown by the story page when a task card is
- * clicked. Owns subtask list edits; status changes flow up to the parent
- * via onUpdated so the parent stays the single source of truth for the
- * task object.
- */
+const PRIORITY_LABEL = {
+  Urgent: 'Urgent',
+  High: 'High',
+  Medium: 'Medium',
+  Low: 'Low',
+};
+
+function shortKey(task) {
+  if (task?.key) return task.key;
+  const id = String(task?.id ?? '');
+  return id ? id.slice(0, 4).toUpperCase() : '—';
+}
+
+function fmtDueDate(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+function MetaRow({ label, children }) {
+  return (
+    <div className="task-detail__meta-row">
+      <div className="task-detail__meta-label">{label}</div>
+      <div className="task-detail__meta-value">{children}</div>
+    </div>
+  );
+}
+
 export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
   const { slug: orgSlug } = useParams();
+  const { members } = useOrgMembers(orgSlug);
   const toast = useToast();
+
   const [subtasks, setSubtasks] = useState([]);
   const [newSub, setNewSub] = useState('');
   const [comments, setComments] = useState([]);
+  const [activeTab, setActiveTab] = useState('comments');
 
   useEffect(() => {
     let cancelled = false;
@@ -41,7 +90,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
       const list = await commentsApi.listForTask(task.id);
       setComments(list);
     } catch {
-      /* surfaced by the section if needed */
+      /* surfaced by section if needed */
     }
   }, [task.id]);
 
@@ -74,9 +123,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
   }
 
   async function changeAssignee(userId) {
-    const body = userId == null
-      ? { clearAssignee: true }
-      : { assigneeId: userId };
+    const body = userId == null ? { clearAssignee: true } : { assigneeId: userId };
     try {
       const updated = await tasksApi.update(task.id, body);
       onUpdated?.(updated);
@@ -89,9 +136,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
   }
 
   async function changeReviewer(userId) {
-    const body = userId == null
-      ? { clearReviewer: true }
-      : { reviewerId: userId };
+    const body = userId == null ? { clearReviewer: true } : { reviewerId: userId };
     try {
       const updated = await tasksApi.update(task.id, body);
       onUpdated?.(updated);
@@ -172,98 +217,254 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
     }
   }
 
+  function copyKey() {
+    navigator.clipboard?.writeText(shortKey(task)).then(
+      () => toast.show({ tone: 'success', message: 'Task key copied.' }),
+      () => {},
+    );
+  }
+
+  const reporter = useMemo(() => {
+    const id = task.reporterId ?? task.createdBy ?? task.createdById;
+    return id ? members.find((m) => m.userId === id) : null;
+  }, [task, members]);
+
+  const due = fmtDueDate(task.dueDate);
+
   return (
     <aside className="task-detail" aria-label={`Task: ${task.title}`}>
-      <header className="task-detail__head">
-        <button type="button" className="task-detail__close" onClick={onClose} aria-label="Close">
-          <X size={16} aria-hidden="true" />
-        </button>
-        <h2 className="task-detail__title">{task.title}</h2>
-        <div className="task-detail__head-row">
-          <StatusDropdown status={task.status} onChange={changeStatus} />
-          <span className="task-detail__priority">Priority: {task.priority}</span>
-        </div>
-        <div className="task-detail__people">
-          <div className="task-detail__person">
-            <span className="task-detail__person-label">Assignee</span>
-            <AssigneePicker
-              orgSlug={orgSlug}
-              value={task.assigneeId ?? null}
-              onChange={changeAssignee}
-            />
-          </div>
-          <div className="task-detail__person">
-            <span className="task-detail__person-label">Reviewer</span>
-            <AssigneePicker
-              orgSlug={orgSlug}
-              value={task.reviewerId ?? null}
-              onChange={changeReviewer}
-            />
-          </div>
-        </div>
-      </header>
-
-      {task.description && (
-        <section className="task-detail__section">
-          <h3 className="task-detail__heading">Description</h3>
-          <p className="task-detail__desc">{task.description}</p>
-        </section>
-      )}
-
-      <section className="task-detail__section">
-        <h3 className="task-detail__heading">Subtasks</h3>
-        {subtasks.length === 0 && (
-          <p className="task-detail__placeholder">No subtasks yet.</p>
+      {/* Drawer header */}
+      <div className="hstack task-detail__topbar">
+        <span className="mono dim task-detail__key">{shortKey(task)}</span>
+        <span className="dim">·</span>
+        {task.sprintName && <Badge tone="info">{task.sprintName}</Badge>}
+        {task.epicTitle && (
+          <Badge tone="purple">
+            <Layers size={11} aria-hidden="true" /> {task.epicTitle}
+          </Badge>
         )}
-        <ul className="task-detail__sub-list">
-          {subtasks.map((s) => (
-            <li key={s.id} className="task-detail__sub">
-              <label className="task-detail__sub-check">
-                <input
-                  type="checkbox"
-                  checked={s.completed}
-                  onChange={() => toggleSubtask(s)}
-                />
-                <span className={s.completed ? 'task-detail__sub-done' : ''}>{s.title}</span>
-              </label>
-              <button
-                type="button"
-                className="task-detail__sub-remove"
-                onClick={() => removeSubtask(s)}
-                aria-label="Remove subtask"
-              >
-                <Trash2 size={14} aria-hidden="true" />
-              </button>
-            </li>
-          ))}
-        </ul>
-        <form onSubmit={addSubtask} className="task-detail__sub-form">
-          <input
-            type="text"
-            value={newSub}
-            onChange={(e) => setNewSub(e.target.value)}
-            placeholder="Add subtask…"
-            className="task-detail__sub-input"
-          />
-          <Button size="sm" type="submit" disabled={newSub.trim().length === 0}>Add</Button>
-        </form>
-      </section>
+        <div className="grow" />
+        <button
+          type="button"
+          className="icon-btn icon-btn-sm"
+          onClick={copyKey}
+          title="Copy task key"
+          aria-label="Copy task key"
+        >
+          <Copy size={13} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          className="icon-btn icon-btn-sm"
+          title="Open full page"
+          aria-label="Open full page"
+          disabled
+        >
+          <ArrowUpRight size={13} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          className="icon-btn icon-btn-sm"
+          title="More"
+          aria-label="More"
+        >
+          <MoreHorizontal size={13} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          className="icon-btn icon-btn-sm"
+          onClick={onClose}
+          title="Close"
+          aria-label="Close"
+        >
+          <X size={13} aria-hidden="true" />
+        </button>
+      </div>
 
-      <section className="task-detail__section">
-        <h3 className="task-detail__heading">Comments</h3>
-        <CommentList
-          projectId={projectId}
-          comments={comments}
-          onChanged={refreshComments}
-        />
-        <div className="task-detail__comment-input">
-          <CommentInput projectId={projectId} onSubmit={postComment} />
+      {/* Body grid */}
+      <div className="task-detail__body">
+        <div className="task-detail__main">
+          <div className="task-detail__title">{task.title}</div>
+          <div className="hstack task-detail__byline">
+            {reporter && (
+              <span className="hstack" style={{ gap: 4 }}>
+                <User size={12} aria-hidden="true" /> {reporter.fullName} reported
+              </span>
+            )}
+            <span>·</span>
+            <span className="hstack" style={{ gap: 4 }}>
+              <Eye size={12} aria-hidden="true" /> {task.watcherCount ?? 0} watchers
+            </span>
+          </div>
+
+          {task.description && (
+            <>
+              <div className="subsection-eyebrow">Description</div>
+              <p className="task-detail__desc">{task.description}</p>
+            </>
+          )}
+
+          <div className="subsection-eyebrow">Acceptance criteria</div>
+          {subtasks.length === 0 && (
+            <p className="task-detail__placeholder">No acceptance criteria yet.</p>
+          )}
+          <ul className="task-detail__ac">
+            {subtasks.map((s) => (
+              <li key={s.id} className="task-detail__ac-row">
+                <label className="task-detail__ac-check">
+                  <input
+                    type="checkbox"
+                    checked={s.completed}
+                    onChange={() => toggleSubtask(s)}
+                  />
+                  <span className="task-detail__ac-box" aria-hidden="true">
+                    {s.completed && <Check size={10} strokeWidth={3} />}
+                  </span>
+                  <span className={s.completed ? 'task-detail__ac-done' : ''}>{s.title}</span>
+                </label>
+                <button
+                  type="button"
+                  className="icon-btn icon-btn-sm task-detail__ac-remove"
+                  onClick={() => removeSubtask(s)}
+                  aria-label="Remove criterion"
+                >
+                  <Trash2 size={12} aria-hidden="true" />
+                </button>
+              </li>
+            ))}
+          </ul>
+          <form onSubmit={addSubtask} className="task-detail__ac-form">
+            <input
+              type="text"
+              value={newSub}
+              onChange={(e) => setNewSub(e.target.value)}
+              placeholder="Add criterion…"
+              className="input task-detail__ac-input"
+            />
+            <Button size="sm" type="submit" disabled={newSub.trim().length === 0}>
+              Add
+            </Button>
+          </form>
+
+          {/* Activity */}
+          <div className="subsection-eyebrow">Activity</div>
+          <div className="tabs task-detail__tabs">
+            <button
+              type="button"
+              className={['tab', activeTab === 'comments' ? 'is-active' : ''].filter(Boolean).join(' ')}
+              onClick={() => setActiveTab('comments')}
+            >
+              <MessageSquare size={12} aria-hidden="true" /> Comments
+              <span className="count">{comments.length}</span>
+            </button>
+            <button
+              type="button"
+              className={['tab', activeTab === 'history' ? 'is-active' : ''].filter(Boolean).join(' ')}
+              onClick={() => setActiveTab('history')}
+            >
+              <History size={12} aria-hidden="true" /> History
+            </button>
+            <button
+              type="button"
+              className={['tab', activeTab === 'commits' ? 'is-active' : ''].filter(Boolean).join(' ')}
+              onClick={() => setActiveTab('commits')}
+            >
+              <GitPullRequest size={12} aria-hidden="true" /> Commits
+            </button>
+          </div>
+
+          <div className="task-detail__activity">
+            {activeTab === 'comments' && (
+              <CommentList
+                projectId={projectId}
+                comments={comments}
+                onChanged={refreshComments}
+              />
+            )}
+            {activeTab === 'history' && (
+              <p className="task-detail__placeholder">
+                <GitCommit size={12} style={{ verticalAlign: 'middle', marginRight: 6 }} />
+                Field-change history isn’t wired up yet — coming in Phase 2.
+              </p>
+            )}
+            {activeTab === 'commits' && (
+              <p className="task-detail__placeholder">
+                <Maximize2 size={12} style={{ verticalAlign: 'middle', marginRight: 6 }} />
+                Connect a repo in Settings to surface commits and PRs here.
+              </p>
+            )}
+          </div>
         </div>
-      </section>
 
-      <footer className="task-detail__foot">
-        <Button variant="danger" size="sm" onClick={deleteTask}>Delete task</Button>
-      </footer>
+        <div className="task-detail__meta">
+          <MetaRow label="Status">
+            <StatusDropdown status={task.status} onChange={changeStatus} />
+          </MetaRow>
+          <MetaRow label="Assignee">
+            <AssigneePicker orgSlug={orgSlug} value={task.assigneeId ?? null} onChange={changeAssignee} />
+          </MetaRow>
+          <MetaRow label="Reviewer">
+            <AssigneePicker orgSlug={orgSlug} value={task.reviewerId ?? null} onChange={changeReviewer} />
+          </MetaRow>
+          <MetaRow label="Priority">
+            <span className="hstack" style={{ gap: 6 }}>
+              <Priority level={task.priority} />
+              <span style={{ fontSize: 12 }}>{PRIORITY_LABEL[task.priority] ?? task.priority}</span>
+            </span>
+          </MetaRow>
+          {task.storyPoints != null && (
+            <MetaRow label="Points">
+              <span className="mono task-detail__pts">{task.storyPoints}</span>
+            </MetaRow>
+          )}
+          {due && (
+            <MetaRow label="Due">
+              <span style={{ fontSize: 12 }}>{due}</span>
+            </MetaRow>
+          )}
+          {task.sprintName && (
+            <MetaRow label="Sprint">
+              <Badge tone="info">{task.sprintName}</Badge>
+            </MetaRow>
+          )}
+          {task.epicTitle && (
+            <MetaRow label="Epic">
+              <span className="hstack" style={{ gap: 6, fontSize: 12, color: 'var(--accent-primary)' }}>
+                <Layers size={11} aria-hidden="true" /> {task.epicTitle}
+              </span>
+            </MetaRow>
+          )}
+          {task.labels?.length > 0 && (
+            <MetaRow label="Labels">
+              <div className="hstack" style={{ flexWrap: 'wrap', gap: 4 }}>
+                {task.labels.map((l) => (
+                  <Badge key={l} tone="neutral" dot>
+                    {l}
+                  </Badge>
+                ))}
+              </div>
+            </MetaRow>
+          )}
+
+          <div className="task-detail__divider" />
+
+          <button
+            type="button"
+            className="task-detail__delete"
+            onClick={deleteTask}
+          >
+            <Trash2 size={12} aria-hidden="true" /> Delete task
+          </button>
+        </div>
+      </div>
+
+      {/* Composer */}
+      <div className="task-detail__composer">
+        <CommentInput projectId={projectId} onSubmit={postComment} />
+      </div>
     </aside>
   );
 }
+
+// Export reporter helper for tests if needed later.
+export const __test__ = { shortKey };

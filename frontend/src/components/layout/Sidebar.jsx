@@ -2,28 +2,38 @@ import { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   Briefcase,
-  CheckSquare,
-  ChevronLeft,
-  ChevronRight,
+  ChevronsUpDown,
   ClipboardList,
-  Home,
-  KanbanSquare,
+  FolderKanban,
+  Inbox,
   Layers,
+  LayoutGrid,
   Plus,
   Rocket,
   Settings,
   Users,
 } from 'lucide-react';
-import { Avatar, Button } from '@/components/ui';
+import { Avatar } from '@/components/ui';
+import { useAuthStore } from '@/store/authStore';
 import { useOrgStore } from '@/store/orgStore';
 import { useProjectStore } from '@/store/projectStore';
 import { useUiStore } from '@/store/uiStore';
 import './Sidebar.css';
 
+// Maps a project to one of the eight Stratos avatar gradient slots so
+// the swatch alongside the project name stays stable for that project.
+function projectSwatch(name) {
+  if (!name) return 'av-1';
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+  }
+  return `av-${(hash % 8) + 1}`;
+}
+
 export function Sidebar() {
   const location = useLocation();
-  const collapsed = useUiStore((s) => s.sidebarCollapsed);
-  const toggle = useUiStore((s) => s.toggleSidebar);
+  const user = useAuthStore((s) => s.user);
 
   const orgs = useOrgStore((s) => s.orgs);
   const orgsLoaded = useOrgStore((s) => s.loaded);
@@ -34,185 +44,146 @@ export function Sidebar() {
   const lastOrgSlug = useUiStore((s) => s.lastOrgSlug);
   const setLastOrgSlug = useUiStore((s) => s.setLastOrgSlug);
 
-  // orgStore isn't persisted, so on a hard reload it's empty until we
-  // refresh. The Sidebar is the right place for this because it's the only
-  // always-mounted consumer of the org list inside the protected shell.
   useEffect(() => {
-    if (!orgsLoaded) {
-      refreshOrgs().catch(() => {});
-    }
+    if (!orgsLoaded) refreshOrgs().catch(() => {});
   }, [orgsLoaded, refreshOrgs]);
 
-  // useParams() inside a layout returns the parent Route's params, not the
-  // matched child's, so we read the slug from the URL directly and verify
-  // it against the loaded org list. Segments like "dashboard", "onboarding",
-  // "settings", "invitations" won't match any org slug.
   const firstSegment = location.pathname.split('/').filter(Boolean)[0];
   const urlOrg = orgs.find((o) => o.slug === firstSegment) ?? null;
 
-  // Remember the last org the user was actually inside so user-scoped
-  // pages (/dashboard, /settings/profile) can keep showing the org nav.
   useEffect(() => {
-    if (urlOrg && urlOrg.slug !== lastOrgSlug) {
-      setLastOrgSlug(urlOrg.slug);
-    }
+    if (urlOrg && urlOrg.slug !== lastOrgSlug) setLastOrgSlug(urlOrg.slug);
   }, [urlOrg, lastOrgSlug, setLastOrgSlug]);
 
-  // Every user has at least one org, so we always have something to show:
-  // URL org → last visited → first org in the list.
-  const currentOrg =
-    urlOrg ?? orgs.find((o) => o.slug === lastOrgSlug) ?? orgs[0] ?? null;
+  const currentOrg = urlOrg ?? orgs.find((o) => o.slug === lastOrgSlug) ?? orgs[0] ?? null;
   const slug = currentOrg?.slug ?? null;
 
-  // Pull the project slug from /:slug/projects/:projectSlug/... so the
-  // sidebar can show project-scoped nav (Epics, Stories, etc.) without
-  // every page having to manage the sidebar state itself.
   const pathSegments = location.pathname.split('/').filter(Boolean);
   const projectSlug =
-    pathSegments[0] === slug && pathSegments[1] === 'projects' && pathSegments[2] && pathSegments[2] !== 'new'
+    pathSegments[0] === slug &&
+    pathSegments[1] === 'projects' &&
+    pathSegments[2] &&
+    pathSegments[2] !== 'new'
       ? pathSegments[2]
       : null;
 
-  // Lazy-load the project list for the current org so it shows in the
-  // sidebar regardless of which page the user is on.
   useEffect(() => {
-    if (slug && !projectsLoadedByOrg[slug]) {
-      refreshProjects(slug).catch(() => {});
-    }
+    if (slug && !projectsLoadedByOrg[slug]) refreshProjects(slug).catch(() => {});
   }, [slug, projectsLoadedByOrg, refreshProjects]);
 
   const projects = slug ? projectsByOrg[slug] ?? [] : [];
 
-  const sidebarClasses = ['sidebar', collapsed ? 'sidebar--collapsed' : '']
-    .filter(Boolean)
-    .join(' ');
+  const sideClass = ({ isActive }) =>
+    ['side-item', isActive ? 'is-active' : ''].filter(Boolean).join(' ');
 
-  const linkClass = ({ isActive }) =>
-    ['sidebar__link', isActive ? 'sidebar__link--active' : '']
-      .filter(Boolean)
-      .join(' ');
+  const orgMark = (currentOrg?.name?.[0] ?? '·').toUpperCase();
 
   return (
-    <aside className={sidebarClasses} aria-label="Primary navigation">
-      <div className="sidebar__brand">
-        <span className="sidebar__brand-mark" aria-hidden="true" />
-        {!collapsed && <span className="sidebar__brand-text">PM Platform</span>}
-      </div>
-
-      {currentOrg && !collapsed && (
-        <NavLink
-          to={`/${currentOrg.slug}/home`}
-          className="sidebar__org"
-          title={currentOrg.name}
-        >
-          <Avatar src={currentOrg.logoUrl} name={currentOrg.name} size="md" />
-          <div className="sidebar__org-info">
-            <div className="sidebar__org-name">{currentOrg.name}</div>
-            <div className="sidebar__org-role">{currentOrg.role}</div>
+    <aside className="app-sidebar" aria-label="Primary navigation">
+      {currentOrg && (
+        <NavLink to={`/${currentOrg.slug}/home`} className="org" title={currentOrg.name}>
+          <div className="org-mark" aria-hidden="true">{orgMark}</div>
+          <div className="grow">
+            <div className="org-name">{currentOrg.name}</div>
+            <div className="org-plan">{currentOrg.role}</div>
           </div>
+          <ChevronsUpDown size={12} color="var(--text-muted)" aria-hidden="true" />
         </NavLink>
       )}
 
-      <nav className="sidebar__nav">
-        <NavLink to="/dashboard" className={linkClass} title={collapsed ? 'My work' : undefined}>
-          <CheckSquare className="sidebar__link-icon" aria-hidden="true" />
-          {!collapsed && <span className="sidebar__link-label">My work</span>}
+      <div className="side-section">Workspace</div>
+      <NavLink to="/dashboard" className={sideClass} title="My work">
+        <LayoutGrid size={13} aria-hidden="true" />
+        <span className="side-item__label">My work</span>
+      </NavLink>
+      {slug && (
+        <NavLink to={`/${slug}/home`} className={sideClass} end title="Home">
+          <Inbox size={13} aria-hidden="true" />
+          <span className="side-item__label">Home</span>
         </NavLink>
+      )}
+      {slug && (
+        <NavLink to={`/${slug}/settings/members`} className={sideClass} title="Members">
+          <Users size={13} aria-hidden="true" />
+          <span className="side-item__label">Members</span>
+        </NavLink>
+      )}
 
-        {slug && (
-          <>
-            {!collapsed && <div className="sidebar__section">Workspace</div>}
-            <NavLink to={`/${slug}/home`} className={linkClass} end title={collapsed ? 'Home' : undefined}>
-              <Home className="sidebar__link-icon" aria-hidden="true" />
-              {!collapsed && <span className="sidebar__link-label">Home</span>}
-            </NavLink>
-            <NavLink to={`/${slug}/settings/members`} className={linkClass} title={collapsed ? 'Members' : undefined}>
-              <Users className="sidebar__link-icon" aria-hidden="true" />
-              {!collapsed && <span className="sidebar__link-label">Members</span>}
-            </NavLink>
-          </>
-        )}
-
-        {slug && (
-          <>
-            {!collapsed && <div className="sidebar__section">Projects</div>}
-            {projects.length === 0 && !collapsed && (
-              <div className="sidebar__empty">No projects yet</div>
-            )}
-            {projects.map((p) => {
-              const isCurrent = p.slug === projectSlug;
-              return (
-                <div key={p.id} className="sidebar__project">
-                  <NavLink
-                    to={`/${slug}/projects/${p.slug}`}
-                    className={linkClass}
-                    end
-                    title={collapsed ? p.name : undefined}
-                  >
-                    <Briefcase className="sidebar__link-icon" aria-hidden="true" />
-                    {!collapsed && <span className="sidebar__link-label">{p.name}</span>}
-                  </NavLink>
-                  {isCurrent && !collapsed && (
-                    <div className="sidebar__sub">
-                      <NavLink to={`/${slug}/projects/${p.slug}/epics`} className={linkClass}>
-                        <Layers className="sidebar__link-icon" aria-hidden="true" />
-                        <span className="sidebar__link-label">Epics</span>
-                      </NavLink>
-                      <NavLink to={`/${slug}/projects/${p.slug}/board`} className={linkClass}>
-                        <KanbanSquare className="sidebar__link-icon" aria-hidden="true" />
-                        <span className="sidebar__link-label">Board</span>
-                      </NavLink>
-                      <NavLink to={`/${slug}/projects/${p.slug}/backlog`} className={linkClass}>
-                        <ClipboardList className="sidebar__link-icon" aria-hidden="true" />
-                        <span className="sidebar__link-label">Backlog</span>
-                      </NavLink>
-                      <NavLink to={`/${slug}/projects/${p.slug}/sprints`} className={linkClass}>
-                        <Rocket className="sidebar__link-icon" aria-hidden="true" />
-                        <span className="sidebar__link-label">Sprints</span>
-                      </NavLink>
-                      <NavLink to={`/${slug}/projects/${p.slug}/settings/members`} className={linkClass}>
-                        <Users className="sidebar__link-icon" aria-hidden="true" />
-                        <span className="sidebar__link-label">Members</span>
-                      </NavLink>
-                      <NavLink to={`/${slug}/projects/${p.slug}/settings/workflow`} className={linkClass}>
-                        <Settings className="sidebar__link-icon" aria-hidden="true" />
-                        <span className="sidebar__link-label">Workflow</span>
-                      </NavLink>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+      {slug && (
+        <>
+          <div className="side-section">
+            <span>Projects</span>
             <NavLink
               to={`/${slug}/projects/new`}
-              className={linkClass}
-              title={collapsed ? 'New project' : undefined}
+              className="side-section__add"
+              title="New project"
+              aria-label="New project"
             >
-              <Plus className="sidebar__link-icon" aria-hidden="true" />
-              {!collapsed && <span className="sidebar__link-label">New project</span>}
+              <Plus size={11} aria-hidden="true" />
             </NavLink>
-          </>
-        )}
-
-      </nav>
-
-      <div className="sidebar__footer">
-        <Button
-          variant="ghost"
-          size="sm"
-          block
-          onClick={toggle}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {collapsed ? (
-            <ChevronRight size={16} aria-hidden="true" />
-          ) : (
-            <>
-              <ChevronLeft size={16} aria-hidden="true" />
-              <span>Collapse</span>
-            </>
+          </div>
+          {projects.length === 0 && (
+            <div className="side-item" style={{ color: 'var(--text-muted)', cursor: 'default' }}>
+              <span className="side-item__label">No projects yet</span>
+            </div>
           )}
-        </Button>
+          {projects.map((p) => (
+            <div key={p.id} className="sidebar-project">
+              <NavLink
+                to={`/${slug}/projects/${p.slug}`}
+                className={sideClass}
+                end
+                title={p.name}
+              >
+                <span className={['side-item__swatch', projectSwatch(p.name)].join(' ')} aria-hidden="true" />
+                <span className="side-item__label truncate">{p.name}</span>
+              </NavLink>
+              {p.slug === projectSlug && (
+                <div className="sidebar-project__sub">
+                  <NavLink to={`/${slug}/projects/${p.slug}/epics`} className={sideClass}>
+                    <Layers size={13} aria-hidden="true" />
+                    <span className="side-item__label">Epics</span>
+                  </NavLink>
+                  <NavLink to={`/${slug}/projects/${p.slug}/board`} className={sideClass}>
+                    <FolderKanban size={13} aria-hidden="true" />
+                    <span className="side-item__label">Board</span>
+                  </NavLink>
+                  <NavLink to={`/${slug}/projects/${p.slug}/backlog`} className={sideClass}>
+                    <ClipboardList size={13} aria-hidden="true" />
+                    <span className="side-item__label">Backlog</span>
+                  </NavLink>
+                  <NavLink to={`/${slug}/projects/${p.slug}/sprints`} className={sideClass}>
+                    <Rocket size={13} aria-hidden="true" />
+                    <span className="side-item__label">Sprints</span>
+                  </NavLink>
+                  <NavLink to={`/${slug}/projects/${p.slug}/settings/members`} className={sideClass}>
+                    <Users size={13} aria-hidden="true" />
+                    <span className="side-item__label">Members</span>
+                  </NavLink>
+                  <NavLink to={`/${slug}/projects/${p.slug}/settings/workflow`} className={sideClass}>
+                    <Settings size={13} aria-hidden="true" />
+                    <span className="side-item__label">Workflow</span>
+                  </NavLink>
+                </div>
+              )}
+            </div>
+          ))}
+        </>
+      )}
+
+      <div className="side-footer">
+        <Avatar
+          src={user?.avatarUrl}
+          name={user?.fullName || user?.email}
+          size="sm"
+        />
+        <div className="grow">
+          <div className="side-footer__name">{user?.fullName ?? 'You'}</div>
+          <div className="side-footer__email">{user?.email}</div>
+        </div>
+        <NavLink to="/settings/profile" className="icon-btn icon-btn-sm" title="Settings" aria-label="Settings">
+          <Settings size={13} aria-hidden="true" />
+        </NavLink>
       </div>
     </aside>
   );

@@ -10,7 +10,9 @@ Each task includes:
 - **Frontend:** components, pages, state (always built on Stratos primitives from `components/ui/`)
 - **AC:** acceptance criteria (done when…)
 
-**Stratos primitive checklist.** When a task says "build a new UI primitive," it means adding it to `frontend/src/components/ui/<Name>/` matching the Stratos style (flat class names, theme-aware tokens), then exporting from `index.js`. Existing primitives: Button, Input, Select, Card, Avatar. Common ones still to build as features need them: Badge, StatusBadge, Priority, Modal, Dropdown/Menu, Tooltip, Toast, AIChip, AvatarStack, Icon (lucide-react wrapper).
+**Stratos primitive checklist.** When a task says "build a new UI primitive," it means adding it to `frontend/src/components/ui/<Name>/` matching the Stratos style (flat class names, theme-aware tokens), then exporting from `index.js`. Existing primitives: Button, Input, Select, Card, Avatar, Badge, StatusBadge, Priority, AIChip, AvatarStack, Sparkline, Chip, Modal, Dropdown, Toast, Tooltip, Table, AssigneePicker, Spinner. Still to build as features need them: Tabs (the `.tabs/.tab` classes already live in `stratos.css` — wrap them in a primitive when reused), Icon (a thin lucide-react wrapper).
+
+**Stratos shell + layout classes.** The application chrome is built on the Stratos layout primitives in `frontend/src/styles/stratos.css`. **Reuse them — never invent new shell classes.** Key patterns: `.app` (grid 220px 1fr × 44px 1fr, `.is-collapsed` flips to 56px), `.app-sidebar` + `.org` / `.org-mark` / `.side-section` / `.side-item.is-active` / `.side-footer`, `.app-topbar` + `.crumb` / `.search-mini` / `.icon-btn` / `.divider-y`, `.app-main` + `.page-header` / `.page-title` / `.subsection`, `.menu` / `.menu-item` / `.menu-section` / `.menu-divider`, `.tabs` / `.tab.is-active`, `.hstack` / `.vstack` / `.grow` / `.mono` / `.truncate` / `.muted` / `.dim`, `.grid-2/3/4`, `.kbd`, `.card-ai`. Refer to `/Design Files/components.css` for the canonical CSS and `/Design Files/screen-*.jsx` for usage examples.
 
 ---
 
@@ -279,31 +281,32 @@ Each task includes:
 **AC:**
 
 - PMs and Team Leads can create/edit/archive epics
-- Epic shows progress % computed from child story points
+- Epic shows progress % computed from child task story points
 - Archived epics hidden by default, toggleable
 
 ---
 
-### F1-08 (PM-03) — Story / Task / Subtask CRUD
+### F1-08 (PM-03) — Task / Subtask CRUD
+
+> **Phase 1 rework (2026-05):** The `Story` layer was removed. Tasks now sit directly under Epics; subtasks (used as acceptance criteria in the UI) sit under Tasks. Story-points stays as a Task field (it's a unit, not an entity link).
 
 **Backend:**
 
-- Entities: `Story` (id, project_id, epic_id, title, description, story_points, priority, status, sprint_id, assignee_id, reporter_id, due_date, created_at)
-- `Task` (id, story_id, title, description, status, assignee_id, reviewer_id, priority, time_logged_minutes, pr_url, created_at)
-- `Subtask` (id, task_id, title, completed, assignee_id)
+- `Task` (id, project_id, epic_id, title, description, story_points, priority, status, sprint_id, assignee_id, reviewer_id, reporter_id, due_date, time_logged_minutes, pr_url, created_at)
+- `Subtask` (id, task_id, title, completed, assignee_id) — rendered in the UI as acceptance criteria
 - Priority enum: Low, Medium, High, Urgent
-- Endpoints: full CRUD under `/api/v1/projects/{id}/stories`, `/tasks`, `/subtasks`
+- Endpoints: full CRUD under `/api/v1/projects/{id}/tasks`, `/subtasks`
 
 **Frontend:**
 
 - `components/tasks/TaskCard.jsx` (compact, used everywhere)
-- `components/tasks/TaskDetail.jsx` (modal/drawer with all fields)
+- `components/tasks/TaskDetail.jsx` (drawer with all fields; two-column layout per `/Design Files/screen-task.jsx`)
 - `components/tasks/TaskForm.jsx` (create/edit)
 - `store/taskStore.js`
 
 **AC:**
 
-- Create epic → story → task → subtask hierarchy works
+- Create epic → task → subtask hierarchy works
 - Markdown supported in description (use `react-markdown`)
 - @mentions in description trigger notifications (queue them now, ship in F2-XX)
 
@@ -354,17 +357,17 @@ Each task includes:
 
 ### F1-11 (PM-06) — Backlog view
 
-**Backend:** `GET /api/v1/projects/{id}/backlog` returns ordered list of stories not in active sprint.
+**Backend:** `GET /api/v1/projects/{id}/backlog` returns ordered list of tasks not in active sprint.
 **Frontend:**
 
 - `pages/project/BacklogPage.jsx`
-- Drag stories up/down to reorder priority
-- Drag stories into the right-hand "active sprint" panel to add to sprint
+- Drag tasks up/down to reorder priority
+- Drag tasks into the right-hand "active sprint" panel to add to sprint
 
 **AC:**
 
 - Reordering persists `priority_order` in DB
-- Capacity bar in active sprint panel updates live as stories are added
+- Capacity bar in active sprint panel updates live as tasks are added
 
 ---
 
@@ -374,10 +377,10 @@ Each task includes:
 
 - Entity: `Sprint` (id, project_id, name, goal, start_date, end_date, velocity_target, status, scope_baseline, created_at, closed_at)
 - `SprintStatus` enum: Planning, Active, Closed
-- `SprintStory` join table (id, sprint_id, story_id, added_at)
+- `SprintTask` join table (id, sprint_id, task_id, added_at)
 - Endpoints: `POST /api/v1/projects/{id}/sprints`, `POST /sprints/{id}/start`, `POST /sprints/{id}/close`
-- Starting a sprint locks the scope baseline (snapshot of stories + their points)
-- Closing a sprint moves incomplete stories to backlog, records final velocity
+- Starting a sprint locks the scope baseline (snapshot of tasks + their points)
+- Closing a sprint moves incomplete tasks to backlog, records final velocity
 
 **Frontend:**
 
@@ -386,7 +389,7 @@ Each task includes:
 
 **AC:**
 
-- Cannot start a sprint with zero stories
+- Cannot start a sprint with zero tasks
 - Cannot start a second sprint while one is active
 - Closing prompts to confirm carryovers
 - Velocity stored on close for chart use later
@@ -396,12 +399,12 @@ Each task includes:
 ### F1-13 (PM-08) — Sprint board view
 
 **Backend:** Filter the existing board endpoint by active sprint.
-**Frontend:** `pages/project/SprintBoardPage.jsx` — reuses `KanbanBoard` with a sprint header.
+**Frontend:** `pages/project/SprintBoardPage.jsx` — reuses `KanbanBoard` with a sprint header. The header is the Stratos **sprint banner** from `/Design Files/screen-kanban.jsx`: name + date range badge, goal text, `Sparkline` burndown, `points X / Y` and `days left` KPIs, Filter + Add task buttons. `BoardPage` shares the same banner when an active sprint exists, falling back to the standard `.page-header` otherwise.
 **AC:**
 
-- Sprint goal banner shown at top
-- Days remaining countdown
-- Inline burndown chart placeholder (real chart in Phase 2)
+- Sprint goal banner shown at top with the four-KPI layout
+- Days remaining countdown (warning color when ≤3)
+- Inline burndown sparkline (real backend-fed series lands in Phase 2; Phase 1 derives a two-point projection from done vs total)
 
 ---
 
@@ -485,7 +488,7 @@ Each task includes:
 
 **Sample system prompt for project generation:**
 
-> You are a senior project manager. Given a plain-language project description, output a JSON object with this exact schema: { "epics": [{ "title", "description", "color", "stories": [{ "title", "description", "story_points", "priority", "acceptance_criteria": [...], "tasks": [{ "title", "description" }] }] }] }. Use 8 or fewer epics. Each story must be deliverable in a single sprint. Story points use Fibonacci scale (1, 2, 3, 5, 8, 13). Output ONLY valid JSON, no commentary.
+> You are a senior project manager. Given a plain-language project description, output a JSON object with this exact schema: { "epics": [{ "title", "description", "color", "tasks": [{ "title", "description", "story_points", "priority", "acceptance_criteria": [...] }] }] }. Use 8 or fewer epics. Each task must be deliverable in a single sprint. Story points use Fibonacci scale (1, 2, 3, 5, 8, 13). Output ONLY valid JSON, no commentary.
 
 **AC:**
 
@@ -504,9 +507,8 @@ Each task includes:
 
 **Frontend:**
 
-- `pages/project/AIGenerationWizard.jsx` — text area + "Generate" button (use the Stratos `btn-ai` variant) → loading state → preview screen
-- Preview screen: editable epic/story/task tree with Confirm or Regenerate
-- Component: `components/ai/AISuggestionCard.jsx` — built on the Stratos `Card` primitive with `variant="ai"` (violet/cyan gradient border + glow + `--ai-bg` wash). Plus an `AIChip` primitive in `components/ui/AIChip/` if not already built.
+- `pages/project/AIGenerationWizard.jsx` — three-step wizard (Describe → Clarify → Review & confirm) matching `/Design Files/screen-ai-wizard.jsx`: centered radial-gradient canvas, pill stepper with done/active dots and connector lines, prompt-recap card, `card-ai` generated-plan box with `TreeRow` rows (Badge + key + title + points + edit/remove icon-btns), ghosted previous-steps `grid-2` recap. Confirm button uses the Stratos `btn-ai` variant.
+- Component: `components/ai/AISuggestionCard.jsx` — built on the Stratos `Card` primitive with `variant="ai"` (violet/cyan gradient border + glow + `--ai-bg` wash). The `AIChip` primitive already lives in `components/ui/AIChip/` and supports `variant="gradient"` and `variant="soft"`.
 
 **AC:**
 
@@ -544,7 +546,7 @@ Each task includes:
 Already covered by F1-19's prompt schema, but verify:
 **AC:**
 
-- Every generated story has 2–5 acceptance criteria as a bullet list
+- Every generated task has 2–5 acceptance criteria as a bullet list (rendered as subtasks in the task drawer)
 - Every generated task has a description (not just a title)
 
 ---
@@ -553,14 +555,14 @@ Already covered by F1-19's prompt schema, but verify:
 
 **Backend:**
 
-- `EstimateStoryPointsAsync(story_id)` — sends story details + similar past stories from same org as context
+- `EstimateStoryPointsAsync(task_id)` — sends task details + similar past tasks from same org as context (the method name keeps "StoryPoints" because that's still the unit on `Task`)
 - Returns `{ points: 5, confidence: 0.7, reasoning: "..." }`
 - Confidence below 0.5 surfaces a warning in UI
-- Endpoint: `POST /api/v1/stories/{id}/estimate`
+- Endpoint: `POST /api/v1/tasks/{id}/estimate`
 
 **Frontend:**
 
-- "Estimate with AI" button on story form
+- "Estimate with AI" button on task form
 - Show confidence as a colored bar
 - Reasoning shown on hover
 
@@ -577,7 +579,7 @@ Already covered by F1-19's prompt schema, but verify:
 **Backend:**
 
 - Endpoint: `POST /api/v1/sprints/{id}/ai-fill` with `{ target_capacity_pct: 80 }`
-- AI selects highest-priority backlog stories that fit the team capacity
+- AI selects highest-priority backlog tasks that fit the team capacity
 - Returns suggestion list with reasoning, doesn't write until user confirms
 
 **Frontend:**
@@ -588,7 +590,7 @@ Already covered by F1-19's prompt schema, but verify:
 **AC:**
 
 - AI doesn't exceed team capacity (sum of `capacity_hours_per_week` for sprint members, mapped to story points)
-- Dependencies respected (won't add a story whose blocker isn't already in the sprint)
+- Dependencies respected (won't add a task whose blocker isn't already in the sprint)
 - User can edit the suggestion list before confirming
 
 ---
@@ -1411,3 +1413,22 @@ Out of scope for v1. Captured here for continuity.
 9. Then Phase 2.
 
 **Do not start meetings, integrations, or analytics until Phase 1 is shippable.**
+
+---
+
+# Visual polish baseline (2026-05)
+
+The Phase 1 screens that exist today (App Shell, Kanban Board, Task Detail drawer, AI Generation Wizard) have been brought in line with the `/Design Files/` Stratos mockups. Any new screen must follow these conventions out of the box — don't ship a new page that "looks Phase 1" and queue polish as a follow-up.
+
+**Always do:**
+
+- Use the Stratos shell classes from `frontend/src/styles/stratos.css` — never recreate `.app-sidebar`, `.app-topbar`, `.icon-btn`, `.side-item`, `.crumb`, `.menu`, `.tabs`, etc. with new BEM names.
+- Use the Stratos primitives from `frontend/src/components/ui/` — `Button`, `Badge`, `StatusBadge`, `Priority`, `Avatar`, `AvatarStack`, `AIChip`, `Sparkline`, `Card`, etc. If a primitive is missing, build it under `components/ui/<Name>/` (flat class names, theme-aware tokens, exported from `index.js`).
+- Mirror the design's structure: page headers use `.page-header`, sub-headings use `.subsection-eyebrow`, AI surfaces use `.card-ai`, KPI tiles stack `kpi-label` over a large numeric value.
+- Reference `/Design Files/screen-*.jsx` for any new screen you're building. Even when the data wiring differs, the visual shape (header, columns, tile, drawer split) should match.
+
+**Never do:**
+
+- Hardcode colors, font sizes, spacing, radii, shadows, or durations. Use the tokens in `frontend/src/styles/tokens.css`.
+- Use BEM (`btn--primary`); Stratos is flat (`btn-primary`) and uses `.is-*` state classes.
+- Add a page-level CSS class that overlaps a stratos.css class (e.g. don't redefine `.app-topbar` in a page CSS file).

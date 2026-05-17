@@ -23,8 +23,9 @@
 }
 
 .kanban__columns {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(240px, 1fr);
   gap: var(--space-3);
   overflow-x: auto;
   overflow-y: hidden;

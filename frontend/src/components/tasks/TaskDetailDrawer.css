@@ -9,21 +9,18 @@
 }
 
 .task-drawer {
-  width: min(520px, 100vw);
+  width: min(560px, 100vw);
   height: 100vh;
   background: var(--bg-base);
   border-left: 1px solid var(--border-default);
   box-shadow: var(--shadow-xl);
-  overflow-y: auto;
+  overflow: hidden;
   animation: task-drawer-slide var(--dur-med) var(--ease-out);
+  display: flex;
+  flex-direction: column;
 }
 
-.task-drawer .task-detail {
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  min-height: 100%;
-}
+.task-drawer .task-detail { min-height: 100%; }
 
 .task-drawer__placeholder {
   color: var(--text-tertiary);

@@ -6,6 +6,7 @@ import {
   ChevronsUpDown,
   ClipboardList,
   FolderKanban,
+  Home,
   Inbox,
   Layers,
   LayoutGrid,
@@ -93,6 +94,10 @@ export function Sidebar() {
       )}
 
       <div className="side-section">Workspace</div>
+      <NavLink to="/home" className={sideClass} title="Home">
+        <Home size={13} aria-hidden="true" />
+        <span className="side-item__label">Home</span>
+      </NavLink>
       <NavLink to="/dashboard" className={sideClass} title="My work">
         <LayoutGrid size={13} aria-hidden="true" />
         <span className="side-item__label">My work</span>

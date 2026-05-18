@@ -13,9 +13,9 @@ public class GetBoardQueryHandler(IAppDbContext db)
     : IRequestHandler<GetBoardQuery, Result<BoardDto>>
 {
     private static readonly string[] FallbackStatuses =
-        [nameof(DomainTaskStatus.ToDo), nameof(DomainTaskStatus.InProgress),
-         nameof(DomainTaskStatus.InReview), nameof(DomainTaskStatus.Blocked),
-         nameof(DomainTaskStatus.Done)];
+        [nameof(DomainTaskStatus.Backlog), nameof(DomainTaskStatus.ToDo),
+         nameof(DomainTaskStatus.InProgress), nameof(DomainTaskStatus.InReview),
+         nameof(DomainTaskStatus.Blocked), nameof(DomainTaskStatus.Done)];
 
     public async Task<Result<BoardDto>> Handle(GetBoardQuery request, CancellationToken ct)
     {
@@ -24,11 +24,12 @@ public class GetBoardQueryHandler(IAppDbContext db)
             .Select(p => p.Key)
             .FirstOrDefaultAsync(ct) ?? "PR";
 
+        // When filtering by sprint, scope to that sprint's tasks. Otherwise
+        // return all of the project's tasks — including Backlog so it
+        // appears as its own column on the project board.
         var tasksQuery = db.Tasks.Where(t => t.ProjectId == request.ProjectId);
         if (request.SprintId.HasValue)
             tasksQuery = tasksQuery.Where(t => t.SprintId == request.SprintId);
-        else
-            tasksQuery = tasksQuery.Where(t => t.Status != DomainTaskStatus.Backlog);
 
         var rows = await tasksQuery
             .OrderBy(t => t.PriorityOrder)

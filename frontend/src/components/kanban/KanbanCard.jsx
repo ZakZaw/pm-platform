@@ -16,16 +16,28 @@ function shortKey(card) {
   return id ? id.slice(0, 4).toUpperCase() : '—';
 }
 
-export function KanbanCard({ card, onOpen, epic }) {
+/**
+ * When rendered inside a `DragOverlay`, pass `isOverlay` so the card
+ * skips the `useDraggable` hook and renders as a static visual clone
+ * floating above all columns (not duplicating the listeners).
+ */
+export function KanbanCard({ card, onOpen, epic, isOverlay = false }) {
   const { slug: orgSlug } = useParams();
   const { members } = useOrgMembers(orgSlug);
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const draggable = useDraggable({
     id: `card:${card.taskId}`,
+    disabled: isOverlay,
   });
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    opacity: isDragging ? 0.6 : 1,
-  };
+  const { attributes, listeners, setNodeRef, transform, isDragging } = draggable;
+  // While a card is being dragged, the DragOverlay paints a floating copy.
+  // Hide the in-column source so we don't render two of the same card.
+  const style = isOverlay
+    ? { boxShadow: 'var(--shadow-lg)' }
+    : {
+        transform: CSS.Translate.toString(transform),
+        opacity: isDragging ? 0 : 1,
+        pointerEvents: isDragging ? 'none' : undefined,
+      };
   const assignee = card.assigneeId ? members.find((m) => m.userId === card.assigneeId) : null;
 
   function handleClick() {
@@ -44,15 +56,15 @@ export function KanbanCard({ card, onOpen, epic }) {
 
   return (
     <div
-      ref={setNodeRef}
+      ref={isOverlay ? undefined : setNodeRef}
       style={style}
-      {...listeners}
-      {...attributes}
-      onClick={handleClick}
-      onKeyDown={handleKey}
+      {...(isOverlay ? {} : listeners)}
+      {...(isOverlay ? {} : attributes)}
+      onClick={isOverlay ? undefined : handleClick}
+      onKeyDown={isOverlay ? undefined : handleKey}
       className="card kanban-card"
-      role="button"
-      tabIndex={0}
+      role={isOverlay ? undefined : 'button'}
+      tabIndex={isOverlay ? undefined : 0}
       aria-label={`${card.title} — ${card.priority} priority`}
     >
       <div className="hstack kanban-card__top">

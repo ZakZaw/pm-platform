@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   DndContext,
+  DragOverlay,
   PointerSensor,
   useDraggable,
   useDroppable,
@@ -134,12 +135,19 @@ export function MyWorkPage() {
 
   const columns = useMemo(() => groupByStatus(items), [items]);
   const totalOpen = items.length;
+  const [activeItem, setActiveItem] = useState(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
   );
 
+  function handleDragStart(e) {
+    const taskId = parseCardId(String(e.active.id));
+    setActiveItem(items.find((it) => it.id === taskId) ?? null);
+  }
+
   async function handleDragEnd(e) {
+    setActiveItem(null);
     const { active, over } = e;
     if (!over) return;
     const taskId = parseCardId(String(active.id));
@@ -199,7 +207,11 @@ export function MyWorkPage() {
 
       {!loading && !error && (
         <div className="mywork__board-wrap">
-          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          <DndContext
+            sensors={sensors}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
             <div className="kanban__columns mywork__columns">
               {COLUMN_ORDER.map((status) => (
                 <MyWorkColumn
@@ -210,6 +222,9 @@ export function MyWorkPage() {
                 />
               ))}
             </div>
+            <DragOverlay dropAnimation={null} zIndex={2000}>
+              {activeItem ? <ItemCard item={activeItem} isOverlay /> : null}
+            </DragOverlay>
           </DndContext>
         </div>
       )}
@@ -265,14 +280,19 @@ function MyWorkColumn({ status, items, onOpen }) {
   );
 }
 
-function ItemCard({ item, onOpen }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+function ItemCard({ item, onOpen, isOverlay = false }) {
+  const draggable = useDraggable({
     id: `mw-card:${item.id}`,
+    disabled: isOverlay,
   });
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    opacity: isDragging ? 0.6 : 1,
-  };
+  const { attributes, listeners, setNodeRef, transform, isDragging } = draggable;
+  const style = isOverlay
+    ? { boxShadow: 'var(--shadow-lg)' }
+    : {
+        transform: CSS.Translate.toString(transform),
+        opacity: isDragging ? 0 : 1,
+        pointerEvents: isDragging ? 'none' : undefined,
+      };
 
   function handleClick() {
     if (isDragging) return;
@@ -290,15 +310,15 @@ function ItemCard({ item, onOpen }) {
 
   return (
     <div
-      ref={setNodeRef}
+      ref={isOverlay ? undefined : setNodeRef}
       style={style}
-      {...listeners}
-      {...attributes}
-      onClick={handleClick}
-      onKeyDown={handleKey}
+      {...(isOverlay ? {} : listeners)}
+      {...(isOverlay ? {} : attributes)}
+      onClick={isOverlay ? undefined : handleClick}
+      onKeyDown={isOverlay ? undefined : handleKey}
       className="card kanban-card mywork__card"
-      role="button"
-      tabIndex={0}
+      role={isOverlay ? undefined : 'button'}
+      tabIndex={isOverlay ? undefined : 0}
       aria-label={`${item.title} — ${item.priority} priority`}
     >
       <div className="hstack kanban-card__top">

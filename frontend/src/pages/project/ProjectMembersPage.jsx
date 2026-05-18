@@ -112,7 +112,7 @@ export function ProjectMembersPage() {
   if (error) return <p className="pmembers__placeholder">{error}</p>;
 
   return (
-    <div className="pmembers">
+    <div className="page pmembers">
       <header className="pmembers__header">
         <h1 className="pmembers__title">Project members</h1>
         <p className="pmembers__sub">

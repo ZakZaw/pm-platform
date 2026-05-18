@@ -23,7 +23,7 @@ public class ListOrgProjectsQueryHandler(IAppDbContext db)
             .Where(p => p.OrganizationId == orgId && !p.IsPersonal)
             .OrderByDescending(p => p.CreatedAt)
             .Select(p => new ProjectSummary(
-                p.Id, p.Name, p.Slug,
+                p.Id, p.Name, p.Slug, p.Key,
                 p.EnvironmentType.ToString(),
                 p.Status.ToString(),
                 p.TargetDate))

@@ -81,6 +81,11 @@ public class CreateTaskCommandHandler(IAppDbContext db, ICurrentUser currentUser
             .Select(t => (int?)t.PriorityOrder)
             .MaxAsync(ct) ?? 1;
 
+        var nextKeyNum = 1 + await db.Tasks
+            .Where(t => t.ProjectId == project.Id)
+            .Select(t => (int?)t.KeyNum)
+            .MaxAsync(ct) ?? 1;
+
         var ac = (request.AcceptanceCriteria ?? [])
             .Where(s => !string.IsNullOrWhiteSpace(s))
             .Select(s => s.Trim())
@@ -89,6 +94,7 @@ public class CreateTaskCommandHandler(IAppDbContext db, ICurrentUser currentUser
         var task = new TaskEntity
         {
             ProjectId = project.Id,
+            KeyNum = nextKeyNum,
             EpicId = request.EpicId,
             SprintId = request.SprintId,
             Title = title,
@@ -106,11 +112,14 @@ public class CreateTaskCommandHandler(IAppDbContext db, ICurrentUser currentUser
         db.Tasks.Add(task);
         await db.SaveChangesAsync(ct);
 
-        return Result.Success(ToDto(task));
+        return Result.Success(ToDto(task, project.Key));
     }
 
-    internal static TaskDto ToDto(TaskEntity t) => new(
-        t.Id, t.ProjectId, t.EpicId, t.SprintId,
+    /// <summary>Build a TaskDto. Caller passes the project's Key so we can
+    /// compose the display key without a second DB roundtrip.</summary>
+    internal static TaskDto ToDto(TaskEntity t, string projectKey) => new(
+        t.Id, $"{projectKey}-{t.KeyNum}", t.KeyNum,
+        t.ProjectId, t.EpicId, t.SprintId,
         t.Title, t.Description,
         t.Status.ToString(), t.Priority.ToString(),
         t.StoryPoints,

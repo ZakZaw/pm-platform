@@ -42,6 +42,8 @@ const PRIORITY_LABEL = {
 };
 
 function shortKey(task) {
+  // task.key is the human-friendly ID like "AT-247" (Project.Key + Task.KeyNum)
+  // from the API. Fall back to a UUID tail only defensively.
   if (task?.key) return task.key;
   const id = String(task?.id ?? '');
   return id ? id.slice(0, 4).toUpperCase() : '—';
@@ -284,6 +286,16 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
       {/* Body grid */}
       <div className="task-detail__body">
         <div className="task-detail__main">
+          <button
+            type="button"
+            className="task-detail__id-chip"
+            onClick={copyKey}
+            title="Copy task ID"
+            aria-label={`Copy task ID ${shortKey(task)}`}
+          >
+            <span className="mono">{shortKey(task)}</span>
+            <Copy size={11} aria-hidden="true" />
+          </button>
           <div className="task-detail__title">{task.title}</div>
           <div className="hstack task-detail__byline">
             {reporter && (

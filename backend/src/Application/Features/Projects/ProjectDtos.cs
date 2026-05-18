@@ -6,6 +6,7 @@ public record ProjectDto(
     string? OrgSlug,
     string Name,
     string Slug,
+    string Key,
     string EnvironmentType,
     string Status,
     DateTime? TargetDate,
@@ -18,6 +19,7 @@ public record ProjectSummary(
     Guid Id,
     string Name,
     string Slug,
+    string Key,
     string EnvironmentType,
     string Status,
     DateTime? TargetDate);

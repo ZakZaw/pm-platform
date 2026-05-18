@@ -31,7 +31,12 @@ public class ListProjectTasksQueryHandler(IAppDbContext db)
             .ThenBy(t => t.CreatedAt)
             .ToListAsync(ct);
 
+        var projectKey = await db.Projects
+            .Where(p => p.Id == request.ProjectId)
+            .Select(p => p.Key)
+            .FirstOrDefaultAsync(ct) ?? "PR";
+
         return Result.Success<IReadOnlyList<TaskDto>>(
-            tasks.Select(CreateTaskCommandHandler.ToDto).ToList());
+            tasks.Select(t => CreateTaskCommandHandler.ToDto(t, projectKey)).ToList());
     }
 }

@@ -89,7 +89,7 @@ export function SprintsPage() {
   if (!project) return <p className="sprints-page__placeholder">Loading…</p>;
 
   return (
-    <div className="sprints-page">
+    <div className="page sprints-page">
       <header className="sprints-page__header">
         <h1 className="sprints-page__title">Sprint planning</h1>
       </header>

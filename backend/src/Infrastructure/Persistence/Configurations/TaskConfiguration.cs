@@ -13,6 +13,7 @@ public class TaskConfiguration : IEntityTypeConfiguration<TaskEntity>
         builder.HasKey(t => t.Id);
 
         builder.Property(t => t.ProjectId).IsRequired();
+        builder.Property(t => t.KeyNum).IsRequired();
         builder.Property(t => t.Title).IsRequired().HasMaxLength(200);
         builder.Property(t => t.Description);
         builder.Property(t => t.StoryPoints);
@@ -28,6 +29,7 @@ public class TaskConfiguration : IEntityTypeConfiguration<TaskEntity>
         builder.Property(t => t.CreatedAt).IsRequired();
 
         builder.HasIndex(t => new { t.ProjectId, t.Status });
+        builder.HasIndex(t => new { t.ProjectId, t.KeyNum }).IsUnique();
         builder.HasIndex(t => t.EpicId);
         builder.HasIndex(t => t.SprintId);
         builder.HasIndex(t => t.AssigneeId);

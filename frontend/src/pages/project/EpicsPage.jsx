@@ -43,7 +43,7 @@ export function EpicsPage() {
   if (!project) return <p className="epics-page__placeholder">Loading…</p>;
 
   return (
-    <div className="epics-page">
+    <div className="page epics-page">
       <header className="epics-page__header">
         <h1 className="epics-page__title">Epics</h1>
         <div className="epics-page__actions">

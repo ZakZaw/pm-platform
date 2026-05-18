@@ -172,7 +172,7 @@ export function ProfilePage() {
   const displayAvatar = avatarPreview ?? profile.avatarUrl ?? null;
 
   return (
-    <div className="profile">
+    <div className="page page-narrow profile">
       <h1 className="profile__title">Profile</h1>
 
       <Card title="Identity" className="profile__card">

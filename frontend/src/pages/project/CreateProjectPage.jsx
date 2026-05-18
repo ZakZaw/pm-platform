@@ -80,7 +80,7 @@ export function CreateProjectPage() {
   };
 
   return (
-    <div className="create-project">
+    <div className="page page-narrow create-project">
       <h1 className="create-project__title">New project</h1>
       <p className="create-project__subtitle">
         Pick a starting point. You can change the structure later.

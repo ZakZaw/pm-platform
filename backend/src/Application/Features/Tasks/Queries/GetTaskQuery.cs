@@ -14,8 +14,12 @@ public class GetTaskQueryHandler(IAppDbContext db)
     public async Task<Result<TaskDto>> Handle(GetTaskQuery request, CancellationToken ct)
     {
         var task = await db.Tasks.FirstOrDefaultAsync(t => t.Id == request.TaskId, ct);
-        return task is null
-            ? Result.Failure<TaskDto>(TaskErrors.NotFound)
-            : Result.Success(CreateTaskCommandHandler.ToDto(task));
+        if (task is null)
+            return Result.Failure<TaskDto>(TaskErrors.NotFound);
+        var projectKey = await db.Projects
+            .Where(p => p.Id == task.ProjectId)
+            .Select(p => p.Key)
+            .FirstAsync(ct);
+        return Result.Success(CreateTaskCommandHandler.ToDto(task, projectKey));
     }
 }

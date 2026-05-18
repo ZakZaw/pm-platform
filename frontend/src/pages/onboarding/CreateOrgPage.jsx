@@ -65,7 +65,7 @@ export function CreateOrgPage() {
   };
 
   return (
-    <div className="create-org">
+    <div className="page page-narrow create-org">
       <Card
         title="Create your organization"
         subtitle="Your team's workspace. You can change the name and logo later."

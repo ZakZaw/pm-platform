@@ -100,7 +100,7 @@ export function BacklogPage() {
   const totalBacklog = backlog.unassigned?.length ?? 0;
 
   return (
-    <div className="backlog-page">
+    <div className="page backlog-page">
       <header className="backlog-page__header">
         <div>
           <h1 className="backlog-page__title">Backlog</h1>

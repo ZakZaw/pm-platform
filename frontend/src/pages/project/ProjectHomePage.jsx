@@ -46,7 +46,7 @@ export function ProjectHomePage() {
   if (!project) return <p className="project-home__placeholder">Loading…</p>;
 
   return (
-    <div className="project-home">
+    <div className="page project-home">
       <div className="project-home__header">
         <Briefcase className="project-home__icon" aria-hidden="true" />
         <div className="project-home__heading">

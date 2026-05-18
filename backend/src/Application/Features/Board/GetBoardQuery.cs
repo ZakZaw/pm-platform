@@ -19,6 +19,11 @@ public class GetBoardQueryHandler(IAppDbContext db)
 
     public async Task<Result<BoardDto>> Handle(GetBoardQuery request, CancellationToken ct)
     {
+        var projectKey = await db.Projects
+            .Where(p => p.Id == request.ProjectId)
+            .Select(p => p.Key)
+            .FirstOrDefaultAsync(ct) ?? "PR";
+
         var tasksQuery = db.Tasks.Where(t => t.ProjectId == request.ProjectId);
         if (request.SprintId.HasValue)
             tasksQuery = tasksQuery.Where(t => t.SprintId == request.SprintId);
@@ -30,6 +35,7 @@ public class GetBoardQueryHandler(IAppDbContext db)
             .Select(t => new
             {
                 t.Id,
+                t.KeyNum,
                 t.Title,
                 Priority = t.Priority.ToString(),
                 Status = t.Status.ToString(),
@@ -43,7 +49,8 @@ public class GetBoardQueryHandler(IAppDbContext db)
             .ToListAsync(ct);
 
         var cards = rows.Select(r => new BoardCardDto(
-            r.Id, r.Title, r.Priority, r.Status, r.StoryPoints,
+            r.Id, $"{projectKey}-{r.KeyNum}", r.KeyNum,
+            r.Title, r.Priority, r.Status, r.StoryPoints,
             r.AssigneeId, r.EpicId, r.SprintId,
             r.SubtaskCount, r.CompletedSubtaskCount)).ToList();
 

@@ -39,7 +39,7 @@ export function OrgHomePage() {
   if (!org) return <p className="org-home__placeholder">Loading…</p>;
 
   return (
-    <div className="org-home">
+    <div className="page org-home">
       <div className="org-home__header">
         <Avatar src={org.logoUrl} name={org.name} size="xl" />
         <div>

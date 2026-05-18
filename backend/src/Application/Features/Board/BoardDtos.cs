@@ -2,6 +2,8 @@ namespace Application.Features.Board;
 
 public record BoardCardDto(
     Guid TaskId,
+    string Key,
+    int KeyNum,
     string Title,
     string Priority,
     string Status,
@@ -24,6 +26,8 @@ public record BoardDto(
 
 public record BacklogTaskDto(
     Guid Id,
+    string Key,
+    int KeyNum,
     string Title,
     string Priority,
     string Status,

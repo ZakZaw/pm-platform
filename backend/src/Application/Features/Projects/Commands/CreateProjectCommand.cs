@@ -44,12 +44,14 @@ public class CreateProjectCommandHandler(IAppDbContext db, ICurrentUser currentU
             return Result.Failure<ProjectDto>(OrgErrors.NotFound);
 
         var slug = await ResolveUniqueSlugAsync(org.Id, SlugGenerator.From(trimmedName), ct);
+        var key = await ResolveUniqueKeyAsync(org.Id, ProjectKeyGenerator.From(trimmedName), ct);
 
         var project = new Project
         {
             OrganizationId = org.Id,
             Name = trimmedName,
             Slug = slug,
+            Key = key,
             EnvironmentType = envType,
             Status = ProjectStatus.Active,
             TargetDate = request.TargetDate,
@@ -69,7 +71,7 @@ public class CreateProjectCommandHandler(IAppDbContext db, ICurrentUser currentU
 
         return Result.Success(new ProjectDto(
             project.Id, project.OrganizationId, org.Slug,
-            project.Name, project.Slug,
+            project.Name, project.Slug, project.Key,
             project.EnvironmentType.ToString(),
             project.Status.ToString(),
             project.TargetDate,
@@ -90,5 +92,19 @@ public class CreateProjectCommandHandler(IAppDbContext db, ICurrentUser currentU
                 slug = $"{baseSlug}-{Guid.NewGuid():N}".Substring(0, Math.Min(baseSlug.Length + 9, 60));
         }
         return slug;
+    }
+
+    private async Task<string> ResolveUniqueKeyAsync(Guid orgId, string baseKey, CancellationToken ct)
+    {
+        var key = baseKey;
+        var suffix = 1;
+        while (await db.Projects.AnyAsync(p => p.OrganizationId == orgId && p.Key == key, ct))
+        {
+            suffix++;
+            key = ProjectKeyGenerator.WithSuffix(baseKey, suffix);
+            if (suffix > 999)
+                key = baseKey + Guid.NewGuid().ToString("N").Substring(0, 4).ToUpperInvariant();
+        }
+        return key;
     }
 }

@@ -8,6 +8,71 @@
 
 ---
 
+## 2026-05-18 (later) — Workflow loosened, board enhancements, /home placeholder
+
+### Domain — task status transitions are now unrestricted
+
+The original design doc described a strict task state machine
+(Backlog → ToDo → InProgress → InReview → Done with a few side branches).
+That has been **lifted**. `TaskStatusTransition.EnsureValid` now only
+rejects no-op transitions and still requires a reason for moves to
+**Blocked** or **WontDo** — those reasons are kept because they're
+useful audit signals, not transition rules. Any other from→to pair is
+allowed.
+
+### UI — Task priority is editable
+
+The Priority meta row in the task drawer was read-only. Replaced with a
+new `PriorityDropdown` primitive that mirrors `StatusDropdown` — same
+Stratos shape, four levels (Urgent / High / Medium / Low). PATCHes via
+`tasksApi.update({ priority })`.
+
+### API — Project board includes Backlog
+
+`GetBoardQuery` previously filtered out Backlog tasks when no sprint
+was selected, so the Backlog column never appeared on the project board.
+The filter is removed; the fallback column order also includes Backlog
+as the first column. Existing projects' `ProjectStatusConfig` rows
+already have Backlog (seeded by `StatusConfigDefaults`), so no migration
+is needed.
+
+### UI — Per-user column visibility (with persistence)
+
+New `useColumnVisibility(scope, defaults)` hook + `ColumnsButton`
+component. Scoped per user via `localStorage` keys like
+`pm:cols:{userId}:board:{projectId}` and `pm:cols:{userId}:sprint:{sprintId}`,
+so the project board and the sprint board each carry their own
+column-visibility selection. New project tasks show every workflow
+status by default; once the user hides anything, the choice is sticky
+across sessions (per-user, per-browser).
+
+The button appears next to "Filter" on both BoardPage and
+SprintBoardPage, with a count badge for hidden columns.
+
+### UI — Drag-and-drop card stays above all columns
+
+While dragging a kanban card, the source element used to translate
+under the column tree and got clipped by each column's
+`overflow-y: auto`. Switched to dnd-kit's `DragOverlay`, which paints
+the dragged card as a floating clone above everything (z-index 2000).
+The source card is hidden during drag so we don't render two of the
+same card. Applied to both the project board (`KanbanBoard.jsx`) and
+MyWorkPage.
+
+### UI — `/home` placeholder dashboard
+
+New `HomePage` at `/home` — landing page for the user's performance
+across every project. KPI tiles (tasks completed, cycle time, streak,
+velocity), a weekly throughput sparkline, an AI weekly insight card,
+and a per-project drill-down list. All numbers are sample data with
+clear "· sample" suffixes until F2-04 / F3-16 / F3-18 ship the
+analytics endpoints.
+
+`/` now redirects to `/home` (was `/dashboard`). MyWorkPage stays at
+`/dashboard` unchanged. The sidebar gains a "Home" item above "My work".
+
+---
+
 ## 2026-05-18 — Human-friendly task IDs + orphan-page polish + MyWork kanban
 
 ### Schema — `Project.Key` + `Task.KeyNum`

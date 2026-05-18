@@ -306,16 +306,11 @@ Api/
 
 ## Domain Rules to Enforce
 
-**Task State Machine** (enforced in Domain, not just UI):
-
-```
-Backlog → To Do → In Progress → In Review → Done
-                  In Progress → Blocked → In Progress
-                  In Review → In Progress (changes requested)
-                  Any → Won't Do
-```
-
-Invalid transitions must throw a `DomainException`.
+**Task status transitions** are unrestricted as of 2026-05-18. Any
+from→to pair is allowed. `TaskStatusTransition.EnsureValid` only enforces:
+- No-op transitions (`from == to`) throw `Task.NoOpTransition`.
+- Moving to `Blocked` or `WontDo` requires a non-empty reason
+  (`Task.ReasonRequired`) — kept as an audit signal, not a transition gate.
 
 **Roles:**
 - Org-level: Owner / Admin / Member / Guest

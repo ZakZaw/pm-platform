@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { RefreshCw } from 'lucide-react';
 import { Badge, Button } from '@/components/ui';
@@ -9,8 +9,10 @@ import { workflowApi } from '@/api/workflow.api';
 import { epicsApi } from '@/api/epics.api';
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
 import { LiveIndicator } from '@/components/kanban/LiveIndicator';
+import { ColumnsButton } from '@/components/kanban/ColumnsButton';
 import { TaskDetailDrawer } from '@/components/tasks/TaskDetailDrawer';
 import { useProjectHub } from '@/hooks/useProjectHub';
+import { useColumnVisibility } from '@/hooks/useColumnVisibility';
 import './SprintBoardPage.css';
 
 export function SprintBoardPage() {
@@ -61,6 +63,15 @@ export function SprintBoardPage() {
     }
   });
 
+  // Sprint board has its own visibility scope so hiding a column on the
+  // project board doesn't ghost it in the sprint view (and vice versa).
+  const allStatuses = useMemo(
+    () => (statusConfigs ?? []).map((c) => c.status),
+    [statusConfigs],
+  );
+  const { visible: visibleStatuses, toggle: toggleStatus, isVisible: isStatusVisible } =
+    useColumnVisibility(sprintId ? `sprint:${sprintId}` : null, allStatuses);
+
   if (error) return <p className="sprint-board__placeholder">{error}</p>;
   if (!project || !board) return <p className="sprint-board__placeholder">Loading…</p>;
 
@@ -95,6 +106,11 @@ export function SprintBoardPage() {
               {sprint.donePoints}/{sprint.totalPoints} pts ({pct}%)
             </Badge>
           )}
+          <ColumnsButton
+            statuses={statusConfigs ?? []}
+            isVisible={isStatusVisible}
+            toggle={toggleStatus}
+          />
         </div>
       </header>
 
@@ -109,6 +125,7 @@ export function SprintBoardPage() {
         projectId={project.id}
         epics={epics}
         defaultSprintId={sprintId}
+        visibleStatuses={visibleStatuses}
         onChanged={() => load(project.id)}
         onOpenTask={setOpenedTaskId}
       />

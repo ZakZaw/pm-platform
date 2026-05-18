@@ -4,6 +4,7 @@ import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { AcceptInvitePage } from '@/pages/auth/AcceptInvitePage';
 import { MyWorkPage } from '@/pages/dashboard/MyWorkPage';
+import { HomePage } from '@/pages/home/HomePage';
 import { CreateOrgPage } from '@/pages/onboarding/CreateOrgPage';
 import { OrgHomePage } from '@/pages/org/OrgHomePage';
 import { MembersPage } from '@/pages/settings/MembersPage';
@@ -55,6 +56,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/invitations/:token" element={<AcceptInvitePage />} />
           <Route element={<ProtectedLayout />}>
+            <Route path="/home" element={<HomePage />} />
             <Route path="/dashboard" element={<MyWorkPage />} />
             <Route path="/onboarding/create-org" element={<CreateOrgPage />} />
             <Route
@@ -106,8 +108,8 @@ function App() {
             />
             <Route path="/settings/profile" element={<ProfilePage />} />
           </Route>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
       </BrowserRouter>
     </ToastProvider>

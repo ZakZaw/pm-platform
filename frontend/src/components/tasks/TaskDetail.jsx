@@ -21,7 +21,6 @@ import {
   AssigneePicker,
   Badge,
   Button,
-  Priority,
   StatusBadge,
   useToast,
 } from '@/components/ui';
@@ -30,16 +29,10 @@ import { subtasksApi } from '@/api/subtasks.api';
 import { commentsApi } from '@/api/comments.api';
 import { useOrgMembers } from '@/hooks/useOrgMembers';
 import { StatusDropdown } from './StatusDropdown';
+import { PriorityDropdown } from './PriorityDropdown';
 import { CommentList } from './CommentList';
 import { CommentInput } from './CommentInput';
 import './TaskDetail.css';
-
-const PRIORITY_LABEL = {
-  Urgent: 'Urgent',
-  High: 'High',
-  Medium: 'Medium',
-  Low: 'Low',
-};
 
 function shortKey(task) {
   // task.key is the human-friendly ID like "AT-247" (Project.Key + Task.KeyNum)
@@ -146,6 +139,18 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
       toast.show({
         tone: 'danger',
         message: err.response?.data?.detail ?? 'Could not change reviewer.',
+      });
+    }
+  }
+
+  async function changePriority(priority) {
+    try {
+      const updated = await tasksApi.update(task.id, { priority });
+      onUpdated?.(updated);
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        message: err.response?.data?.detail ?? 'Could not change priority.',
       });
     }
   }
@@ -419,10 +424,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
             <AssigneePicker orgSlug={orgSlug} value={task.reviewerId ?? null} onChange={changeReviewer} />
           </MetaRow>
           <MetaRow label="Priority">
-            <span className="hstack" style={{ gap: 6 }}>
-              <Priority level={task.priority} />
-              <span style={{ fontSize: 12 }}>{PRIORITY_LABEL[task.priority] ?? task.priority}</span>
-            </span>
+            <PriorityDropdown value={task.priority} onChange={changePriority} />
           </MetaRow>
           {task.storyPoints != null && (
             <MetaRow label="Points">

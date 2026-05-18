@@ -9,9 +9,11 @@ import { epicsApi } from '@/api/epics.api';
 import { sprintsApi } from '@/api/sprints.api';
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
 import { LiveIndicator } from '@/components/kanban/LiveIndicator';
+import { ColumnsButton } from '@/components/kanban/ColumnsButton';
 import { TaskDetailDrawer } from '@/components/tasks/TaskDetailDrawer';
 import { useProjectHub } from '@/hooks/useProjectHub';
 import { useOrgMembers } from '@/hooks/useOrgMembers';
+import { useColumnVisibility } from '@/hooks/useColumnVisibility';
 import { useUiStore } from '@/store/uiStore';
 import './BoardPage.css';
 
@@ -107,6 +109,17 @@ export function BoardPage() {
       load(project.id, swimlane).catch(() => {});
     }
   });
+
+  // Column visibility (per-user, per-project). Default to every status the
+  // project has configured so first-render shows everything until the user
+  // hides something. Called above the early returns so hooks order stays
+  // stable.
+  const allStatuses = useMemo(
+    () => (statusConfigs ?? []).map((c) => c.status),
+    [statusConfigs],
+  );
+  const { visible: visibleStatuses, toggle: toggleStatus, isVisible: isStatusVisible } =
+    useColumnVisibility(project ? `board:${project.id}` : null, allStatuses);
 
   const filteredBoard = useMemo(() => {
     if (!board) return null;
@@ -246,6 +259,11 @@ export function BoardPage() {
               <Filter size={14} aria-hidden="true" /> Filter
               {anyFilter && <span className="board-page__filter-dot" aria-hidden="true" />}
             </Button>
+            <ColumnsButton
+              statuses={statusConfigs ?? []}
+              isVisible={isStatusVisible}
+              toggle={toggleStatus}
+            />
             <Button variant="primary" size="md" onClick={() => openQuickCreate?.()}>
               <Plus size={14} aria-hidden="true" /> Add task
             </Button>
@@ -281,6 +299,11 @@ export function BoardPage() {
               <Filter size={14} aria-hidden="true" /> Filter
               {anyFilter && <span className="board-page__filter-dot" aria-hidden="true" />}
             </Button>
+            <ColumnsButton
+              statuses={statusConfigs ?? []}
+              isVisible={isStatusVisible}
+              toggle={toggleStatus}
+            />
             <Button variant="primary" size="md" onClick={() => openQuickCreate?.()}>
               <Plus size={14} aria-hidden="true" /> Add task
             </Button>
@@ -328,6 +351,7 @@ export function BoardPage() {
           statusConfigs={statusConfigs}
           projectId={project.id}
           epics={epics}
+          visibleStatuses={visibleStatuses}
           onChanged={() => load(project.id, swimlane)}
           onOpenTask={setOpenedTaskId}
         />

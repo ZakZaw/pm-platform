@@ -238,7 +238,7 @@ The app shell uses Stratos layout classes directly (no component wrapper require
 | Shell grid | `.app` (`grid-template-rows: 44px 1fr` × `grid-template-columns: 220px 1fr`) · `.app.is-collapsed` (56px sidebar) · `.app-sidebar` (spans both rows) · `.app-topbar` · `.app-main` + `.app-main__scroll` | The shell is grid-based; sidebar spans both rows. |
 | Sidebar | `.org` + `.org-mark` / `.org-name` / `.org-plan` · `.side-section` · `.side-item` / `.side-item.is-active` · `.side-item__label` / `.side-item__swatch` / `.count` / `.pip` · `.side-footer` + `.side-footer__name` / `.side-footer__email` | Sidebar collapses to a 56px icon rail via `.app.is-collapsed`. |
 | Topbar | `.crumb` + `.crumb-link` / `.sep` / `.here` · `.search-mini` / `.input-search` · `.icon-btn` / `.icon-btn-sm` + `.indicator` · `.topbar-spacer` / `.topbar-actions` · `.divider-y` · `.kbd` | Breadcrumb is derived from the URL; `Topbar.jsx` owns the mapping. |
-| Page chrome | `.page-header` + `.page-title` / `.page-meta` · `.subsection` · `.subsection-eyebrow` (uppercase 12px tertiary label, used above each task-drawer section) | KPI tiles use `.kpi-label` + a large numeric span; see `BoardPage.css`. |
+| Page chrome | `.page-header` + `.page-title` / `.page-meta` · `.page` (orphan-page outer wrapper) · `.page-narrow` / `.page-wide` (centered fixed-width body) · `.subsection` · `.subsection-eyebrow` (uppercase 12px tertiary label, used above each task-drawer section) | KPI tiles use `.kpi-label` + a large numeric span; see `BoardPage.css`. Orphan pages (no `/Design Files/` mockup) use `.page` on their root to inherit the standard padding rhythm. |
 | Overlays | `.menu` + `.menu-section` / `.menu-item` / `.menu-item.is-selected` / `.menu-item.is-danger` / `.menu-divider` · `.tabs` + `.tab` / `.tab.is-active` / `.tab .count` · `.card-ai` (gradient-border AI surface) | The Dropdown primitive renders `.menu`; build a `Tabs` primitive when reused. |
 | Utility | `.hstack` / `.vstack` / `.grow` / `.mono` / `.truncate` / `.muted` / `.dim` · `.grid-2` / `.grid-3` / `.grid-4` · `.spark` · `.prio` (+ `.prio-urgent/high/med/low`) · `.avatar-stack` | Inline flex helpers — prefer these over per-component layout CSS for one-off rows/stacks. |
 
@@ -298,7 +298,7 @@ Api/
 - Run migrations: `dotnet ef database update` from `Infrastructure/`
 - Schema clusters (from design doc):
   - Cluster 1: Org & Access (Organization, User, OrgMembership, Project, ProjectMembership, Team, TeamMembership)
-  - Cluster 2: Project Work (Epic, Task, Subtask, Sprint, SprintTask, Comment, Attachment) — **Story was dropped in Phase 1 rework; tasks sit directly under epics. `StoryPoints` remains as a field on Task (it's a unit, not an entity link).**
+  - Cluster 2: Project Work (Epic, Task, Subtask, Sprint, SprintTask, Comment, Attachment) — **Story was dropped in Phase 1 rework; tasks sit directly under epics. `StoryPoints` remains as a field on Task (it's a unit, not an entity link). Project has a 2–4 char `Key` (e.g. "AT"); Task has a per-project `KeyNum` (e.g. 247) — combined they form the human-friendly task ID "AT-247" returned as `key` on every task DTO.**
   - Cluster 3: AI & Events (AIAction, AIAuditLog, Notification, ActivityLog)
   - Cluster 4: Comms (Channel, ChannelMember, Message, Meeting, MeetingTranscript, ActionItem)
 

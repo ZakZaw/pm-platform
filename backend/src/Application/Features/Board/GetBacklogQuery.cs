@@ -13,12 +13,17 @@ public class GetBacklogQueryHandler(IAppDbContext db)
 {
     public async Task<Result<BacklogDto>> Handle(GetBacklogQuery request, CancellationToken ct)
     {
+        var projectKey = await db.Projects
+            .Where(p => p.Id == request.ProjectId)
+            .Select(p => p.Key)
+            .FirstOrDefaultAsync(ct) ?? "PR";
+
         var rows = await db.Tasks
             .Where(t => t.ProjectId == request.ProjectId)
             .OrderBy(t => t.PriorityOrder)
             .Select(t => new
             {
-                t.Id, t.Title,
+                t.Id, t.KeyNum, t.Title,
                 Priority = t.Priority.ToString(),
                 Status = t.Status.ToString(),
                 t.StoryPoints, t.EpicId, t.SprintId, t.AssigneeId, t.DueDate, t.PriorityOrder,
@@ -32,7 +37,8 @@ public class GetBacklogQueryHandler(IAppDbContext db)
         var tasks = rows.Select(r => new
         {
             Dto = new BacklogTaskDto(
-                r.Id, r.Title, r.Priority, r.Status, r.StoryPoints,
+                r.Id, $"{projectKey}-{r.KeyNum}", r.KeyNum,
+                r.Title, r.Priority, r.Status, r.StoryPoints,
                 r.EpicId, r.SprintId, r.AssigneeId, r.DueDate, r.PriorityOrder,
                 r.SubtaskCount, r.CompletedSubtaskCount),
             r.SprintId,

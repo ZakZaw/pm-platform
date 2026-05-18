@@ -17,6 +17,11 @@ public class Task
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid ProjectId { get; set; }
+    /// <summary>Per-project monotonically increasing serial. Combined with
+    /// <see cref="Domain.Entities.Project.Key"/> to form the human-friendly
+    /// display ID ("AT-247"). Assigned on create and never reused, even
+    /// after the task is deleted.</summary>
+    public int KeyNum { get; set; }
     public Guid? EpicId { get; set; }
     public Guid? SprintId { get; set; }
     public required string Title { get; set; }

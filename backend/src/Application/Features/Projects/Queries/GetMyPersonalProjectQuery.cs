@@ -26,7 +26,7 @@ public class GetMyPersonalProjectQueryHandler(IAppDbContext db, ICurrentUser cur
             .Where(p => p.IsPersonal && p.OwnerUserId == userId)
             .Select(p => new ProjectDto(
                 p.Id, p.OrganizationId, null,
-                p.Name, p.Slug,
+                p.Name, p.Slug, p.Key,
                 p.EnvironmentType.ToString(),
                 p.Status.ToString(),
                 p.TargetDate,
@@ -43,6 +43,7 @@ public class GetMyPersonalProjectQueryHandler(IAppDbContext db, ICurrentUser cur
             IsPersonal = true,
             Name = "Personal",
             Slug = $"personal-{userId:N}",
+            Key = "PE",
             EnvironmentType = Domain.Enums.EnvironmentType.Business,
             Status = Domain.Enums.ProjectStatus.Active,
             AIControlMode = Domain.Enums.AIControlMode.Off,
@@ -53,7 +54,7 @@ public class GetMyPersonalProjectQueryHandler(IAppDbContext db, ICurrentUser cur
 
         return Result.Success(new ProjectDto(
             project.Id, null, null,
-            project.Name, project.Slug,
+            project.Name, project.Slug, project.Key,
             project.EnvironmentType.ToString(),
             project.Status.ToString(),
             project.TargetDate,

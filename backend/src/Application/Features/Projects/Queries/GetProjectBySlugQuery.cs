@@ -19,7 +19,7 @@ public class GetProjectBySlugQueryHandler(IAppDbContext db)
                          && p.Slug == request.ProjectSlug)
             .Select(p => new ProjectDto(
                 p.Id, p.OrganizationId, p.Organization!.Slug,
-                p.Name, p.Slug,
+                p.Name, p.Slug, p.Key,
                 p.EnvironmentType.ToString(),
                 p.Status.ToString(),
                 p.TargetDate,

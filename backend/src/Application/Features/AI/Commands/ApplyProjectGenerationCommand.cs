@@ -52,12 +52,15 @@ public class ApplyProjectGenerationCommandHandler(IAppDbContext db, ICurrentUser
 
         var slug = await ResolveUniqueSlugAsync(
             generationRequest.OrganizationId, SlugGenerator.From(name), ct);
+        var key = await ResolveUniqueKeyAsync(
+            generationRequest.OrganizationId, ProjectKeyGenerator.From(name), ct);
 
         var project = new Project
         {
             OrganizationId = generationRequest.OrganizationId,
             Name = name,
             Slug = slug,
+            Key = key,
             EnvironmentType = envType,
             Status = ProjectStatus.Active,
             AIControlMode = AIControlMode.Suggest,
@@ -72,6 +75,7 @@ public class ApplyProjectGenerationCommandHandler(IAppDbContext db, ICurrentUser
         });
 
         var priorityOrder = 0;
+        var keyNum = 0;
         foreach (var epicDto in request.Epics)
         {
             var epic = new Epic
@@ -91,6 +95,7 @@ public class ApplyProjectGenerationCommandHandler(IAppDbContext db, ICurrentUser
                 db.Tasks.Add(new TaskEntity
                 {
                     ProjectId = project.Id,
+                    KeyNum = ++keyNum,
                     EpicId = epic.Id,
                     Title = TrimOrDefault(taskDto.Title, "Untitled task"),
                     Description = taskDto.Description,
@@ -135,7 +140,7 @@ public class ApplyProjectGenerationCommandHandler(IAppDbContext db, ICurrentUser
 
         return Result.Success(new ProjectDto(
             project.Id, project.OrganizationId, orgSlug,
-            project.Name, project.Slug,
+            project.Name, project.Slug, project.Key,
             project.EnvironmentType.ToString(),
             project.Status.ToString(),
             project.TargetDate,
@@ -165,5 +170,19 @@ public class ApplyProjectGenerationCommandHandler(IAppDbContext db, ICurrentUser
                 slug = $"{baseSlug}-{Guid.NewGuid():N}".Substring(0, Math.Min(baseSlug.Length + 9, 60));
         }
         return slug;
+    }
+
+    private async Task<string> ResolveUniqueKeyAsync(Guid orgId, string baseKey, CancellationToken ct)
+    {
+        var key = baseKey;
+        var suffix = 1;
+        while (await db.Projects.AnyAsync(p => p.OrganizationId == orgId && p.Key == key, ct))
+        {
+            suffix++;
+            key = ProjectKeyGenerator.WithSuffix(baseKey, suffix);
+            if (suffix > 999)
+                key = baseKey + Guid.NewGuid().ToString("N").Substring(0, 4).ToUpperInvariant();
+        }
+        return key;
     }
 }

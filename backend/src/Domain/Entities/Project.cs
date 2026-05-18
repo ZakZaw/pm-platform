@@ -8,6 +8,11 @@ public class Project
     public Guid? OrganizationId { get; set; }
     public required string Name { get; set; }
     public required string Slug { get; set; }
+    /// <summary>2–4 char prefix used to compose human-friendly task IDs
+    /// like "AT-247". Unique within an organization (or globally unique
+    /// for personal projects). Derived from <see cref="Name"/> at create
+    /// time and never changes — task IDs reference it permanently.</summary>
+    public required string Key { get; set; }
     public EnvironmentType EnvironmentType { get; set; }
     public ProjectStatus Status { get; set; } = ProjectStatus.Active;
     public DateTime? TargetDate { get; set; }

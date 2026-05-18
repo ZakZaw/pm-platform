@@ -1,4 +1,12 @@
-import { cloneElement, createContext, useContext, useEffect, useRef, useState } from 'react';
+import {
+  cloneElement,
+  createContext,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import './Dropdown.css';
 
 const MenuContext = createContext(() => {});
@@ -13,10 +21,16 @@ const MenuContext = createContext(() => {});
  *     <Dropdown.Section>Group</Dropdown.Section>
  *     <Dropdown.Item onSelect={...} danger>Delete</Dropdown.Item>
  *   </Dropdown>
+ *
+ * The menu auto-flips horizontally and vertically when it would overflow
+ * the viewport — so it stays inside narrow containers like the task
+ * detail drawer.
  */
 export function Dropdown({ trigger, children, align = 'start', className = '' }) {
   const [open, setOpen] = useState(false);
+  const [placement, setPlacement] = useState({ align, side: 'bottom' });
   const rootRef = useRef(null);
+  const menuRef = useRef(null);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -34,6 +48,47 @@ export function Dropdown({ trigger, children, align = 'start', className = '' })
     };
   }, [open]);
 
+  // Reset placement to the requested align/side every time the menu opens —
+  // otherwise a previous flip can stick when the trigger moves back into
+  // a position where the original alignment fits.
+  useLayoutEffect(() => {
+    if (!open) {
+      setPlacement({ align, side: 'bottom' });
+      return;
+    }
+    const menu = menuRef.current;
+    const root = rootRef.current;
+    if (!menu || !root) return;
+    const triggerRect = root.getBoundingClientRect();
+    const menuRect = menu.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const margin = 8;
+
+    // Horizontal: if start-aligned and overflowing the right edge, try end.
+    // If end-aligned and overflowing the left edge, try start. We compare
+    // against the trigger's left/right so the menu hugs the right corner.
+    let nextAlign = align;
+    if (align === 'start' && triggerRect.left + menuRect.width > vw - margin) {
+      nextAlign = 'end';
+    } else if (align === 'end' && triggerRect.right - menuRect.width < margin) {
+      nextAlign = 'start';
+    }
+
+    // Vertical: if bottom-side overflows, try top. The menu's max-height
+    // CSS caps its size, so once flipped it always fits.
+    let nextSide = 'bottom';
+    if (triggerRect.bottom + menuRect.height + margin > vh) {
+      // Only flip up if there's actually room above.
+      if (triggerRect.top - menuRect.height - margin > 0) {
+        nextSide = 'top';
+      }
+    }
+    if (nextAlign !== placement.align || nextSide !== placement.side) {
+      setPlacement({ align: nextAlign, side: nextSide });
+    }
+  }, [open, align, children, placement.align, placement.side]);
+
   const triggerWithHandler = cloneElement(trigger, {
     onClick: (e) => {
       trigger.props.onClick?.(e);
@@ -47,7 +102,15 @@ export function Dropdown({ trigger, children, align = 'start', className = '' })
     <div className={['dropdown', className].filter(Boolean).join(' ')} ref={rootRef}>
       {triggerWithHandler}
       {open && (
-        <div className={['menu', `menu-align-${align}`].join(' ')} role="menu">
+        <div
+          ref={menuRef}
+          className={[
+            'menu',
+            `menu-align-${placement.align}`,
+            `menu-side-${placement.side}`,
+          ].join(' ')}
+          role="menu"
+        >
           <MenuContext.Provider value={() => setOpen(false)}>{children}</MenuContext.Provider>
         </div>
       )}

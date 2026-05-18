@@ -375,6 +375,11 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(120)
@@ -402,6 +407,10 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("OwnerUserId");
+
+                    b.HasIndex("OrganizationId", "Key")
+                        .IsUnique()
+                        .HasFilter("\"OrganizationId\" IS NOT NULL");
 
                     b.HasIndex("OrganizationId", "Slug")
                         .IsUnique()
@@ -640,6 +649,9 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("EpicId")
                         .HasColumnType("uuid");
 
+                    b.Property<int>("KeyNum")
+                        .HasColumnType("integer");
+
                     b.Property<string>("PrUrl")
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)");
@@ -691,6 +703,9 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasIndex("ReviewerId");
 
                     b.HasIndex("SprintId");
+
+                    b.HasIndex("ProjectId", "KeyNum")
+                        .IsUnique();
 
                     b.HasIndex("ProjectId", "Status");
 

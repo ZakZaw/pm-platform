@@ -70,7 +70,7 @@ export function SprintBoardPage() {
     : 0;
 
   return (
-    <div className="sprint-board">
+    <div className="page sprint-board">
       <header className="sprint-board__header">
         <div>
           <h1 className="sprint-board__title">{sprint?.name ?? 'Sprint board'}</h1>

@@ -41,7 +41,11 @@ public class UpdateTaskStatusCommandHandler(
         await db.SaveChangesAsync(ct);
 
         await events.PublishAsync(task.ProjectId, "board.changed", new { taskId = task.Id }, ct);
-        return Result.Success(CreateTaskCommandHandler.ToDto(task));
+        var projectKey = await db.Projects
+            .Where(p => p.Id == task.ProjectId)
+            .Select(p => p.Key)
+            .FirstAsync(ct);
+        return Result.Success(CreateTaskCommandHandler.ToDto(task, projectKey));
     }
 
     private static Error MapDomainError(DomainException ex, string from, string to) => ex.Code switch

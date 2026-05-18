@@ -37,7 +37,7 @@ public class UpdateTaskCommandHandler(IAppDbContext db)
 
         var project = await db.Projects
             .Where(p => p.Id == task.ProjectId)
-            .Select(p => new { p.Id, p.IsPersonal, p.OwnerUserId })
+            .Select(p => new { p.Id, p.Key, p.IsPersonal, p.OwnerUserId })
             .FirstAsync(ct);
 
         if (request.Title is not null)
@@ -126,6 +126,6 @@ public class UpdateTaskCommandHandler(IAppDbContext db)
         }
 
         await db.SaveChangesAsync(ct);
-        return Result.Success(CreateTaskCommandHandler.ToDto(task));
+        return Result.Success(CreateTaskCommandHandler.ToDto(task, project.Key));
     }
 }

@@ -117,7 +117,7 @@ export function MembersPage() {
   };
 
   return (
-    <div className="members">
+    <div className="page members">
       <h1 className="members__title">Members</h1>
 
       {isAdminOrAbove && (

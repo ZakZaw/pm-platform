@@ -2,6 +2,10 @@ namespace Application.Features.Tasks;
 
 public record TaskDto(
     Guid Id,
+    /// <summary>Human-friendly task ID like "AT-247" — composed from the
+    /// project's Key prefix and the task's per-project KeyNum serial.</summary>
+    string Key,
+    int KeyNum,
     Guid ProjectId,
     Guid? EpicId,
     Guid? SprintId,

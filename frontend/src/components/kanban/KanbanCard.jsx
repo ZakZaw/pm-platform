@@ -6,9 +6,10 @@ import { Avatar, Priority } from '@/components/ui';
 import { useOrgMembers } from '@/hooks/useOrgMembers';
 import './KanbanCard.css';
 
-// Short, stable display key for a task. Real tasks don't have a per-project
-// counter yet (Phase 1 backend uses uuids), so we derive a 4-char tail. When
-// the backend exposes a numeric key (e.g. ATLAS-247) we'll swap this out.
+// `task.key` is now a real per-project serial like "AT-247", produced by
+// the backend from Project.Key + Task.KeyNum. Fall back to a UUID tail
+// only if a stale response somehow lacks it (defensive — should not
+// happen on the current API).
 function shortKey(card) {
   if (card.key) return card.key;
   const id = String(card.taskId ?? '');

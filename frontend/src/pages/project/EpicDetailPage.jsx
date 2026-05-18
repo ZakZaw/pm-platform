@@ -72,7 +72,7 @@ export function EpicDetailPage() {
     : 0;
 
   return (
-    <div className="epic-detail">
+    <div className="page epic-detail">
       <Link
         to={`/${orgSlug}/projects/${projectSlug}/epics`}
         className="epic-detail__back"

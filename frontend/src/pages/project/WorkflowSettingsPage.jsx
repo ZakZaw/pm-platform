@@ -137,7 +137,7 @@ export function WorkflowSettingsPage() {
   if (error) return <p className="workflow__placeholder">{error}</p>;
 
   return (
-    <div className="workflow">
+    <div className="page workflow">
       <header className="workflow__header">
         <h1 className="workflow__title">Workflow statuses</h1>
         <p className="workflow__sub">

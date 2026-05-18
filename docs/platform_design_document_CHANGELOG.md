@@ -8,6 +8,43 @@
 
 ---
 
+## 2026-05-18 — Human-friendly task IDs + orphan-page polish + MyWork kanban
+
+### Schema — `Project.Key` + `Task.KeyNum`
+
+The .docx originally described tasks by UUID. Tasks now have a **human-friendly display ID** like `AT-247`, composed server-side from two new columns:
+
+- `Project.Key` — 2–4 character prefix derived from the project name (e.g. "Atlas" → "AT"). Unique within an organization; suffixed on collision ("AT2"). Set on project create and never changes.
+- `Task.KeyNum` — per-project monotonic serial. Assigned on create, never reused, even after a task is deleted.
+
+Composed key flows through every task-shaped DTO (`TaskDto.Key`, `BoardCardDto.Key`, `BacklogTaskDto.Key`, `MyWorkItemDto.Key`). Frontend cards and the drawer display this everywhere they previously used a UUID prefix.
+
+Migration `20260518000000_AddProjectKeyAndTaskKeyNum` adds columns nullable, back-fills via SQL (Project.Key = first 2 letters of Name + collision suffix per org; Task.KeyNum = row_number per project ordered by CreatedAt), then enforces NOT NULL + unique indexes. Personal projects all get `Key = "PE"` (one per user, no collision risk).
+
+To apply locally:
+
+```
+dotnet ef database update --project src/Infrastructure --startup-project src/Api
+```
+
+### UI — Dropdown menus stay inside the viewport
+
+`Dropdown.jsx` was placing the `.menu` with absolute `top:100%` + a fixed `align`. Menus near the right edge of the page (or inside the 560px task drawer) would spill offscreen. The component now reads the trigger's bounding rect after opening and **flips alignment to `end`** when right-overflow would occur, and **flips to the top side** when bottom-overflow would occur. CSS `max-width: min(360px, 100vw - 16px)` + `max-height: min(360px, 100vh - 80px)` with internal scroll guarantee the menu stays inside any container.
+
+### UI — `.page` utility for orphan pages
+
+Pages without a `/Design Files/screen-*.jsx` counterpart (project home, epics, backlog, sprints, sprint board, workflow settings, project members, org home, org members, profile, create-project, create-org) previously had inconsistent padding — some bled to the edge of the scroll container. Added `.page` (and `.page-narrow` / `.page-wide`) utility classes to `stratos.css` and applied them to every orphan page root, giving them the same outer padding rhythm as the Stratos-designed pages.
+
+### UI — Task detail drawer surfaces the task ID
+
+The drawer previously showed the task ID only as a small muted chip in the top action bar. There's now also a **clickable mono-text ID chip** above the title (e.g. `AT-247`) with a copy icon — click it to copy the key to clipboard.
+
+### UI — MyWork page uses the kanban layout
+
+`/dashboard` (MyWork) was a vertical list of cards in tone-coloured boxes. Rewritten to use the same kanban shape as the project Board: 5 columns (Backlog / ToDo / InProgress / InReview / Blocked), Stratos `.kanban-card` styling, drag-to-move, status counts + story-points per column header. Cross-project data wiring (project filter, sprint filter, drag-to-changeStatus) unchanged.
+
+---
+
 ## 2026-05-17 — Project Dashboard page added
 
 A new project-scoped Dashboard at `/:slug/projects/:projectSlug/dashboard` matching `/Design Files/screen-dashboard.jsx`. Added to the project sub-nav between Board and Backlog.

@@ -31,13 +31,15 @@ public class GetMyWorkQueryHandler(IAppDbContext db, ICurrentUser currentUser)
                           && t.Status != DomainTaskStatus.WontDo
                     select new
                     {
-                        t.Id, t.Title, t.Description,
+                        t.Id, t.KeyNum, t.Title, t.Description,
                         Status = t.Status.ToString(),
                         Priority = t.Priority.ToString(),
+                        t.StoryPoints,
                         t.DueDate,
                         ProjectId = p.Id,
                         ProjectSlug = p.Slug,
                         ProjectName = p.Name,
+                        ProjectKey = p.Key,
                         ProjectIsPersonal = p.IsPersonal,
                         OrgSlug = p.Organization != null ? p.Organization.Slug : null,
                         t.SprintId,
@@ -51,8 +53,9 @@ public class GetMyWorkQueryHandler(IAppDbContext db, ICurrentUser currentUser)
 
         var raw = await query.ToListAsync(ct);
         var items = raw.Select(x => new MyWorkItemDto(
-            x.Id, x.Title, x.Description, x.Status, x.Priority, x.DueDate,
-            x.ProjectId, x.ProjectSlug, x.ProjectName, x.ProjectIsPersonal,
+            x.Id, $"{x.ProjectKey}-{x.KeyNum}", x.KeyNum,
+            x.Title, x.Description, x.Status, x.Priority, x.StoryPoints, x.DueDate,
+            x.ProjectId, x.ProjectSlug, x.ProjectName, x.ProjectKey, x.ProjectIsPersonal,
             x.OrgSlug, x.SprintId, x.CreatedAt)).ToList();
 
         if (!string.IsNullOrWhiteSpace(request.Filter))

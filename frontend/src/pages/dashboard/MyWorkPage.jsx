@@ -1,7 +1,22 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { DndContext, PointerSensor, useDraggable, useDroppable, useSensor, useSensors } from '@dnd-kit/core';
+import {
+  DndContext,
+  PointerSensor,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Badge, Card, Select, StatusBadge, useToast } from '@/components/ui';
+import { MoreHorizontal } from 'lucide-react';
+import {
+  Avatar,
+  Badge,
+  Priority,
+  Select,
+  StatusBadge,
+  useToast,
+} from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
 import { useOrgStore } from '@/store/orgStore';
 import { useProjectStore } from '@/store/projectStore';
@@ -10,18 +25,21 @@ import { sprintsApi } from '@/api/sprints.api';
 import { myWorkApi } from '@/api/myWork.api';
 import { tasksApi } from '@/api/tasks.api';
 import { TaskDetailDrawer } from '@/components/tasks/TaskDetailDrawer';
+import '@/components/kanban/KanbanCard.css';
+import '@/components/kanban/KanbanColumn.css';
 import './MyWorkPage.css';
 
 const COLUMN_ORDER = ['Backlog', 'ToDo', 'InProgress', 'InReview', 'Blocked'];
 
-const PRIORITY_TONE = {
-  Urgent: 'danger',
-  High: 'warning',
-  Medium: 'info',
-  Low: 'neutral',
-};
-
 const ALL = '__all__';
+
+function shortKey(item) {
+  // item.key is "AT-247" style, composed server-side from
+  // project.Key + task.KeyNum.
+  if (item.key) return item.key;
+  const id = String(item.id ?? '');
+  return id ? id.slice(0, 4).toUpperCase() : '—';
+}
 
 export function MyWorkPage() {
   const user = useAuthStore((s) => s.user);
@@ -63,7 +81,7 @@ export function MyWorkPage() {
             const s = await sprintsApi.getActive(p.id);
             if (s && !cancelled) sprints.push({ ...s, projectName: p.name });
           } catch {
-            /* skip — viewer might not be a project member */
+            /* viewer might not be a project member */
           }
         }
       }
@@ -115,6 +133,7 @@ export function MyWorkPage() {
   }, [activeSprints]);
 
   const columns = useMemo(() => groupByStatus(items), [items]);
+  const totalOpen = items.length;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -130,7 +149,6 @@ export function MyWorkPage() {
     const current = items.find((it) => it.id === taskId);
     if (!current || current.status === targetStatus) return;
 
-    // Optimistic move
     const before = items;
     setItems((cur) =>
       cur.map((it) => (it.id === taskId ? { ...it, status: targetStatus } : it)),
@@ -150,26 +168,28 @@ export function MyWorkPage() {
 
   return (
     <div className="mywork">
-      <header className="mywork__head">
-        <div>
-          <h1 className="mywork__title">My work</h1>
-          <p className="mywork__subtitle">
-            {user?.fullName ? `Welcome, ${user.fullName}. ` : ''}
-            Tasks assigned to you across every project.
-          </p>
+      <header className="page-header mywork__header">
+        <div className="grow">
+          <div className="hstack" style={{ gap: 8 }}>
+            <div className="page-title">My work</div>
+            <Badge tone="neutral">{totalOpen} open</Badge>
+          </div>
+          <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>
+            {user?.fullName ? `${user.fullName}'s tasks across every project.` : 'Tasks assigned to you across every project.'}
+          </div>
         </div>
-        <div className="mywork__filters">
+        <div className="hstack mywork__filters">
           <Select
-            label="Project"
             value={projectFilter}
             onChange={(e) => setProjectFilter(e.target.value)}
             options={projectOptions}
+            aria-label="Filter by project"
           />
           <Select
-            label="Sprint"
             value={sprintFilter}
             onChange={(e) => setSprintFilter(e.target.value)}
             options={sprintOptions}
+            aria-label="Filter by sprint"
           />
         </div>
       </header>
@@ -178,18 +198,20 @@ export function MyWorkPage() {
       {error && <p className="mywork__placeholder">{error}</p>}
 
       {!loading && !error && (
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-          <div className="mywork__board">
-            {COLUMN_ORDER.map((status) => (
-              <MyWorkColumn
-                key={status}
-                status={status}
-                items={columns[status] ?? []}
-                onOpen={(item) => setOpened({ taskId: item.id, projectId: item.projectId })}
-              />
-            ))}
-          </div>
-        </DndContext>
+        <div className="mywork__board-wrap">
+          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+            <div className="kanban__columns mywork__columns">
+              {COLUMN_ORDER.map((status) => (
+                <MyWorkColumn
+                  key={status}
+                  status={status}
+                  items={columns[status] ?? []}
+                  onOpen={(item) => setOpened({ taskId: item.id, projectId: item.projectId })}
+                />
+              ))}
+            </div>
+          </DndContext>
+        </div>
       )}
 
       <TaskDetailDrawer
@@ -214,16 +236,25 @@ function groupByStatus(items) {
 
 function MyWorkColumn({ status, items, onOpen }) {
   const { isOver, setNodeRef } = useDroppable({ id: `mw-col:${status}` });
+  const pts = items.reduce((s, t) => s + (t.storyPoints ?? 0), 0);
   return (
     <div
       ref={setNodeRef}
-      className={['mywork__col', isOver ? 'is-over' : ''].filter(Boolean).join(' ')}
+      className={['kanban-col', isOver ? 'is-over' : ''].filter(Boolean).join(' ')}
     >
-      <header className="mywork__col-head">
-        <StatusBadge status={status} />
-        <span className="mywork__col-count">{items.length}</span>
+      <header className="hstack kanban-col__head">
+        <div className="hstack" style={{ gap: 8 }}>
+          <StatusBadge status={status} />
+          <span className="mono dim kanban-col__count">
+            {items.length}
+            {pts > 0 && ` · ${pts}pt`}
+          </span>
+        </div>
+        <span className="icon-btn icon-btn-sm" aria-hidden="true">
+          <MoreHorizontal size={12} />
+        </span>
       </header>
-      <div className="mywork__col-body">
+      <div className="kanban-col__body">
         {items.length === 0 ? (
           <p className="mywork__empty">No tasks here.</p>
         ) : (
@@ -247,7 +278,6 @@ function ItemCard({ item, onOpen }) {
     if (isDragging) return;
     onOpen?.(item);
   }
-
   function handleKey(e) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -255,30 +285,50 @@ function ItemCard({ item, onOpen }) {
     }
   }
 
+  const assigneeName =
+    item.assigneeName ?? (item.assigneeId ? '—' : null);
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       {...listeners}
       {...attributes}
-      role="button"
-      tabIndex={0}
-      className="mywork__card-button"
       onClick={handleClick}
       onKeyDown={handleKey}
+      className="card kanban-card mywork__card"
+      role="button"
+      tabIndex={0}
+      aria-label={`${item.title} — ${item.priority} priority`}
     >
-      <Card className="mywork__card">
-        <div className="mywork__card-title">{item.title}</div>
-        <div className="mywork__card-meta">
-          <Badge tone={PRIORITY_TONE[item.priority] ?? 'neutral'}>{item.priority}</Badge>
-          <span className="mywork__card-project">
-            {item.projectIsPersonal ? 'Personal' : item.projectName}
+      <div className="hstack kanban-card__top">
+        <span className="mono dim kanban-card__key">{shortKey(item)}</span>
+        <Priority level={item.priority} />
+      </div>
+
+      <div className="kanban-card__title">{item.title}</div>
+
+      <div className="hstack mywork__project-row">
+        <span className="truncate">
+          {item.projectIsPersonal ? 'Personal' : item.projectName}
+        </span>
+        {item.dueDate && (
+          <span className="mono dim mywork__due">{formatDue(item.dueDate)}</span>
+        )}
+      </div>
+
+      <div className="hstack kanban-card__foot">
+        {assigneeName ? (
+          <Avatar name={assigneeName} size="xs" />
+        ) : (
+          <span className="kanban-card__unassigned" title="Unassigned" />
+        )}
+        {item.storyPoints != null && (
+          <span className="mono kanban-card__pts" title="Story points">
+            {item.storyPoints}
           </span>
-          {item.dueDate && (
-            <span className="mywork__card-due">{formatDue(item.dueDate)}</span>
-          )}
-        </div>
-      </Card>
+        )}
+      </div>
     </div>
   );
 }
@@ -287,13 +337,11 @@ function parseCardId(id) {
   const parts = id.split(':');
   return parts[0] === 'mw-card' ? parts[1] : null;
 }
-
 function parseColumnId(id) {
   const parts = id.split(':');
   return parts[0] === 'mw-col' ? parts[1] : null;
 }
-
-function formatDue(dueIso) {
-  const d = new Date(dueIso);
+function formatDue(iso) {
+  const d = new Date(iso);
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }

@@ -1,0 +1,180 @@
+/* AISuggestionCard — Stratos AI insight surface. Built on top of the
+   `.card-ai` shell (gradient border + glow). Flat class names, tokens only. */
+
+.ai-suggest {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 560px;
+}
+
+.ai-suggest--compact {
+  padding: var(--space-2) var(--space-3);
+  max-width: none;
+}
+
+.ai-suggest__compact-row {
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.ai-suggest__compact-msg {
+  font-size: var(--font-size-dense);
+  color: var(--text-primary);
+  flex: 0 1 auto;
+}
+
+.ai-suggest__compact-action {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: var(--space-1);
+  color: var(--accent-primary);
+  font: inherit;
+  cursor: pointer;
+}
+.ai-suggest__compact-action:hover { text-decoration: underline; }
+
+.ai-suggest__header {
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: calc(-1 * var(--space-1));
+}
+
+.ai-suggest__scope {
+  font-size: var(--font-size-meta);
+  color: var(--text-muted);
+}
+
+.ai-suggest__close {
+  background: none;
+  border: none;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+}
+.ai-suggest__close:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.ai-suggest__title {
+  font-size: var(--font-size-h4);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  letter-spacing: -0.005em;
+  line-height: var(--leading-tight);
+}
+
+.ai-suggest__body {
+  font-size: var(--font-size-dense);
+  color: var(--text-secondary);
+  line-height: var(--leading-norm);
+}
+
+.ai-suggest__options {
+  gap: var(--space-1);
+}
+
+.ai-suggest__option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-base);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: var(--text-primary);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out);
+}
+
+.ai-suggest__option:hover {
+  border-color: var(--border-default);
+}
+
+.ai-suggest__option.is-recommended {
+  border-color: var(--ai-border);
+  background: var(--ai-bg);
+}
+
+.ai-suggest__option.is-selected {
+  border-color: var(--accent-primary);
+  background: var(--accent-primary-soft);
+}
+
+.ai-suggest__radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-strong);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ai-suggest__radio.is-selected {
+  border-color: var(--accent-primary);
+  background: var(--accent-primary);
+}
+.ai-suggest__radio-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: white;
+}
+
+.ai-suggest__option-label {
+  font-size: var(--font-size-dense);
+  flex: 1;
+}
+
+.ai-suggest__recommended {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ai-violet);
+}
+
+.ai-suggest__footer {
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.ai-suggest__footer-note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-meta);
+  color: var(--text-muted);
+}
+
+.ai-suggest__undo {
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--status-success-bg);
+  border: 1px solid var(--status-success-border);
+  border-radius: var(--radius-md);
+}
+
+.ai-suggest__undo-title {
+  font-size: var(--font-size-dense);
+  font-weight: var(--weight-medium);
+  color: var(--status-success);
+}
+
+.ai-suggest__undo-sub {
+  font-size: var(--font-size-meta);
+  color: var(--text-muted);
+}

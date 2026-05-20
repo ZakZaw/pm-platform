@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ChevronLeft, Layers, Plus } from 'lucide-react';
+import { ChevronLeft, Layers, Plus, Sparkles } from 'lucide-react';
 import { Avatar, AssigneePicker, Badge, Button, Card, useToast } from '@/components/ui';
 import { TaskDetailDrawer } from '@/components/tasks/TaskDetailDrawer';
+import { AITaskListWizardModal } from '@/components/ai/AITaskListWizardModal';
 import { projectsApi } from '@/api/projects.api';
 import { epicsApi } from '@/api/epics.api';
 import { tasksApi } from '@/api/tasks.api';
@@ -61,6 +62,7 @@ export function EpicDetailPage() {
   const [descDraft, setDescDraft] = useState('');
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [creating, setCreating] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
 
   const { members } = useOrgMembers(orgSlug);
   const memberById = useMemo(() => {
@@ -331,7 +333,22 @@ export function EpicDetailPage() {
       <Card className="epic-detail__section">
         <header className="epic-detail__tasks-head">
           <h2 className="epic-detail__heading">Tasks ({tasks.length})</h2>
+          <Button variant="ai" size="sm" onClick={() => setAiOpen(true)}>
+            <Sparkles size={12} aria-hidden="true" /> AI tasks
+          </Button>
         </header>
+
+        <AITaskListWizardModal
+          open={aiOpen}
+          projectId={project.id}
+          epicId={epicId}
+          fixedEpic
+          onClose={() => setAiOpen(false)}
+          onCreated={() => {
+            setAiOpen(false);
+            refresh(project.id).catch(() => {});
+          }}
+        />
 
         <form className="epic-detail__create" onSubmit={addTaskToEpic}>
           <input

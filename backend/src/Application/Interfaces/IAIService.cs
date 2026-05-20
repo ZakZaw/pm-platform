@@ -27,6 +27,34 @@ public interface IAIService
         IReadOnlyList<AIClarificationAnswer>? clarifications,
         CancellationToken ct);
 
+    /// <summary>
+    /// Generate a single epic with its tasks, scoped to an existing project.
+    /// The caller passes project context (name, environment, existing-epic
+    /// titles) so the AI can fit the new epic into the project without
+    /// duplicating work already planned.
+    /// </summary>
+    Task<AIGeneratedEpic> GenerateEpicStructureAsync(
+        AIEpicGenerationInput input,
+        CancellationToken ct);
+
+    /// <summary>
+    /// Generate a list of standalone tasks from a free-form prompt, scoped
+    /// to a project and optionally an epic. Each task carries 2-5
+    /// acceptance criteria like the project-gen flow.
+    /// </summary>
+    Task<IReadOnlyList<AIGeneratedTask>> GenerateTaskListAsync(
+        AITaskListGenerationInput input,
+        CancellationToken ct);
+
+    /// <summary>
+    /// Decompose an existing task into a description, refined acceptance
+    /// criteria (subtasks), and optional adjusted point estimate. Used by
+    /// "AI: break down" on the task drawer.
+    /// </summary>
+    Task<AITaskBreakdown> BreakdownTaskAsync(
+        AITaskBreakdownInput input,
+        CancellationToken ct);
+
     Task<IReadOnlyList<string>> GenerateClarifyingQuestionsAsync(
         string description,
         string environmentType,
@@ -38,5 +66,14 @@ public interface IAIService
 
     Task<AISprintFillPlan> SuggestSprintFillAsync(
         AISprintFillInput input,
+        CancellationToken ct);
+
+    /// <summary>
+    /// Diagnose the active sprint: titled headline, a paragraph of body,
+    /// and 2-3 concrete replan options. Surfaced in the project's AI
+    /// Inbox as a durable suggestion the PM can accept / edit / dismiss.
+    /// </summary>
+    Task<AISprintHealthInsight> GenerateSprintHealthInsightAsync(
+        AISprintHealthInput input,
         CancellationToken ct);
 }

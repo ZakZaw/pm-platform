@@ -15,6 +15,7 @@ import {
   Badge,
   Priority,
   Select,
+  Skeleton,
   StatusBadge,
   useToast,
 } from '@/components/ui';
@@ -202,7 +203,23 @@ export function MyWorkPage() {
         </div>
       </header>
 
-      {loading && <p className="mywork__placeholder">Loading…</p>}
+      {loading && (
+        <div aria-busy="true">
+          <Skeleton width="30%" height={14} />
+          <div style={{ height: 12 }} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i}>
+                <Skeleton width="40%" height={12} />
+                <div style={{ height: 8 }} />
+                <Skeleton height={70} radius="md" />
+                <div style={{ height: 8 }} />
+                <Skeleton height={70} radius="md" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {error && <p className="mywork__placeholder">{error}</p>}
 
       {!loading && !error && (

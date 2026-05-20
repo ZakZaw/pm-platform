@@ -13,6 +13,7 @@ import {
   Maximize2,
   MessageSquare,
   MoreHorizontal,
+  Sparkles,
   Trash2,
   User,
   X,
@@ -28,6 +29,10 @@ import { commentsApi } from '@/api/comments.api';
 import { epicsApi } from '@/api/epics.api';
 import { useOrgMembers } from '@/hooks/useOrgMembers';
 import { useConfirm } from '@/hooks/useConfirm';
+import { AITaskBreakdownModal } from '@/components/ai/AITaskBreakdownModal';
+import { describeAiError } from '@/components/ai/aiErrors';
+import { aiApi } from '@/api/ai.api';
+import { AISuggestionCard } from '@/components/ui';
 import { StatusDropdown } from './StatusDropdown';
 import { PriorityDropdown } from './PriorityDropdown';
 import { EpicPicker } from './EpicPicker';
@@ -82,6 +87,9 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
   );
   const [editingPrUrl, setEditingPrUrl] = useState(false);
   const [prUrlDraft, setPrUrlDraft] = useState(task.prUrl ?? '');
+  const [aiBreakdownOpen, setAiBreakdownOpen] = useState(false);
+  const [aiEstimate, setAiEstimate] = useState(null);
+  const [aiEstimateLoading, setAiEstimateLoading] = useState(false);
 
   useEffect(() => {
     setTitleDraft(task.title);
@@ -314,6 +322,62 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
     }
   }
 
+  async function requestAiEstimate() {
+    setAiEstimateLoading(true);
+    try {
+      const result = await aiApi.estimateTask(task.id);
+      setAiEstimate(result);
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        message: describeAiError(err, 'Could not estimate.'),
+      });
+    } finally {
+      setAiEstimateLoading(false);
+    }
+  }
+
+  async function applyAiEstimate() {
+    if (!aiEstimate) return;
+    const ok = await patch(
+      { storyPoints: aiEstimate.points },
+      'Could not apply estimate.',
+    );
+    if (ok) {
+      setAiEstimate(null);
+      toast.show({ tone: 'success', message: `Set points to ${aiEstimate.points}.` });
+    }
+  }
+
+  async function applyAiBreakdown(p) {
+    setAiBreakdownOpen(false);
+    const taskPatch = {};
+    if (p.description !== undefined) taskPatch.description = p.description;
+    if (p.storyPoints !== undefined) taskPatch.storyPoints = p.storyPoints;
+    if (Object.keys(taskPatch).length > 0) {
+      const updated = await patch(taskPatch, 'Could not apply AI changes.');
+      if (!updated) return;
+    }
+    if (p.acceptanceCriteria && p.acceptanceCriteria.length > 0) {
+      try {
+        const created = [];
+        for (const ac of p.acceptanceCriteria) {
+          // eslint-disable-next-line no-await-in-loop
+          const sub = await subtasksApi.create(task.id, { title: ac });
+          created.push(sub);
+        }
+        setSubtasks((cur) => [...cur, ...created]);
+      } catch (err) {
+        toast.show({
+          tone: 'danger',
+          message: err.response?.data?.detail ?? 'Could not add criteria.',
+        });
+        return;
+      }
+    }
+    toast.show({ tone: 'success', message: 'Applied AI breakdown.' });
+  }
+
   async function removeSubtask(sub) {
     try {
       await subtasksApi.remove(sub.id);
@@ -360,6 +424,13 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
   return (
     <>
       {dialog}
+      <AITaskBreakdownModal
+        open={aiBreakdownOpen}
+        taskId={task.id}
+        currentTitle={task.title}
+        onClose={() => setAiBreakdownOpen(false)}
+        onApply={applyAiBreakdown}
+      />
       <aside
         className="task-detail"
         aria-label={`Task: ${task.title}`}
@@ -507,7 +578,31 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
               </button>
             )}
 
-            <div className="subsection-eyebrow">Acceptance criteria</div>
+            {aiEstimate && (
+              <div className="task-detail__ai-estimate">
+                <AISuggestionCard
+                  chipLabel="AI estimate"
+                  title={`Suggested: ${aiEstimate.points} points`}
+                  body={aiEstimate.reasoning}
+                  footer={`Confidence ${Math.round((aiEstimate.confidence ?? 0) * 100)}%${aiEstimate.confidence < 0.5 ? ' · low — review before applying' : ''}`}
+                  applyLabel={`Set to ${aiEstimate.points}`}
+                  onApply={applyAiEstimate}
+                  onDismiss={() => setAiEstimate(null)}
+                />
+              </div>
+            )}
+
+            <div className="task-detail__ac-head">
+              <span className="subsection-eyebrow">Acceptance criteria</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setAiBreakdownOpen(true)}
+                title="Let AI propose a tighter description, acceptance criteria, and points."
+              >
+                <Sparkles size={11} aria-hidden="true" /> AI: break down
+              </Button>
+            </div>
             {subtasks.length === 0 && (
               <p className="task-detail__placeholder">No acceptance criteria yet.</p>
             )}
@@ -614,23 +709,35 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
             </MetaRow>
 
             <MetaRow label="Points">
-              <input
-                type="number"
-                min={0}
-                max={200}
-                value={pointsDraft}
-                onChange={(e) => setPointsDraft(e.target.value)}
-                onBlur={commitPoints}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    e.currentTarget.blur();
-                  }
-                }}
-                placeholder="—"
-                className="task-detail__pts-input"
-                aria-label="Story points"
-              />
+              <div className="task-detail__pts-row">
+                <input
+                  type="number"
+                  min={0}
+                  max={200}
+                  value={pointsDraft}
+                  onChange={(e) => setPointsDraft(e.target.value)}
+                  onBlur={commitPoints}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      e.currentTarget.blur();
+                    }
+                  }}
+                  placeholder="—"
+                  className="task-detail__pts-input"
+                  aria-label="Story points"
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={requestAiEstimate}
+                  disabled={aiEstimateLoading}
+                  title="Ask the AI to estimate points based on similar past tasks."
+                >
+                  <Sparkles size={11} aria-hidden="true" />{' '}
+                  {aiEstimateLoading ? 'Thinking…' : 'AI'}
+                </Button>
+              </div>
             </MetaRow>
 
             <MetaRow label="Due">

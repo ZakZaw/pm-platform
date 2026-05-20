@@ -50,6 +50,61 @@ public class GeminiAIService(IOptions<AISettings> options, ILogger<GeminiAIServi
         return ParseProject(json);
     }
 
+    public async Task<AIGeneratedEpic> GenerateEpicStructureAsync(
+        AIEpicGenerationInput input, CancellationToken ct)
+    {
+        var json = await CallJsonAsync(PromptLibrary.EpicGeneration, input, ct);
+        try
+        {
+            var raw = JsonSerializer.Deserialize<RawEpic>(json, JsonOpts)
+                      ?? throw new AIServiceException("AI response was not a valid epic.");
+            return MapEpic(raw);
+        }
+        catch (JsonException jex)
+        {
+            throw new AIServiceException("Could not parse AI epic JSON: " + jex.Message, jex);
+        }
+    }
+
+    public async Task<IReadOnlyList<AIGeneratedTask>> GenerateTaskListAsync(
+        AITaskListGenerationInput input, CancellationToken ct)
+    {
+        var json = await CallJsonAsync(PromptLibrary.TaskListGeneration, input, ct);
+        try
+        {
+            var raw = JsonSerializer.Deserialize<RawTaskList>(json, JsonOpts)
+                      ?? throw new AIServiceException("AI response was not a valid task list.");
+            return (raw.Tasks ?? []).Select(MapTask).ToList();
+        }
+        catch (JsonException jex)
+        {
+            throw new AIServiceException("Could not parse AI task-list JSON: " + jex.Message, jex);
+        }
+    }
+
+    public async Task<AITaskBreakdown> BreakdownTaskAsync(
+        AITaskBreakdownInput input, CancellationToken ct)
+    {
+        var json = await CallJsonAsync(PromptLibrary.TaskBreakdown, input, ct);
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+        var desc = root.TryGetProperty("refinedDescription", out var d) ? d.GetString() ?? "" : "";
+        var ac = new List<string>();
+        if (root.TryGetProperty("acceptanceCriteria", out var arr) && arr.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var el in arr.EnumerateArray())
+            {
+                var s = el.GetString();
+                if (!string.IsNullOrWhiteSpace(s)) ac.Add(s.Trim());
+            }
+        }
+        int? suggested = null;
+        if (root.TryGetProperty("suggestedStoryPoints", out var sp) && sp.ValueKind == JsonValueKind.Number)
+            suggested = SnapToFib(sp.GetInt32());
+        var reasoning = root.TryGetProperty("reasoning", out var r) ? r.GetString() ?? "" : "";
+        return new AITaskBreakdown(desc, ac, suggested, reasoning);
+    }
+
     public async Task<IReadOnlyList<string>> GenerateClarifyingQuestionsAsync(
         string description, string environmentType, CancellationToken ct)
     {
@@ -75,6 +130,30 @@ public class GeminiAIService(IOptions<AISettings> options, ILogger<GeminiAIServi
         var confidence = root.TryGetProperty("confidence", out var c) ? c.GetDouble() : 0.5;
         var reasoning = root.TryGetProperty("reasoning", out var r) ? r.GetString() ?? "" : "";
         return new AIEffortEstimate(SnapToFib(points), Math.Clamp(confidence, 0, 1), reasoning);
+    }
+
+    public async Task<AISprintHealthInsight> GenerateSprintHealthInsightAsync(
+        AISprintHealthInput input, CancellationToken ct)
+    {
+        var json = await CallJsonAsync(PromptLibrary.SprintHealth, input, ct);
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+        var title = root.TryGetProperty("title", out var t) ? t.GetString() ?? "" : "";
+        var body = root.TryGetProperty("body", out var b) ? b.GetString() ?? "" : "";
+        var confidence = root.TryGetProperty("confidence", out var c) ? c.GetDouble() : 0.5;
+        var options = new List<AISprintHealthOption>();
+        if (root.TryGetProperty("options", out var arr) && arr.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var el in arr.EnumerateArray())
+            {
+                var label = el.TryGetProperty("label", out var l) ? l.GetString() ?? "" : "";
+                if (string.IsNullOrWhiteSpace(label)) continue;
+                var rec = el.TryGetProperty("recommended", out var r) && r.GetBoolean();
+                options.Add(new AISprintHealthOption(label.Trim(), rec));
+            }
+        }
+        return new AISprintHealthInsight(
+            title.Trim(), body.Trim(), options, Math.Clamp(confidence, 0, 1));
     }
 
     public async Task<AISprintFillPlan> SuggestSprintFillAsync(
@@ -151,17 +230,7 @@ public class GeminiAIService(IOptions<AISettings> options, ILogger<GeminiAIServi
         {
             var raw = JsonSerializer.Deserialize<RawProject>(json, JsonOpts)
                       ?? throw new AIServiceException("AI response was not a valid project structure.");
-            var epics = (raw.Epics ?? []).Select(e => new AIGeneratedEpic(
-                e.Title ?? "Untitled epic",
-                e.Description ?? string.Empty,
-                e.Color,
-                (e.Tasks ?? []).Select(t => new AIGeneratedTask(
-                    t.Title ?? "Untitled task",
-                    t.Description ?? string.Empty,
-                    SnapToFib(t.StoryPoints ?? 3),
-                    NormalisePriority(t.Priority),
-                    (t.AcceptanceCriteria ?? []).Where(x => !string.IsNullOrWhiteSpace(x)).ToList()
-                )).ToList())).ToList();
+            var epics = (raw.Epics ?? []).Select(MapEpic).ToList();
             return new AIGeneratedProject(raw.SuggestedName ?? "New project", epics);
         }
         catch (JsonException jex)
@@ -169,6 +238,19 @@ public class GeminiAIService(IOptions<AISettings> options, ILogger<GeminiAIServi
             throw new AIServiceException("Could not parse AI project JSON: " + jex.Message, jex);
         }
     }
+
+    private static AIGeneratedEpic MapEpic(RawEpic e) => new(
+        e.Title ?? "Untitled epic",
+        e.Description ?? string.Empty,
+        e.Color,
+        (e.Tasks ?? []).Select(MapTask).ToList());
+
+    private static AIGeneratedTask MapTask(RawTask t) => new(
+        t.Title ?? "Untitled task",
+        t.Description ?? string.Empty,
+        SnapToFib(t.StoryPoints ?? 3),
+        NormalisePriority(t.Priority),
+        (t.AcceptanceCriteria ?? []).Where(x => !string.IsNullOrWhiteSpace(x)).ToList());
 
     private static int SnapToFib(int n)
     {
@@ -208,6 +290,10 @@ public class GeminiAIService(IOptions<AISettings> options, ILogger<GeminiAIServi
         public int? StoryPoints { get; set; }
         public string? Priority { get; set; }
         public List<string>? AcceptanceCriteria { get; set; }
+    }
+    private sealed class RawTaskList
+    {
+        public List<RawTask>? Tasks { get; set; }
     }
 }
 

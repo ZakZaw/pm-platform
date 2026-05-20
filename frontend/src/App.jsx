@@ -22,6 +22,7 @@ import { SprintDetailPage } from '@/pages/project/SprintDetailPage';
 import { WorkflowSettingsPage } from '@/pages/project/WorkflowSettingsPage';
 import { ProjectMembersPage } from '@/pages/project/ProjectMembersPage';
 import { AIGenerationWizard } from '@/pages/project/AIGenerationWizard';
+import { AIInboxPage } from '@/pages/project/AIInboxPage';
 import { AppShell } from '@/components/layout/AppShell';
 import { ToastProvider } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
@@ -102,6 +103,10 @@ function App() {
             <Route
               path="/:slug/projects/:projectSlug/sprints/:sprintId/board"
               element={<Keyed paramKey="sprintId"><SprintBoardPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/ai"
+              element={<Keyed paramKey="projectSlug"><AIInboxPage /></Keyed>}
             />
             <Route
               path="/:slug/projects/:projectSlug/settings/workflow"

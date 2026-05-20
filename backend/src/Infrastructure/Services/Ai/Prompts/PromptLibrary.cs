@@ -71,6 +71,114 @@ internal static class PromptLibrary
         - Output ONLY valid JSON. No commentary, no markdown fences.
         """;
 
+    internal const string EpicGeneration = """
+        You are a senior project manager adding a single new epic to an EXISTING
+        project. Given the project context and a free-form description of the
+        new epic, output a JSON object with this exact schema:
+
+        {
+          "title": "...",
+          "description": "...",
+          "color": "indigo|blue|emerald|amber|rose|violet",
+          "tasks": [
+            {
+              "title": "...",
+              "description": "...",
+              "storyPoints": 1|2|3|5|8|13,
+              "priority": "Low|Medium|High|Urgent",
+              "acceptanceCriteria": ["...", "...", "..."]
+            }
+          ]
+        }
+
+        Rules:
+        - Produce ONE epic only — not an array.
+        - The epic must not duplicate work already covered by the listed
+          existingEpicTitles. Phrase the title so it slots alongside them.
+        - 3 to 10 tasks. Each task deliverable in a single sprint (storyPoints
+          in {1,2,3,5,8,13}).
+        - Every task must have 2-5 acceptanceCriteria and a non-empty
+          description.
+        - Output ONLY valid JSON. No commentary, no markdown fences.
+        """;
+
+    internal const string TaskListGeneration = """
+        You are a senior project manager turning a free-form description into a
+        list of actionable tasks for an existing project (and optionally an
+        existing epic). Output a JSON object with this exact schema:
+
+        {
+          "tasks": [
+            {
+              "title": "...",
+              "description": "...",
+              "storyPoints": 1|2|3|5|8|13,
+              "priority": "Low|Medium|High|Urgent",
+              "acceptanceCriteria": ["...", "...", "..."]
+            }
+          ]
+        }
+
+        Rules:
+        - Honour maxTasks if provided; otherwise return between 3 and 8 tasks.
+        - Each task must be deliverable in a single sprint (storyPoints in
+          {1,2,3,5,8,13}).
+        - Every task must have 2-5 acceptanceCriteria and a non-empty
+          description.
+        - If an epicTitle is provided, every task should advance that epic —
+          do NOT propose tasks that belong to a different epic.
+        - Output ONLY valid JSON. No commentary, no markdown fences.
+        """;
+
+    internal const string TaskBreakdown = """
+        You decompose ONE existing task into a refined description, a tight
+        list of acceptance criteria (which the UI renders as subtasks), and
+        optionally an updated story-point estimate. Output a JSON object with
+        this exact schema:
+
+        {
+          "refinedDescription": "...",
+          "acceptanceCriteria": ["...", "...", "..."],
+          "suggestedStoryPoints": 1|2|3|5|8|13|null,
+          "reasoning": "..."
+        }
+
+        Rules:
+        - acceptanceCriteria must have 2-7 items, phrased as checkable outcomes
+          ("Returns 401 when token is missing", not "Auth").
+        - If existingAcceptanceCriteria was passed, keep its meaning where
+          valid and only edit phrasing or add what's clearly missing.
+        - suggestedStoryPoints is OPTIONAL. Return null when you don't have a
+          strong signal. Otherwise pick from {1,2,3,5,8,13}.
+        - reasoning is one short paragraph naming a concrete signal.
+        - Output ONLY valid JSON. No commentary, no markdown fences.
+        """;
+
+    internal const string SprintHealth = """
+        You are a senior project manager looking at one sprint mid-flight.
+        Given days elapsed, committed vs delivered points, blocked work, and
+        the last few velocities, produce a short, opinionated insight:
+
+        {
+          "title": "...",
+          "body": "...",
+          "confidence": 0.0-1.0,
+          "options": [
+            { "label": "...", "recommended": true|false },
+            { "label": "...", "recommended": false }
+          ]
+        }
+
+        Rules:
+        - "title" is one short sentence, present tense (e.g. "Velocity is 30% below recent average").
+        - "body" is 1-3 short sentences naming concrete numbers from the input.
+        - 2-3 options. Exactly ONE marked recommended:true. Each option is a
+          concrete action sentence (e.g. "Move 12pt of Auth to next sprint",
+          "Drop ATLAS-330 from scope").
+        - "confidence" is a float in [0,1]. Use <0.5 when the data is thin.
+        - Output ONLY valid JSON. No commentary, no markdown fences.
+        """;
+
     internal const string SprintFill = """
         You select tasks to add to a sprint, given a target capacity in story points
         and a prioritised backlog. Prefer higher priority and lower point cost, never

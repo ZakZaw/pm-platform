@@ -7,9 +7,12 @@ public class Sprint
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid ProjectId { get; set; }
     public required string Name { get; set; }
-    public string? Goal { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
+    /// <summary>Stamp written when <c>StartSprintCommand</c> moves the sprint
+    /// to <c>Active</c>. Distinct from <see cref="StartDate"/> (the planned
+    /// start) — surfaces the slip between plan and reality.</summary>
+    public DateTime? ActualStartDate { get; set; }
     public int? VelocityTarget { get; set; }
     public SprintStatus Status { get; set; } = SprintStatus.Planning;
 

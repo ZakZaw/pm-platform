@@ -4,6 +4,7 @@ import { Avatar, Badge, Button, Card, Input, Select, Table } from '@/components/
 import { invitationsApi } from '@/api/invitations.api';
 import { orgsApi } from '@/api/orgs.api';
 import { useOrgRole } from '@/hooks/useOrgRole';
+import { useConfirm } from '@/hooks/useConfirm';
 import './MembersPage.css';
 
 const ROLE_OPTIONS = [
@@ -32,6 +33,7 @@ const PAGE_SIZE = 20;
 export function MembersPage() {
   const { slug } = useParams();
   const { role: myRole, isOwner, isAdminOrAbove, loaded } = useOrgRole(slug);
+  const { confirm, dialog } = useConfirm();
 
   // Invite form state
   const [email, setEmail] = useState('');
@@ -118,6 +120,7 @@ export function MembersPage() {
 
   return (
     <div className="page members">
+      {dialog}
       <h1 className="members__title">Members</h1>
 
       {isAdminOrAbove && (
@@ -188,7 +191,12 @@ export function MembersPage() {
             }
           }}
           onRemove={async (m) => {
-            if (!window.confirm(`Remove ${m.fullName} from the organization?`)) return;
+            const ok = await confirm({
+              title: `Remove ${m.fullName}?`,
+              message: `${m.fullName} will lose access to this organization and every project in it. Their work history stays put.`,
+              confirmLabel: 'Remove member',
+            });
+            if (!ok) return;
             try {
               await orgsApi.removeMember(slug, m.userId);
               setRefreshKey((k) => k + 1);

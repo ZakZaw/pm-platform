@@ -18,6 +18,7 @@ import { DashboardPage } from '@/pages/project/DashboardPage';
 import { BacklogPage } from '@/pages/project/BacklogPage';
 import { SprintsPage } from '@/pages/project/SprintsPage';
 import { SprintBoardPage } from '@/pages/project/SprintBoardPage';
+import { SprintDetailPage } from '@/pages/project/SprintDetailPage';
 import { WorkflowSettingsPage } from '@/pages/project/WorkflowSettingsPage';
 import { ProjectMembersPage } from '@/pages/project/ProjectMembersPage';
 import { AIGenerationWizard } from '@/pages/project/AIGenerationWizard';
@@ -93,6 +94,10 @@ function App() {
             <Route
               path="/:slug/projects/:projectSlug/sprints"
               element={<Keyed paramKey="projectSlug"><SprintsPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/sprints/:sprintId"
+              element={<Keyed paramKey="sprintId"><SprintDetailPage /></Keyed>}
             />
             <Route
               path="/:slug/projects/:projectSlug/sprints/:sprintId/board"

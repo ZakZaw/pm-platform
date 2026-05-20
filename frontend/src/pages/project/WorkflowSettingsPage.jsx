@@ -18,6 +18,7 @@ import { GripVertical, Plus, Trash2 } from 'lucide-react';
 import { Badge, Button, Card, Input, Select, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { workflowApi } from '@/api/workflow.api';
+import { useConfirm } from '@/hooks/useConfirm';
 import './WorkflowSettingsPage.css';
 
 const COLOR_OPTIONS = [
@@ -42,6 +43,7 @@ const BASE_STATUS_OPTIONS = [
 export function WorkflowSettingsPage() {
   const { slug: orgSlug, projectSlug } = useParams();
   const toast = useToast();
+  const { confirm, dialog } = useConfirm();
 
   const [project, setProject] = useState(null);
   const [configs, setConfigs] = useState([]);
@@ -121,7 +123,12 @@ export function WorkflowSettingsPage() {
   }
 
   async function deleteStatus(cfg) {
-    if (!window.confirm(`Delete "${cfg.displayName}"?`)) return;
+    const ok = await confirm({
+      title: `Delete "${cfg.displayName}"?`,
+      message: 'Tasks currently in this status will fall back to the underlying base status. This cannot be undone.',
+      confirmLabel: 'Delete status',
+    });
+    if (!ok) return;
     try {
       await workflowApi.remove(project.id, cfg.id);
       setConfigs((cur) => cur.filter((c) => c.id !== cfg.id));
@@ -138,6 +145,7 @@ export function WorkflowSettingsPage() {
 
   return (
     <div className="page workflow">
+      {dialog}
       <header className="workflow__header">
         <h1 className="workflow__title">Workflow statuses</h1>
         <p className="workflow__sub">

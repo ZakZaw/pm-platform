@@ -212,12 +212,6 @@ export function BoardPage() {
               {range && <span className="mono dim" style={{ fontSize: 11 }}>{range}</span>}
               <LiveIndicator status={hubStatus} />
             </div>
-            {sprint.goal && (
-              <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
-                <span style={{ color: 'var(--text-tertiary)' }}>Goal · </span>
-                {sprint.goal}
-              </div>
-            )}
           </div>
 
           {burnPoints && (

@@ -7,7 +7,6 @@ import {
   ClipboardList,
   FolderKanban,
   Home,
-  Inbox,
   Layers,
   LayoutGrid,
   Plus,
@@ -103,15 +102,9 @@ export function Sidebar() {
         <span className="side-item__label">My work</span>
       </NavLink>
       {slug && (
-        <NavLink to={`/${slug}/home`} className={sideClass} end title="Home">
-          <Inbox size={13} aria-hidden="true" />
-          <span className="side-item__label">Home</span>
-        </NavLink>
-      )}
-      {slug && (
-        <NavLink to={`/${slug}/settings/members`} className={sideClass} title="Members">
-          <Users size={13} aria-hidden="true" />
-          <span className="side-item__label">Members</span>
+        <NavLink to={`/${slug}/home`} className={sideClass} end title="Organization">
+          <Briefcase size={13} aria-hidden="true" />
+          <span className="side-item__label">Organization</span>
         </NavLink>
       )}
 

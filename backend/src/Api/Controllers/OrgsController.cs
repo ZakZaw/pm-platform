@@ -62,6 +62,22 @@ public class OrgsController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    [HttpPost("{slug}/logo")]
+    [RequireOrgRole(OrgRole.Admin)]
+    [RequestSizeLimit(5 * 1024 * 1024)]
+    public async Task<ActionResult<OrganizationDto>> UpdateLogo(
+        string slug, [FromForm] UpdateOrgLogoFormDto form, CancellationToken ct)
+    {
+        if (form.Logo is not { Length: > 0 } logo)
+            return ToProblem(OrgErrors.LogoInvalidType);
+
+        using var ms = new MemoryStream();
+        await logo.CopyToAsync(ms, ct);
+        var result = await mediator.Send(
+            new UpdateOrgLogoCommand(slug, ms.ToArray(), logo.ContentType ?? "", logo.FileName ?? ""), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     [HttpPut("{slug}/sso")]
     [RequireOrgRole(OrgRole.Owner)]
     public async Task<ActionResult<OrganizationDto>> SetSso(string slug, [FromBody] SetSsoBodyDto body, CancellationToken ct)
@@ -134,6 +150,7 @@ public class OrgsController(ISender mediator) : ControllerBase
 }
 
 public record CreateOrgFormDto(string Name, IFormFile? Logo);
+public record UpdateOrgLogoFormDto(IFormFile? Logo);
 public record UpdateOrgBodyDto(string Name);
 public record SetSsoBodyDto(bool Enabled);
 public record UpdateMemberRoleBodyDto(string Role);

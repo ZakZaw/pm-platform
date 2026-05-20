@@ -41,6 +41,19 @@
 }
 .sprints-page__row:last-child { border-bottom: 0; }
 
+.sprints-page__row.is-interactive {
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.sprints-page__row.is-interactive:hover {
+  background: var(--bg-hover);
+}
+.sprints-page__row.is-interactive:focus-visible {
+  outline: none;
+  background: var(--bg-hover);
+  box-shadow: inset 0 0 0 1px var(--border-focus);
+}
+
 .sprints-page__name { font-weight: var(--weight-medium); color: var(--text-primary); }
 .sprints-page__goal { font-size: var(--font-size-meta); color: var(--text-tertiary); }
 

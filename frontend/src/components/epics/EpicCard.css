@@ -3,9 +3,40 @@
   flex-direction: column;
   gap: var(--space-2);
   padding: var(--space-4);
+  position: relative;
 }
 
 .epic-card.is-archived { opacity: 0.6; }
+
+.epic-card.is-interactive {
+  transition: border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out);
+}
+.epic-card.is-interactive:hover {
+  border-color: var(--accent-primary);
+  background: var(--bg-hover);
+}
+.epic-card.is-interactive:focus-within { border-color: var(--border-focus); }
+
+/* The whole-card click target sits behind the content. Children like the
+   edit button stopPropagation on click so they aren't swallowed. */
+.epic-card__hit {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  z-index: 0;
+}
+.epic-card__hit:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1px var(--border-focus);
+}
+.epic-card__head,
+.epic-card__desc,
+.epic-card__meta,
+.epic-card__bar { position: relative; z-index: 1; }
 
 .epic-card__head {
   display: flex;
@@ -29,13 +60,9 @@
   white-space: nowrap;
 }
 
-.epic-card__title a {
-  color: inherit;
-  text-decoration: none;
-}
-.epic-card__title a:hover { color: var(--accent-primary); }
-
 .epic-card__edit {
+  position: relative;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   justify-content: center;

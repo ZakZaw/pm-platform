@@ -85,7 +85,6 @@ export function SprintBoardPage() {
       <header className="sprint-board__header">
         <div>
           <h1 className="sprint-board__title">{sprint?.name ?? 'Sprint board'}</h1>
-          {sprint?.goal && <p className="sprint-board__goal">{sprint.goal}</p>}
         </div>
         <div className="sprint-board__stats">
           <LiveIndicator status={hubStatus} />

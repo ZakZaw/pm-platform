@@ -78,9 +78,6 @@ export function ProjectHomePage() {
           {activeSprint ? (
             <>
               <div className="project-home__sprint-name">{activeSprint.name}</div>
-              {activeSprint.goal && (
-                <p className="project-home__sprint-goal">{activeSprint.goal}</p>
-              )}
               <div className="project-home__sprint-meta">
                 <Calendar size={14} aria-hidden="true" />
                 <span>

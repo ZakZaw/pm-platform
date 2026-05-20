@@ -1,36 +1,42 @@
-import { Link } from 'react-router-dom';
-import { Pencil } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Badge, Card } from '@/components/ui';
 import './EpicCard.css';
 
-export function EpicCard({ epic, orgSlug, projectSlug, onEdit }) {
+export function EpicCard({ epic, orgSlug, projectSlug }) {
+  const navigate = useNavigate();
   const pct =
     epic.totalStoryPoints > 0
       ? Math.round((epic.doneStoryPoints / epic.totalStoryPoints) * 100)
       : 0;
   const archived = Boolean(epic.archivedAt);
+  const detailHref = `/${orgSlug}/projects/${projectSlug}/epics/${epic.id}`;
+
+  function open() {
+    navigate(detailHref);
+  }
+  function onKey(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      open();
+    }
+  }
 
   return (
-    <Card className={['epic-card', archived ? 'is-archived' : ''].filter(Boolean).join(' ')}>
+    <Card
+      className={['epic-card', 'is-interactive', archived ? 'is-archived' : ''].filter(Boolean).join(' ')}
+    >
+      <div
+        className="epic-card__hit"
+        role="button"
+        tabIndex={0}
+        onClick={open}
+        onKeyDown={onKey}
+        aria-label={`Open epic ${epic.title}`}
+      />
       <div className="epic-card__head">
         <span className="epic-card__color" style={{ background: epic.color || 'var(--accent-primary)' }} />
-        <div className="epic-card__title">
-          <Link to={`/${orgSlug}/projects/${projectSlug}/epics/${epic.id}`}>
-            {epic.title}
-          </Link>
-        </div>
+        <div className="epic-card__title">{epic.title}</div>
         <Badge tone={statusTone(epic.status)}>{epic.status}</Badge>
-        {onEdit && (
-          <button
-            type="button"
-            className="epic-card__edit"
-            onClick={() => onEdit(epic)}
-            aria-label="Edit epic"
-            title="Edit"
-          >
-            <Pencil size={14} aria-hidden="true" />
-          </button>
-        )}
       </div>
 
       {epic.description && (
@@ -44,7 +50,10 @@ export function EpicCard({ epic, orgSlug, projectSlug, onEdit }) {
       </div>
 
       <div className="epic-card__bar" aria-label={`Progress ${pct}%`}>
-        <div className="epic-card__bar-fill" style={{ width: `${pct}%` }} />
+        <div
+          className="epic-card__bar-fill"
+          style={{ width: `${pct}%`, background: epic.color || 'var(--accent-primary)' }}
+        />
       </div>
     </Card>
   );

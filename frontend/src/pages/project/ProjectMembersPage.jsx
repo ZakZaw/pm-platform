@@ -4,6 +4,7 @@ import { Trash2 } from 'lucide-react';
 import { Avatar, Badge, Button, Card, Select, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { useOrgMembers } from '@/hooks/useOrgMembers';
+import { useConfirm } from '@/hooks/useConfirm';
 import './ProjectMembersPage.css';
 
 const ROLE_OPTIONS = [
@@ -23,6 +24,7 @@ const ROLE_TONE = {
 export function ProjectMembersPage() {
   const { slug: orgSlug, projectSlug } = useParams();
   const toast = useToast();
+  const { confirm, dialog } = useConfirm();
 
   const [project, setProject] = useState(null);
   const [members, setMembers] = useState([]);
@@ -96,7 +98,13 @@ export function ProjectMembersPage() {
   }
 
   async function removeMember(userId) {
-    if (!window.confirm('Remove this member from the project?')) return;
+    const member = members.find((m) => m.userId === userId);
+    const ok = await confirm({
+      title: member ? `Remove ${member.fullName}?` : 'Remove this member?',
+      message: 'They will lose access to this project. Their tasks and comments stay put.',
+      confirmLabel: 'Remove from project',
+    });
+    if (!ok) return;
     try {
       await projectsApi.removeMember(project.id, userId);
       setMembers((cur) => cur.filter((m) => m.userId !== userId));
@@ -113,6 +121,7 @@ export function ProjectMembersPage() {
 
   return (
     <div className="page pmembers">
+      {dialog}
       <header className="pmembers__header">
         <h1 className="pmembers__title">Project members</h1>
         <p className="pmembers__sub">

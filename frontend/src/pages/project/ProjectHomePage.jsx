@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Briefcase, Calendar, KanbanSquare, Layers, ListTodo, Plus } from 'lucide-react';
-import { Badge, Button, Card } from '@/components/ui';
+import { Badge, Button, Card, Skeleton } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { epicsApi } from '@/api/epics.api';
 import { tasksApi } from '@/api/tasks.api';
@@ -43,7 +43,22 @@ export function ProjectHomePage() {
   }, [orgSlug, projectSlug]);
 
   if (error) return <p className="project-home__placeholder">{error}</p>;
-  if (!project) return <p className="project-home__placeholder">Loading…</p>;
+  if (!project) {
+    return (
+      <div className="page project-home" aria-busy="true">
+        <div className="project-home__header">
+          <Skeleton width="40%" height={22} />
+        </div>
+        <Card>
+          <Skeleton rows={3} />
+        </Card>
+        <div style={{ height: 12 }} />
+        <Card>
+          <Skeleton rows={4} />
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="page project-home">

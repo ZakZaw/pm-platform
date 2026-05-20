@@ -10,8 +10,9 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Plus } from 'lucide-react';
-import { Avatar, Badge, Button, Card, useToast } from '@/components/ui';
+import { ClipboardList, Plus, Sparkles } from 'lucide-react';
+import { Avatar, Badge, Button, Card, EmptyState, Skeleton, useToast } from '@/components/ui';
+import { AITaskListWizardModal } from '@/components/ai/AITaskListWizardModal';
 import { projectsApi } from '@/api/projects.api';
 import { boardApi } from '@/api/board.api';
 import { sprintsApi } from '@/api/sprints.api';
@@ -36,6 +37,7 @@ export function BacklogPage() {
   const [openedTaskId, setOpenedTaskId] = useState(null);
   const [creating, setCreating] = useState(false);
   const [activeDrag, setActiveDrag] = useState(null);
+  const [aiOpen, setAiOpen] = useState(false);
 
   const { members } = useOrgMembers(orgSlug);
   const memberById = useMemo(() => {
@@ -177,7 +179,22 @@ export function BacklogPage() {
   }
 
   if (error) return <p className="backlog-page__placeholder">{error}</p>;
-  if (!project) return <p className="backlog-page__placeholder">Loading…</p>;
+  if (!project) {
+    return (
+      <div className="page backlog-page" aria-busy="true">
+        <header className="backlog-page__header">
+          <h1 className="backlog-page__title">Backlog</h1>
+        </header>
+        <div className="backlog-page__sections">
+          <Card>
+            <Skeleton width="40%" height={16} />
+            <div style={{ height: 12 }} />
+            <Skeleton rows={5} />
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   const totalBacklog = backlog.unassigned?.length ?? 0;
 
@@ -190,7 +207,25 @@ export function BacklogPage() {
             Drag a task into a sprint when it's ready, or back to the backlog to unschedule it.
           </p>
         </div>
+        <div className="hstack" style={{ gap: 8 }}>
+          <Button variant="ai" onClick={() => setAiOpen(true)}>
+            <Sparkles size={13} aria-hidden="true" /> AI tasks
+          </Button>
+        </div>
       </header>
+
+      <AITaskListWizardModal
+        open={aiOpen}
+        projectId={project.id}
+        epicOptions={epics
+          .filter((e) => !e.archivedAt)
+          .map((e) => ({ value: e.id, label: e.title }))}
+        onClose={() => setAiOpen(false)}
+        onCreated={() => {
+          setAiOpen(false);
+          refresh(project.id).catch(() => {});
+        }}
+      />
 
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="backlog-page__sections">

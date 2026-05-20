@@ -8,17 +8,20 @@ import {
   Play,
   Plus,
   Rocket,
+  Sparkles,
   Square,
   Target,
   TrendingUp,
 } from 'lucide-react';
-import { Avatar, Badge, Button, Card, useToast } from '@/components/ui';
+import { AISuggestionCard, Avatar, Badge, Button, Card, useToast } from '@/components/ui';
 import { BurndownChart } from '@/components/charts';
 import { TaskDetailDrawer } from '@/components/tasks/TaskDetailDrawer';
 import { projectsApi } from '@/api/projects.api';
 import { sprintsApi } from '@/api/sprints.api';
 import { boardApi } from '@/api/board.api';
 import { tasksApi } from '@/api/tasks.api';
+import { aiApi } from '@/api/ai.api';
+import { describeAiError } from '@/components/ai/aiErrors';
 import { useOrgMembers } from '@/hooks/useOrgMembers';
 import { useConfirm } from '@/hooks/useConfirm';
 import './SprintDetailPage.css';
@@ -71,6 +74,9 @@ export function SprintDetailPage() {
   const [openedTaskId, setOpenedTaskId] = useState(null);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [creating, setCreating] = useState(false);
+  const [aiFillPlan, setAiFillPlan] = useState(null);
+  const [aiFillLoading, setAiFillLoading] = useState(false);
+  const [aiFillTarget, setAiFillTarget] = useState(80);
 
   // Editable name buffer.
   const [editingName, setEditingName] = useState(false);
@@ -229,6 +235,52 @@ export function SprintDetailPage() {
         title: 'Could not close sprint',
         message: err.response?.data?.detail ?? '',
       });
+    }
+  }
+
+  async function requestAiFill() {
+    setAiFillLoading(true);
+    try {
+      const plan = await aiApi.aiFillSprint(sprintId, aiFillTarget);
+      setAiFillPlan(plan);
+      if ((plan.picks ?? []).length === 0) {
+        toast.show({
+          tone: 'info',
+          message: 'AI found nothing in the backlog that fits the capacity.',
+        });
+      }
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        message: describeAiError(err, 'Could not get an AI fill suggestion.'),
+      });
+    } finally {
+      setAiFillLoading(false);
+    }
+  }
+
+  async function applyAiFill() {
+    if (!aiFillPlan?.picks?.length) return;
+    setAiFillLoading(true);
+    let added = 0;
+    try {
+      for (const pick of aiFillPlan.picks) {
+        // eslint-disable-next-line no-await-in-loop
+        await tasksApi.update(pick.taskId, { sprintId });
+        added += 1;
+      }
+      toast.show({ tone: 'success', message: `Added ${added} tasks to the sprint.` });
+      setAiFillPlan(null);
+      await load(project.id);
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        message:
+          err.response?.data?.detail
+          ?? `Added ${added} tasks before an error stopped the rest.`,
+      });
+    } finally {
+      setAiFillLoading(false);
     }
   }
 
@@ -428,6 +480,59 @@ export function SprintDetailPage() {
               />
             </div>
           </Card>
+
+          {sprint.status === 'Planning' && (
+            <Card className="sprint-detail__card">
+              <div className="hstack sprint-detail__card-head">
+                <div>
+                  <div className="sprint-detail__card-title">
+                    <Sparkles size={12} color="var(--ai-violet)" aria-hidden="true" /> AI fill
+                  </div>
+                  <div className="muted sprint-detail__card-sub">
+                    Let AI propose which backlog tasks fit a target capacity.
+                  </div>
+                </div>
+                <span className="grow" />
+                <input
+                  type="number"
+                  min={20}
+                  max={100}
+                  step={5}
+                  value={aiFillTarget}
+                  onChange={(e) => setAiFillTarget(parseInt(e.target.value, 10) || 80)}
+                  className="sprint-detail__kpi-input"
+                  aria-label="Target capacity percent"
+                  style={{ width: 60 }}
+                />
+                <span className="muted" style={{ fontSize: 12 }}>% capacity</span>
+                <Button
+                  variant="ai"
+                  size="sm"
+                  onClick={requestAiFill}
+                  disabled={aiFillLoading}
+                >
+                  <Sparkles size={12} aria-hidden="true" />
+                  {aiFillLoading ? ' Thinking…' : ' Suggest fill'}
+                </Button>
+              </div>
+
+              {aiFillPlan && (
+                <div style={{ marginTop: 'var(--space-3)' }}>
+                  <AISuggestionCard
+                    chipLabel="AI fill"
+                    title={`Add ${aiFillPlan.picks.length} tasks (${aiFillPlan.selectedPoints} / ${aiFillPlan.targetCapacityPoints} pts)`}
+                    body={aiFillPlan.reasoning}
+                    onApply={applyAiFill}
+                    applyLabel="Add to sprint"
+                    applyDisabled={aiFillPlan.picks.length === 0}
+                    loading={aiFillLoading}
+                    onDismiss={() => setAiFillPlan(null)}
+                    footer={`${aiFillPlan.picks.length} pick${aiFillPlan.picks.length === 1 ? '' : 's'} fit within the target.`}
+                  />
+                </div>
+              )}
+            </Card>
+          )}
 
           <Card className="sprint-detail__card">
             <div className="sprint-detail__card-title">Tasks ({sprint.taskCount})</div>

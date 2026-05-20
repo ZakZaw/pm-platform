@@ -28,6 +28,7 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<AIAuditLog> AIAuditLogs => Set<AIAuditLog>();
     public DbSet<AIGenerationRequest> AIGenerationRequests => Set<AIGenerationRequest>();
+    public DbSet<AISuggestion> AISuggestions => Set<AISuggestion>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -6,6 +6,7 @@ import {
   Badge,
   Button,
   Icon,
+  Skeleton,
 } from '@/components/ui';
 import {
   BurndownChart,
@@ -202,7 +203,21 @@ export function DashboardPage() {
   ];
 
   if (error) return <p className="dashboard__placeholder">{error}</p>;
-  if (!project) return <p className="dashboard__placeholder">Loading…</p>;
+  if (!project) {
+    return (
+      <div className="dashboard" aria-busy="true" style={{ padding: 20 }}>
+        <Skeleton width={200} height={20} />
+        <div style={{ height: 16 }} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} height={88} radius="md" />
+          ))}
+        </div>
+        <div style={{ height: 16 }} />
+        <Skeleton height={220} radius="md" />
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard">

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Badge, Button, Card, Input, useToast } from '@/components/ui';
+import { Rocket } from 'lucide-react';
+import { Badge, Button, Card, EmptyState, Input, Skeleton, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { sprintsApi } from '@/api/sprints.api';
 import { useConfirm } from '@/hooks/useConfirm';
@@ -91,7 +92,18 @@ export function SprintsPage() {
   }
 
   if (error) return <p className="sprints-page__placeholder">{error}</p>;
-  if (!project) return <p className="sprints-page__placeholder">Loading…</p>;
+  if (!project) {
+    return (
+      <div className="page sprints-page" aria-busy="true">
+        <header className="sprints-page__header">
+          <h1 className="sprints-page__title">Sprint planning</h1>
+        </header>
+        <Card>
+          <Skeleton rows={4} />
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="page sprints-page">
@@ -132,7 +144,11 @@ export function SprintsPage() {
       </Card>
 
       {sprints.length === 0 ? (
-        <p className="sprints-page__placeholder">No sprints yet.</p>
+        <EmptyState
+          icon={<Rocket size={22} />}
+          title="No sprints yet"
+          subtitle="Create your first sprint above. Sprints time-box scope; you can add tasks from the backlog once the sprint exists."
+        />
       ) : (
         <Card>
           <ul className="sprints-page__list">

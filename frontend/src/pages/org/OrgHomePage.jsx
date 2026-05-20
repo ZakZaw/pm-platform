@@ -13,7 +13,7 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
-import { Avatar, AvatarStack, Badge, Button, Card, Sparkline, useToast } from '@/components/ui';
+import { Avatar, AvatarStack, Badge, Button, Card, Skeleton, Sparkline, useToast } from '@/components/ui';
 import { orgsApi } from '@/api/orgs.api';
 import { projectsApi } from '@/api/projects.api';
 import { useOrgRole } from '@/hooks/useOrgRole';
@@ -129,7 +129,27 @@ export function OrgHomePage() {
   }
 
   if (error) return <p className="org-home__placeholder">{error}</p>;
-  if (!org) return <p className="org-home__placeholder">Loading…</p>;
+  if (!org) {
+    return (
+      <div className="page org-home" aria-busy="true">
+        <Skeleton width={220} height={24} />
+        <div style={{ height: 16 }} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i}>
+              <Skeleton width="60%" height={12} />
+              <div style={{ height: 12 }} />
+              <Skeleton width="40%" height={22} />
+            </Card>
+          ))}
+        </div>
+        <div style={{ height: 16 }} />
+        <Card>
+          <Skeleton rows={4} />
+        </Card>
+      </div>
+    );
+  }
 
   const kpis = [
     {

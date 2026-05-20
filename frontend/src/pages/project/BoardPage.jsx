@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Filter, Plus, RefreshCw, X, Zap } from 'lucide-react';
-import { Badge, Button, Select, Sparkline } from '@/components/ui';
+import { Badge, Button, Select, Skeleton, Sparkline } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { boardApi } from '@/api/board.api';
 import { workflowApi } from '@/api/workflow.api';
@@ -156,7 +156,25 @@ export function BoardPage() {
   }
 
   if (error) return <p className="board-page__placeholder">{error}</p>;
-  if (!project || !filteredBoard) return <p className="board-page__placeholder">Loading…</p>;
+  if (!project || !filteredBoard) {
+    return (
+      <div className="page board-page" aria-busy="true" style={{ padding: 20 }}>
+        <Skeleton width="35%" height={20} />
+        <div style={{ height: 16 }} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i}>
+              <Skeleton width="60%" height={12} />
+              <div style={{ height: 8 }} />
+              <Skeleton height={80} radius="md" />
+              <div style={{ height: 8 }} />
+              <Skeleton height={80} radius="md" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const epicOptions = [
     { value: '', label: 'All epics' },

@@ -1,0 +1,200 @@
+/* Shared styles for AI-draft modals (epic, task-list, breakdown). Owned by
+   the components/ai/ folder — purely component CSS, all tokens. */
+
+.ai-draft__error {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--status-danger-bg);
+  border: 1px solid var(--status-danger-border);
+  color: var(--status-danger);
+  font-size: var(--font-size-dense);
+}
+
+.ai-draft__prompt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ai-draft__label {
+  font-size: var(--font-size-dense);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+}
+
+.ai-draft__textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: var(--space-3);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-body);
+  line-height: var(--leading-norm);
+  resize: vertical;
+}
+.ai-draft__textarea:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-focus);
+}
+
+.ai-draft__hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-meta);
+}
+
+.ai-draft__plan {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ai-draft__plan-head {
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.ai-draft__epic {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--ai-bg);
+  border: 1px solid var(--ai-border);
+}
+
+.ai-draft__epic-title {
+  font-size: var(--font-size-h4);
+  font-weight: var(--weight-semibold);
+}
+
+.ai-draft__epic-desc {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-dense);
+  line-height: var(--leading-norm);
+  resize: vertical;
+}
+.ai-draft__epic-desc:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-focus);
+}
+
+.ai-draft__tasks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ai-draft__task {
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.ai-draft__task-title {
+  font-size: var(--font-size-dense);
+  color: var(--text-primary);
+}
+
+.ai-draft__task-input {
+  font-size: var(--font-size-dense);
+}
+
+.ai-draft__task-pts {
+  font-size: var(--font-size-meta);
+}
+
+.ai-draft__empty {
+  margin: 0;
+  padding: var(--space-4);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-dense);
+}
+
+.ai-draft__list-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  font-size: var(--font-size-meta);
+  color: var(--text-muted);
+}
+
+.ai-draft__select-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.ai-draft__breakdown-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+}
+
+.ai-draft__breakdown-label {
+  font-size: var(--font-size-meta);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+}
+
+.ai-draft__breakdown-text {
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-base);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: var(--font-size-dense);
+  line-height: var(--leading-norm);
+}
+
+.ai-draft__breakdown-ac {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ai-draft__breakdown-ac li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-dense);
+  color: var(--text-primary);
+}
+
+.ai-draft__reasoning {
+  padding: var(--space-2) var(--space-3);
+  background: var(--ai-bg);
+  border: 1px solid var(--ai-border);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: var(--font-size-meta);
+  line-height: var(--leading-norm);
+}

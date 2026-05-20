@@ -48,3 +48,49 @@ public record AISprintFillPlan(
     int SelectedPoints,
     IReadOnlyList<AISprintFillPick> Picks,
     string Reasoning);
+
+public record AIEpicGenerationInput(
+    string ProjectName,
+    string EnvironmentType,
+    string Description,
+    IReadOnlyList<string> ExistingEpicTitles);
+
+public record AITaskListGenerationInput(
+    string ProjectName,
+    string EnvironmentType,
+    string Description,
+    string? EpicTitle,
+    int? MaxTasks);
+
+public record AITaskBreakdownInput(
+    string Title,
+    string? Description,
+    IReadOnlyList<string> ExistingAcceptanceCriteria,
+    int? CurrentStoryPoints);
+
+public record AITaskBreakdown(
+    string RefinedDescription,
+    IReadOnlyList<string> AcceptanceCriteria,
+    int? SuggestedStoryPoints,
+    string Reasoning);
+
+public record AISprintHealthInput(
+    string ProjectName,
+    string SprintName,
+    int DaysElapsed,
+    int DaysTotal,
+    int CommittedPoints,
+    int DonePoints,
+    int InProgressPoints,
+    int BlockedPoints,
+    int? VelocityTarget,
+    IReadOnlyList<string> BlockedTaskTitles,
+    IReadOnlyList<int> RecentVelocities);
+
+public record AISprintHealthInsight(
+    string Title,
+    string Body,
+    IReadOnlyList<AISprintHealthOption> Options,
+    double Confidence);
+
+public record AISprintHealthOption(string Label, bool Recommended);

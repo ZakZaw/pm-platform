@@ -12,6 +12,7 @@ import {
   Plus,
   Rocket,
   Settings,
+  Sparkles,
   Users,
 } from 'lucide-react';
 import { Avatar } from '@/components/ui';
@@ -158,6 +159,10 @@ export function Sidebar() {
                   <NavLink to={`/${slug}/projects/${p.slug}/sprints`} className={sideClass}>
                     <Rocket size={13} aria-hidden="true" />
                     <span className="side-item__label">Sprints</span>
+                  </NavLink>
+                  <NavLink to={`/${slug}/projects/${p.slug}/ai`} className={sideClass}>
+                    <Sparkles size={13} aria-hidden="true" />
+                    <span className="side-item__label">AI Inbox</span>
                   </NavLink>
                   <NavLink to={`/${slug}/projects/${p.slug}/settings/members`} className={sideClass}>
                     <Users size={13} aria-hidden="true" />

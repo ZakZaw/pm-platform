@@ -22,6 +22,7 @@ public interface IAppDbContext
     DbSet<Comment> Comments { get; }
     DbSet<AIAuditLog> AIAuditLogs { get; }
     DbSet<AIGenerationRequest> AIGenerationRequests { get; }
+    DbSet<AISuggestion> AISuggestions { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

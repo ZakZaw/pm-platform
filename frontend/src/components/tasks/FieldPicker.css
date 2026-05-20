@@ -1,0 +1,58 @@
+.field-picker__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 4px var(--space-2);
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--font-size-dense);
+  max-width: 100%;
+  min-width: 0;
+}
+.field-picker__trigger:hover:not(:disabled) { background: var(--bg-hover); }
+.field-picker__trigger:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.field-picker__label {
+  font-size: 12px;
+  min-width: 0;
+  max-width: 160px;
+}
+
+.field-picker__placeholder {
+  color: var(--text-tertiary);
+}
+
+.field-picker__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.field-picker__status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+  display: inline-block;
+}
+.field-picker__status-dot[data-status="Active"] { background: var(--status-success); }
+.field-picker__status-dot[data-status="Planning"] { background: var(--status-info); }
+.field-picker__status-dot[data-status="Closed"] { background: var(--text-muted); }
+
+.field-picker__hint {
+  margin-left: var(--space-2);
+  color: var(--text-tertiary);
+  font-size: var(--font-size-meta);
+}
+
+.field-picker__empty {
+  padding: var(--space-2) var(--space-3);
+  color: var(--text-tertiary);
+  font-size: var(--font-size-dense);
+}

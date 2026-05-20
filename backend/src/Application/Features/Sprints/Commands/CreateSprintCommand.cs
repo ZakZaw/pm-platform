@@ -8,7 +8,6 @@ namespace Application.Features.Sprints.Commands;
 public record CreateSprintCommand(
     Guid ProjectId,
     string Name,
-    string? Goal,
     DateTime StartDate,
     DateTime EndDate,
     int? VelocityTarget) : IRequest<Result<SprintDto>>;
@@ -28,7 +27,6 @@ public class CreateSprintCommandHandler(IAppDbContext db)
         {
             ProjectId = request.ProjectId,
             Name = name,
-            Goal = request.Goal,
             StartDate = request.StartDate,
             EndDate = request.EndDate,
             VelocityTarget = request.VelocityTarget

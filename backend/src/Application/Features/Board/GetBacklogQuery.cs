@@ -51,7 +51,7 @@ public class GetBacklogQueryHandler(IAppDbContext db)
             .OrderByDescending(s => s.StartDate)
             .Select(s => new
             {
-                s.Id, s.Name, s.Goal,
+                s.Id, s.Name,
                 Status = s.Status.ToString(),
                 s.StartDate, s.EndDate
             })
@@ -61,7 +61,7 @@ public class GetBacklogQueryHandler(IAppDbContext db)
         {
             var bucket = tasks.Where(t => t.SprintId == s.Id).ToList();
             return new BacklogSprintSectionDto(
-                s.Id, s.Name, s.Goal, s.Status, s.StartDate, s.EndDate,
+                s.Id, s.Name, s.Status, s.StartDate, s.EndDate,
                 bucket.Sum(b => b.TotalPts),
                 bucket.Sum(b => b.DonePts),
                 bucket.Select(b => b.Dto).ToList());

@@ -52,6 +52,176 @@
   margin: 0;
   color: var(--text-primary);
 }
+.epic-detail__title--edit {
+  background: transparent;
+  border: 0;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  font-size: var(--font-size-h1);
+  font-weight: var(--weight-semibold);
+  padding: 2px 6px;
+  margin-left: -6px;
+  border-radius: var(--radius-sm);
+  cursor: text;
+}
+.epic-detail__title--edit:hover { background: var(--bg-hover); }
+.epic-detail__title-input {
+  font-size: var(--font-size-h1);
+  font-weight: var(--weight-semibold);
+  padding: 2px 6px;
+  margin-left: -6px;
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-focus);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: inherit;
+  min-width: 240px;
+}
+.epic-detail__title-input:focus {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.epic-detail__status {
+  height: 26px;
+  padding: 0 var(--space-2);
+  font-size: var(--font-size-dense);
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+}
+.epic-detail__status:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+
+.epic-detail__risk {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-meta);
+  color: var(--text-tertiary);
+  cursor: pointer;
+}
+
+.epic-detail__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: var(--space-4);
+}
+@media (max-width: 880px) {
+  .epic-detail__row { grid-template-columns: 1fr; }
+}
+
+.epic-detail__section--meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.epic-detail__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.epic-detail__field-label {
+  font-size: var(--font-size-meta);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+  font-weight: var(--weight-medium);
+}
+
+.epic-detail__color-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.epic-detail__color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  background-clip: content-box;
+}
+.epic-detail__color-swatch:hover {
+  transform: scale(1.05);
+}
+.epic-detail__color-swatch.is-active {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 1px var(--bg-base);
+}
+
+.epic-detail__desc--edit {
+  cursor: text;
+  padding: 4px 6px;
+  margin-left: -6px;
+  border-radius: var(--radius-sm);
+}
+.epic-detail__desc--edit:hover { background: var(--bg-hover); }
+.epic-detail__desc-input {
+  width: 100%;
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-focus);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: var(--font-size-dense);
+  line-height: 1.6;
+  padding: var(--space-2);
+  resize: vertical;
+}
+.epic-detail__desc-input:focus {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+.epic-detail__desc-empty {
+  background: transparent;
+  border: 1px dashed var(--border-default);
+  color: var(--text-tertiary);
+  font-size: var(--font-size-dense);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+.epic-detail__desc-empty:hover {
+  border-color: var(--accent-primary);
+  color: var(--text-secondary);
+}
+
+.epic-detail__tasks-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.epic-detail__create {
+  display: flex;
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+}
+.epic-detail__create-input {
+  flex: 1;
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  padding: 6px var(--space-3);
+  font-family: inherit;
+  font-size: var(--font-size-dense);
+}
+.epic-detail__create-input:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-focus);
+}
 
 .epic-detail__meta {
   display: flex;

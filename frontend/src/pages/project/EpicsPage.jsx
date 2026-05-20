@@ -15,7 +15,6 @@ export function EpicsPage() {
   const [epics, setEpics] = useState([]);
   const [includeArchived, setIncludeArchived] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [editing, setEditing] = useState(null); // epic being edited
   const [refreshKey, setRefreshKey] = useState(0);
   const [error, setError] = useState(null);
 
@@ -55,7 +54,7 @@ export function EpicsPage() {
             />
             <span>Show archived</span>
           </label>
-          <Button onClick={() => { setEditing(null); setCreating(true); }}>New epic</Button>
+          <Button onClick={() => setCreating(true)}>New epic</Button>
         </div>
       </header>
 
@@ -74,22 +73,6 @@ export function EpicsPage() {
         </Card>
       )}
 
-      {editing && (
-        <Card className="epics-page__form-card" title={`Edit · ${editing.title}`}>
-          <EpicForm
-            initial={editing}
-            onSubmit={async (body) => {
-              await epicsApi.update(editing.id, body);
-              toast.show({ tone: 'success', message: 'Epic updated.' });
-              setEditing(null);
-              setRefreshKey((k) => k + 1);
-            }}
-            onCancel={() => setEditing(null)}
-            submitLabel="Save"
-          />
-        </Card>
-      )}
-
       {epics.length === 0 ? (
         <p className="epics-page__placeholder">No epics yet.</p>
       ) : (
@@ -100,7 +83,6 @@ export function EpicsPage() {
               epic={e}
               orgSlug={orgSlug}
               projectSlug={projectSlug}
-              onEdit={(epic) => { setCreating(false); setEditing(epic); }}
             />
           ))}
         </div>

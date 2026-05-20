@@ -10,6 +10,9 @@ export const sprintsApi = {
   create: (projectId, body) =>
     apiClient.post(`/projects/${projectId}/sprints`, body).then((r) => r.data),
 
+  update: (sprintId, body) =>
+    apiClient.patch(`/sprints/${sprintId}`, body).then((r) => r.data),
+
   start: (sprintId) =>
     apiClient.post(`/sprints/${sprintId}/start`).then((r) => r.data),
 

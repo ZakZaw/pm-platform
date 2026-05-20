@@ -9,6 +9,16 @@ export const orgsApi = {
 
   update: (slug, body) => apiClient.patch(`/orgs/${slug}`, body).then((r) => r.data),
 
+  uploadLogo: (slug, file) => {
+    const form = new FormData();
+    form.append('logo', file);
+    return apiClient
+      .post(`/orgs/${slug}/logo`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      .then((r) => r.data);
+  },
+
   listMembers: (slug, { page = 1, pageSize = 20, search, role } = {}) => {
     const params = { page, pageSize };
     if (search) params.search = search;

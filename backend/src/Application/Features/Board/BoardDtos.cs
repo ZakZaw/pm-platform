@@ -43,7 +43,6 @@ public record BacklogTaskDto(
 public record BacklogSprintSectionDto(
     Guid SprintId,
     string Name,
-    string? Goal,
     string Status,
     DateTime StartDate,
     DateTime EndDate,

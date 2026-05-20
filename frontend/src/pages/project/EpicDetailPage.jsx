@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
-import { Avatar, Badge, Button, Card, useToast } from '@/components/ui';
+import { ChevronLeft, Layers, Plus } from 'lucide-react';
+import { Avatar, AssigneePicker, Badge, Button, Card, useToast } from '@/components/ui';
 import { TaskDetailDrawer } from '@/components/tasks/TaskDetailDrawer';
 import { projectsApi } from '@/api/projects.api';
 import { epicsApi } from '@/api/epics.api';
@@ -23,6 +23,28 @@ const STATUS_TONE = {
   Archived: 'neutral',
 };
 
+const STATUS_OPTIONS = ['Planning', 'InProgress', 'Done', 'Archived'];
+
+// Stratos epic palette — kept short so the picker reads as a row of swatches.
+const COLOR_OPTIONS = [
+  'var(--accent-primary)',
+  '#4FD1E0',
+  '#A78BFA',
+  '#3FB984',
+  '#E0A23A',
+  '#E5484D',
+  '#C77BFF',
+  '#4F9EFF',
+];
+
+// Convert a token-style or hex color to the literal value we send to the
+// backend. The Epic.Color column accepts any string; UI keeps these flat.
+function normalizeColor(c) {
+  if (!c) return '';
+  if (c.startsWith('var(')) return c; // keep token reference as-is for theme awareness
+  return c;
+}
+
 export function EpicDetailPage() {
   const { slug: orgSlug, projectSlug, epicId } = useParams();
   const toast = useToast();
@@ -32,6 +54,13 @@ export function EpicDetailPage() {
   const [tasks, setTasks] = useState([]);
   const [error, setError] = useState(null);
   const [openedTaskId, setOpenedTaskId] = useState(null);
+
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState('');
+  const [editingDesc, setEditingDesc] = useState(false);
+  const [descDraft, setDescDraft] = useState('');
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [creating, setCreating] = useState(false);
 
   const { members } = useOrgMembers(orgSlug);
   const memberById = useMemo(() => {
@@ -64,6 +93,75 @@ export function EpicDetailPage() {
     return () => { cancelled = true; };
   }, [orgSlug, projectSlug, refresh]);
 
+  useEffect(() => {
+    if (epic) {
+      setTitleDraft(epic.title);
+      setDescDraft(epic.description ?? '');
+    }
+  }, [epic?.id, epic?.title, epic?.description]);
+
+  async function patch(body, errMsg = 'Could not save change.') {
+    try {
+      const updated = await epicsApi.update(epicId, body);
+      setEpic(updated);
+      return updated;
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        message: err.response?.data?.detail ?? errMsg,
+      });
+      return null;
+    }
+  }
+
+  function commitTitle() {
+    const t = titleDraft.trim();
+    if (t === epic.title) {
+      setEditingTitle(false);
+      return;
+    }
+    if (t.length < 2 || t.length > 200) {
+      toast.show({ tone: 'danger', message: 'Title must be 2–200 characters.' });
+      setTitleDraft(epic.title);
+      setEditingTitle(false);
+      return;
+    }
+    patch({ title: t }, 'Could not rename epic.');
+    setEditingTitle(false);
+  }
+
+  function commitDesc() {
+    if (descDraft === (epic.description ?? '')) {
+      setEditingDesc(false);
+      return;
+    }
+    patch({ description: descDraft }, 'Could not change description.');
+    setEditingDesc(false);
+  }
+
+  async function addTaskToEpic(e) {
+    e.preventDefault();
+    const title = newTaskTitle.trim();
+    if (title.length < 2 || !project) return;
+    setCreating(true);
+    try {
+      await tasksApi.create(project.id, {
+        title,
+        priority: 'Medium',
+        epicId,
+      });
+      setNewTaskTitle('');
+      await refresh(project.id);
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        message: err.response?.data?.detail ?? 'Could not create task.',
+      });
+    } finally {
+      setCreating(false);
+    }
+  }
+
   if (error) return <p className="epic-detail__placeholder">{error}</p>;
   if (!epic || !project) return <p className="epic-detail__placeholder">Loading…</p>;
 
@@ -80,16 +178,63 @@ export function EpicDetailPage() {
         <ChevronLeft size={14} aria-hidden="true" /> Epics
       </Link>
 
-      <header className="epic-detail__header">
+      <header
+        className="epic-detail__header"
+        style={{ '--epic-color': epic.color || 'var(--accent-primary)' }}
+      >
         <span
           className="epic-detail__color"
           style={{ background: epic.color || 'var(--accent-primary)' }}
         />
         <div className="epic-detail__head-text">
           <div className="epic-detail__head-row">
-            <h1 className="epic-detail__title">{epic.title}</h1>
-            <Badge tone={STATUS_TONE[epic.status] ?? 'neutral'}>{epic.status}</Badge>
-            {epic.riskFlag && <Badge tone="danger">At risk</Badge>}
+            <Layers size={18} aria-hidden="true" style={{ color: epic.color || 'var(--accent-primary)' }} />
+            {editingTitle ? (
+              <input
+                className="epic-detail__title-input"
+                value={titleDraft}
+                autoFocus
+                maxLength={200}
+                onChange={(e) => setTitleDraft(e.target.value)}
+                onBlur={commitTitle}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    commitTitle();
+                  } else if (e.key === 'Escape') {
+                    setTitleDraft(epic.title);
+                    setEditingTitle(false);
+                  }
+                }}
+              />
+            ) : (
+              <button
+                type="button"
+                className="epic-detail__title epic-detail__title--edit"
+                onClick={() => setEditingTitle(true)}
+                title="Click to rename"
+              >
+                {epic.title}
+              </button>
+            )}
+            <select
+              className="epic-detail__status"
+              value={epic.status}
+              onChange={(e) => patch({ status: e.target.value }, 'Could not change status.')}
+              aria-label="Epic status"
+            >
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+            <label className="epic-detail__risk">
+              <input
+                type="checkbox"
+                checked={epic.riskFlag}
+                onChange={(e) => patch({ riskFlag: e.target.checked }, 'Could not change risk flag.')}
+              />
+              <span>At risk</span>
+            </label>
           </div>
           <div className="epic-detail__meta">
             <span>{epic.taskCount} {epic.taskCount === 1 ? 'task' : 'tasks'}</span>
@@ -97,22 +242,115 @@ export function EpicDetailPage() {
             <span>{epic.doneStoryPoints}/{epic.totalStoryPoints} pts</span>
             <span>·</span>
             <span>{pct}% complete</span>
+            <Badge tone={STATUS_TONE[epic.status] ?? 'neutral'}>{epic.status}</Badge>
           </div>
           <div className="epic-detail__bar" aria-label={`Progress ${pct}%`}>
-            <div className="epic-detail__bar-fill" style={{ width: `${pct}%` }} />
+            <div className="epic-detail__bar-fill" style={{ width: `${pct}%`, background: epic.color || 'var(--accent-primary)' }} />
           </div>
         </div>
       </header>
 
-      {epic.description && (
+      <div className="epic-detail__row">
         <Card className="epic-detail__section">
           <h2 className="epic-detail__heading">Description</h2>
-          <p className="epic-detail__desc">{epic.description}</p>
+          {editingDesc ? (
+            <textarea
+              className="epic-detail__desc-input"
+              value={descDraft}
+              autoFocus
+              rows={4}
+              onChange={(e) => setDescDraft(e.target.value)}
+              onBlur={commitDesc}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  setDescDraft(epic.description ?? '');
+                  setEditingDesc(false);
+                } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                  e.preventDefault();
+                  commitDesc();
+                }
+              }}
+            />
+          ) : epic.description ? (
+            <p
+              className="epic-detail__desc epic-detail__desc--edit"
+              onClick={() => setEditingDesc(true)}
+              title="Click to edit"
+            >
+              {epic.description}
+            </p>
+          ) : (
+            <button
+              type="button"
+              className="epic-detail__desc-empty"
+              onClick={() => setEditingDesc(true)}
+            >
+              Add a description…
+            </button>
+          )}
         </Card>
-      )}
+
+        <Card className="epic-detail__section epic-detail__section--meta">
+          <h2 className="epic-detail__heading">Settings</h2>
+
+          <div className="epic-detail__field">
+            <span className="epic-detail__field-label">Color</span>
+            <div className="epic-detail__color-grid">
+              {COLOR_OPTIONS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  className={[
+                    'epic-detail__color-swatch',
+                    epic.color === c ? 'is-active' : '',
+                  ].filter(Boolean).join(' ')}
+                  style={{ background: c }}
+                  onClick={() => patch({ color: normalizeColor(c) }, 'Could not change color.')}
+                  aria-label={`Set color to ${c}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="epic-detail__field">
+            <span className="epic-detail__field-label">Owner</span>
+            <AssigneePicker
+              orgSlug={orgSlug}
+              value={epic.ownerId ?? null}
+              onChange={(userId) =>
+                patch(
+                  userId == null ? { ownerId: null } : { ownerId: userId },
+                  'Could not change owner.',
+                )
+              }
+            />
+          </div>
+        </Card>
+      </div>
 
       <Card className="epic-detail__section">
-        <h2 className="epic-detail__heading">Tasks ({tasks.length})</h2>
+        <header className="epic-detail__tasks-head">
+          <h2 className="epic-detail__heading">Tasks ({tasks.length})</h2>
+        </header>
+
+        <form className="epic-detail__create" onSubmit={addTaskToEpic}>
+          <input
+            type="text"
+            className="epic-detail__create-input"
+            placeholder="Add a task to this epic…"
+            value={newTaskTitle}
+            onChange={(e) => setNewTaskTitle(e.target.value)}
+            maxLength={200}
+          />
+          <Button
+            type="submit"
+            size="sm"
+            disabled={creating || newTaskTitle.trim().length < 2}
+          >
+            <Plus size={14} aria-hidden="true" /> Add
+          </Button>
+        </form>
+
         {tasks.length === 0 ? (
           <p className="epic-detail__placeholder">No tasks in this epic yet.</p>
         ) : (

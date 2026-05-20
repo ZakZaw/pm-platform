@@ -35,6 +35,7 @@ public class StartSprintCommandHandler(IAppDbContext db, IProjectEventBus events
 
         sprint.ScopeBaselineJson = JsonSerializer.Serialize(tasks);
         sprint.Status = SprintStatus.Active;
+        sprint.ActualStartDate = DateTime.UtcNow;
 
         await db.SaveChangesAsync(ct);
         await events.PublishAsync(sprint.ProjectId, "sprint.changed",

@@ -3,6 +3,7 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { Avatar, useToast } from '@/components/ui';
 import { commentsApi } from '@/api/comments.api';
 import { useAuthStore } from '@/store/authStore';
+import { useConfirm } from '@/hooks/useConfirm';
 import { CommentInput } from './CommentInput';
 import './CommentList.css';
 
@@ -46,6 +47,7 @@ function formatTime(iso) {
 export function CommentList({ projectId, comments, onChanged }) {
   const currentUserId = useAuthStore((s) => s.user?.id);
   const toast = useToast();
+  const { confirm, dialog } = useConfirm();
   const [editingId, setEditingId] = useState(null);
 
   async function save(id, body) {
@@ -63,7 +65,12 @@ export function CommentList({ projectId, comments, onChanged }) {
   }
 
   async function remove(id) {
-    if (!window.confirm('Delete this comment?')) return;
+    const ok = await confirm({
+      title: 'Delete comment?',
+      message: 'This comment will be permanently removed.',
+      confirmLabel: 'Delete comment',
+    });
+    if (!ok) return;
     try {
       await commentsApi.remove(id);
       await onChanged?.();
@@ -80,7 +87,9 @@ export function CommentList({ projectId, comments, onChanged }) {
   }
 
   return (
-    <ul className="comment-list">
+    <>
+      {dialog}
+      <ul className="comment-list">
       {comments.map((c) => {
         const canModify = c.author.id === currentUserId;
         const isEditing = editingId === c.id;
@@ -131,6 +140,7 @@ export function CommentList({ projectId, comments, onChanged }) {
           </li>
         );
       })}
-    </ul>
+      </ul>
+    </>
   );
 }

@@ -36,7 +36,17 @@ public class SprintsController(ISender mediator) : ControllerBase
         Guid projectId, [FromBody] CreateSprintBodyDto body, CancellationToken ct)
     {
         var result = await mediator.Send(new CreateSprintCommand(
-            projectId, body.Name, body.Goal, body.StartDate, body.EndDate, body.VelocityTarget), ct);
+            projectId, body.Name, body.StartDate, body.EndDate, body.VelocityTarget), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpPatch("api/v1/sprints/{id:guid}")]
+    public async Task<ActionResult<SprintDto>> Update(
+        Guid id, [FromBody] UpdateSprintBodyDto body, CancellationToken ct)
+    {
+        var result = await mediator.Send(new UpdateSprintCommand(
+            id, body.Name, body.StartDate, body.EndDate, body.VelocityTarget,
+            body.ClearVelocityTarget ?? false), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
@@ -91,9 +101,15 @@ public class SprintsController(ISender mediator) : ControllerBase
 
 public record CreateSprintBodyDto(
     string Name,
-    string? Goal,
     DateTime StartDate,
     DateTime EndDate,
     int? VelocityTarget);
+
+public record UpdateSprintBodyDto(
+    string? Name,
+    DateTime? StartDate,
+    DateTime? EndDate,
+    int? VelocityTarget,
+    bool? ClearVelocityTarget);
 
 public record CloseSprintBodyDto(bool MoveCarryoversToBacklog);

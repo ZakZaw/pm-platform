@@ -16,3 +16,5 @@ export { TASK_STATUSES, STATUS_LABELS } from './StatusBadge/constants';
 export { Dropdown } from './Dropdown/Dropdown';
 export { AssigneePicker } from './AssigneePicker/AssigneePicker';
 export { ToastProvider, useToast } from './Toast';
+export { Modal, ModalHeader, ModalBody, ModalFooter } from './Modal/Modal';
+export { ConfirmDialog } from './ConfirmDialog/ConfirmDialog';

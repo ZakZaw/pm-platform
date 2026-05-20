@@ -14,9 +14,9 @@ public class SprintConfiguration : IEntityTypeConfiguration<Sprint>
 
         builder.Property(s => s.ProjectId).IsRequired();
         builder.Property(s => s.Name).IsRequired().HasMaxLength(120);
-        builder.Property(s => s.Goal).HasMaxLength(500);
         builder.Property(s => s.StartDate).IsRequired();
         builder.Property(s => s.EndDate).IsRequired();
+        builder.Property(s => s.ActualStartDate);
         builder.Property(s => s.VelocityTarget);
         builder.Property(s => s.Status).HasConversion<string>().HasMaxLength(20);
         builder.Property(s => s.ScopeBaselineJson).HasColumnType("jsonb");

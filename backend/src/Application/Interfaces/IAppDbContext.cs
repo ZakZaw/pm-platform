@@ -31,5 +31,11 @@ public interface IAppDbContext
     DbSet<Deal> Deals { get; }
     DbSet<Activity> Activities { get; }
 
+    // Phase 1.5 Support (F1.5-03)
+    DbSet<Customer> Customers { get; }
+    DbSet<Queue> Queues { get; }
+    DbSet<Ticket> Tickets { get; }
+    DbSet<TicketReply> TicketReplies { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

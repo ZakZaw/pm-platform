@@ -37,6 +37,12 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Deal> Deals => Set<Deal>();
     public DbSet<Activity> Activities => Set<Activity>();
 
+    // Phase 1.5 Support (F1.5-03)
+    public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<Queue> Queues => Set<Queue>();
+    public DbSet<Ticket> Tickets => Set<Ticket>();
+    public DbSet<TicketReply> TicketReplies => Set<TicketReply>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Team / TeamMembership stay ignored until the team-management

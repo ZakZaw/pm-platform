@@ -1,0 +1,117 @@
+.ticket-drawer__backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 60;
+  animation: ticket-drawer-fade var(--dur-fast) var(--ease-out);
+}
+
+.ticket-drawer {
+  width: min(760px, 100vw);
+  height: 100vh;
+  background: var(--bg-base);
+  border-left: 1px solid var(--border-default);
+  box-shadow: var(--shadow-xl);
+  overflow-y: auto;
+  animation: ticket-drawer-slide var(--dur-med) var(--ease-out);
+  display: flex;
+  flex-direction: column;
+}
+
+.ticket-drawer__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.ticket-drawer__error {
+  padding: var(--space-3) var(--space-4);
+  color: var(--status-danger);
+}
+
+.ticket-drawer__placeholder {
+  padding: var(--space-6);
+  color: var(--text-tertiary);
+}
+
+.ticket-drawer__body {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ticket-drawer__title {
+  font-size: var(--font-size-h2);
+  font-weight: var(--weight-semibold);
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.ticket-drawer__meta {
+  gap: var(--space-2);
+}
+
+.ticket-drawer__body-md {
+  padding: var(--space-3);
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  white-space: pre-wrap;
+  color: var(--text-primary);
+  font-size: var(--font-size-dense);
+}
+
+.ticket-drawer__replies {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ticket-drawer__reply {
+  padding: var(--space-3);
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.ticket-drawer__reply.is-internal {
+  background: var(--status-warning-bg);
+  border-color: var(--status-warning-border);
+}
+
+.ticket-drawer__reply-head {
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.ticket-drawer__reply-body {
+  white-space: pre-wrap;
+  color: var(--text-primary);
+  font-size: var(--font-size-dense);
+}
+
+.ticket-drawer__reply-form {
+  margin-top: var(--space-3);
+}
+
+@keyframes ticket-drawer-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes ticket-drawer-slide {
+  from { transform: translateX(16px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@media (max-width: 640px) {
+  .ticket-drawer { width: 100vw; }
+}

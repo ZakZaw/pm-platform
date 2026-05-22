@@ -288,6 +288,48 @@ public static class WorkflowErrors
         new("Workflow.ColumnNotEmpty", "Cannot delete a status column that still contains tasks. Move them first.");
 }
 
+public static class SupportErrors
+{
+    public static readonly Error CustomerNotFound =
+        new("Support.CustomerNotFound", "Customer not found.");
+
+    public static readonly Error InvalidCustomerName =
+        new("Support.InvalidCustomerName", "Customer name must be 1-200 characters.");
+
+    public static readonly Error QueueNotFound =
+        new("Support.QueueNotFound", "Queue not found.");
+
+    public static readonly Error InvalidQueueName =
+        new("Support.InvalidQueueName", "Queue name must be 1-60 characters.");
+
+    public static readonly Error InvalidSla =
+        new("Support.InvalidSla", "SLA minutes must be greater than zero.");
+
+    public static readonly Error QueueNotInProject =
+        new("Support.QueueNotInProject", "The queue does not belong to this project.");
+
+    public static readonly Error CustomerNotInProject =
+        new("Support.CustomerNotInProject", "The customer does not belong to this project.");
+
+    public static readonly Error CannotDeleteQueueWithTickets =
+        new("Support.CannotDeleteQueueWithTickets", "Move or close the tickets in this queue before deleting it.");
+
+    public static readonly Error TicketNotFound =
+        new("Support.TicketNotFound", "Ticket not found.");
+
+    public static readonly Error InvalidTicketSubject =
+        new("Support.InvalidTicketSubject", "Ticket subject must be 1-300 characters.");
+
+    public static readonly Error InvalidTicketStatus =
+        new("Support.InvalidTicketStatus", "Ticket status must be New, Open, Pending, Resolved, Closed, or Reopened.");
+
+    public static readonly Error InvalidReplyBody =
+        new("Support.InvalidReplyBody", "Reply body must be 1-10000 characters.");
+
+    public static readonly Error ReplyNotFound =
+        new("Support.ReplyNotFound", "Reply not found.");
+}
+
 public static class SalesErrors
 {
     public static readonly Error AccountNotFound =

@@ -1,0 +1,38 @@
+.customers-page__search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-tertiary);
+}
+
+.customers-page__table {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-1);
+  overflow: hidden;
+}
+
+.customers-page__row {
+  display: grid;
+  grid-template-columns: 1.5fr 1.5fr 1.3fr 0.9fr 1fr;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-dense);
+  border-bottom: 1px solid var(--border-subtle);
+  align-items: center;
+}
+
+.customers-page__row:last-child { border-bottom: none; }
+
+.customers-page__row--head {
+  font-size: var(--font-size-meta);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--bg-surface-2);
+}
+
+.customers-page__name {
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}

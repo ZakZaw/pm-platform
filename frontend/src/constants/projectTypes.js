@@ -14,12 +14,14 @@ import {
   FileText,
   FolderKanban,
   GitPullRequest,
+  Inbox,
   Layers,
   LifeBuoy,
   Megaphone,
   Rocket,
   Settings,
   Sparkles,
+  UserSquare,
   Users,
   Workflow,
 } from 'lucide-react';
@@ -113,7 +115,16 @@ export function navItemsForType(typeId) {
     ];
   }
 
+  if (typeId === 'Support') {
+    return [
+      { key: 'queues', label: 'Queue', icon: Inbox, path: 'queues' },
+      { key: 'customers', label: 'Customers', icon: UserSquare, path: 'customers' },
+      ...universal,
+      ...settings,
+    ];
+  }
+
   // Other types: minimal nav until their per-type pages land. The work-
-  // model pages slot in here once F1.5-03..F1.5-06 ship.
+  // model pages slot in here once F1.5-04..F1.5-06 ship.
   return [...universal, ...settings];
 }

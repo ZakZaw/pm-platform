@@ -11,4 +11,8 @@ public class GenericProjectTypeProvider : IProjectTypeProvider
     public string DisplayName => "Generic";
     public string ShortDescription => "Lightweight tasks in lists. No epics or sprints.";
     public string AIGenerationPromptKey => "ProjectGeneration";
+
+    public Task SeedNewProjectAsync(
+        IAppDbContext db, Guid projectId, Guid createdByUserId, CancellationToken ct)
+        => Task.CompletedTask;
 }

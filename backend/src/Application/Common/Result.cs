@@ -288,6 +288,66 @@ public static class WorkflowErrors
         new("Workflow.ColumnNotEmpty", "Cannot delete a status column that still contains tasks. Move them first.");
 }
 
+public static class SalesErrors
+{
+    public static readonly Error AccountNotFound =
+        new("Sales.AccountNotFound", "Account not found.");
+
+    public static readonly Error InvalidAccountName =
+        new("Sales.InvalidAccountName", "Account name must be 1-200 characters.");
+
+    public static readonly Error DealNotFound =
+        new("Sales.DealNotFound", "Deal not found.");
+
+    public static readonly Error InvalidDealName =
+        new("Sales.InvalidDealName", "Deal name must be 1-200 characters.");
+
+    public static readonly Error InvalidDealValue =
+        new("Sales.InvalidDealValue", "Deal value must be 0 or greater.");
+
+    public static readonly Error InvalidProbability =
+        new("Sales.InvalidProbability", "Probability must be between 0 and 100.");
+
+    public static readonly Error InvalidCurrency =
+        new("Sales.InvalidCurrency", "Currency must be a 3-letter ISO code (e.g. USD).");
+
+    public static readonly Error StageNotFound =
+        new("Sales.StageNotFound", "Pipeline stage not found.");
+
+    public static readonly Error InvalidStageName =
+        new("Sales.InvalidStageName", "Stage name must be 1-60 characters.");
+
+    public static readonly Error StageNotInProject =
+        new("Sales.StageNotInProject", "The stage does not belong to this deal's project.");
+
+    public static readonly Error AccountNotInProject =
+        new("Sales.AccountNotInProject", "The account does not belong to this project.");
+
+    public static readonly Error LostReasonRequired =
+        new("Sales.LostReasonRequired", "Moving a deal to a Closed Lost stage requires a reason.");
+
+    public static readonly Error CannotDeleteStageWithDeals =
+        new("Sales.CannotDeleteStageWithDeals", "Move or close the deals in this stage before deleting it.");
+
+    public static readonly Error LeadNotFound =
+        new("Sales.LeadNotFound", "Lead not found.");
+
+    public static readonly Error InvalidLeadName =
+        new("Sales.InvalidLeadName", "Lead name must be 1-200 characters.");
+
+    public static readonly Error LeadAlreadyConverted =
+        new("Sales.LeadAlreadyConverted", "This lead has already been converted.");
+
+    public static readonly Error ActivityNotFound =
+        new("Sales.ActivityNotFound", "Activity not found.");
+
+    public static readonly Error InvalidActivityType =
+        new("Sales.InvalidActivityType", "Activity type must be Note, Call, Email, Meeting, or Task.");
+
+    public static readonly Error InvalidActivitySummary =
+        new("Sales.InvalidActivitySummary", "Activity summary must be 1-1000 characters.");
+}
+
 public static class InvitationErrors
 {
     public static readonly Error InvalidEmail =

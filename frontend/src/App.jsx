@@ -23,6 +23,9 @@ import { WorkflowSettingsPage } from '@/pages/project/WorkflowSettingsPage';
 import { ProjectMembersPage } from '@/pages/project/ProjectMembersPage';
 import { AIGenerationWizard } from '@/pages/project/AIGenerationWizard';
 import { AIInboxPage } from '@/pages/project/AIInboxPage';
+import { PipelinePage } from '@/pages/project/PipelinePage';
+import { AccountsPage } from '@/pages/project/AccountsPage';
+import { LeadsPage } from '@/pages/project/LeadsPage';
 import { AppShell } from '@/components/layout/AppShell';
 import { ToastProvider } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
@@ -107,6 +110,18 @@ function App() {
             <Route
               path="/:slug/projects/:projectSlug/ai"
               element={<Keyed paramKey="projectSlug"><AIInboxPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/pipeline"
+              element={<Keyed paramKey="projectSlug"><PipelinePage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/accounts"
+              element={<Keyed paramKey="projectSlug"><AccountsPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/leads"
+              element={<Keyed paramKey="projectSlug"><LeadsPage /></Keyed>}
             />
             <Route
               path="/:slug/projects/:projectSlug/settings/workflow"

@@ -17,7 +17,10 @@ public record ApplyProjectGenerationCommand(
     string Type,
     IReadOnlyList<AIGeneratedEpicDto> Epics) : IRequest<Result<ProjectDto>>;
 
-public class ApplyProjectGenerationCommandHandler(IAppDbContext db, ICurrentUser currentUser)
+public class ApplyProjectGenerationCommandHandler(
+    IAppDbContext db,
+    ICurrentUser currentUser,
+    IProjectTypeRegistry projectTypes)
     : IRequestHandler<ApplyProjectGenerationCommand, Result<ProjectDto>>
 {
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
@@ -73,6 +76,10 @@ public class ApplyProjectGenerationCommandHandler(IAppDbContext db, ICurrentUser
             UserId = userId,
             Role = ProjectRole.PM,
         });
+
+        // Type-specific seeding runs alongside the AI-generated tree —
+        // e.g. a Sales project still gets its default pipeline stages.
+        await projectTypes.Get(projectType).SeedNewProjectAsync(db, project.Id, userId, ct);
 
         var priorityOrder = 0;
         var keyNum = 0;

@@ -1,0 +1,20 @@
+.leads__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.leads__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.leads__name {
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}

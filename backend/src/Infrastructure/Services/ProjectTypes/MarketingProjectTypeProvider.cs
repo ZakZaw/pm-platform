@@ -10,4 +10,8 @@ public class MarketingProjectTypeProvider : IProjectTypeProvider
     public string DisplayName => "Marketing";
     public string ShortDescription => "Campaigns, assets, content calendar.";
     public string AIGenerationPromptKey => "ProjectGeneration";
+
+    public Task SeedNewProjectAsync(
+        IAppDbContext db, Guid projectId, Guid createdByUserId, CancellationToken ct)
+        => Task.CompletedTask;
 }

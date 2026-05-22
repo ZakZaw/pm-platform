@@ -24,5 +24,12 @@ public interface IAppDbContext
     DbSet<AIGenerationRequest> AIGenerationRequests { get; }
     DbSet<AISuggestion> AISuggestions { get; }
 
+    // Phase 1.5 Sales (F1.5-02)
+    DbSet<DealStage> DealStages { get; }
+    DbSet<Account> Accounts { get; }
+    DbSet<Lead> Leads { get; }
+    DbSet<Deal> Deals { get; }
+    DbSet<Activity> Activities { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

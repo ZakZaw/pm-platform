@@ -14,7 +14,7 @@ namespace Application.Features.AI.Commands;
 public record ApplyProjectGenerationCommand(
     Guid RequestId,
     string ProjectName,
-    string EnvironmentType,
+    string Type,
     IReadOnlyList<AIGeneratedEpicDto> Epics) : IRequest<Result<ProjectDto>>;
 
 public class ApplyProjectGenerationCommandHandler(IAppDbContext db, ICurrentUser currentUser)
@@ -32,8 +32,8 @@ public class ApplyProjectGenerationCommandHandler(IAppDbContext db, ICurrentUser
         if (name.Length is < 2 or > 120 || SlugGenerator.From(name).Length == 0)
             return Result.Failure<ProjectDto>(AIErrors.InvalidProjectName);
 
-        if (!Enum.TryParse<EnvironmentType>(request.EnvironmentType, ignoreCase: true, out var envType))
-            return Result.Failure<ProjectDto>(ProjectErrors.InvalidEnvironmentType);
+        if (!Enum.TryParse<ProjectType>(request.Type, ignoreCase: true, out var projectType))
+            return Result.Failure<ProjectDto>(ProjectErrors.InvalidType);
 
         var generationRequest = await db.AIGenerationRequests
             .FirstOrDefaultAsync(r => r.Id == request.RequestId, ct);
@@ -61,7 +61,7 @@ public class ApplyProjectGenerationCommandHandler(IAppDbContext db, ICurrentUser
             Name = name,
             Slug = slug,
             Key = key,
-            EnvironmentType = envType,
+            Type = projectType,
             Status = ProjectStatus.Active,
             AIControlMode = AIControlMode.Suggest,
             CreatedBy = userId,
@@ -141,7 +141,7 @@ public class ApplyProjectGenerationCommandHandler(IAppDbContext db, ICurrentUser
         return Result.Success(new ProjectDto(
             project.Id, project.OrganizationId, orgSlug,
             project.Name, project.Slug, project.Key,
-            project.EnvironmentType.ToString(),
+            project.Type.ToString(),
             project.Status.ToString(),
             project.TargetDate,
             project.AIControlMode.ToString(),

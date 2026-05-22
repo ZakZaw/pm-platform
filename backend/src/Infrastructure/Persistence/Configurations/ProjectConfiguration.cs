@@ -17,7 +17,7 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
         builder.Property(p => p.Slug).IsRequired().HasMaxLength(80);
         builder.Property(p => p.Key).IsRequired().HasMaxLength(8);
 
-        builder.Property(p => p.EnvironmentType).HasConversion<string>().HasMaxLength(20);
+        builder.Property(p => p.Type).HasConversion<string>().HasMaxLength(20);
         builder.Property(p => p.Status).HasConversion<string>().HasMaxLength(20);
         builder.Property(p => p.AIControlMode).HasConversion<string>().HasMaxLength(20);
 

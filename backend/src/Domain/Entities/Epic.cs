@@ -11,7 +11,7 @@ public class Epic
     public Guid? OwnerId { get; set; }
     public EpicStatus Status { get; set; } = EpicStatus.Planning;
     public bool RiskFlag { get; set; }
-    public EnvironmentType? EnvironmentType { get; set; }
+    public ProjectType? Type { get; set; }
     public string? Color { get; set; }
     public bool CreatedByAi { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

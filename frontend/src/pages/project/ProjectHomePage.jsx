@@ -67,7 +67,7 @@ export function ProjectHomePage() {
         <div className="project-home__heading">
           <div className="project-home__title">{project.name}</div>
           <div className="project-home__meta">
-            <Badge tone="neutral">{project.environmentType}</Badge>
+            <Badge tone="neutral">{project.type}</Badge>
             <Badge tone={project.status === 'Active' ? 'success' : 'neutral'}>
               {project.status}
             </Badge>

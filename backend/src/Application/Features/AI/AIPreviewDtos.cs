@@ -18,7 +18,7 @@ public record AIGenerationPreviewDto(
     string Provider,
     string Model,
     string SuggestedName,
-    string EnvironmentType,
+    string Type,
     IReadOnlyList<AIGeneratedEpicDto> Epics);
 
 public record AIClarificationAnswerDto(string Question, string Answer);

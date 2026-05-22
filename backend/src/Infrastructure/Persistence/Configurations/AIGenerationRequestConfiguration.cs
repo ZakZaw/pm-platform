@@ -15,7 +15,7 @@ public class AIGenerationRequestConfiguration : IEntityTypeConfiguration<AIGener
         builder.Property(r => r.OrganizationId).IsRequired();
         builder.Property(r => r.CreatedBy).IsRequired();
         builder.Property(r => r.Description).IsRequired();
-        builder.Property(r => r.EnvironmentType).IsRequired().HasMaxLength(40);
+        builder.Property(r => r.Type).IsRequired().HasMaxLength(40);
         builder.Property(r => r.ClarificationsJson);
         builder.Property(r => r.PreviewJson).IsRequired();
         builder.Property(r => r.Status).IsRequired().HasMaxLength(20);

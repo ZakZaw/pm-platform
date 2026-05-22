@@ -42,7 +42,7 @@ public class GenerateEpicPreviewCommandHandler(
 
         var project = await db.Projects
             .Where(p => p.Id == request.ProjectId)
-            .Select(p => new { p.Id, p.Name, EnvType = p.EnvironmentType })
+            .Select(p => new { p.Id, p.Name, ProjType = p.Type })
             .FirstOrDefaultAsync(ct);
         if (project is null)
             return Result.Failure<AIGeneratedEpicDto>(ProjectErrors.NotFound);
@@ -54,7 +54,7 @@ public class GenerateEpicPreviewCommandHandler(
 
         var input = new AIEpicGenerationInput(
             project.Name,
-            project.EnvType.ToString(),
+            project.ProjType.ToString(),
             description,
             existingTitles);
 

@@ -28,7 +28,7 @@ public class ListProjectEpicsQueryHandler(IAppDbContext db)
                 e.OwnerId,
                 Status = e.Status.ToString(),
                 e.RiskFlag,
-                Env = e.EnvironmentType.HasValue ? e.EnvironmentType.Value.ToString() : null,
+                Type = e.Type.HasValue ? e.Type.Value.ToString() : null,
                 e.Color,
                 e.CreatedAt,
                 e.ArchivedAt,
@@ -43,7 +43,7 @@ public class ListProjectEpicsQueryHandler(IAppDbContext db)
             var done = r.Tasks.Where(t => t.Status == DomainTaskStatus.Done).Sum(t => t.StoryPoints ?? 0);
             return new EpicDto(
                 r.Id, r.ProjectId, r.Title, r.Description, r.OwnerId,
-                r.Status, r.RiskFlag, r.Env, r.Color,
+                r.Status, r.RiskFlag, r.Type, r.Color,
                 r.CreatedAt, r.ArchivedAt,
                 r.Tasks.Count, total, done);
         }).ToList();

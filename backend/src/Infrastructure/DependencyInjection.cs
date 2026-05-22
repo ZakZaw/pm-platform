@@ -2,6 +2,7 @@ using Application.Interfaces;
 using Infrastructure.Persistence;
 using Infrastructure.Services;
 using Infrastructure.Services.Ai;
+using Infrastructure.Services.ProjectTypes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,6 +40,18 @@ public static class DependencyInjection
         // app bootable without a key but makes the failure obvious to the user.
         services.Configure<AISettings>(configuration.GetSection("AI"));
         services.AddScoped<IAIService, GeminiAIService>();
+
+        // Phase 1.5 project-type registry. One provider per ProjectType
+        // value; the registry indexes them on construction and throws if
+        // any are missing — so adding a new type means adding a provider
+        // class, not touching this file.
+        services.AddSingleton<IProjectTypeProvider, EngineeringProjectTypeProvider>();
+        services.AddSingleton<IProjectTypeProvider, SalesProjectTypeProvider>();
+        services.AddSingleton<IProjectTypeProvider, SupportProjectTypeProvider>();
+        services.AddSingleton<IProjectTypeProvider, MarketingProjectTypeProvider>();
+        services.AddSingleton<IProjectTypeProvider, OperationsProjectTypeProvider>();
+        services.AddSingleton<IProjectTypeProvider, GenericProjectTypeProvider>();
+        services.AddSingleton<IProjectTypeRegistry, ProjectTypeRegistry>();
 
         return services;
     }

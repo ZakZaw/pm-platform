@@ -16,7 +16,7 @@ public class EpicConfiguration : IEntityTypeConfiguration<Epic>
         builder.Property(e => e.Title).IsRequired().HasMaxLength(200);
         builder.Property(e => e.Description);
         builder.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
-        builder.Property(e => e.EnvironmentType).HasConversion<string>().HasMaxLength(20);
+        builder.Property(e => e.Type).HasConversion<string>().HasMaxLength(20);
         builder.Property(e => e.Color).HasMaxLength(20);
         builder.Property(e => e.CreatedByAi).IsRequired();
         builder.Property(e => e.CreatedAt).IsRequired();

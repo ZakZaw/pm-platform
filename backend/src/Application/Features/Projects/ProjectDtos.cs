@@ -7,7 +7,7 @@ public record ProjectDto(
     string Name,
     string Slug,
     string Key,
-    string EnvironmentType,
+    string Type,
     string Status,
     DateTime? TargetDate,
     string AIControlMode,
@@ -20,6 +20,6 @@ public record ProjectSummary(
     string Name,
     string Slug,
     string Key,
-    string EnvironmentType,
+    string Type,
     string Status,
     DateTime? TargetDate);

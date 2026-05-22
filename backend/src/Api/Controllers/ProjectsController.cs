@@ -22,7 +22,7 @@ public class ProjectsController(ISender mediator) : ControllerBase
         CancellationToken ct)
     {
         var result = await mediator.Send(
-            new CreateProjectCommand(slug, body.Name, body.EnvironmentType, body.AIControlMode, body.TargetDate),
+            new CreateProjectCommand(slug, body.Name, body.Type, body.AIControlMode, body.TargetDate),
             ct);
 
         return result.IsSuccess
@@ -111,7 +111,7 @@ public class ProjectsController(ISender mediator) : ControllerBase
 
 public record CreateProjectBodyDto(
     string Name,
-    string EnvironmentType,
+    string Type,
     string? AIControlMode,
     DateTime? TargetDate);
 

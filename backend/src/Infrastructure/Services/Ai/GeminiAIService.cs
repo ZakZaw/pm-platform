@@ -36,13 +36,13 @@ public class GeminiAIService(IOptions<AISettings> options, ILogger<GeminiAIServi
     }
 
     public async Task<AIGeneratedProject> GenerateProjectStructureAsync(
-        string description, string environmentType,
+        string description, string projectType,
         IReadOnlyList<AIClarificationAnswer>? clarifications, CancellationToken ct)
     {
         var payload = new
         {
             description,
-            environmentType,
+            projectType,
             clarifications = clarifications?.Select(c => new { c.Question, c.Answer }).ToArray()
                 ?? [],
         };
@@ -106,9 +106,9 @@ public class GeminiAIService(IOptions<AISettings> options, ILogger<GeminiAIServi
     }
 
     public async Task<IReadOnlyList<string>> GenerateClarifyingQuestionsAsync(
-        string description, string environmentType, CancellationToken ct)
+        string description, string projectType, CancellationToken ct)
     {
-        var payload = new { description, environmentType };
+        var payload = new { description, projectType };
         var json = await CallJsonAsync(PromptLibrary.ClarifyingQuestions, payload, ct);
         using var doc = JsonDocument.Parse(json);
         if (!doc.RootElement.TryGetProperty("questions", out var q) || q.ValueKind != JsonValueKind.Array)

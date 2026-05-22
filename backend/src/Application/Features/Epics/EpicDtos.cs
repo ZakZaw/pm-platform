@@ -8,7 +8,7 @@ public record EpicDto(
     Guid? OwnerId,
     string Status,
     bool RiskFlag,
-    string? EnvironmentType,
+    string? Type,
     string? Color,
     DateTime CreatedAt,
     DateTime? ArchivedAt,

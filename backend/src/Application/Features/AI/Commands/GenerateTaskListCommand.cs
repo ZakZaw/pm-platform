@@ -49,7 +49,7 @@ public class GenerateTaskListCommandHandler(
 
         var project = await db.Projects
             .Where(p => p.Id == request.ProjectId)
-            .Select(p => new { p.Id, p.Name, p.EnvironmentType })
+            .Select(p => new { p.Id, p.Name, p.Type })
             .FirstOrDefaultAsync(ct);
         if (project is null)
             return Result.Failure<AIGeneratedTaskListDto>(ProjectErrors.NotFound);
@@ -68,7 +68,7 @@ public class GenerateTaskListCommandHandler(
 
         var input = new AITaskListGenerationInput(
             project.Name,
-            project.EnvironmentType.ToString(),
+            project.Type.ToString(),
             description,
             epicTitle,
             request.MaxTasks);

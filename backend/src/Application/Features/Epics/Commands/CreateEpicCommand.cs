@@ -12,7 +12,7 @@ public record CreateEpicCommand(
     string? Description,
     Guid? OwnerId,
     string? Color,
-    string? EnvironmentType) : IRequest<Result<EpicDto>>;
+    string? Type) : IRequest<Result<EpicDto>>;
 
 public class CreateEpicCommandHandler(IAppDbContext db, ICurrentUser currentUser)
     : IRequestHandler<CreateEpicCommand, Result<EpicDto>>
@@ -26,12 +26,12 @@ public class CreateEpicCommandHandler(IAppDbContext db, ICurrentUser currentUser
         if (title.Length < 2 || title.Length > 200)
             return Result.Failure<EpicDto>(EpicErrors.InvalidTitle);
 
-        EnvironmentType? env = null;
-        if (!string.IsNullOrWhiteSpace(request.EnvironmentType))
+        ProjectType? type = null;
+        if (!string.IsNullOrWhiteSpace(request.Type))
         {
-            if (!Enum.TryParse<EnvironmentType>(request.EnvironmentType, ignoreCase: true, out var parsed))
-                return Result.Failure<EpicDto>(ProjectErrors.InvalidEnvironmentType);
-            env = parsed;
+            if (!Enum.TryParse<ProjectType>(request.Type, ignoreCase: true, out var parsed))
+                return Result.Failure<EpicDto>(ProjectErrors.InvalidType);
+            type = parsed;
         }
 
         var epic = new Epic
@@ -41,7 +41,7 @@ public class CreateEpicCommandHandler(IAppDbContext db, ICurrentUser currentUser
             Description = request.Description,
             OwnerId = request.OwnerId,
             Color = request.Color,
-            EnvironmentType = env,
+            Type = type,
             Status = EpicStatus.Planning
         };
         db.Epics.Add(epic);
@@ -50,7 +50,7 @@ public class CreateEpicCommandHandler(IAppDbContext db, ICurrentUser currentUser
         return Result.Success(new EpicDto(
             epic.Id, epic.ProjectId, epic.Title, epic.Description, epic.OwnerId,
             epic.Status.ToString(), epic.RiskFlag,
-            epic.EnvironmentType?.ToString(), epic.Color,
+            epic.Type?.ToString(), epic.Color,
             epic.CreatedAt, epic.ArchivedAt,
             TaskCount: 0, TotalStoryPoints: 0, DoneStoryPoints: 0));
     }

@@ -22,7 +22,7 @@ public class AIController(ISender mediator) : ControllerBase
         [FromBody] ClarifyBodyDto body, CancellationToken ct)
     {
         var result = await mediator.Send(new GenerateClarifyingQuestionsCommand(
-            body.Description ?? string.Empty, body.EnvironmentType ?? "Developer"), ct);
+            body.Description ?? string.Empty, body.Type ?? "Engineering"), ct);
         return result.IsSuccess
             ? Ok(new ClarifyResponseDto(result.Value!))
             : ToProblem(result.Error!);
@@ -37,7 +37,7 @@ public class AIController(ISender mediator) : ControllerBase
         var result = await mediator.Send(new GenerateProjectPreviewCommand(
             slug,
             body.Description ?? string.Empty,
-            body.EnvironmentType ?? "Developer",
+            body.Type ?? "Engineering",
             body.Clarifications), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
@@ -51,7 +51,7 @@ public class AIController(ISender mediator) : ControllerBase
         var result = await mediator.Send(new ApplyProjectGenerationCommand(
             requestId,
             body.ProjectName ?? string.Empty,
-            body.EnvironmentType ?? "Developer",
+            body.Type ?? "Engineering",
             body.Epics ?? Array.Empty<AIGeneratedEpicDto>()), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
@@ -176,7 +176,7 @@ public class AIController(ISender mediator) : ControllerBase
             "AI.RequestAlreadyApplied" => StatusCodes.Status409Conflict,
             "AI.ProviderFailed" => StatusCodes.Status502BadGateway,
             "AI.NotConfigured" => StatusCodes.Status503ServiceUnavailable,
-            "Project.InvalidEnvironmentType" => StatusCodes.Status422UnprocessableEntity,
+            "Project.InvalidType" => StatusCodes.Status422UnprocessableEntity,
             "Task.InvalidTitle" => StatusCodes.Status422UnprocessableEntity,
             "Task.EpicNotInProject" => StatusCodes.Status422UnprocessableEntity,
             "Epic.InvalidTitle" => StatusCodes.Status422UnprocessableEntity,
@@ -186,17 +186,17 @@ public class AIController(ISender mediator) : ControllerBase
     }
 }
 
-public record ClarifyBodyDto(string? Description, string? EnvironmentType);
+public record ClarifyBodyDto(string? Description, string? Type);
 public record ClarifyResponseDto(IReadOnlyList<string> Questions);
 
 public record GenerateProjectBodyDto(
     string? Description,
-    string? EnvironmentType,
+    string? Type,
     IReadOnlyList<AIClarificationAnswerDto>? Clarifications);
 
 public record ApplyGenerationBodyDto(
     string? ProjectName,
-    string? EnvironmentType,
+    string? Type,
     IReadOnlyList<AIGeneratedEpicDto>? Epics);
 
 public record GenerateEpicBodyDto(string? Description);

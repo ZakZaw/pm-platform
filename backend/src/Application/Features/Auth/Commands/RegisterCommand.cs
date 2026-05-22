@@ -50,7 +50,7 @@ public class RegisterCommandHandler(
             Name = "Personal",
             Slug = $"personal-{user.Id:N}",
             Key = "PE",
-            EnvironmentType = Domain.Enums.EnvironmentType.Business,
+            Type = Domain.Enums.ProjectType.Generic,
             Status = Domain.Enums.ProjectStatus.Active,
             AIControlMode = Domain.Enums.AIControlMode.Off,
             CreatedBy = user.Id,

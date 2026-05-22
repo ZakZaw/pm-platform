@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   BookOpen,
   Check,
@@ -27,14 +27,10 @@ import {
 } from '@/components/ui';
 import { aiApi } from '@/api/ai.api';
 import { useProjectStore } from '@/store/projectStore';
+import { PROJECT_TYPES, DEFAULT_PROJECT_TYPE_ID, findProjectType } from '@/constants/projectTypes';
 import './AIGenerationWizard.css';
 
-const ENV_OPTIONS = [
-  { value: 'Developer', label: 'Engineering' },
-  { value: 'Support', label: 'Support' },
-  { value: 'Sales', label: 'Sales' },
-  { value: 'Business', label: 'Business / Ops' },
-];
+const TYPE_OPTIONS = PROJECT_TYPES.map((t) => ({ value: t.id, label: t.label }));
 
 const STEPS = [
   { key: 'describe', label: 'Describe' },
@@ -73,13 +69,22 @@ function StepDot({ n, label, state }) {
 
 export function AIGenerationWizard() {
   const { slug: orgSlug } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const toast = useToast();
   const refreshOrg = useProjectStore((s) => s.refreshForOrg);
 
+  // The chooser on CreateProjectPage preselects the type via ?type=...
+  // when the user arrives via "AI generate". Fall back to Engineering
+  // when the wizard is opened directly.
+  const initialType = (() => {
+    const fromUrl = searchParams.get('type');
+    return findProjectType(fromUrl)?.id ?? DEFAULT_PROJECT_TYPE_ID;
+  })();
+
   const [step, setStep] = useState('describe');
   const [description, setDescription] = useState('');
-  const [envType, setEnvType] = useState('Developer');
+  const [projectType, setProjectType] = useState(initialType);
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [preview, setPreview] = useState(null);
@@ -97,7 +102,7 @@ export function AIGenerationWizard() {
     try {
       const { questions: qs } = await aiApi.clarify({
         description: description.trim(),
-        environmentType: envType,
+        type: projectType,
       });
       setQuestions(qs ?? []);
       setStep('clarify');
@@ -114,7 +119,7 @@ export function AIGenerationWizard() {
     try {
       const data = await aiApi.generateProject(orgSlug, {
         description: description.trim(),
-        environmentType: envType,
+        type: projectType,
         clarifications: includeAnswers
           ? questions
               .map((q) => ({ question: q, answer: (answers[q] ?? '').trim() }))
@@ -143,7 +148,7 @@ export function AIGenerationWizard() {
     try {
       const project = await aiApi.applyGeneratedProject(preview.requestId, {
         projectName: projectName.trim(),
-        environmentType: preview.environmentType,
+        type: preview.type ?? projectType,
         epics: preview.epics,
       });
       await refreshOrg(orgSlug).catch(() => {});
@@ -246,10 +251,11 @@ export function AIGenerationWizard() {
               rows={6}
             />
             <Select
-              label="Environment"
-              options={ENV_OPTIONS}
-              value={envType}
-              onChange={(e) => setEnvType(e.target.value)}
+              label="Project type"
+              options={TYPE_OPTIONS}
+              value={projectType}
+              onChange={(e) => setProjectType(e.target.value)}
+              help="Shapes the AI plan — engineering gets epics+sprints, sales gets pipeline stages, etc."
             />
             <div className="ai-wizard__actions">
               <Button variant="ghost" onClick={() => navigate(`/${orgSlug}/projects/new`)}>

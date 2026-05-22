@@ -4,7 +4,7 @@ using MediatR;
 
 namespace Application.Features.AI.Commands;
 
-public record GenerateClarifyingQuestionsCommand(string Description, string EnvironmentType)
+public record GenerateClarifyingQuestionsCommand(string Description, string Type)
     : IRequest<Result<IReadOnlyList<string>>>;
 
 public class GenerateClarifyingQuestionsCommandHandler(IAIService ai)
@@ -23,7 +23,7 @@ public class GenerateClarifyingQuestionsCommandHandler(IAIService ai)
         try
         {
             var qs = await ai.GenerateClarifyingQuestionsAsync(
-                description, request.EnvironmentType ?? "Developer", ct);
+                description, request.Type ?? "Engineering", ct);
             return Result.Success(qs);
         }
         catch

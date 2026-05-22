@@ -51,13 +51,13 @@ public record AISprintFillPlan(
 
 public record AIEpicGenerationInput(
     string ProjectName,
-    string EnvironmentType,
+    string ProjectType,
     string Description,
     IReadOnlyList<string> ExistingEpicTitles);
 
 public record AITaskListGenerationInput(
     string ProjectName,
-    string EnvironmentType,
+    string ProjectType,
     string Description,
     string? EpicTitle,
     int? MaxTasks);

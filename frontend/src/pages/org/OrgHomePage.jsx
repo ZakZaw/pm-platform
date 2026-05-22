@@ -325,7 +325,7 @@ export function OrgHomePage() {
                 >
                   <div className="org-home__project-name">{p.name}</div>
                   <div className="org-home__project-meta">
-                    <Badge tone="neutral">{p.environmentType}</Badge>
+                    <Badge tone="neutral">{p.type}</Badge>
                     <Badge tone={p.status === 'Active' ? 'success' : 'neutral'}>{p.status}</Badge>
                   </div>
                 </Link>

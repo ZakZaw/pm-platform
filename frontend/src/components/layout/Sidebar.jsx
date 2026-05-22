@@ -1,25 +1,19 @@
 import { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
-  BarChart3,
   Briefcase,
   ChevronsUpDown,
-  ClipboardList,
-  FolderKanban,
   Home,
-  Layers,
   LayoutGrid,
   Plus,
-  Rocket,
   Settings,
-  Sparkles,
-  Users,
 } from 'lucide-react';
 import { Avatar } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
 import { useOrgStore } from '@/store/orgStore';
 import { useProjectStore } from '@/store/projectStore';
 import { useUiStore } from '@/store/uiStore';
+import { navItemsForType, DEFAULT_PROJECT_TYPE_ID } from '@/constants/projectTypes';
 import './Sidebar.css';
 
 // Maps a project to one of the eight Stratos avatar gradient slots so
@@ -127,55 +121,40 @@ export function Sidebar() {
               <span className="side-item__label">No projects yet</span>
             </div>
           )}
-          {projects.map((p) => (
-            <div key={p.id} className="sidebar-project">
-              <NavLink
-                to={`/${slug}/projects/${p.slug}`}
-                className={sideClass}
-                end
-                title={p.name}
-              >
-                <span className={['side-item__swatch', projectSwatch(p.name)].join(' ')} aria-hidden="true" />
-                <span className="side-item__label truncate">{p.name}</span>
-              </NavLink>
-              {p.slug === projectSlug && (
-                <div className="sidebar-project__sub">
-                  <NavLink to={`/${slug}/projects/${p.slug}/epics`} className={sideClass}>
-                    <Layers size={13} aria-hidden="true" />
-                    <span className="side-item__label">Epics</span>
-                  </NavLink>
-                  <NavLink to={`/${slug}/projects/${p.slug}/board`} className={sideClass}>
-                    <FolderKanban size={13} aria-hidden="true" />
-                    <span className="side-item__label">Board</span>
-                  </NavLink>
-                  <NavLink to={`/${slug}/projects/${p.slug}/dashboard`} className={sideClass}>
-                    <BarChart3 size={13} aria-hidden="true" />
-                    <span className="side-item__label">Dashboard</span>
-                  </NavLink>
-                  <NavLink to={`/${slug}/projects/${p.slug}/backlog`} className={sideClass}>
-                    <ClipboardList size={13} aria-hidden="true" />
-                    <span className="side-item__label">Backlog</span>
-                  </NavLink>
-                  <NavLink to={`/${slug}/projects/${p.slug}/sprints`} className={sideClass}>
-                    <Rocket size={13} aria-hidden="true" />
-                    <span className="side-item__label">Sprints</span>
-                  </NavLink>
-                  <NavLink to={`/${slug}/projects/${p.slug}/ai`} className={sideClass}>
-                    <Sparkles size={13} aria-hidden="true" />
-                    <span className="side-item__label">AI Inbox</span>
-                  </NavLink>
-                  <NavLink to={`/${slug}/projects/${p.slug}/settings/members`} className={sideClass}>
-                    <Users size={13} aria-hidden="true" />
-                    <span className="side-item__label">Members</span>
-                  </NavLink>
-                  <NavLink to={`/${slug}/projects/${p.slug}/settings/workflow`} className={sideClass}>
-                    <Settings size={13} aria-hidden="true" />
-                    <span className="side-item__label">Workflow</span>
-                  </NavLink>
-                </div>
-              )}
-            </div>
-          ))}
+          {projects.map((p) => {
+            const isActive = p.slug === projectSlug;
+            const navItems = navItemsForType(p.type ?? DEFAULT_PROJECT_TYPE_ID);
+            return (
+              <div key={p.id} className="sidebar-project">
+                <NavLink
+                  to={`/${slug}/projects/${p.slug}`}
+                  className={sideClass}
+                  end
+                  title={p.name}
+                >
+                  <span className={['side-item__swatch', projectSwatch(p.name)].join(' ')} aria-hidden="true" />
+                  <span className="side-item__label truncate">{p.name}</span>
+                </NavLink>
+                {isActive && (
+                  <div className="sidebar-project__sub">
+                    {navItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <NavLink
+                          key={item.key}
+                          to={`/${slug}/projects/${p.slug}/${item.path}`}
+                          className={sideClass}
+                        >
+                          <Icon size={13} aria-hidden="true" />
+                          <span className="side-item__label">{item.label}</span>
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </>
       )}
 

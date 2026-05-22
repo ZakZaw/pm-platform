@@ -11,7 +11,7 @@ public class AIGenerationRequest
     public Guid OrganizationId { get; set; }
     public Guid CreatedBy { get; set; }
     public required string Description { get; set; }
-    public string EnvironmentType { get; set; } = "Developer";
+    public string Type { get; set; } = "Engineering";
     public string? ClarificationsJson { get; set; }
     public required string PreviewJson { get; set; }
     public string Status { get; set; } = "Draft";   // Draft | Applied | Discarded

@@ -1,35 +1,29 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Briefcase, FileText, Sparkles } from 'lucide-react';
-import { Button, Card, Input, Select, useToast } from '@/components/ui';
+import { Button, Card, Input, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { useProjectStore } from '@/store/projectStore';
+import { PROJECT_TYPES, DEFAULT_PROJECT_TYPE_ID } from '@/constants/projectTypes';
 import './CreateProjectPage.css';
-
-const ENV_OPTIONS = [
-  { value: 'Developer', label: 'Engineering' },
-  { value: 'Support', label: 'Support' },
-  { value: 'Sales', label: 'Sales' },
-  { value: 'Business', label: 'Business / Ops' },
-];
 
 const MODES = [
   {
     key: 'blank',
     title: 'Start blank',
-    description: 'A fresh project with no structure. Add epics, stories, and tasks as you go.',
+    description: 'A fresh project with no structure. Add work items as you go.',
     Icon: Briefcase,
   },
   {
     key: 'template',
     title: 'From template',
-    description: 'Pick a starter template that matches the work — engineering, support, etc.',
+    description: 'Pick a starter template that matches the project type.',
     Icon: FileText,
   },
   {
     key: 'ai',
     title: 'AI generate',
-    description: 'Describe the project in plain English; AI proposes epics, stories, tasks.',
+    description: 'Describe the project in plain English; AI proposes the plan.',
     Icon: Sparkles,
   },
 ];
@@ -40,15 +34,15 @@ export function CreateProjectPage() {
   const toast = useToast();
   const refreshOrg = useProjectStore((s) => s.refreshForOrg);
 
+  const [typeId, setTypeId] = useState(DEFAULT_PROJECT_TYPE_ID);
   const [mode, setMode] = useState('blank');
   const [name, setName] = useState('');
-  const [envType, setEnvType] = useState('Developer');
   const [submitting, setSubmitting] = useState(false);
 
   const onSubmit = async (e) => {
     e.preventDefault();
     if (mode === 'ai') {
-      navigate(`/${orgSlug}/projects/new/ai`);
+      navigate(`/${orgSlug}/projects/new/ai?type=${typeId}`);
       return;
     }
     if (mode === 'template') {
@@ -64,7 +58,7 @@ export function CreateProjectPage() {
     try {
       const project = await projectsApi.create(orgSlug, {
         name: name.trim(),
-        environmentType: envType,
+        type: typeId,
       });
       await refreshOrg(orgSlug).catch(() => {});
       navigate(`/${orgSlug}/projects/${project.slug}`);
@@ -83,9 +77,36 @@ export function CreateProjectPage() {
     <div className="page page-narrow create-project">
       <h1 className="create-project__title">New project</h1>
       <p className="create-project__subtitle">
-        Pick a starting point. You can change the structure later.
+        Pick a project type, then how to start it. You can change the structure later.
       </p>
 
+      <div className="create-project__section-eyebrow">Project type</div>
+      <div
+        className="create-project__types"
+        role="radiogroup"
+        aria-label="Project type"
+      >
+        {PROJECT_TYPES.map((t) => {
+          const Icon = t.icon;
+          const active = typeId === t.id;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              className={['type-card', active ? 'is-active' : ''].filter(Boolean).join(' ')}
+              onClick={() => setTypeId(t.id)}
+            >
+              <Icon className="type-card__icon" aria-hidden="true" size={18} />
+              <div className="type-card__title">{t.label}</div>
+              <div className="type-card__desc">{t.description}</div>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="create-project__section-eyebrow">Starting point</div>
       <div className="create-project__modes" role="radiogroup" aria-label="Project mode">
         {MODES.map((m) => {
           const Icon = m.Icon;
@@ -117,16 +138,9 @@ export function CreateProjectPage() {
             required
             autoComplete="off"
           />
-          <Select
-            label="Environment"
-            options={ENV_OPTIONS}
-            value={envType}
-            onChange={(e) => setEnvType(e.target.value)}
-            help="Used to pick the right integrations and templates."
-          />
 
-          <Button type="submit" disabled={submitting || name.trim().length < 2}>
-            {submitting ? 'Creating…' : 'Create project'}
+          <Button type="submit" disabled={submitting || (mode !== 'ai' && name.trim().length < 2)}>
+            {submitting ? 'Creating…' : mode === 'ai' ? 'Continue with AI' : 'Create project'}
           </Button>
         </form>
       </Card>

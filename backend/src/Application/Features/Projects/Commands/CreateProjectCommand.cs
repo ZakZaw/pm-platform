@@ -10,7 +10,7 @@ namespace Application.Features.Projects.Commands;
 public record CreateProjectCommand(
     string OrgSlug,
     string Name,
-    string EnvironmentType,
+    string Type,
     string? AIControlMode,
     DateTime? TargetDate) : IRequest<Result<ProjectDto>>;
 
@@ -26,8 +26,8 @@ public class CreateProjectCommandHandler(IAppDbContext db, ICurrentUser currentU
         if (trimmedName.Length < 2 || trimmedName.Length > 120 || SlugGenerator.From(trimmedName).Length == 0)
             return Result.Failure<ProjectDto>(ProjectErrors.InvalidName);
 
-        if (!Enum.TryParse<EnvironmentType>(request.EnvironmentType, ignoreCase: true, out var envType))
-            return Result.Failure<ProjectDto>(ProjectErrors.InvalidEnvironmentType);
+        if (!Enum.TryParse<ProjectType>(request.Type, ignoreCase: true, out var projectType))
+            return Result.Failure<ProjectDto>(ProjectErrors.InvalidType);
 
         var aiMode = AIControlMode.Suggest;
         if (!string.IsNullOrWhiteSpace(request.AIControlMode))
@@ -52,7 +52,7 @@ public class CreateProjectCommandHandler(IAppDbContext db, ICurrentUser currentU
             Name = trimmedName,
             Slug = slug,
             Key = key,
-            EnvironmentType = envType,
+            Type = projectType,
             Status = ProjectStatus.Active,
             TargetDate = request.TargetDate,
             AIControlMode = aiMode,
@@ -72,7 +72,7 @@ public class CreateProjectCommandHandler(IAppDbContext db, ICurrentUser currentU
         return Result.Success(new ProjectDto(
             project.Id, project.OrganizationId, org.Slug,
             project.Name, project.Slug, project.Key,
-            project.EnvironmentType.ToString(),
+            project.Type.ToString(),
             project.Status.ToString(),
             project.TargetDate,
             project.AIControlMode.ToString(),

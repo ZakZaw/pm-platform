@@ -13,7 +13,7 @@ public class Project
     /// for personal projects). Derived from <see cref="Name"/> at create
     /// time and never changes — task IDs reference it permanently.</summary>
     public required string Key { get; set; }
-    public EnvironmentType EnvironmentType { get; set; }
+    public ProjectType Type { get; set; }
     public ProjectStatus Status { get; set; } = ProjectStatus.Active;
     public DateTime? TargetDate { get; set; }
     public AIControlMode AIControlMode { get; set; } = AIControlMode.Suggest;

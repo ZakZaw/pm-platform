@@ -1,25 +1,25 @@
 import { apiClient } from './client';
 
 export const aiApi = {
-  clarify: ({ description, environmentType }) =>
+  clarify: ({ description, type }) =>
     apiClient
-      .post('/ai/clarify', { description, environmentType })
+      .post('/ai/clarify', { description, type })
       .then((r) => r.data),
 
-  generateProject: (orgSlug, { description, environmentType, clarifications }) =>
+  generateProject: (orgSlug, { description, type, clarifications }) =>
     apiClient
       .post(`/orgs/${orgSlug}/ai/generate-project`, {
         description,
-        environmentType,
+        type,
         clarifications,
       })
       .then((r) => r.data),
 
-  applyGeneratedProject: (requestId, { projectName, environmentType, epics }) =>
+  applyGeneratedProject: (requestId, { projectName, type, epics }) =>
     apiClient
       .post(`/ai/generate-project/${requestId}/apply`, {
         projectName,
-        environmentType,
+        type,
         epics,
       })
       .then((r) => r.data),

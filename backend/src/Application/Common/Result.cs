@@ -116,8 +116,8 @@ public static class ProjectErrors
     public static readonly Error InvalidName =
         new("Project.InvalidName", "Project name must be 2-120 characters.");
 
-    public static readonly Error InvalidEnvironmentType =
-        new("Project.InvalidEnvironmentType", "Environment type must be Developer, Support, Sales, or Business.");
+    public static readonly Error InvalidType =
+        new("Project.InvalidType", "Project type must be Engineering, Sales, Support, Marketing, Operations, or Generic.");
 
     public static readonly Error InvalidAIControlMode =
         new("Project.InvalidAIControlMode", "AI control mode must be Autopilot, Suggest, AskMeFirst, or Off.");

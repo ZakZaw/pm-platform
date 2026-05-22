@@ -40,7 +40,7 @@ public class ApplyEpicGenerationCommandHandler(IAppDbContext db, ICurrentUser cu
 
         var project = await db.Projects
             .Where(p => p.Id == request.ProjectId)
-            .Select(p => new { p.Id, p.EnvironmentType })
+            .Select(p => new { p.Id, p.Type })
             .FirstOrDefaultAsync(ct);
         if (project is null)
             return Result.Failure<EpicDto>(ProjectErrors.NotFound);
@@ -51,7 +51,7 @@ public class ApplyEpicGenerationCommandHandler(IAppDbContext db, ICurrentUser cu
             Title = title,
             Description = request.Epic.Description,
             Color = request.Epic.Color,
-            EnvironmentType = project.EnvironmentType,
+            Type = project.Type,
             Status = EpicStatus.Planning,
             CreatedByAi = true,
         };
@@ -115,7 +115,7 @@ public class ApplyEpicGenerationCommandHandler(IAppDbContext db, ICurrentUser cu
         return Result.Success(new EpicDto(
             epic.Id, epic.ProjectId, epic.Title, epic.Description, epic.OwnerId,
             epic.Status.ToString(), epic.RiskFlag,
-            epic.EnvironmentType?.ToString(), epic.Color,
+            epic.Type?.ToString(), epic.Color,
             epic.CreatedAt, epic.ArchivedAt,
             TaskCount: request.Epic.Tasks?.Count ?? 0,
             TotalStoryPoints: totalPts,

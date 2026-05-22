@@ -24,7 +24,7 @@ public class GetEpicQueryHandler(IAppDbContext db)
                 e.OwnerId,
                 Status = e.Status.ToString(),
                 e.RiskFlag,
-                Env = e.EnvironmentType.HasValue ? e.EnvironmentType.Value.ToString() : null,
+                Type = e.Type.HasValue ? e.Type.Value.ToString() : null,
                 e.Color,
                 e.CreatedAt,
                 e.ArchivedAt,
@@ -41,7 +41,7 @@ public class GetEpicQueryHandler(IAppDbContext db)
 
         return Result.Success(new EpicDto(
             row.Id, row.ProjectId, row.Title, row.Description, row.OwnerId,
-            row.Status, row.RiskFlag, row.Env, row.Color,
+            row.Status, row.RiskFlag, row.Type, row.Color,
             row.CreatedAt, row.ArchivedAt,
             row.Tasks.Count, total, done));
     }

@@ -10,7 +10,7 @@ namespace Application.Features.AI.Commands;
 public record GenerateProjectPreviewCommand(
     string OrgSlug,
     string Description,
-    string EnvironmentType,
+    string Type,
     IReadOnlyList<AIClarificationAnswerDto>? Clarifications)
     : IRequest<Result<AIGenerationPreviewDto>>;
 
@@ -54,7 +54,7 @@ public class GenerateProjectPreviewCommandHandler(
             Prompt = JsonSerializer.Serialize(new
             {
                 description,
-                environmentType = request.EnvironmentType,
+                type = request.Type,
                 clarifications = clarificationInputs,
             }, JsonOpts),
             Provider = ai.ProviderName,
@@ -66,7 +66,7 @@ public class GenerateProjectPreviewCommandHandler(
         try
         {
             generated = await ai.GenerateProjectStructureAsync(
-                description, request.EnvironmentType, clarificationInputs, ct);
+                description, request.Type, clarificationInputs, ct);
         }
         catch (Exception ex)
         {
@@ -97,14 +97,14 @@ public class GenerateProjectPreviewCommandHandler(
             }
         }
 
-        var previewDto = ToPreviewDto(generated, request.EnvironmentType);
+        var previewDto = ToPreviewDto(generated, request.Type);
 
         var requestRow = new AIGenerationRequest
         {
             OrganizationId = org.Id,
             CreatedBy = userId,
             Description = description,
-            EnvironmentType = request.EnvironmentType,
+            Type = request.Type,
             ClarificationsJson = JsonSerializer.Serialize(clarificationInputs, JsonOpts),
             PreviewJson = JsonSerializer.Serialize(previewDto, JsonOpts),
             Status = "Draft",
@@ -118,12 +118,12 @@ public class GenerateProjectPreviewCommandHandler(
             ai.ProviderName,
             ai.Model,
             generated.SuggestedName,
-            request.EnvironmentType,
+            request.Type,
             previewDto.Epics));
     }
 
     internal static AIGenerationPreviewDto ToPreviewDto(
-        AIGeneratedProject project, string environmentType)
+        AIGeneratedProject project, string projectType)
     {
         var epics = project.Epics.Select(e => new AIGeneratedEpicDto(
             e.Title,
@@ -134,6 +134,6 @@ public class GenerateProjectPreviewCommandHandler(
             )).ToList()
         )).ToList();
         return new AIGenerationPreviewDto(
-            Guid.Empty, "", "", project.SuggestedName, environmentType, epics);
+            Guid.Empty, "", "", project.SuggestedName, projectType, epics);
     }
 }

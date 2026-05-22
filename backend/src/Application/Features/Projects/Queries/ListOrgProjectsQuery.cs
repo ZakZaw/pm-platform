@@ -24,7 +24,7 @@ public class ListOrgProjectsQueryHandler(IAppDbContext db)
             .OrderByDescending(p => p.CreatedAt)
             .Select(p => new ProjectSummary(
                 p.Id, p.Name, p.Slug, p.Key,
-                p.EnvironmentType.ToString(),
+                p.Type.ToString(),
                 p.Status.ToString(),
                 p.TargetDate))
             .ToListAsync(ct);

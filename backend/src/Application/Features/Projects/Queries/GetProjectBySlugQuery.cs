@@ -20,7 +20,7 @@ public class GetProjectBySlugQueryHandler(IAppDbContext db)
             .Select(p => new ProjectDto(
                 p.Id, p.OrganizationId, p.Organization!.Slug,
                 p.Name, p.Slug, p.Key,
-                p.EnvironmentType.ToString(),
+                p.Type.ToString(),
                 p.Status.ToString(),
                 p.TargetDate,
                 p.AIControlMode.ToString(),

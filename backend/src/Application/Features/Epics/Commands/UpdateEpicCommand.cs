@@ -57,7 +57,7 @@ public class UpdateEpicCommandHandler(IAppDbContext db)
         return Result.Success(new EpicDto(
             epic.Id, epic.ProjectId, epic.Title, epic.Description, epic.OwnerId,
             epic.Status.ToString(), epic.RiskFlag,
-            epic.EnvironmentType?.ToString(), epic.Color,
+            epic.Type?.ToString(), epic.Color,
             epic.CreatedAt, epic.ArchivedAt,
             tasks.Count, total, done));
     }

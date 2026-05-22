@@ -23,7 +23,7 @@ public interface IAIService
 
     Task<AIGeneratedProject> GenerateProjectStructureAsync(
         string description,
-        string environmentType,
+        string projectType,
         IReadOnlyList<AIClarificationAnswer>? clarifications,
         CancellationToken ct);
 
@@ -57,7 +57,7 @@ public interface IAIService
 
     Task<IReadOnlyList<string>> GenerateClarifyingQuestionsAsync(
         string description,
-        string environmentType,
+        string projectType,
         CancellationToken ct);
 
     Task<AIEffortEstimate> EstimateStoryPointsAsync(

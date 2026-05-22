@@ -33,7 +33,7 @@ public class EpicsController(ISender mediator) : ControllerBase
         CancellationToken ct)
     {
         var result = await mediator.Send(
-            new CreateEpicCommand(projectId, body.Title, body.Description, body.OwnerId, body.Color, body.EnvironmentType),
+            new CreateEpicCommand(projectId, body.Title, body.Description, body.OwnerId, body.Color, body.Type),
             ct);
         return result.IsSuccess
             ? CreatedAtAction(nameof(List), new { projectId }, result.Value)
@@ -79,7 +79,7 @@ public record CreateEpicBodyDto(
     string? Description,
     Guid? OwnerId,
     string? Color,
-    string? EnvironmentType);
+    string? Type);
 
 public record UpdateEpicBodyDto(
     string? Title,

@@ -390,6 +390,51 @@ public static class SalesErrors
         new("Sales.InvalidActivitySummary", "Activity summary must be 1-1000 characters.");
 }
 
+public static class OperationsErrors
+{
+    public static readonly Error WorkflowNotFound =
+        new("Operations.WorkflowNotFound", "Workflow not found.");
+
+    public static readonly Error InvalidWorkflowName =
+        new("Operations.InvalidWorkflowName", "Workflow name must be 1-200 characters.");
+
+    public static readonly Error InvalidRecurrence =
+        new("Operations.InvalidRecurrence", "Recurrence rule must be FREQ=DAILY|WEEKLY|MONTHLY with an optional INTERVAL.");
+
+    public static readonly Error InvalidTemplate =
+        new("Operations.InvalidTemplate", "Checklist template must be an array of items with non-empty titles.");
+
+    public static readonly Error RunNotFound =
+        new("Operations.RunNotFound", "Workflow run not found.");
+
+    public static readonly Error RunAlreadyTerminal =
+        new("Operations.RunAlreadyTerminal", "This run is already completed or skipped.");
+
+    public static readonly Error SkipReasonRequired =
+        new("Operations.SkipReasonRequired", "Skipping a run requires a reason.");
+
+    public static readonly Error ChecklistItemNotFound =
+        new("Operations.ChecklistItemNotFound", "Checklist item not found.");
+
+    public static readonly Error SequentialOrderViolated =
+        new("Operations.SequentialOrderViolated", "Earlier sequential items must be completed first.");
+}
+
+public static class TaskListErrors
+{
+    public static readonly Error NotFound =
+        new("TaskList.NotFound", "Task list not found.");
+
+    public static readonly Error InvalidName =
+        new("TaskList.InvalidName", "List name must be 1-120 characters.");
+
+    public static readonly Error NotInProject =
+        new("TaskList.NotInProject", "The task list does not belong to this project.");
+
+    public static readonly Error EmptyReorder =
+        new("TaskList.EmptyReorder", "Reorder requires a non-empty list of list ids.");
+}
+
 public static class MarketingErrors
 {
     public static readonly Error CampaignNotFound =

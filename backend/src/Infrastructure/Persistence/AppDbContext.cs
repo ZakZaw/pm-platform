@@ -48,6 +48,14 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Asset> Assets => Set<Asset>();
     public DbSet<MarketingTask> MarketingTasks => Set<MarketingTask>();
 
+    // Phase 1.5 Generic (F1.5-06)
+    public DbSet<TaskList> TaskLists => Set<TaskList>();
+
+    // Phase 1.5 Operations (F1.5-05)
+    public DbSet<Workflow> Workflows => Set<Workflow>();
+    public DbSet<WorkflowRun> WorkflowRuns => Set<WorkflowRun>();
+    public DbSet<ChecklistItem> ChecklistItems => Set<ChecklistItem>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Team / TeamMembership stay ignored until the team-management

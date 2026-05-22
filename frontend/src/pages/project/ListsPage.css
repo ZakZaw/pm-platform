@@ -1,0 +1,205 @@
+.lists-page__stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.lists-page__newlist {
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.lists-page__newlist-input {
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--font-size-dense);
+  padding: 0 var(--space-3);
+  height: 30px;
+  width: 220px;
+  outline: none;
+}
+
+.lists-page__newlist-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-focus);
+}
+
+.lists-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  transition: border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out);
+}
+
+.lists-page__list.is-over {
+  border-color: var(--accent-primary);
+  background: var(--bg-hover);
+}
+
+.lists-page__list--unsorted {
+  background: var(--bg-base);
+  border-style: dashed;
+}
+
+.lists-page__list-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: grab;
+  user-select: none;
+}
+
+.lists-page__list-head:active {
+  cursor: grabbing;
+}
+
+.lists-page__list-head--static {
+  cursor: default;
+}
+
+.lists-page__list-title {
+  margin: 0;
+  font-size: var(--font-size-h4);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.lists-page__list-count {
+  font-size: var(--font-size-meta);
+}
+
+.lists-page__rename-input {
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--font-size-h4);
+  font-weight: var(--weight-semibold);
+  padding: 2px var(--space-2);
+  width: 100%;
+  outline: none;
+}
+
+.lists-page__rename-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-focus);
+}
+
+.lists-page__create {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.lists-page__create-input {
+  flex: 1;
+  background: transparent;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--font-size-dense);
+  padding: 0 var(--space-3);
+  height: 30px;
+  outline: none;
+}
+
+.lists-page__create-input:focus {
+  border-color: var(--border-focus);
+  border-style: solid;
+  box-shadow: var(--shadow-focus);
+}
+
+.lists-page__droparea {
+  min-height: 24px;
+}
+
+.lists-page__placeholder {
+  margin: 0;
+  padding: var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--font-size-dense);
+  text-align: center;
+}
+
+.lists-page__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.lists-page__item {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.lists-page__item.is-interactive {
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.lists-page__item.is-interactive:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-default);
+}
+
+.lists-page__item.is-overlay {
+  background: var(--bg-surface-2);
+}
+
+.lists-page__item-title {
+  font-size: var(--font-size-dense);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lists-page__item-key {
+  font-size: var(--font-size-meta);
+}
+
+.lists-page__item-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.lists-page__item-sub {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-meta);
+}
+
+.lists-page__unassigned {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px dashed var(--border-default);
+}
+
+.lists-page__list-overlay {
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}

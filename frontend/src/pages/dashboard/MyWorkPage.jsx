@@ -19,6 +19,7 @@ import {
   StatusBadge,
   useToast,
 } from '@/components/ui';
+import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useOrgStore } from '@/store/orgStore';
 import { useProjectStore } from '@/store/projectStore';
@@ -26,6 +27,7 @@ import { usersApi } from '@/api/users.api';
 import { sprintsApi } from '@/api/sprints.api';
 import { myWorkApi } from '@/api/myWork.api';
 import { tasksApi } from '@/api/tasks.api';
+import { operationsApi } from '@/api/operations.api';
 import { TaskDetailDrawer } from '@/components/tasks/TaskDetailDrawer';
 import '@/components/kanban/KanbanCard.css';
 import '@/components/kanban/KanbanColumn.css';
@@ -53,6 +55,7 @@ export function MyWorkPage() {
   const [personalProject, setPersonalProject] = useState(null);
   const [items, setItems] = useState([]);
   const [activeSprints, setActiveSprints] = useState([]);
+  const [operationsRuns, setOperationsRuns] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -96,8 +99,12 @@ export function MyWorkPage() {
     const params = {};
     if (projectFilter !== ALL) params.projectId = projectFilter;
     if (sprintFilter !== ALL) params.sprintId = sprintFilter;
-    const data = await myWorkApi.list(params);
+    const [data, runs] = await Promise.all([
+      myWorkApi.list(params),
+      operationsApi.myRuns().catch(() => []),
+    ]);
     setItems(data);
+    setOperationsRuns(runs);
   }, [projectFilter, sprintFilter]);
 
   useEffect(() => {
@@ -222,6 +229,10 @@ export function MyWorkPage() {
       )}
       {error && <p className="mywork__placeholder">{error}</p>}
 
+      {!loading && !error && operationsRuns.length > 0 && (
+        <OperationsRunsBanner runs={operationsRuns} />
+      )}
+
       {!loading && !error && (
         <div className="mywork__board-wrap">
           <DndContext
@@ -253,6 +264,47 @@ export function MyWorkPage() {
         onChanged={() => refresh().catch(() => {})}
       />
     </div>
+  );
+}
+
+// F1.5-05: Surfaces operations runs the user owns so overdue runbooks
+// don't go unnoticed on the MyWork page (per the AC). Each run links to
+// its detail page in the owning project.
+function OperationsRunsBanner({ runs }) {
+  const overdue = runs.filter((r) => r.isOverdue).length;
+  return (
+    <section className="mywork__ops">
+      <header className="hstack mywork__ops-head">
+        <span className="subsection-eyebrow">Runbooks</span>
+        {overdue > 0 ? (
+          <Badge tone="danger">{overdue} overdue</Badge>
+        ) : (
+          <Badge tone="neutral">{runs.length} due this week</Badge>
+        )}
+      </header>
+      <ul className="mywork__ops-list">
+        {runs.map((r) => {
+          const orgSegment = r.orgSlug ?? 'personal';
+          const to = `/${orgSegment}/projects/${r.projectSlug}/runs/${r.id}`;
+          const when = new Date(r.scheduledFor).toLocaleString(undefined, {
+            month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+          });
+          return (
+            <li key={r.id} className={['mywork__ops-row', r.isOverdue ? 'is-overdue' : ''].filter(Boolean).join(' ')}>
+              <Link to={to} className="mywork__ops-link">
+                <span className="mywork__ops-title">{r.workflowName}</span>
+                <span className="muted mywork__ops-meta">
+                  {r.projectName} · scheduled {when}
+                </span>
+              </Link>
+              <span className="mono dim">
+                {r.completedItemCount}/{r.itemCount}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }
 

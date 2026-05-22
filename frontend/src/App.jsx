@@ -30,6 +30,9 @@ import { QueuePage } from '@/pages/project/QueuePage';
 import { CustomersPage } from '@/pages/project/CustomersPage';
 import { CampaignsPage } from '@/pages/project/CampaignsPage';
 import { ContentCalendarPage } from '@/pages/project/ContentCalendarPage';
+import { ListsPage } from '@/pages/project/ListsPage';
+import { RunbooksPage } from '@/pages/project/RunbooksPage';
+import { RunDetailPage } from '@/pages/project/RunDetailPage';
 import { AppShell } from '@/components/layout/AppShell';
 import { ToastProvider } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
@@ -142,6 +145,18 @@ function App() {
             <Route
               path="/:slug/projects/:projectSlug/calendar"
               element={<Keyed paramKey="projectSlug"><ContentCalendarPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/lists"
+              element={<Keyed paramKey="projectSlug"><ListsPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/runbooks"
+              element={<Keyed paramKey="projectSlug"><RunbooksPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/runs/:runId"
+              element={<Keyed paramKey="runId"><RunDetailPage /></Keyed>}
             />
             <Route
               path="/:slug/projects/:projectSlug/settings/workflow"

@@ -17,19 +17,19 @@ Read this before writing any code, creating any file, or making any architectura
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Backend | .NET 10 Web API (Clean Architecture) |
-| Frontend | React 19 + Vite |
-| Database | PostgreSQL 16 |
-| ORM | Entity Framework Core 9 |
-| Containerisation | Docker + Docker Compose |
-| CSS | CSS custom properties (design tokens) — **no Tailwind** |
-| Auth | JWT (access + refresh tokens) |
-| Real-time | SignalR (WebSocket) |
-| AI | Google Gemini API for dev (free tier), Anthropic Claude for production. Called from backend only. |
-| Video | LiveKit or Daily.co (managed WebRTC — do not build raw WebRTC) |
-| Testing | xUnit (.NET), Vitest (React) |
+| Layer            | Technology                                                                                        |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| Backend          | .NET 10 Web API (Clean Architecture)                                                              |
+| Frontend         | React 19 + Vite                                                                                   |
+| Database         | PostgreSQL 16                                                                                     |
+| ORM              | Entity Framework Core 9                                                                           |
+| Containerisation | Docker + Docker Compose                                                                           |
+| CSS              | CSS custom properties (design tokens) — **no Tailwind**                                           |
+| Auth             | JWT (access + refresh tokens)                                                                     |
+| Real-time        | SignalR (WebSocket)                                                                               |
+| AI               | Google Gemini API for dev (free tier), Anthropic Claude for production. Called from backend only. |
+| Video            | LiveKit or Daily.co (managed WebRTC — do not build raw WebRTC)                                    |
+| Testing          | xUnit (.NET), Vitest (React)                                                                      |
 
 ---
 
@@ -150,97 +150,115 @@ The UI is built on **Stratos**, a token-based design system. Design-time referen
 
 The single source of truth for visual values. Token families:
 
-| Family | Examples |
-|---|---|
-| Surfaces | `--bg-app`, `--bg-base`, `--bg-surface-1/2/3`, `--bg-hover`, `--bg-selected`, `--bg-overlay` |
-| Borders | `--border-subtle`, `--border-default`, `--border-strong`, `--border-focus` |
-| Text | `--text-primary`, `--text-secondary`, `--text-tertiary`, `--text-muted`, `--text-disabled`, `--text-on-accent`, `--text-inverse` |
-| Accent | `--accent-primary`, `--accent-primary-hover`, `--accent-primary-active`, `--accent-primary-muted`, `--accent-primary-soft` |
-| Color scales | `--indigo-50..950`, `--blue-50..950`, `--sky-50..900`, `--slate-50..950` |
-| Status | `--status-{success,warning,danger,info,neutral,purple}` + `-bg` + `-border` |
-| Priority | `--prio-urgent`, `--prio-high`, `--prio-med`, `--prio-low` |
-| AI surface | `--ai-violet`, `--ai-cyan`, `--ai-pink`, `--ai-bg`, `--ai-border`, `--ai-glow` |
-| Spacing | `--space-1..16` (4/8/12/16/20/24/32/40/48/64 px) |
-| Radius | `--radius-xs/sm/md/lg/xl/2xl`, `--radius-pill` |
-| Shadows | `--shadow-xs/sm/md/lg/xl`, `--shadow-focus`, `--shadow-focus-danger` |
-| Type sizes | `--font-size-display/h1/h2/h3/h4/body/dense/meta` (30/24/20/17/15/14/13/11) |
-| Type | `--font-ui`, `--font-mono`, `--weight-{regular,medium,semibold,bold}`, `--leading-{tight,snug,norm}` |
-| Motion | `--dur-fast` (120 ms), `--dur-med` (220 ms), `--ease-out` |
+| Family       | Examples                                                                                                                         |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Surfaces     | `--bg-app`, `--bg-base`, `--bg-surface-1/2/3`, `--bg-hover`, `--bg-selected`, `--bg-overlay`                                     |
+| Borders      | `--border-subtle`, `--border-default`, `--border-strong`, `--border-focus`                                                       |
+| Text         | `--text-primary`, `--text-secondary`, `--text-tertiary`, `--text-muted`, `--text-disabled`, `--text-on-accent`, `--text-inverse` |
+| Accent       | `--accent-primary`, `--accent-primary-hover`, `--accent-primary-active`, `--accent-primary-muted`, `--accent-primary-soft`       |
+| Color scales | `--indigo-50..950`, `--blue-50..950`, `--sky-50..900`, `--slate-50..950`                                                         |
+| Status       | `--status-{success,warning,danger,info,neutral,purple}` + `-bg` + `-border`                                                      |
+| Priority     | `--prio-urgent`, `--prio-high`, `--prio-med`, `--prio-low`                                                                       |
+| AI surface   | `--ai-violet`, `--ai-cyan`, `--ai-pink`, `--ai-bg`, `--ai-border`, `--ai-glow`                                                   |
+| Spacing      | `--space-1..16` (4/8/12/16/20/24/32/40/48/64 px)                                                                                 |
+| Radius       | `--radius-xs/sm/md/lg/xl/2xl`, `--radius-pill`                                                                                   |
+| Shadows      | `--shadow-xs/sm/md/lg/xl`, `--shadow-focus`, `--shadow-focus-danger`                                                             |
+| Type sizes   | `--font-size-display/h1/h2/h3/h4/body/dense/meta` (30/24/20/17/15/14/13/11)                                                      |
+| Type         | `--font-ui`, `--font-mono`, `--weight-{regular,medium,semibold,bold}`, `--leading-{tight,snug,norm}`                             |
+| Motion       | `--dur-fast` (120 ms), `--dur-med` (220 ms), `--ease-out`                                                                        |
 
 ### Component CSS Pattern
 
 Each component lives in its own folder under `frontend/src/components/ui/<Name>/` with `<Name>.jsx` + `<Name>.css`. Classes are flat. Example:
 
 ```css
-.btn { /* base */ }
-.btn-sm { height: 24px; padding: 0 8px; font-size: var(--font-size-meta); }
-.btn-md { height: 30px; padding: 0 12px; }
-.btn-lg { height: 36px; padding: 0 16px; }
+.btn {
+  /* base */
+}
+.btn-sm {
+  height: 24px;
+  padding: 0 8px;
+  font-size: var(--font-size-meta);
+}
+.btn-md {
+  height: 30px;
+  padding: 0 12px;
+}
+.btn-lg {
+  height: 36px;
+  padding: 0 16px;
+}
 
 .btn-primary {
   background: var(--accent-primary);
   color: var(--text-on-accent);
-  box-shadow: var(--shadow-xs), inset 0 1px 0 rgba(255,255,255,0.12);
+  box-shadow:
+    var(--shadow-xs),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
-.btn-primary:hover:not(:disabled) { background: var(--accent-primary-hover); }
-.btn-primary:active:not(:disabled) { background: var(--accent-primary-active); }
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-primary-hover);
+}
+.btn-primary:active:not(:disabled) {
+  background: var(--accent-primary-active);
+}
 ```
 
 ### Primitives & component API
 
 These are the canonical primitives. Build new ones in `frontend/src/components/ui/` and export them from `index.js` before using anywhere else.
 
-| Primitive | Variants / props | Status |
-|---|---|---|
-| `Button` | `variant`: primary, secondary, ghost, danger, ai · `size`: sm, md, lg · `block`, `type`, `disabled` | ✅ |
-| `Input` | `label`, `error`, `help`, all native props | ✅ |
-| `Select` | `label`, `error`, `help`, `options` or children | ✅ |
-| `Card` | `variant`: default, elevated, ai · `title`, `subtitle` | ✅ |
-| `Avatar` | `name`, `src`, `size`: xs/sm/md/lg/xl · `color`: 1–8 · `status`: online/busy/away/offline | ✅ |
-| `Badge` | `tone`: neutral/info/purple/warning/danger/success · `dot`, children | ✅ |
-| `Priority` | `level`: urgent/high/med/low (or Urgent/High/Medium/Low) | ✅ |
-| `StatusBadge` | `status`: Backlog/ToDo/InProgress/InReview/Blocked/Done/WontDo | ✅ |
-| `Avatar` | already shown — also has `Avatar` palette `av-1..8` | ✅ |
-| `AvatarStack` | `people`, `max`, `size` — overlapped avatars with `+N` overflow | ✅ |
-| `AIChip` | `label`, `variant`: gradient / soft | ✅ |
-| `Sparkline` | `points`, `width`, `height`, `ideal`, `stroke` — compact line chart | ✅ |
-| `Chip` | small selectable pill (used for filters) | ✅ |
-| `Modal` | `.modal-backdrop`, `.modal-header/body/footer` | ✅ |
-| `Dropdown` | uses `.menu` / `.menu-item` / `.menu-section` / `.menu-divider` from `stratos.css` | ✅ |
-| `Tooltip` | `.tooltip` with arrow | ✅ |
-| `Toast` | `.toast.toast-{success,danger,info}` · `useToast()` hook | ✅ |
-| `AssigneePicker` | searchable picker bound to org membership | ✅ |
-| `Spinner` | inline loading indicator | ✅ |
-| `Table` | header + rows wrapper | ✅ |
-| `Tabs` / `Tab` | flat-class `.tabs > .tab.is-active` lives in `stratos.css`; wrap in a primitive when reused | ⏳ |
-| `Icon` | `name` (kebab-case), `size`, `color`, `strokeWidth` — explicit lucide-react REGISTRY for tree-shaking. Add to the registry when you use a new icon. | ✅ |
-| **Chart widgets** (under `components/charts/`) — `BurndownChart`, `VelocityChart`, `HealthGauge`, `WorkloadHeatmap` | All accept token-styled props and render token-colored SVG; reused by the project Dashboard | ✅ |
+| Primitive                                                                                                           | Variants / props                                                                                                                                    | Status |
+| ------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `Button`                                                                                                            | `variant`: primary, secondary, ghost, danger, ai · `size`: sm, md, lg · `block`, `type`, `disabled`                                                 | ✅     |
+| `Input`                                                                                                             | `label`, `error`, `help`, all native props                                                                                                          | ✅     |
+| `Select`                                                                                                            | `label`, `error`, `help`, `options` or children                                                                                                     | ✅     |
+| `Card`                                                                                                              | `variant`: default, elevated, ai · `title`, `subtitle`                                                                                              | ✅     |
+| `Avatar`                                                                                                            | `name`, `src`, `size`: xs/sm/md/lg/xl · `color`: 1–8 · `status`: online/busy/away/offline                                                           | ✅     |
+| `Badge`                                                                                                             | `tone`: neutral/info/purple/warning/danger/success · `dot`, children                                                                                | ✅     |
+| `Priority`                                                                                                          | `level`: urgent/high/med/low (or Urgent/High/Medium/Low)                                                                                            | ✅     |
+| `StatusBadge`                                                                                                       | `status`: Backlog/ToDo/InProgress/InReview/Blocked/Done/WontDo                                                                                      | ✅     |
+| `Avatar`                                                                                                            | already shown — also has `Avatar` palette `av-1..8`                                                                                                 | ✅     |
+| `AvatarStack`                                                                                                       | `people`, `max`, `size` — overlapped avatars with `+N` overflow                                                                                     | ✅     |
+| `AIChip`                                                                                                            | `label`, `variant`: gradient / soft                                                                                                                 | ✅     |
+| `Sparkline`                                                                                                         | `points`, `width`, `height`, `ideal`, `stroke` — compact line chart                                                                                 | ✅     |
+| `Chip`                                                                                                              | small selectable pill (used for filters)                                                                                                            | ✅     |
+| `Modal`                                                                                                             | `.modal-backdrop`, `.modal-header/body/footer`                                                                                                      | ✅     |
+| `Dropdown`                                                                                                          | uses `.menu` / `.menu-item` / `.menu-section` / `.menu-divider` from `stratos.css`                                                                  | ✅     |
+| `Tooltip`                                                                                                           | `.tooltip` with arrow                                                                                                                               | ✅     |
+| `Toast`                                                                                                             | `.toast.toast-{success,danger,info}` · `useToast()` hook                                                                                            | ✅     |
+| `AssigneePicker`                                                                                                    | searchable picker bound to org membership                                                                                                           | ✅     |
+| `Spinner`                                                                                                           | inline loading indicator                                                                                                                            | ✅     |
+| `Table`                                                                                                             | header + rows wrapper                                                                                                                               | ✅     |
+| `Tabs` / `Tab`                                                                                                      | flat-class `.tabs > .tab.is-active` lives in `stratos.css`; wrap in a primitive when reused                                                         | ⏳     |
+| `Icon`                                                                                                              | `name` (kebab-case), `size`, `color`, `strokeWidth` — explicit lucide-react REGISTRY for tree-shaking. Add to the registry when you use a new icon. | ✅     |
+| **Chart widgets** (under `components/charts/`) — `BurndownChart`, `VelocityChart`, `HealthGauge`, `WorkloadHeatmap` | All accept token-styled props and render token-colored SVG; reused by the project Dashboard                                                         | ✅     |
 
 ```js
 // components/ui/index.js
-export { Button } from './Button/Button';
-export { Input } from './Input/Input';
-export { Select } from './Select/Select';
-export { Card } from './Card/Card';
-export { Avatar } from './Avatar/Avatar';
+export { Button } from "./Button/Button";
+export { Input } from "./Input/Input";
+export { Select } from "./Select/Select";
+export { Card } from "./Card/Card";
+export { Avatar } from "./Avatar/Avatar";
 // ... new primitives added here as they're built
 
 // Usage anywhere in the app:
-import { Button, Card, Avatar } from '@/components/ui';
+import { Button, Card, Avatar } from "@/components/ui";
 ```
 
 ### App frame & shared layout classes
 
 The app shell uses Stratos layout classes directly (no component wrapper required). All of them live in `frontend/src/styles/stratos.css` — **reuse, don't recreate.** When you need a new pattern, search `/Design Files/components.css` first; only invent a class when nothing matches.
 
-| Family | Classes | Notes |
-|---|---|---|
-| Shell grid | `.app` (`grid-template-rows: 44px 1fr` × `grid-template-columns: 220px 1fr`) · `.app.is-collapsed` (56px sidebar) · `.app-sidebar` (spans both rows) · `.app-topbar` · `.app-main` + `.app-main__scroll` | The shell is grid-based; sidebar spans both rows. |
-| Sidebar | `.org` + `.org-mark` / `.org-name` / `.org-plan` · `.side-section` · `.side-item` / `.side-item.is-active` · `.side-item__label` / `.side-item__swatch` / `.count` / `.pip` · `.side-footer` + `.side-footer__name` / `.side-footer__email` | Sidebar collapses to a 56px icon rail via `.app.is-collapsed`. |
-| Topbar | `.crumb` + `.crumb-link` / `.sep` / `.here` · `.search-mini` / `.input-search` · `.icon-btn` / `.icon-btn-sm` + `.indicator` · `.topbar-spacer` / `.topbar-actions` · `.divider-y` · `.kbd` | Breadcrumb is derived from the URL; `Topbar.jsx` owns the mapping. |
+| Family      | Classes                                                                                                                                                                                                                                                      | Notes                                                                                                                                                                               |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shell grid  | `.app` (`grid-template-rows: 44px 1fr` × `grid-template-columns: 220px 1fr`) · `.app.is-collapsed` (56px sidebar) · `.app-sidebar` (spans both rows) · `.app-topbar` · `.app-main` + `.app-main__scroll`                                                     | The shell is grid-based; sidebar spans both rows.                                                                                                                                   |
+| Sidebar     | `.org` + `.org-mark` / `.org-name` / `.org-plan` · `.side-section` · `.side-item` / `.side-item.is-active` · `.side-item__label` / `.side-item__swatch` / `.count` / `.pip` · `.side-footer` + `.side-footer__name` / `.side-footer__email`                  | Sidebar collapses to a 56px icon rail via `.app.is-collapsed`.                                                                                                                      |
+| Topbar      | `.crumb` + `.crumb-link` / `.sep` / `.here` · `.search-mini` / `.input-search` · `.icon-btn` / `.icon-btn-sm` + `.indicator` · `.topbar-spacer` / `.topbar-actions` · `.divider-y` · `.kbd`                                                                  | Breadcrumb is derived from the URL; `Topbar.jsx` owns the mapping.                                                                                                                  |
 | Page chrome | `.page-header` + `.page-title` / `.page-meta` · `.page` (orphan-page outer wrapper) · `.page-narrow` / `.page-wide` (centered fixed-width body) · `.subsection` · `.subsection-eyebrow` (uppercase 12px tertiary label, used above each task-drawer section) | KPI tiles use `.kpi-label` + a large numeric span; see `BoardPage.css`. Orphan pages (no `/Design Files/` mockup) use `.page` on their root to inherit the standard padding rhythm. |
-| Overlays | `.menu` + `.menu-section` / `.menu-item` / `.menu-item.is-selected` / `.menu-item.is-danger` / `.menu-divider` · `.tabs` + `.tab` / `.tab.is-active` / `.tab .count` · `.card-ai` (gradient-border AI surface) | The Dropdown primitive renders `.menu`; build a `Tabs` primitive when reused. |
-| Utility | `.hstack` / `.vstack` / `.grow` / `.mono` / `.truncate` / `.muted` / `.dim` · `.grid-2` / `.grid-3` / `.grid-4` · `.spark` · `.prio` (+ `.prio-urgent/high/med/low`) · `.avatar-stack` | Inline flex helpers — prefer these over per-component layout CSS for one-off rows/stacks. |
+| Overlays    | `.menu` + `.menu-section` / `.menu-item` / `.menu-item.is-selected` / `.menu-item.is-danger` / `.menu-divider` · `.tabs` + `.tab` / `.tab.is-active` / `.tab .count` · `.card-ai` (gradient-border AI surface)                                               | The Dropdown primitive renders `.menu`; build a `Tabs` primitive when reused.                                                                                                       |
+| Utility     | `.hstack` / `.vstack` / `.grow` / `.mono` / `.truncate` / `.muted` / `.dim` · `.grid-2` / `.grid-3` / `.grid-4` · `.spark` · `.prio` (+ `.prio-urgent/high/med/low`) · `.avatar-stack`                                                                       | Inline flex helpers — prefer these over per-component layout CSS for one-off rows/stacks.                                                                                           |
 
 The four built-out Phase 1 screens use these classes throughout — when in doubt, open `AppShell.jsx`, `BoardPage.jsx`, `TaskDetail.jsx`, or `AIGenerationWizard.jsx` and copy the structure.
 
@@ -308,16 +326,19 @@ Api/
 
 **Task status transitions** are unrestricted as of 2026-05-18. Any
 from→to pair is allowed. `TaskStatusTransition.EnsureValid` only enforces:
+
 - No-op transitions (`from == to`) throw `Task.NoOpTransition`.
 - Moving to `Blocked` or `WontDo` requires a non-empty reason
   (`Task.ReasonRequired`) — kept as an audit signal, not a transition gate.
 
 **Roles:**
+
 - Org-level: Owner / Admin / Member / Guest
 - Project-level: PM / Team Lead / Contributor / Viewer
 - A user has BOTH independently. Org role doesn't override project role.
 
 **AI Control Modes** (per project):
+
 - `Autopilot` — AI applies low-impact changes silently (always audit-logged)
 - `Suggest` — AI drafts, user reviews cards (default)
 - `AskMeFirst` — AI waits for explicit approval
@@ -335,6 +356,7 @@ AI calls are made **only from the backend** (`Infrastructure/Services/AIService.
 The Application layer defines an `IAIService` interface. Only the Infrastructure implementation differs between dev and prod — nothing else in the codebase changes when you switch providers.
 
 Key AI features (see `ROADMAP.md` for priority):
+
 - Project generation from description → epics, tasks (with acceptance criteria as subtasks)
 - Effort estimation with confidence scores
 - Sprint retrospective generation
@@ -351,6 +373,7 @@ All AI write actions must be logged in `AIAuditLog` with: trigger, before-state,
 SignalR hub at `/hubs/project`. Clients subscribe to their project rooms.
 
 Events pushed to clients:
+
 - `TaskUpdated` — any field change
 - `TaskStatusChanged` — with new status and who changed it
 - `SprintUpdated`
@@ -365,6 +388,7 @@ Events pushed to clients:
 See `.env.example`. Never commit real secrets.
 
 Key variables:
+
 - `DATABASE_URL` — PostgreSQL connection string
 - `JWT_SECRET` — min 256-bit random key
 - `ANTHROPIC_API_KEY` — production only

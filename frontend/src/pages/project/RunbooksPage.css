@@ -1,0 +1,53 @@
+.runbooks-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.runbook-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-4);
+}
+
+.runbook-card__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.runbook-card__title {
+  margin: 0;
+  font-size: var(--font-size-h3);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.runbook-card__desc {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-dense);
+}
+
+.runbook-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  color: var(--text-tertiary);
+  font-size: var(--font-size-meta);
+}
+
+.runbook-card__meta strong {
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+  margin-right: var(--space-1);
+}
+
+.runbook-card__actions {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}

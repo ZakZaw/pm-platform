@@ -3,8 +3,10 @@ using Domain.Enums;
 
 namespace Infrastructure.Services.ProjectTypes;
 
-// F1.5-06 wires up TaskList grouping. Generic projects reuse existing
-// Task + Subtask entities so the schema lift is minimal.
+// F1.5-06: Generic projects reuse the existing Task + Subtask entities
+// and add a lightweight TaskList grouping (see Domain.Entities.TaskList).
+// No seeding needed — a new project starts empty and the user creates
+// lists as they go.
 public class GenericProjectTypeProvider : IProjectTypeProvider
 {
     public ProjectType Type => ProjectType.Generic;

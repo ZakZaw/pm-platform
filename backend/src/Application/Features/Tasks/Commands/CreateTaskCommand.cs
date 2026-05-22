@@ -19,7 +19,8 @@ public record CreateTaskCommand(
     Guid? AssigneeId,
     Guid? ReviewerId,
     DateTime? DueDate,
-    string[]? AcceptanceCriteria) : IRequest<Result<TaskDto>>;
+    string[]? AcceptanceCriteria,
+    Guid? TaskListId = null) : IRequest<Result<TaskDto>>;
 
 public class CreateTaskCommandHandler(IAppDbContext db, ICurrentUser currentUser)
     : IRequestHandler<CreateTaskCommand, Result<TaskDto>>
@@ -67,6 +68,18 @@ public class CreateTaskCommandHandler(IAppDbContext db, ICurrentUser currentUser
                 return Result.Failure<TaskDto>(TaskErrors.SprintNotInProject);
         }
 
+        if (request.TaskListId is { } listId)
+        {
+            var listProjectId = await db.TaskLists
+                .Where(l => l.Id == listId)
+                .Select(l => (Guid?)l.ProjectId)
+                .FirstOrDefaultAsync(ct);
+            if (listProjectId is null)
+                return Result.Failure<TaskDto>(TaskListErrors.NotFound);
+            if (listProjectId != project.Id)
+                return Result.Failure<TaskDto>(TaskListErrors.NotInProject);
+        }
+
         var assigneeId = request.AssigneeId;
         if (project.IsPersonal)
         {
@@ -97,6 +110,7 @@ public class CreateTaskCommandHandler(IAppDbContext db, ICurrentUser currentUser
             KeyNum = nextKeyNum,
             EpicId = request.EpicId,
             SprintId = request.SprintId,
+            TaskListId = request.TaskListId,
             Title = title,
             Description = request.Description,
             StoryPoints = request.StoryPoints,

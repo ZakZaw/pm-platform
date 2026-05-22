@@ -37,5 +37,10 @@ public interface IAppDbContext
     DbSet<Ticket> Tickets { get; }
     DbSet<TicketReply> TicketReplies { get; }
 
+    // Phase 1.5 Marketing (F1.5-04)
+    DbSet<Campaign> Campaigns { get; }
+    DbSet<Asset> Assets { get; }
+    DbSet<MarketingTask> MarketingTasks { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

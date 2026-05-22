@@ -43,6 +43,11 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public DbSet<TicketReply> TicketReplies => Set<TicketReply>();
 
+    // Phase 1.5 Marketing (F1.5-04)
+    public DbSet<Campaign> Campaigns => Set<Campaign>();
+    public DbSet<Asset> Assets => Set<Asset>();
+    public DbSet<MarketingTask> MarketingTasks => Set<MarketingTask>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Team / TeamMembership stay ignored until the team-management

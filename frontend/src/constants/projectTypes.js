@@ -8,6 +8,7 @@
 import {
   BarChart3,
   Briefcase,
+  CalendarDays,
   ClipboardList,
   Code2,
   Contact,
@@ -124,7 +125,54 @@ export function navItemsForType(typeId) {
     ];
   }
 
+  if (typeId === 'Marketing') {
+    return [
+      { key: 'campaigns', label: 'Campaigns', icon: Megaphone, path: 'campaigns' },
+      { key: 'calendar', label: 'Calendar', icon: CalendarDays, path: 'calendar' },
+      ...universal,
+      ...settings,
+    ];
+  }
+
   // Other types: minimal nav until their per-type pages land. The work-
-  // model pages slot in here once F1.5-04..F1.5-06 ship.
+  // model pages slot in here once F1.5-05..F1.5-06 ship.
   return [...universal, ...settings];
 }
+
+// Returns the design tokens for a Marketing channel chip's text +
+// background. Keeps channel theming in one place so the calendar,
+// drawer, and campaign list all match.
+export function channelTokens(channel) {
+  const k = String(channel ?? '').toLowerCase();
+  const map = {
+    email: { fg: 'var(--mkt-channel-email)', bg: 'var(--mkt-channel-email-bg)' },
+    social: { fg: 'var(--mkt-channel-social)', bg: 'var(--mkt-channel-social-bg)' },
+    blog: { fg: 'var(--mkt-channel-blog)', bg: 'var(--mkt-channel-blog-bg)' },
+    paid: { fg: 'var(--mkt-channel-paid)', bg: 'var(--mkt-channel-paid-bg)' },
+    event: { fg: 'var(--mkt-channel-event)', bg: 'var(--mkt-channel-event-bg)' },
+  };
+  return map[k] ?? { fg: 'var(--mkt-channel-other)', bg: 'var(--mkt-channel-other-bg)' };
+}
+
+export const MARKETING_CHANNELS = ['Email', 'Social', 'Blog', 'Paid', 'Event', 'Other'];
+
+export const ASSET_TYPES = ['Email', 'SocialPost', 'BlogPost', 'Ad', 'Image', 'Video', 'LandingPage', 'Other'];
+
+export const ASSET_STATUSES = ['Draft', 'Review', 'Approved', 'Published', 'Archived'];
+
+export const ASSET_STATUS_TONE = {
+  Draft: 'neutral',
+  Review: 'warning',
+  Approved: 'info',
+  Published: 'success',
+  Archived: 'neutral',
+};
+
+export const CAMPAIGN_STATUSES = ['Planning', 'Active', 'Completed', 'Archived'];
+
+export const CAMPAIGN_STATUS_TONE = {
+  Planning: 'neutral',
+  Active: 'info',
+  Completed: 'success',
+  Archived: 'neutral',
+};

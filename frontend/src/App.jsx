@@ -28,6 +28,8 @@ import { AccountsPage } from '@/pages/project/AccountsPage';
 import { LeadsPage } from '@/pages/project/LeadsPage';
 import { QueuePage } from '@/pages/project/QueuePage';
 import { CustomersPage } from '@/pages/project/CustomersPage';
+import { CampaignsPage } from '@/pages/project/CampaignsPage';
+import { ContentCalendarPage } from '@/pages/project/ContentCalendarPage';
 import { AppShell } from '@/components/layout/AppShell';
 import { ToastProvider } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
@@ -132,6 +134,14 @@ function App() {
             <Route
               path="/:slug/projects/:projectSlug/customers"
               element={<Keyed paramKey="projectSlug"><CustomersPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/campaigns"
+              element={<Keyed paramKey="projectSlug"><CampaignsPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/calendar"
+              element={<Keyed paramKey="projectSlug"><ContentCalendarPage /></Keyed>}
             />
             <Route
               path="/:slug/projects/:projectSlug/settings/workflow"

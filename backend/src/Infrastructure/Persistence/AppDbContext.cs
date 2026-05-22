@@ -30,6 +30,13 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<AIGenerationRequest> AIGenerationRequests => Set<AIGenerationRequest>();
     public DbSet<AISuggestion> AISuggestions => Set<AISuggestion>();
 
+    // Phase 1.5 Sales (F1.5-02)
+    public DbSet<DealStage> DealStages => Set<DealStage>();
+    public DbSet<Account> Accounts => Set<Account>();
+    public DbSet<Lead> Leads => Set<Lead>();
+    public DbSet<Deal> Deals => Set<Deal>();
+    public DbSet<Activity> Activities => Set<Activity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Team / TeamMembership stay ignored until the team-management

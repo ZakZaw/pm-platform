@@ -2,6 +2,18 @@ using Domain.Enums;
 
 namespace Application.Interfaces;
 
+public interface IProjectTypeSeeder
+{
+    // Type-specific seeding applied right after a new project is added to
+    // the context (before SaveChanges). Engineering is a no-op; Sales
+    // seeds default deal stages; Support will seed default queues; etc.
+    Task SeedNewProjectAsync(
+        IAppDbContext db,
+        Guid projectId,
+        Guid createdByUserId,
+        CancellationToken ct);
+}
+
 /// <summary>
 /// Per-type configuration registered in one place rather than branched
 /// across the app. Each <see cref="Domain.Enums.ProjectType"/> registers
@@ -13,7 +25,7 @@ namespace Application.Interfaces;
 /// dashboard widgets) are filled in by F1.5-02..F1.5-06 as each type's
 /// work model lands.
 /// </summary>
-public interface IProjectTypeProvider
+public interface IProjectTypeProvider : IProjectTypeSeeder
 {
     ProjectType Type { get; }
 

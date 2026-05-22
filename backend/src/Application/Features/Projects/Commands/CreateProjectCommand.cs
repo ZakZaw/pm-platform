@@ -14,7 +14,10 @@ public record CreateProjectCommand(
     string? AIControlMode,
     DateTime? TargetDate) : IRequest<Result<ProjectDto>>;
 
-public class CreateProjectCommandHandler(IAppDbContext db, ICurrentUser currentUser)
+public class CreateProjectCommandHandler(
+    IAppDbContext db,
+    ICurrentUser currentUser,
+    IProjectTypeRegistry projectTypes)
     : IRequestHandler<CreateProjectCommand, Result<ProjectDto>>
 {
     public async Task<Result<ProjectDto>> Handle(CreateProjectCommand request, CancellationToken ct)
@@ -66,6 +69,9 @@ public class CreateProjectCommandHandler(IAppDbContext db, ICurrentUser currentU
             UserId = userId,
             Role = ProjectRole.PM
         });
+
+        // Type-specific seeding (Sales → default pipeline stages, etc.).
+        await projectTypes.Get(projectType).SeedNewProjectAsync(db, project.Id, userId, ct);
 
         await db.SaveChangesAsync(ct);
 

@@ -7,10 +7,13 @@
 
 import {
   BarChart3,
+  Briefcase,
   ClipboardList,
   Code2,
+  Contact,
   FileText,
   FolderKanban,
+  GitPullRequest,
   Layers,
   LifeBuoy,
   Megaphone,
@@ -100,7 +103,17 @@ export function navItemsForType(typeId) {
     ];
   }
 
+  if (typeId === 'Sales') {
+    return [
+      { key: 'pipeline', label: 'Pipeline', icon: GitPullRequest, path: 'pipeline' },
+      { key: 'accounts', label: 'Accounts', icon: Briefcase, path: 'accounts' },
+      { key: 'leads', label: 'Leads', icon: Contact, path: 'leads' },
+      ...universal,
+      ...settings,
+    ];
+  }
+
   // Other types: minimal nav until their per-type pages land. The work-
-  // model pages slot in here once F1.5-02..F1.5-06 ship.
+  // model pages slot in here once F1.5-03..F1.5-06 ship.
   return [...universal, ...settings];
 }

@@ -390,6 +390,63 @@ public static class SalesErrors
         new("Sales.InvalidActivitySummary", "Activity summary must be 1-1000 characters.");
 }
 
+public static class MarketingErrors
+{
+    public static readonly Error CampaignNotFound =
+        new("Marketing.CampaignNotFound", "Campaign not found.");
+
+    public static readonly Error InvalidCampaignName =
+        new("Marketing.InvalidCampaignName", "Campaign name must be 1-200 characters.");
+
+    public static readonly Error InvalidChannel =
+        new("Marketing.InvalidChannel", "Channel must be Email, Social, Blog, Paid, Event, or Other.");
+
+    public static readonly Error InvalidCampaignStatus =
+        new("Marketing.InvalidCampaignStatus", "Campaign status must be Planning, Active, Completed, or Archived.");
+
+    public static readonly Error InvalidBudget =
+        new("Marketing.InvalidBudget", "Budget amount must be 0 or greater.");
+
+    public static readonly Error InvalidCurrency =
+        new("Marketing.InvalidCurrency", "Currency must be a 3-letter ISO code (e.g. USD).");
+
+    public static readonly Error InvalidDateRange =
+        new("Marketing.InvalidDateRange", "Campaign end date must be on or after start date.");
+
+    public static readonly Error AssetNotFound =
+        new("Marketing.AssetNotFound", "Asset not found.");
+
+    public static readonly Error InvalidAssetTitle =
+        new("Marketing.InvalidAssetTitle", "Asset title must be 1-200 characters.");
+
+    public static readonly Error InvalidAssetType =
+        new("Marketing.InvalidAssetType", "Asset type must be Email, SocialPost, BlogPost, Ad, Image, Video, LandingPage, or Other.");
+
+    public static readonly Error InvalidAssetStatus =
+        new("Marketing.InvalidAssetStatus", "Asset status must be Draft, Review, Approved, Published, or Archived.");
+
+    public static readonly Error InvalidAssetTransition =
+        new("Marketing.InvalidAssetTransition", "Cannot transition the asset between those two statuses.");
+
+    public static readonly Error RejectionReasonRequired =
+        new("Marketing.RejectionReasonRequired", "Rejecting an asset from Review back to Draft requires a reason.");
+
+    public static readonly Error CampaignNotInProject =
+        new("Marketing.CampaignNotInProject", "The campaign does not belong to this project.");
+
+    public static readonly Error AssetNotInCampaign =
+        new("Marketing.AssetNotInCampaign", "The asset does not belong to this campaign.");
+
+    public static readonly Error MarketingTaskNotFound =
+        new("Marketing.TaskNotFound", "Marketing task not found.");
+
+    public static readonly Error InvalidTaskTitle =
+        new("Marketing.InvalidTaskTitle", "Task title must be 1-200 characters.");
+
+    public static readonly Error InvalidTaskStatus =
+        new("Marketing.InvalidTaskStatus", "Task status must be ToDo, InProgress, Done, or Cancelled.");
+}
+
 public static class InvitationErrors
 {
     public static readonly Error InvalidEmail =

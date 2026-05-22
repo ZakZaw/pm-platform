@@ -42,5 +42,13 @@ public interface IAppDbContext
     DbSet<Asset> Assets { get; }
     DbSet<MarketingTask> MarketingTasks { get; }
 
+    // Phase 1.5 Generic (F1.5-06)
+    DbSet<TaskList> TaskLists { get; }
+
+    // Phase 1.5 Operations (F1.5-05)
+    DbSet<Workflow> Workflows { get; }
+    DbSet<WorkflowRun> WorkflowRuns { get; }
+    DbSet<ChecklistItem> ChecklistItems { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

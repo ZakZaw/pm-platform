@@ -33,6 +33,7 @@ public class TaskConfiguration : IEntityTypeConfiguration<TaskEntity>
         builder.HasIndex(t => t.EpicId);
         builder.HasIndex(t => t.SprintId);
         builder.HasIndex(t => t.AssigneeId);
+        builder.HasIndex(t => t.TaskListId);
 
         builder.HasOne(t => t.Project)
             .WithMany(p => p.Tasks)
@@ -47,6 +48,11 @@ public class TaskConfiguration : IEntityTypeConfiguration<TaskEntity>
         builder.HasOne(t => t.Sprint)
             .WithMany(s => s.Tasks)
             .HasForeignKey(t => t.SprintId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(t => t.TaskList)
+            .WithMany(l => l.Tasks)
+            .HasForeignKey(t => t.TaskListId)
             .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasOne(t => t.Assignee)

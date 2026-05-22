@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260522211605_AddTaskListsAndTaskListIdOnTasks")]
+    partial class AddTaskListsAndTaskListIdOnTasks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -389,42 +392,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasIndex("ProjectId", "Status");
 
                     b.ToTable("campaigns", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.ChecklistItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("Completed")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("CompletedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("RunId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("Sequential")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RunId", "Order");
-
-                    b.ToTable("checklist_items", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Comment", b =>
@@ -1516,93 +1483,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.ToTable("users", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Entities.Workflow", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("ArchivedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<Guid?>("OwnerId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ProjectId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("RecurrenceRule")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("TemplateJson")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OwnerId");
-
-                    b.HasIndex("ProjectId", "ArchivedAt");
-
-                    b.ToTable("workflows", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.WorkflowRun", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("OwnerId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("ScheduledFor")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("SkippedReason")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<DateTime?>("StartedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<Guid>("WorkflowId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OwnerId");
-
-                    b.HasIndex("Status", "ScheduledFor");
-
-                    b.HasIndex("WorkflowId", "ScheduledFor");
-
-                    b.ToTable("workflow_runs", (string)null);
-                });
-
             modelBuilder.Entity("Domain.Entities.AISuggestion", b =>
                 {
                     b.HasOne("Domain.Entities.Project", "Project")
@@ -1685,17 +1565,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.Navigation("Owner");
 
                     b.Navigation("Project");
-                });
-
-            modelBuilder.Entity("Domain.Entities.ChecklistItem", b =>
-                {
-                    b.HasOne("Domain.Entities.WorkflowRun", "Run")
-                        .WithMany("Items")
-                        .HasForeignKey("RunId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Run");
                 });
 
             modelBuilder.Entity("Domain.Entities.Comment", b =>
@@ -2127,42 +1996,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.Navigation("Ticket");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Workflow", b =>
-                {
-                    b.HasOne("Domain.Entities.User", "Owner")
-                        .WithMany()
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Domain.Entities.Project", "Project")
-                        .WithMany()
-                        .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Owner");
-
-                    b.Navigation("Project");
-                });
-
-            modelBuilder.Entity("Domain.Entities.WorkflowRun", b =>
-                {
-                    b.HasOne("Domain.Entities.User", "Owner")
-                        .WithMany()
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Domain.Entities.Workflow", "Workflow")
-                        .WithMany("Runs")
-                        .HasForeignKey("WorkflowId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Owner");
-
-                    b.Navigation("Workflow");
-                });
-
             modelBuilder.Entity("Domain.Entities.Account", b =>
                 {
                     b.Navigation("Deals");
@@ -2252,16 +2085,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.Navigation("OrgMemberships");
 
                     b.Navigation("ProjectMemberships");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Workflow", b =>
-                {
-                    b.Navigation("Runs");
-                });
-
-            modelBuilder.Entity("Domain.Entities.WorkflowRun", b =>
-                {
-                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

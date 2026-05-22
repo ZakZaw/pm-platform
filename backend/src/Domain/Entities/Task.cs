@@ -24,6 +24,10 @@ public class Task
     public int KeyNum { get; set; }
     public Guid? EpicId { get; set; }
     public Guid? SprintId { get; set; }
+    /// <summary>Generic-project grouping (F1.5-06). Null when the task is
+    /// unsorted, or for project types that don't surface lists (Engineering
+    /// uses Epics, Sales uses Stages, etc.).</summary>
+    public Guid? TaskListId { get; set; }
     public required string Title { get; set; }
     public string? Description { get; set; }
     public int? StoryPoints { get; set; }
@@ -43,6 +47,7 @@ public class Task
     public Project Project { get; set; } = null!;
     public Epic? Epic { get; set; }
     public Sprint? Sprint { get; set; }
+    public TaskList? TaskList { get; set; }
     public User? Assignee { get; set; }
     public User? Reviewer { get; set; }
     public User? Reporter { get; set; }

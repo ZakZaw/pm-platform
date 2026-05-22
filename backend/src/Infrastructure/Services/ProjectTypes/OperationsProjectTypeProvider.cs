@@ -3,7 +3,11 @@ using Domain.Enums;
 
 namespace Infrastructure.Services.ProjectTypes;
 
-// F1.5-05 ships the Operations work model (Workflow / Run / Checklist).
+// F1.5-05: Operations projects own recurring workflows. New projects
+// start empty — the user defines their own runbooks via the Workflows
+// page; runs are materialised lazily from each workflow's recurrence
+// rule on the first read after the schedule window opens (see
+// Application.Features.Operations.RunMaterializer).
 public class OperationsProjectTypeProvider : IProjectTypeProvider
 {
     public ProjectType Type => ProjectType.Operations;

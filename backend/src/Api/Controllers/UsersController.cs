@@ -79,6 +79,16 @@ public class UsersController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    [HttpGet("me/operations-runs")]
+    public async Task<ActionResult<IReadOnlyList<Application.Features.Operations.Queries.MyRunDto>>> MyOperationsRuns(
+        [FromQuery(Name = "window_days")] int? windowDays = 7,
+        CancellationToken ct = default)
+    {
+        var result = await mediator.Send(
+            new Application.Features.Operations.Queries.GetMyOperationsRunsQuery(windowDays), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     [HttpGet("me/personal-project")]
     public async Task<ActionResult<Application.Features.Projects.ProjectDto>> MyPersonalProject(CancellationToken ct)
     {

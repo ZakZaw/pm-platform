@@ -18,6 +18,7 @@ import {
   Inbox,
   Layers,
   LifeBuoy,
+  ListTodo,
   Megaphone,
   Rocket,
   Settings,
@@ -134,8 +135,25 @@ export function navItemsForType(typeId) {
     ];
   }
 
-  // Other types: minimal nav until their per-type pages land. The work-
-  // model pages slot in here once F1.5-05..F1.5-06 ship.
+  if (typeId === 'Generic') {
+    // No epics, no sprints — just lists of tasks. Calendar slots in
+    // alongside Lists once the project-wide calendar view (F2-03) ships.
+    return [
+      { key: 'lists', label: 'Lists', icon: ListTodo, path: 'lists' },
+      ...universal,
+      ...settings,
+    ];
+  }
+
+  if (typeId === 'Operations') {
+    return [
+      { key: 'runbooks', label: 'Runbooks', icon: Workflow, path: 'runbooks' },
+      ...universal,
+      ...settings,
+    ];
+  }
+
+  // Other types: minimal nav until their per-type pages land.
   return [...universal, ...settings];
 }
 

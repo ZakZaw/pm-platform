@@ -127,6 +127,8 @@ Each task includes:
 
 **Goal:** AI generation loop works end-to-end. An internal user can sign up, create an org, type "I want to build a SaaS for tutors" and get a fully populated project with epics, stories, tasks, sprints, and a working Kanban board.
 
+> **Scope note (2026-05):** Phase 1 ships the **Engineering** project type only — Epic → Task → Subtask, Sprint Kanban, burndown, the engineering AI generation prompt. Sales / Support / Marketing / Operations / Generic types are introduced in [Phase 1.5 — Multi-Type Projects](#phase-15--multi-type-projects-weeks-10-13).
+
 ---
 
 ## 1A — Org & Team Foundation
@@ -592,6 +594,197 @@ Already covered by F1-19's prompt schema, but verify:
 - AI doesn't exceed team capacity (sum of `capacity_hours_per_week` for sprint members, mapped to story points)
 - Dependencies respected (won't add a task whose blocker isn't already in the sprint)
 - User can edit the suggestion list before confirming
+
+---
+
+# Phase 1.5 — Multi-Type Projects (Weeks 10–13)
+
+**Goal:** Stop assuming every project is engineering. A project's **type** (Engineering / Sales / Support / Marketing / Operations / Generic) reshapes the work model — entities, state machine, main view, sidebar vocabulary, AI generation prompt. The app shell, settings, members, roadmap, dashboard, chat, meetings, AI inbox, and integrations stay consistent across types.
+
+**Rationale:** Phase 1 shipped the engineering shape (Epic → Task → Subtask, Sprint Kanban, burndown). Selling this as a PMO platform requires that a sales project look like a CRM pipeline, a support project look like a ticket queue, a marketing project look like a campaign + content calendar — not engineering with the labels swapped.
+
+**Naming.** The existing `EnvironmentType` enum (Developer / Support / Sales / Business) is renamed `ProjectType` and expanded to: Engineering, Sales, Support, Marketing, Operations, Generic. Engineering = exactly what Phase 1 already built.
+
+---
+
+### F1.5-01 — Project type framework
+
+**Backend:**
+
+- Rename `EnvironmentType` → `ProjectType` enum: Engineering, Sales, Support, Marketing, Operations, Generic. Migration maps existing rows (Developer → Engineering; Support / Sales kept; Business → Generic).
+- Add `ProjectType` to the project creation API; required, no default.
+- Per-type config registry: which work-item entities exist, what statuses, what default views, what AI generation prompt, what default dashboard widgets. Each type registers itself in one place rather than being `if/switch`-ed across the app.
+- `IProjectTypeProvider` abstraction in Application layer; Infrastructure implementations per type.
+
+**Frontend:**
+
+- `pages/project/CreateProjectPage.jsx` — type chooser as step 0 (icon + one-line description per type) before the blank / template / AI-generate chooser.
+- Sidebar nav items and breadcrumb vocabulary derive from the active project's type (engineering: Epics / Sprints; sales: Pipeline / Accounts / Leads; support: Queue / Customers; marketing: Campaigns / Calendar; ops: Runbooks; generic: Lists).
+- `useProjectType()` hook returns the type config; components branch on it only where the work model genuinely differs.
+
+**AC:**
+
+- Existing projects continue to render as Engineering with no behavioural change.
+- Creating a project requires picking a type.
+- Sidebar, breadcrumbs, and main nav all change when switching between projects of different types — no page reload required.
+
+---
+
+### F1.5-02 — Sales project type
+
+**Backend:**
+
+- Entities: `Account` (id, project_id, name, domain, industry, owner_id), `Lead` (id, project_id, account_id?, name, email, phone, source, status, owner_id), `Deal` (id, project_id, account_id, name, value, currency, stage_id, expected_close, probability, owner_id, status, lost_reason?), `DealStage` (id, project_id, name, order, default_probability), `Activity` (id, deal_id, type, summary, occurred_at, owner_id).
+- Default stages on project create: Discover → Qualify → Propose → Negotiate → Closed Won / Closed Lost. Stages editable per project (same UX as F1-16 custom workflow statuses, reused).
+- State machine: Deal moves freely between stages; Closed Won / Closed Lost are terminal and require a reason (mirrors the Blocked / WontDo reason pattern from F1-09).
+- Endpoints: full CRUD under `/api/v1/projects/{id}/accounts`, `/leads`, `/deals`, `/deal-stages`, `/activities`.
+
+**Frontend:**
+
+- `pages/project/PipelinePage.jsx` — kanban by `DealStage`. Reuses `KanbanBoard` with stages instead of statuses; deal cards show value, account, probability, expected close.
+- `pages/project/AccountsPage.jsx` — table view of accounts with deal counts and aggregate value.
+- `pages/project/LeadsPage.jsx` — inbox-style list with status badges and source filters.
+- `components/deals/DealDetail.jsx` drawer — two-column layout matching `TaskDetail`: left has value / stage / probability / next step; right has activity timeline + linked account.
+
+**AC:**
+
+- Drag a deal across stages → `stage_id` updates; probability defaults from the new stage but stays editable.
+- Sum of deal values per stage shown at column header (currency-aware).
+- Closing a deal to Lost requires a reason; reason flows into the AI inbox as a "deal lost — pattern?" signal once 3+ in a stage share a reason.
+
+---
+
+### F1.5-03 — Support project type
+
+**Backend:**
+
+- Entities: `Customer` (id, project_id, name, email, company, tier), `Ticket` (id, project_id, customer_id, subject, body_md, status, priority, queue_id, assignee_id, sla_due_at, opened_at, closed_at), `Queue` (id, project_id, name, default_assignee_id, sla_minutes), `TicketReply` (id, ticket_id, author_id, body_md, is_internal, created_at).
+- State machine: New → Open → Pending → Resolved → Closed (with Reopened transitions).
+- SLA timer per ticket computed from `queue.sla_minutes`; breach surfaces an AI inbox suggestion card and bumps `priority`.
+- Background job ticks every minute, broadcasts SLA countdown updates via SignalR.
+
+**Frontend:**
+
+- `pages/project/QueuePage.jsx` — list grouped by queue with SLA countdown badges (green / amber / red token tints; new `--sla-warning` / `--sla-breach` tokens).
+- `pages/project/CustomerPage.jsx` — customer profile with their ticket history.
+- `components/tickets/TicketDetail.jsx` — drawer with replies thread, internal/public toggle, customer-tier badge, linked tasks (so a ticket can spawn an engineering bug task via cross-project link).
+
+**AC:**
+
+- SLA timer ticks live without page reload.
+- A breach posts a card to the AI inbox tagged with the ticket and queue.
+- Internal notes are excluded from any customer-facing export or share link.
+
+---
+
+### F1.5-04 — Marketing project type
+
+**Backend:**
+
+- Entities: `Campaign` (id, project_id, name, channel, start_date, end_date, status, goal_md, budget_amount, budget_currency), `Asset` (id, campaign_id, type, title, status, publish_date, owner_id, file_url), `MarketingTask` (id, campaign_id, asset_id?, title, status, assignee_id, due_date).
+- Channel enum: Email, Social, Blog, Paid, Event, Other (extensible per project).
+- Asset state machine: Draft → Review → Approved → Published → Archived; reason required on rejection.
+
+**Frontend:**
+
+- `pages/project/CampaignsPage.jsx` — list with horizontal campaign timeline bars (reuses `RoadmapView` rendering primitives).
+- `pages/project/ContentCalendarPage.jsx` — month view of assets pinned to publish dates, colour-coded by channel via `--mkt-channel-*` tokens.
+- `components/marketing/CampaignDetail.jsx` — asset checklist + linked tasks + channel-mix donut.
+
+**AC:**
+
+- Drag an asset on the calendar → publish date updates and the asset re-renders in the new slot.
+- Channel colour tokens are theme-aware (defined in `tokens.css`, not hardcoded).
+- Calendar exports via the existing iCal endpoint pattern (F2-03).
+
+---
+
+### F1.5-05 — Operations project type
+
+**Backend:**
+
+- Entities: `Workflow` (id, project_id, name, description, recurrence_rule, owner_id), `WorkflowRun` (id, workflow_id, scheduled_for, started_at, completed_at, status, owner_id), `ChecklistItem` (id, run_id, title, completed, completed_by, completed_at, order, sequential).
+- Background job materialises `WorkflowRun` rows from each workflow's RRULE one week in advance.
+- Skipping a scheduled run requires a reason (audited via the existing `ActivityLog`).
+
+**Frontend:**
+
+- `pages/project/RunbooksPage.jsx` — list of workflows with next-run date, owner, last-completed status.
+- `pages/project/RunDetail.jsx` — checklist with sequential completion when `sequential = true`.
+
+**AC:**
+
+- Completing the last checklist item closes the run automatically.
+- Overdue runs (past `scheduled_for` and not started) surface in My Work for the owner.
+- Skipped runs keep their row with a `skipped_reason` instead of being deleted.
+
+---
+
+### F1.5-06 — Generic project type
+
+**Backend:**
+
+- Reuses existing `Task` + `Subtask` entities — no new tables.
+- New optional grouping: `TaskList` (id, project_id, name, order). Tasks may belong to a `TaskList` or sit unsorted.
+- No epics, no sprints, no AC-as-subtasks convention enforced.
+
+**Frontend:**
+
+- `pages/project/ListsPage.jsx` — vertical list of `TaskList`s with their tasks; drag to reorder lists and to move tasks between lists.
+- Sidebar shows only Lists, Calendar, Dashboard, AI Inbox.
+
+**AC:**
+
+- A generic project can be created, populated, and worked end-to-end without the words "epic" or "sprint" ever appearing.
+- A generic project's Dashboard ships with a minimal widget set (open tasks, by assignee, completion rate over time).
+
+---
+
+### F1.5-07 — Type-aware AI generation
+
+**Backend:**
+
+- `IAIService.GenerateProjectStructureAsync(description, type, …)` dispatches to the type's prompt template.
+- New prompts under `Infrastructure/Services/Ai/Prompts/`: `SalesProjectPrompt`, `SupportProjectPrompt`, `MarketingProjectPrompt`, `OperationsProjectPrompt`, `GenericProjectPrompt`. Each emits the JSON schema appropriate for that type (deals + stages for sales; queues + tickets for support; campaigns + assets for marketing; workflows + checklists for ops; lists + tasks for generic).
+- Apply-command per type that materialises the draft into the right entities atomically (mirrors the existing engineering apply command).
+- Type-specific suggestion-card generators: sales (deal stuck in stage > N days, conversion drop), support (SLA breach pattern, ticket spike by topic), marketing (campaign launch reminder, asset overdue), ops (run overdue, recurring skip pattern).
+
+**Frontend:**
+
+- `pages/project/AIGenerationWizard.jsx` — type chooser becomes step 0. Clarify and Review steps render different preview shapes per type (deal tree for sales, queue + ticket seed list for support, campaign + asset list for marketing, workflow + checklist for ops).
+- `AISuggestionCard` gains type-aware variants — each card carries a `projectType` so the AI inbox can colour and group them by type.
+
+**AC:**
+
+- "Q3 outbound to mid-market fintech" → Sales project with target accounts and a populated Discover → Closed Won pipeline.
+- "Customer support for our iOS app" → Support project with default queues (Billing / Bugs / General), SLAs, and a small seed ticket set.
+- "Q4 product launch" → Marketing project with campaigns and asset checklists across channels.
+- "Monthly compliance review" → Operations project with a recurring workflow and a default checklist.
+- Existing engineering generation behaviour is byte-for-byte unchanged.
+
+---
+
+### F1.5-08 — Cross-type screens (roadmap, dashboard, AI inbox, portfolio)
+
+**Backend:** Endpoints accept any `ProjectType`; payloads include a `type` field so the frontend can pick the right renderer. Analytics endpoints expose a type-appropriate metric set (engineering: velocity; sales: pipeline value; support: SLA attainment; marketing: assets shipped; ops: runs completed).
+
+**Frontend:**
+
+- Roadmap renders epic bars for engineering, campaign bars for marketing, quarterly target lines for sales, run schedules for ops — single `RoadmapView` component with a type-aware data adapter.
+- Dashboard ships different default widget sets per type:
+  - **Engineering** — burndown, velocity, epic progress, workload, AI health
+  - **Sales** — pipeline value by stage, conversion funnel, deals at risk, forecast vs target
+  - **Support** — open tickets, SLA breaches, tickets-by-queue heatmap, CSAT trend (when available)
+  - **Marketing** — campaigns active, assets due this week, channel mix, asset throughput
+  - **Operations** — next 7 days runs, overdue runs, skip-rate trend
+  - **Generic** — open tasks, by assignee, completion rate
+- AI Inbox shows the union of all suggestion variants, each tagged with project type icon + colour; filter chips for type + suggestion category.
+- Org portfolio (F3-19) sums across types intelligently — engineering velocity reported alongside sales pipeline value and support SLA attainment; resource conflicts span all types.
+
+**AC:**
+
+- Roadmap, Dashboard, AI Inbox, and Portfolio work for projects of every type without page-level type branches — branching lives in adapters and widget registries.
+- Adding a future project type requires zero changes to these four screens; only new adapters / widgets.
 
 ---
 

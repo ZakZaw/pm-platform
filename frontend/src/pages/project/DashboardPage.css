@@ -29,6 +29,14 @@
   align-content: start;
 }
 
+.dashboard__typed-grid {
+  padding: 18px;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 14px;
+  align-content: start;
+}
+
 .dashboard__kpi { grid-column: span 3; padding: 14px; }
 .dashboard__wide { grid-column: span 6; padding: 16px; }
 .dashboard__col-4 { grid-column: span 4; padding: 16px; }

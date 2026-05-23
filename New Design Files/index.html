@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PMO Platform — Overview Canvas</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="styles/tokens.css" />
+<link rel="stylesheet" href="styles/base.css" />
+<link rel="stylesheet" href="styles/components.css" />
+
+<style>
+  html, body { width: 100%; height: 100%; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); }
+  #root { width: 100vw; height: 100vh; }
+
+  .scaled-screen {
+    width: 1440px;
+    height: 900px;
+    border: 0;
+    background: var(--surface);
+    display: block;
+    pointer-events: auto;
+  }
+
+  .ab-wrap {
+    width: 1440px; height: 900px;
+    overflow: hidden;
+    background: var(--bg);
+    position: relative;
+  }
+
+  .ab-cover {
+    position: absolute; inset: 0;
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: var(--s-6);
+    transition: opacity 0.3s ease-out;
+    pointer-events: none;
+  }
+  .ab-cover.is-loaded { opacity: 0; }
+
+  /* Placeholder card (default for each LiveScreen — click to swap in iframe) */
+  .ab-placeholder {
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+  .ab-ph-stripe { height: 6px; flex-shrink: 0; }
+  .ab-ph-bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 90% 100%, hsl(258 80% 95% / 0.5), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 10% 10%, hsl(217 91% 95% / 0.6), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .ab-ph-inner {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 100px;
+    max-width: 760px;
+  }
+  .ab-ph-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+  .ab-ph-title { font-size: 56px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.05; margin: 0 0 18px; color: var(--text); }
+  .ab-ph-blurb { font-size: 20px; color: var(--text-secondary); line-height: 1.5; margin: 0 0 36px; max-width: 580px; }
+  .ab-ph-actions { display: flex; gap: 14px; align-items: center; }
+  .ab-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 22px; font-size: 16px; font-weight: 500;
+    border-radius: 10px; cursor: pointer;
+    background: var(--surface); color: var(--text);
+    border: 1px solid var(--border);
+    text-decoration: none;
+    transition: all 140ms;
+    font-family: inherit;
+  }
+  .ab-btn:hover { border-color: var(--border-strong); background: var(--surface-hover); }
+  .ab-btn-primary { background: var(--accent); color: white; border-color: transparent; box-shadow: 0 6px 18px -6px hsl(222 76% 38% / 0.4); }
+  .ab-btn-primary:hover { background: var(--accent-hover); }
+
+  .ab-spinner {
+    width: 28px; height: 28px;
+    border: 3px solid var(--surface-2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .intro-card {
+    padding: 48px 56px;
+    max-width: 1100px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    box-shadow: var(--shadow-md);
+  }
+  .intro-title { font-size: 44px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.05; margin-bottom: 16px; }
+  .intro-sub { font-size: 18px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 28px; max-width: 720px; }
+  .intro-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .intro-feat {
+    padding: 16px 18px;
+    border-radius: var(--r-md);
+    background: var(--surface-2);
+    border: 1px solid var(--border-subtle);
+  }
+  .intro-feat strong { display: block; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .intro-feat span { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+  .system-card {
+    padding: 40px 48px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 1100px;
+  }
+  .system-row { display: grid; grid-template-columns: 140px 1fr; gap: 24px; padding: 16px 0; border-bottom: 1px solid var(--divider); }
+  .system-row:last-child { border-bottom: none; }
+  .system-row-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; padding-top: 4px; }
+  .system-swatches { display: flex; gap: 8px; }
+  .system-swatches > div { width: 48px; height: 48px; border-radius: var(--r-md); border: 1px solid var(--border-subtle); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+
+<script type="text/babel" data-presets="env,react">
+const { useState, useEffect, useRef } = React;
+
+// Click-to-load iframe — 22 simultaneous React apps would hang the browser.
+// Each artboard shows a static preview card. Click "Load live preview" to
+// mount the iframe; click "Open fullscreen" to open in a new tab.
+function LiveScreen({ hash, label, blurb, accent = 'var(--accent)' }) {
+  const [mounted, setMounted] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const url = `PMO Platform.html#${hash}`;
+
+  if (mounted) {
+    return (
+      <div className="ab-wrap">
+        <iframe
+          className="scaled-screen"
+          src={url}
+          onLoad={() => setLoaded(true)}
+          title={label}
+        />
+        <div className={`ab-cover ${loaded ? 'is-loaded' : ''}`}>
+          <div className="ab-spinner" />
+          <div style={{ fontSize: 14, color: 'var(--text-muted)' }}>Loading {label}…</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="ab-wrap ab-placeholder">
+      <div className="ab-ph-stripe" style={{ background: accent }} />
+      <div className="ab-ph-inner">
+        <div className="ab-ph-eyebrow">Live preview · click to load</div>
+        <h3 className="ab-ph-title">{label}</h3>
+        {blurb && <p className="ab-ph-blurb">{blurb}</p>}
+        <div className="ab-ph-actions">
+          <button className="ab-btn ab-btn-primary" onClick={() => setMounted(true)}>
+            Load live preview
+          </button>
+          <a className="ab-btn" href={url} target="_blank" rel="noreferrer">
+            Open fullscreen →
+          </a>
+        </div>
+      </div>
+      <div className="ab-ph-bg" />
+    </div>
+  );
+}
+
+function IntroSlide() {
+  return (
+    <div className="ab-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 80 }}>
+      <div className="intro-card">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: 10,
+            background: 'var(--ai-gradient)',
+            backgroundSize: '200% 200%',
+            animation: 'ai-shimmer 6s ease-in-out infinite',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'white', fontWeight: 700, fontSize: 18,
+            boxShadow: '0 8px 20px -6px hsl(258 80% 55% / 0.5)',
+          }}>L</div>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            Lattice · PMO Platform · v1.0
+          </span>
+        </div>
+        <h1 className="intro-title">An AI-native workspace<br />that adapts to the work, not the org chart.</h1>
+        <p className="intro-sub">
+          One platform. Six project types. The shell, vocabulary, and main view reshape themselves
+          depending on whether you're shipping software, closing deals, or running campaigns —
+          while AI quietly plans, drafts, and reconciles in the background.
+        </p>
+        <div className="intro-grid">
+          <div className="intro-feat">
+            <strong>The insight</strong>
+            <span>Project type reshapes the workspace. Sales shouldn't have epics — it has a pipeline. Support doesn't have sprints — it has a queue.</span>
+          </div>
+          <div className="intro-feat">
+            <strong>AI as character</strong>
+            <span>Iridescent surfaces signal where AI lives. Distinct, never noisy. Every write is reversible within 24 hours.</span>
+          </div>
+          <div className="intro-feat">
+            <strong>One discipline</strong>
+            <span>Tokens-only theming, flat class names, theme-aware everything. Light + dark, three densities, all from one source.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SystemSlide() {
+  return (
+    <div className="ab-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 80 }}>
+      <div className="system-card">
+        <div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, marginBottom: 6 }}>The visual language</div>
+          <h2 style={{ fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em' }}>Warm, calm, vibrant when needed.</h2>
+        </div>
+
+        <div className="system-row">
+          <div className="system-row-label">Type</div>
+          <div>
+            <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: '-0.015em', marginBottom: 6 }}>Plus Jakarta Sans + JetBrains Mono</div>
+            <div style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6 }}>Humanist geometric sans — warm without being soft. Mono for IDs, amounts, and timers.</div>
+          </div>
+        </div>
+
+        <div className="system-row">
+          <div className="system-row-label">Color</div>
+          <div className="system-swatches">
+            <div title="bg" style={{ background: 'var(--bg)' }} />
+            <div title="surface" style={{ background: 'var(--surface)' }} />
+            <div title="accent" style={{ background: 'var(--accent)' }} />
+            <div title="accent-bright" style={{ background: 'var(--accent-bright)' }} />
+            <div title="success" style={{ background: 'var(--success)' }} />
+            <div title="warning" style={{ background: 'var(--warning)' }} />
+            <div title="danger" style={{ background: 'var(--danger)' }} />
+            <div title="violet" style={{ background: 'var(--violet)' }} />
+            <div title="teal" style={{ background: 'var(--teal)' }} />
+            <div title="rose" style={{ background: 'var(--rose)' }} />
+            <div title="ai" style={{ background: 'var(--ai-gradient)' }} />
+          </div>
+        </div>
+
+        <div className="system-row">
+          <div className="system-row-label">AI surface</div>
+          <div>
+            <div style={{
+              padding: '12px 20px', display: 'inline-flex', alignItems: 'center', gap: 10,
+              borderRadius: 'var(--r-md)',
+              background: 'var(--ai-gradient-soft)', border: '1px solid var(--ai-border)',
+              color: 'var(--ai-text)', fontSize: 14, fontWeight: 600,
+            }}>
+              <div style={{
+                width: 18, height: 18, borderRadius: 4,
+                background: 'var(--ai-gradient)',
+                backgroundSize: '200% 200%',
+                animation: 'ai-shimmer 6s ease-in-out infinite',
+              }} />
+              <span>Iridescent — used surgically for AI panels, suggestions, drafts</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="system-row">
+          <div className="system-row-label">Shape</div>
+          <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+            {[6, 8, 12, 16].map(r => (
+              <div key={r} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                <div style={{ width: 56, height: 56, borderRadius: r, background: 'var(--surface-2)', border: '1px solid var(--border)' }} />
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{r}px</span>
+              </div>
+            ))}
+            <span style={{ fontSize: 14, color: 'var(--text-muted)', marginLeft: 16 }}>Crisp — structured but not severe</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection id="intro" title="PMO Platform" subtitle="An overview of the visual system, the polymorphic project model, and every screen. Each artboard below is a click-to-load live preview — click ‘Load live preview’ to mount the iframe, or ‘Open fullscreen’ to open the prototype in a new tab.">
+        <DCArtboard id="hero" label="The pitch" width={1440} height={900}>
+          <IntroSlide />
+        </DCArtboard>
+        <DCArtboard id="system" label="Visual language" width={1440} height={900}>
+          <SystemSlide />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="shell" title="App shell & cross-type screens" subtitle="The chrome stays put across every project type — only the work model swaps in.">
+        <DCArtboard id="home" label="Org home — project picker" width={1440} height={900}>
+          <LiveScreen hash="screen=home" label="Org Home" blurb="Mixed project types in one grid. Hero stats + a ribbon for waiting AI suggestions." />
+        </DCArtboard>
+        <DCArtboard id="roadmap" label="Portfolio roadmap" width={1440} height={900}>
+          <LiveScreen hash="screen=roadmap" label="Roadmap" blurb="Cross-project Gantt color-coded by project type. Milestones as diamonds." accent="var(--violet)" />
+        </DCArtboard>
+        <DCArtboard id="dashboard" label="Org dashboard" width={1440} height={900}>
+          <LiveScreen hash="screen=dashboard" label="Dashboard" blurb="Velocity, workload heatmap, pipeline mix, SLA — composable widgets that work across project types." accent="var(--info)" />
+        </DCArtboard>
+        <DCArtboard id="my-work" label="My work" width={1440} height={900}>
+          <LiveScreen hash="screen=my-work" label="My Work" blurb="Cross-project list grouped by overdue / today / this week. Tasks, deals, tickets, reviews — all in one place." />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="ai" title="AI moments" subtitle="The two distinctive surfaces — generation and the inbox.">
+        <DCArtboard id="wizard" label="AI generation wizard" width={1440} height={900}>
+          <LiveScreen hash="screen=home&wizard=1" label="AI Wizard" blurb="Three-step generation. Describe in a sentence → AI infers the project type → scaffolds epics, tasks, estimates." accent="var(--ai-2)" />
+        </DCArtboard>
+        <DCArtboard id="inbox" label="AI inbox" width={1440} height={900}>
+          <LiveScreen hash="screen=inbox" label="AI Inbox" blurb="Sprint replans, stalled-deal nudges, recurring-issue alerts, meeting digests. Every action reversible within 24h." accent="var(--ai-2)" />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="eng" title="Engineering project" subtitle="Epic → Task → Subtask · Sprint Kanban as the main view.">
+        <DCArtboard id="eng-home" label="Project home" width={1440} height={900}>
+          <LiveScreen hash="screen=p-home&project=p_apollo" label="Engineering home" blurb="Sprint number, velocity, bugs open, PRs in review — the KPIs an eng lead reaches for first." />
+        </DCArtboard>
+        <DCArtboard id="eng-board" label="Sprint kanban" width={1440} height={900}>
+          <LiveScreen hash="screen=p-main&project=p_apollo" label="Sprint Kanban" blurb="Five-column board with burndown sparkline, AI-drafted task suggestions, and story-point totals per column." />
+        </DCArtboard>
+        <DCArtboard id="eng-drawer" label="Task drawer" width={1440} height={900}>
+          <LiveScreen hash="screen=p-main&project=p_apollo&drawer=APL-241" label="Task drawer" blurb="Polymorphic detail drawer. AI breakdown + acceptance criteria + activity feed mixing humans and AI events." />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="sales" title="Sales project" subtitle="Account → Lead → Deal · Pipeline as the main view.">
+        <DCArtboard id="sales-home" label="Project home" width={1440} height={900}>
+          <LiveScreen hash="screen=p-home&project=p_orbital" label="Sales home" blurb="Pipeline value, win rate, avg cycle, quota — completely different KPIs than engineering, same shell." accent="var(--success)" />
+        </DCArtboard>
+        <DCArtboard id="sales-pipeline" label="Pipeline" width={1440} height={900}>
+          <LiveScreen hash="screen=p-main&project=p_orbital" label="Sales Pipeline" blurb="Five stages with $ totals and weighted forecast. AI flags deals stalled longer than median." accent="var(--success)" />
+        </DCArtboard>
+        <DCArtboard id="sales-drawer" label="Deal drawer" width={1440} height={900}>
+          <LiveScreen hash="screen=p-main&project=p_orbital&drawer=D-122" label="Deal drawer" blurb="Stage tracker, deal coach with draft-email + discount-tier suggestions, activity timeline." accent="var(--success)" />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="support" title="Support project" subtitle="Customer → Ticket · Queue with SLA timers as the main view.">
+        <DCArtboard id="sup-queue" label="Queue" width={1440} height={900}>
+          <LiveScreen hash="screen=p-main&project=p_relay" label="Support Queue" blurb="Color-coded SLA timers, urgency-tinted rows, AI banner for detected recurring issues." accent="var(--rose)" />
+        </DCArtboard>
+        <DCArtboard id="sup-drawer" label="Ticket drawer" width={1440} height={900}>
+          <LiveScreen hash="screen=p-main&project=p_relay&drawer=T-1426" label="Ticket drawer" blurb="Customer ↔ agent thread with an AI-suggested reply pre-drafted and waiting for approval." accent="var(--rose)" />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="marketing" title="Marketing project" subtitle="Campaign → Asset → Task · Content calendar as the main view.">
+        <DCArtboard id="mkt-cal" label="Content calendar" width={1440} height={900}>
+          <LiveScreen hash="screen=p-main&project=p_canopy" label="Content Calendar" blurb="Five-channel color system across a month grid. AI drafts the week ahead from your campaign goals." accent="var(--warning)" />
+        </DCArtboard>
+        <DCArtboard id="mkt-drawer" label="Asset drawer" width={1440} height={900}>
+          <LiveScreen hash="screen=p-main&project=p_canopy&drawer=asset" label="Asset drawer" blurb="Channels, target reach, status — plus an AI-generated brief that frames the angle and outline." accent="var(--warning)" />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="other" title="Operations & generic" subtitle="Workflow → Run · Runbook list and a simple Todo / Doing / Done.">
+        <DCArtboard id="ops" label="Operations runbook" width={1440} height={900}>
+          <LiveScreen hash="screen=p-main&project=p_audit" label="Runbook" blurb="Tabular workflows with recurrence, run history, and step progress. Perfect for compliance work." accent="var(--violet)" />
+        </DCArtboard>
+        <DCArtboard id="generic" label="Generic board" width={1440} height={900}>
+          <LiveScreen hash="screen=p-main&project=p_intake" label="Generic board" blurb="Lightweight fallback — Todo / Doing / Done. For projects that don't fit the heavier templates." />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="comms" title="Comms & meetings" subtitle="Channels with embedded task cards · live transcript with auto-drafted action items.">
+        <DCArtboard id="messages" label="Messages" width={1440} height={900}>
+          <LiveScreen hash="screen=messages" label="Messages" blurb="Channels per project / team / topic. Embedded task cards via [[task:123]]. AI participates as a first-class voice." />
+        </DCArtboard>
+        <DCArtboard id="meetings" label="Meetings" width={1440} height={900}>
+          <LiveScreen hash="screen=meetings" label="Meetings" blurb="Live transcript, chaptered playback, auto-drafted action items waiting for approval." accent="var(--ai-2)" />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="settings" title="Settings" subtitle="AI control mode is per-project — the rest is org-level.">
+        <DCArtboard id="settings-ai" label="AI control mode" width={1440} height={900}>
+          <LiveScreen hash="screen=settings" label="Settings" blurb="Per-project AI control: Autopilot / Suggest / Ask Me First / Off. Plus granular permission switches." />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="ds" title="Design system" subtitle="Tokens and primitives. Live values — flip the theme in any artboard to see dark mode.">
+        <DCArtboard id="ds" label="Design system spec" width={1440} height={900}>
+          <LiveScreen hash="screen=design-system" label="Design system" blurb="Tokens (color, type, spacing, radius, shadow, motion) and primitives. Live values — flip the theme in the prototype to see dark mode." />
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

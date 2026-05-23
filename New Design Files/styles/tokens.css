@@ -1,0 +1,286 @@
+/* ============================================================
+   DESIGN TOKENS — PMO Platform
+   Single source of truth. Theme-aware via [data-theme].
+   ============================================================ */
+
+:root,
+[data-theme="light"] {
+  /* === SURFACES ============================================ */
+  --bg: hsl(32 33% 97.5%);                /* warm paper canvas */
+  --bg-subtle: hsl(32 28% 95%);            /* sections, side rails */
+  --surface: hsl(0 0% 100%);               /* cards, dialogs */
+  --surface-2: hsl(32 28% 96.5%);          /* inset, nested */
+  --surface-hover: hsl(32 28% 94%);
+  --surface-active: hsl(32 25% 91%);
+  --overlay: hsl(220 30% 10% / 0.4);
+  --scrim: hsl(220 25% 12% / 0.55);
+
+  /* === BORDERS ============================================= */
+  --border: hsl(30 15% 88%);
+  --border-strong: hsl(30 12% 78%);
+  --border-subtle: hsl(30 18% 92%);
+  --ring: hsl(220 85% 55% / 0.35);
+  --divider: hsl(30 15% 90%);
+
+  /* === TEXT ================================================ */
+  --text: hsl(220 30% 12%);
+  --text-secondary: hsl(220 15% 35%);
+  --text-muted: hsl(220 10% 50%);
+  --text-subtle: hsl(220 8% 62%);
+  --text-on-accent: hsl(0 0% 100%);
+  --text-link: hsl(222 78% 45%);
+
+  /* === ACCENT (primary blue) =============================== */
+  --accent: hsl(222 76% 38%);              /* #1e40af deep cobalt */
+  --accent-hover: hsl(222 78% 33%);
+  --accent-active: hsl(222 80% 28%);
+  --accent-bright: hsl(217 91% 60%);       /* #3b82f6 interactive */
+  --accent-soft: hsl(217 91% 96%);         /* tinted backgrounds */
+  --accent-soft-2: hsl(217 91% 92%);
+  --accent-border: hsl(217 85% 80%);
+
+  /* === STATUS (jewel-toned, slightly muted) ================ */
+  --success: hsl(160 65% 38%);
+  --success-soft: hsl(160 55% 94%);
+  --success-border: hsl(160 50% 78%);
+
+  --warning: hsl(35 92% 48%);
+  --warning-soft: hsl(40 95% 94%);
+  --warning-border: hsl(38 90% 78%);
+
+  --danger: hsl(354 78% 50%);
+  --danger-soft: hsl(354 85% 96%);
+  --danger-border: hsl(354 75% 82%);
+
+  --info: hsl(195 85% 42%);
+  --info-soft: hsl(195 80% 94%);
+  --info-border: hsl(195 70% 78%);
+
+  --violet: hsl(264 68% 55%);
+  --violet-soft: hsl(264 75% 96%);
+  --violet-border: hsl(264 65% 82%);
+
+  --teal: hsl(178 70% 38%);
+  --teal-soft: hsl(178 60% 94%);
+  --teal-border: hsl(178 55% 78%);
+
+  --rose: hsl(338 75% 55%);
+  --rose-soft: hsl(338 80% 96%);
+  --rose-border: hsl(338 70% 82%);
+
+  --amber: hsl(28 90% 52%);
+  --amber-soft: hsl(28 90% 95%);
+
+  /* === PRIORITY ============================================ */
+  --pri-urgent: var(--danger);
+  --pri-high: var(--amber);
+  --pri-medium: var(--accent-bright);
+  --pri-low: hsl(220 10% 55%);
+
+  /* === AI SURFACE (iridescent) ============================= */
+  --ai-1: hsl(222 90% 55%);
+  --ai-2: hsl(264 80% 60%);
+  --ai-3: hsl(192 85% 55%);
+  --ai-gradient: linear-gradient(120deg, var(--ai-1) 0%, var(--ai-2) 50%, var(--ai-3) 100%);
+  --ai-gradient-soft: linear-gradient(120deg,
+    hsl(222 85% 96%) 0%, hsl(264 80% 96%) 50%, hsl(192 80% 96%) 100%);
+  --ai-gradient-mid: linear-gradient(120deg,
+    hsl(222 90% 88%) 0%, hsl(264 80% 90%) 50%, hsl(192 85% 88%) 100%);
+  --ai-text: hsl(258 65% 38%);
+  --ai-border: hsl(258 60% 82%);
+  --ai-glow: 0 0 0 1px hsl(258 70% 70% / 0.35), 0 4px 20px -4px hsl(258 80% 55% / 0.3);
+
+  /* === SHADOW ============================================== */
+  --shadow-xs: 0 1px 1px hsl(220 30% 12% / 0.04);
+  --shadow-sm: 0 1px 2px hsl(220 30% 12% / 0.05), 0 1px 1px hsl(220 30% 12% / 0.03);
+  --shadow-md: 0 4px 12px -2px hsl(220 30% 12% / 0.08), 0 2px 4px hsl(220 30% 12% / 0.04);
+  --shadow-lg: 0 12px 28px -8px hsl(220 30% 12% / 0.14), 0 4px 10px -2px hsl(220 30% 12% / 0.06);
+  --shadow-xl: 0 24px 48px -12px hsl(220 30% 12% / 0.2), 0 8px 16px -4px hsl(220 30% 12% / 0.08);
+  --shadow-pop: 0 0 0 1px hsl(220 25% 50% / 0.08), 0 8px 24px -6px hsl(220 30% 12% / 0.12);
+  --shadow-inset: inset 0 1px 0 hsl(0 0% 100% / 0.6);
+  --shadow-accent: 0 6px 18px -6px hsl(222 76% 38% / 0.4);
+
+  /* === RADII =============================================== */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  --r-2xl: 20px;
+  --r-pill: 999px;
+
+  /* === SPACING (4px base) ================================== */
+  --s-0: 0;
+  --s-1: 2px;
+  --s-2: 4px;
+  --s-3: 6px;
+  --s-4: 8px;
+  --s-5: 12px;
+  --s-6: 16px;
+  --s-7: 20px;
+  --s-8: 24px;
+  --s-9: 32px;
+  --s-10: 40px;
+  --s-11: 48px;
+  --s-12: 64px;
+  --s-13: 80px;
+
+  /* === TYPOGRAPHY ========================================== */
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-display: "Plus Jakarta Sans", system-ui, sans-serif;
+
+  --fs-2xs: 10px;
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-base: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 18px;
+  --fs-2xl: 22px;
+  --fs-3xl: 28px;
+  --fs-4xl: 36px;
+  --fs-5xl: 48px;
+
+  --lh-tight: 1.15;
+  --lh-snug: 1.3;
+  --lh-normal: 1.5;
+  --lh-relaxed: 1.65;
+
+  --tracking-tight: -0.02em;
+  --tracking-snug: -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;
+  --tracking-mono: -0.01em;
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  /* === MOTION ============================================== */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-instant: 80ms;
+  --dur-fast: 140ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+  --dur-slower: 520ms;
+
+  /* === LAYOUT ============================================== */
+  --sidebar-w: 248px;
+  --sidebar-w-collapsed: 60px;
+  --topbar-h: 56px;
+  --drawer-w: 520px;
+  --row-h: 40px;
+  --content-max: 1440px;
+}
+
+[data-theme="dark"] {
+  --bg: hsl(222 25% 7%);
+  --bg-subtle: hsl(222 22% 10%);
+  --surface: hsl(222 22% 11%);
+  --surface-2: hsl(222 20% 14%);
+  --surface-hover: hsl(222 20% 16%);
+  --surface-active: hsl(222 20% 19%);
+  --overlay: hsl(220 50% 4% / 0.7);
+  --scrim: hsl(220 50% 4% / 0.7);
+
+  --border: hsl(222 15% 20%);
+  --border-strong: hsl(222 12% 30%);
+  --border-subtle: hsl(222 18% 16%);
+  --ring: hsl(217 90% 65% / 0.45);
+  --divider: hsl(222 15% 18%);
+
+  --text: hsl(30 25% 96%);
+  --text-secondary: hsl(30 12% 75%);
+  --text-muted: hsl(220 8% 60%);
+  --text-subtle: hsl(220 6% 45%);
+  --text-link: hsl(217 95% 72%);
+
+  --accent: hsl(217 91% 60%);
+  --accent-hover: hsl(217 95% 67%);
+  --accent-active: hsl(217 95% 72%);
+  --accent-bright: hsl(217 95% 67%);
+  --accent-soft: hsl(217 70% 16%);
+  --accent-soft-2: hsl(217 70% 20%);
+  --accent-border: hsl(217 60% 32%);
+
+  --success: hsl(160 60% 50%);
+  --success-soft: hsl(160 50% 14%);
+  --success-border: hsl(160 50% 28%);
+
+  --warning: hsl(35 90% 58%);
+  --warning-soft: hsl(35 60% 14%);
+  --warning-border: hsl(35 50% 28%);
+
+  --danger: hsl(354 78% 62%);
+  --danger-soft: hsl(354 55% 16%);
+  --danger-border: hsl(354 50% 32%);
+
+  --info: hsl(195 80% 55%);
+  --info-soft: hsl(195 60% 14%);
+  --info-border: hsl(195 50% 28%);
+
+  --violet: hsl(264 75% 68%);
+  --violet-soft: hsl(264 50% 18%);
+  --violet-border: hsl(264 45% 32%);
+
+  --teal: hsl(178 65% 50%);
+  --teal-soft: hsl(178 50% 14%);
+  --teal-border: hsl(178 45% 26%);
+
+  --rose: hsl(338 78% 65%);
+  --rose-soft: hsl(338 50% 18%);
+  --rose-border: hsl(338 45% 32%);
+
+  --amber: hsl(28 92% 60%);
+  --amber-soft: hsl(28 50% 14%);
+
+  --ai-1: hsl(222 95% 68%);
+  --ai-2: hsl(264 85% 70%);
+  --ai-3: hsl(192 90% 62%);
+  --ai-gradient-soft: linear-gradient(120deg,
+    hsl(222 60% 18%) 0%, hsl(264 55% 20%) 50%, hsl(192 60% 18%) 100%);
+  --ai-gradient-mid: linear-gradient(120deg,
+    hsl(222 65% 25%) 0%, hsl(264 60% 28%) 50%, hsl(192 65% 25%) 100%);
+  --ai-text: hsl(258 90% 82%);
+  --ai-border: hsl(258 55% 38%);
+  --ai-glow: 0 0 0 1px hsl(258 80% 65% / 0.4), 0 8px 28px -6px hsl(258 90% 60% / 0.45);
+
+  --shadow-xs: 0 1px 1px hsl(220 50% 2% / 0.4);
+  --shadow-sm: 0 1px 2px hsl(220 50% 2% / 0.5), 0 1px 1px hsl(220 50% 2% / 0.3);
+  --shadow-md: 0 4px 12px -2px hsl(220 50% 2% / 0.5), 0 2px 4px hsl(220 50% 2% / 0.3);
+  --shadow-lg: 0 12px 28px -8px hsl(220 50% 2% / 0.6), 0 4px 10px -2px hsl(220 50% 2% / 0.35);
+  --shadow-xl: 0 24px 48px -12px hsl(220 50% 2% / 0.7), 0 8px 16px -4px hsl(220 50% 2% / 0.4);
+  --shadow-pop: 0 0 0 1px hsl(220 25% 60% / 0.1), 0 8px 24px -6px hsl(220 50% 2% / 0.55);
+  --shadow-inset: inset 0 1px 0 hsl(0 0% 100% / 0.04);
+  --shadow-accent: 0 8px 22px -8px hsl(217 91% 60% / 0.55);
+}
+
+/* Density modes -------------------------------------------- */
+[data-density="compact"] {
+  --row-h: 32px;
+  --s-6: 12px;
+  --s-7: 14px;
+  --s-8: 18px;
+  --s-9: 24px;
+  --s-10: 32px;
+}
+[data-density="spacious"] {
+  --row-h: 48px;
+  --s-6: 20px;
+  --s-7: 24px;
+  --s-8: 32px;
+  --s-9: 40px;
+  --s-10: 52px;
+}
+
+/* Reduced motion ------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

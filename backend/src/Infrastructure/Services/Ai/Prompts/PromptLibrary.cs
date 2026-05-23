@@ -179,6 +179,163 @@ internal static class PromptLibrary
         - Output ONLY valid JSON. No commentary, no markdown fences.
         """;
 
+    // F1.5-07 — per-type project generation prompts. Each emits the
+    // JSON schema appropriate for that work model so the matching apply
+    // command can materialise the entities atomically. Engineering keeps
+    // using the existing ProjectGeneration prompt above.
+
+    internal const string SalesProjectGeneration = """
+        You are a senior sales operations lead. Given a plain-language description
+        of a sales motion (territory, segment, time window, goal), output a JSON
+        object with this exact schema:
+
+        {
+          "suggestedName": "...",
+          "stages": [
+            { "name": "Discover|Qualify|Propose|Negotiate|Closed Won|Closed Lost",
+              "order": 1, "defaultProbability": 0-100 }
+          ],
+          "accounts": [
+            { "name": "...", "domain": "example.com|null", "industry": "...|null" }
+          ],
+          "deals": [
+            { "name": "...", "accountName": "...", "value": 0,
+              "currency": "USD", "stageName": "...", "probability": 0-100,
+              "expectedClose": "YYYY-MM-DD|null" }
+          ]
+        }
+
+        Rules:
+        - 4-6 stages, ordered. Include Closed Won and Closed Lost as terminal
+          stages with probability 100 and 0 respectively.
+        - 3-8 target accounts that fit the described segment.
+        - 3-8 seed deals attached to listed accounts. Pick stageName from the
+          stages you defined. Value is a positive integer in the chosen currency.
+        - Output ONLY valid JSON. No commentary, no markdown fences.
+        """;
+
+    internal const string SupportProjectGeneration = """
+        You are a customer support team lead spinning up a new support function.
+        Given a plain-language description (product type, audience, common issue
+        themes), output a JSON object with this exact schema:
+
+        {
+          "suggestedName": "...",
+          "queues": [
+            { "name": "...", "slaMinutes": 60-2880 }
+          ],
+          "customers": [
+            { "name": "...", "email": "x@y.com|null", "company": "...|null",
+              "tier": "Free|Pro|Enterprise|null" }
+          ],
+          "tickets": [
+            { "subject": "...", "bodyMd": "...|null",
+              "queueName": "...", "customerName": "...",
+              "priority": "Low|Medium|High|Urgent" }
+          ]
+        }
+
+        Rules:
+        - 3-6 queues covering the most common themes (e.g. Billing, Bugs,
+          General, Account). SLA minutes between 60 (1h) and 2880 (48h).
+        - 3-6 sample customers with a realistic tier mix.
+        - 3-8 seed tickets attached to listed customers and queues. Each
+          subject is a concrete user-voice complaint or question.
+        - Output ONLY valid JSON. No commentary, no markdown fences.
+        """;
+
+    internal const string MarketingProjectGeneration = """
+        You are a marketing program manager. Given a plain-language description
+        (campaign, audience, channel mix, deadline), output a JSON object with
+        this exact schema:
+
+        {
+          "suggestedName": "...",
+          "campaigns": [
+            {
+              "name": "...",
+              "channel": "Email|Social|Blog|Paid|Event|Other",
+              "goalMd": "...|null",
+              "startDate": "YYYY-MM-DD|null",
+              "endDate": "YYYY-MM-DD|null",
+              "assets": [
+                { "title": "...",
+                  "type": "Email|SocialPost|BlogPost|Ad|Image|Video|LandingPage|Other",
+                  "publishDate": "YYYY-MM-DD|null" }
+              ],
+              "tasks": [
+                { "title": "...", "assetTitle": "...|null",
+                  "dueDate": "YYYY-MM-DD|null" }
+              ]
+            }
+          ]
+        }
+
+        Rules:
+        - 1-4 campaigns spanning the described scope.
+        - Each campaign has 2-6 assets and 1-4 supporting tasks.
+        - publishDate falls between startDate and endDate when both are set.
+        - Task.assetTitle either matches one of the campaign's asset titles
+          or is null for non-asset coordination work.
+        - Output ONLY valid JSON. No commentary, no markdown fences.
+        """;
+
+    internal const string OperationsProjectGeneration = """
+        You are an operations manager defining a project's runbooks. Given a
+        plain-language description (function, cadence, scope of recurring
+        work), output a JSON object with this exact schema:
+
+        {
+          "suggestedName": "...",
+          "workflows": [
+            {
+              "name": "...",
+              "description": "...|null",
+              "recurrenceRule":
+                "FREQ=DAILY|FREQ=WEEKLY|FREQ=WEEKLY;INTERVAL=2|FREQ=MONTHLY|FREQ=MONTHLY;INTERVAL=3|null",
+              "checklist": [
+                { "title": "...", "sequential": false }
+              ]
+            }
+          ]
+        }
+
+        Rules:
+        - 1-5 workflows.
+        - Each workflow has 3-10 checklist items in completion order.
+        - Use sequential=true only when a step truly cannot start until the
+          previous one is finished (audit trails, signoffs). Most items
+          should be sequential=false so the team can parallelise.
+        - recurrenceRule must use FREQ=DAILY|WEEKLY|MONTHLY with optional
+          INTERVAL=N (no BYDAY/BYMONTHDAY — the parser is strict).
+        - Output ONLY valid JSON. No commentary, no markdown fences.
+        """;
+
+    internal const string GenericProjectGeneration = """
+        You are a project planner setting up a lightweight task tracker —
+        no epics, no sprints, no story points. Given a plain-language
+        description, output a JSON object with this exact schema:
+
+        {
+          "suggestedName": "...",
+          "lists": [
+            {
+              "name": "...",
+              "tasks": [
+                { "title": "...", "description": "...|null",
+                  "priority": "Low|Medium|High|Urgent" }
+              ]
+            }
+          ]
+        }
+
+        Rules:
+        - 2-5 lists that group related work (e.g. by phase, by area, by
+          status).
+        - Each list has 3-8 tasks. Titles are short action sentences.
+        - Output ONLY valid JSON. No commentary, no markdown fences.
+        """;
+
     internal const string SprintFill = """
         You select tasks to add to a sprint, given a target capacity in story points
         and a prioritised backlog. Prefer higher priority and lower point cost, never

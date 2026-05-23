@@ -50,6 +50,177 @@ public class GeminiAIService(IOptions<AISettings> options, ILogger<GeminiAIServi
         return ParseProject(json);
     }
 
+    // F1.5-07 — typed dispatcher. Engineering stays on the existing
+    // GenerateProjectStructureAsync path; this method handles the other
+    // five project types via type-specific prompts + parsers.
+    public async Task<AITypedProjectDraft> GenerateTypedProjectDraftAsync(
+        string description, string projectType,
+        IReadOnlyList<AIClarificationAnswer>? clarifications, CancellationToken ct)
+    {
+        var payload = new
+        {
+            description,
+            projectType,
+            clarifications = clarifications?.Select(c => new { c.Question, c.Answer }).ToArray()
+                ?? [],
+        };
+        var (prompt, parser) = TypedDispatch(projectType);
+        var json = await CallJsonAsync(prompt, payload, ct);
+        return parser(json);
+    }
+
+    private static (string Prompt, Func<string, AITypedProjectDraft> Parser) TypedDispatch(string type)
+    {
+        return type.Trim().ToLowerInvariant() switch
+        {
+            "sales" => (PromptLibrary.SalesProjectGeneration, ParseSales),
+            "support" => (PromptLibrary.SupportProjectGeneration, ParseSupport),
+            "marketing" => (PromptLibrary.MarketingProjectGeneration, ParseMarketing),
+            "operations" => (PromptLibrary.OperationsProjectGeneration, ParseOperations),
+            "generic" => (PromptLibrary.GenericProjectGeneration, ParseGeneric),
+            _ => throw new AIServiceException(
+                $"GenerateTypedProjectDraftAsync does not handle project type '{type}'. " +
+                "Engineering must use GenerateProjectStructureAsync."),
+        };
+    }
+
+    private static AITypedProjectDraft ParseSales(string json)
+    {
+        var raw = JsonSerializer.Deserialize<RawSalesProject>(json, JsonOpts)
+                  ?? throw new AIServiceException("AI sales response was not parseable.");
+        return new AISalesProjectDraft(
+            raw.SuggestedName ?? "Sales project",
+            (raw.Stages ?? []).Select((s, i) => new AISalesStageDraft(
+                (s.Name ?? "Stage").Trim(),
+                s.Order > 0 ? s.Order : i + 1,
+                Math.Clamp(s.DefaultProbability ?? 50, 0, 100))).ToList(),
+            (raw.Accounts ?? []).Select(a => new AISalesAccountDraft(
+                (a.Name ?? "Account").Trim(),
+                TrimOrNull(a.Domain),
+                TrimOrNull(a.Industry))).ToList(),
+            (raw.Deals ?? []).Select(d => new AISalesDealDraft(
+                (d.Name ?? "Deal").Trim(),
+                TrimOrNull(d.AccountName),
+                d.Value,
+                TrimOrNull(d.Currency)?.ToUpperInvariant(),
+                TrimOrNull(d.StageName),
+                d.Probability.HasValue ? Math.Clamp(d.Probability.Value, 0, 100) : null,
+                d.ExpectedClose)).ToList());
+    }
+
+    private static AITypedProjectDraft ParseSupport(string json)
+    {
+        var raw = JsonSerializer.Deserialize<RawSupportProject>(json, JsonOpts)
+                  ?? throw new AIServiceException("AI support response was not parseable.");
+        return new AISupportProjectDraft(
+            raw.SuggestedName ?? "Support project",
+            (raw.Queues ?? []).Select(q => new AISupportQueueDraft(
+                (q.Name ?? "Queue").Trim(),
+                q.SlaMinutes is > 0 ? q.SlaMinutes.Value : 24 * 60)).ToList(),
+            (raw.Customers ?? []).Select(c => new AISupportCustomerDraft(
+                (c.Name ?? "Customer").Trim(),
+                TrimOrNull(c.Email), TrimOrNull(c.Company), TrimOrNull(c.Tier))).ToList(),
+            (raw.Tickets ?? []).Select(t => new AISupportTicketDraft(
+                (t.Subject ?? "Ticket").Trim(),
+                TrimOrNull(t.BodyMd), TrimOrNull(t.QueueName), TrimOrNull(t.CustomerName),
+                NormalisePriority(t.Priority))).ToList());
+    }
+
+    private static AITypedProjectDraft ParseMarketing(string json)
+    {
+        var raw = JsonSerializer.Deserialize<RawMarketingProject>(json, JsonOpts)
+                  ?? throw new AIServiceException("AI marketing response was not parseable.");
+        return new AIMarketingProjectDraft(
+            raw.SuggestedName ?? "Marketing project",
+            (raw.Campaigns ?? []).Select(c => new AIMarketingCampaignDraft(
+                (c.Name ?? "Campaign").Trim(),
+                NormaliseChannel(c.Channel),
+                TrimOrNull(c.GoalMd),
+                c.StartDate, c.EndDate,
+                (c.Assets ?? []).Select(a => new AIMarketingAssetDraft(
+                    (a.Title ?? "Asset").Trim(),
+                    NormaliseAssetType(a.Type),
+                    a.PublishDate)).ToList(),
+                (c.Tasks ?? []).Select(t => new AIMarketingTaskDraft(
+                    (t.Title ?? "Task").Trim(),
+                    TrimOrNull(t.AssetTitle),
+                    t.DueDate)).ToList())).ToList());
+    }
+
+    private static AITypedProjectDraft ParseOperations(string json)
+    {
+        var raw = JsonSerializer.Deserialize<RawOperationsProject>(json, JsonOpts)
+                  ?? throw new AIServiceException("AI operations response was not parseable.");
+        return new AIOperationsProjectDraft(
+            raw.SuggestedName ?? "Operations project",
+            (raw.Workflows ?? []).Select(w => new AIOperationsWorkflowDraft(
+                (w.Name ?? "Workflow").Trim(),
+                TrimOrNull(w.Description),
+                NormaliseRecurrence(w.RecurrenceRule),
+                (w.Checklist ?? []).Select(i => new AIOperationsChecklistItemDraft(
+                    (i.Title ?? "Item").Trim(),
+                    i.Sequential ?? false)).ToList())).ToList());
+    }
+
+    private static AITypedProjectDraft ParseGeneric(string json)
+    {
+        var raw = JsonSerializer.Deserialize<RawGenericProject>(json, JsonOpts)
+                  ?? throw new AIServiceException("AI generic response was not parseable.");
+        return new AIGenericProjectDraft(
+            raw.SuggestedName ?? "Project",
+            (raw.Lists ?? []).Select(l => new AIGenericListDraft(
+                (l.Name ?? "List").Trim(),
+                (l.Tasks ?? []).Select(t => new AIGenericTaskDraft(
+                    (t.Title ?? "Task").Trim(),
+                    TrimOrNull(t.Description),
+                    NormalisePriority(t.Priority))).ToList())).ToList());
+    }
+
+    private static string? TrimOrNull(string? s)
+    {
+        if (s is null) return null;
+        var t = s.Trim();
+        return string.IsNullOrEmpty(t) ? null : t;
+    }
+
+    private static string NormaliseChannel(string? raw)
+    {
+        var t = raw?.Trim();
+        if (string.IsNullOrEmpty(t)) return "Other";
+        return t.ToLowerInvariant() switch
+        {
+            "email" => "Email",
+            "social" => "Social",
+            "blog" => "Blog",
+            "paid" => "Paid",
+            "event" => "Event",
+            _ => "Other",
+        };
+    }
+
+    private static string NormaliseAssetType(string? raw)
+    {
+        var t = raw?.Trim();
+        if (string.IsNullOrEmpty(t)) return "Other";
+        return t.ToLowerInvariant() switch
+        {
+            "email" => "Email",
+            "socialpost" or "social_post" or "social" => "SocialPost",
+            "blogpost" or "blog_post" or "blog" => "BlogPost",
+            "ad" => "Ad",
+            "image" => "Image",
+            "video" => "Video",
+            "landingpage" or "landing_page" or "landing" => "LandingPage",
+            _ => "Other",
+        };
+    }
+
+    private static string? NormaliseRecurrence(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return null;
+        return raw.Trim().ToUpperInvariant();
+    }
+
     public async Task<AIGeneratedEpic> GenerateEpicStructureAsync(
         AIEpicGenerationInput input, CancellationToken ct)
     {
@@ -294,6 +465,129 @@ public class GeminiAIService(IOptions<AISettings> options, ILogger<GeminiAIServi
     private sealed class RawTaskList
     {
         public List<RawTask>? Tasks { get; set; }
+    }
+
+    // ---------- F1.5-07 typed-project raw shapes ----------
+
+    private sealed class RawSalesProject
+    {
+        public string? SuggestedName { get; set; }
+        public List<RawSalesStage>? Stages { get; set; }
+        public List<RawSalesAccount>? Accounts { get; set; }
+        public List<RawSalesDeal>? Deals { get; set; }
+    }
+    private sealed class RawSalesStage
+    {
+        public string? Name { get; set; }
+        public int Order { get; set; }
+        public int? DefaultProbability { get; set; }
+    }
+    private sealed class RawSalesAccount
+    {
+        public string? Name { get; set; }
+        public string? Domain { get; set; }
+        public string? Industry { get; set; }
+    }
+    private sealed class RawSalesDeal
+    {
+        public string? Name { get; set; }
+        public string? AccountName { get; set; }
+        public decimal? Value { get; set; }
+        public string? Currency { get; set; }
+        public string? StageName { get; set; }
+        public int? Probability { get; set; }
+        public DateTime? ExpectedClose { get; set; }
+    }
+
+    private sealed class RawSupportProject
+    {
+        public string? SuggestedName { get; set; }
+        public List<RawSupportQueue>? Queues { get; set; }
+        public List<RawSupportCustomer>? Customers { get; set; }
+        public List<RawSupportTicket>? Tickets { get; set; }
+    }
+    private sealed class RawSupportQueue
+    {
+        public string? Name { get; set; }
+        public int? SlaMinutes { get; set; }
+    }
+    private sealed class RawSupportCustomer
+    {
+        public string? Name { get; set; }
+        public string? Email { get; set; }
+        public string? Company { get; set; }
+        public string? Tier { get; set; }
+    }
+    private sealed class RawSupportTicket
+    {
+        public string? Subject { get; set; }
+        public string? BodyMd { get; set; }
+        public string? QueueName { get; set; }
+        public string? CustomerName { get; set; }
+        public string? Priority { get; set; }
+    }
+
+    private sealed class RawMarketingProject
+    {
+        public string? SuggestedName { get; set; }
+        public List<RawMarketingCampaign>? Campaigns { get; set; }
+    }
+    private sealed class RawMarketingCampaign
+    {
+        public string? Name { get; set; }
+        public string? Channel { get; set; }
+        public string? GoalMd { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public List<RawMarketingAsset>? Assets { get; set; }
+        public List<RawMarketingTask>? Tasks { get; set; }
+    }
+    private sealed class RawMarketingAsset
+    {
+        public string? Title { get; set; }
+        public string? Type { get; set; }
+        public DateTime? PublishDate { get; set; }
+    }
+    private sealed class RawMarketingTask
+    {
+        public string? Title { get; set; }
+        public string? AssetTitle { get; set; }
+        public DateTime? DueDate { get; set; }
+    }
+
+    private sealed class RawOperationsProject
+    {
+        public string? SuggestedName { get; set; }
+        public List<RawOperationsWorkflow>? Workflows { get; set; }
+    }
+    private sealed class RawOperationsWorkflow
+    {
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public string? RecurrenceRule { get; set; }
+        public List<RawOperationsItem>? Checklist { get; set; }
+    }
+    private sealed class RawOperationsItem
+    {
+        public string? Title { get; set; }
+        public bool? Sequential { get; set; }
+    }
+
+    private sealed class RawGenericProject
+    {
+        public string? SuggestedName { get; set; }
+        public List<RawGenericList>? Lists { get; set; }
+    }
+    private sealed class RawGenericList
+    {
+        public string? Name { get; set; }
+        public List<RawGenericTask>? Tasks { get; set; }
+    }
+    private sealed class RawGenericTask
+    {
+        public string? Title { get; set; }
+        public string? Description { get; set; }
+        public string? Priority { get; set; }
     }
 }
 

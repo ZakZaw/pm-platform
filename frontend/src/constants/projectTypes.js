@@ -19,6 +19,7 @@ import {
   Layers,
   LifeBuoy,
   ListTodo,
+  Map as MapIcon,
   Megaphone,
   Rocket,
   Settings,
@@ -88,6 +89,7 @@ export function findProjectType(id) {
 // their entity work (F1.5-02..F1.5-06).
 export function navItemsForType(typeId) {
   const universal = [
+    { key: 'roadmap', label: 'Roadmap', icon: MapIcon, path: 'roadmap' },
     { key: 'dashboard', label: 'Dashboard', icon: BarChart3, path: 'dashboard' },
     { key: 'ai', label: 'AI Inbox', icon: Sparkles, path: 'ai' },
   ];

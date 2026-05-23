@@ -38,7 +38,7 @@ export function RoadmapView({ data, loading, error }) {
             style={{ left: `${layout.todayPct}%` }}
             aria-label="Today"
           >
-            <Icon name="dot" size={14} color="var(--accent-primary)" />
+            <Icon name="dot" size={14} color="var(--accent)" />
           </span>
         )}
       </div>

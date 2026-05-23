@@ -1,39 +1,30 @@
-.kanban {
+/* Base .kanban / .kanban-col live in stratos.css.
+   This file adds the swimlane wrapper that boards with >1 lane use,
+   plus the ColumnsButton checkbox affordance. */
+
+.kanban-wrap {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--s-7);
   flex: 1 1 auto;
   min-height: 0;
 }
-
-.kanban__lane {
+.kanban-lane {
   display: flex;
   flex-direction: column;
   min-height: 0;
   flex: 1 1 auto;
 }
-
-.kanban__lane-label {
-  font-size: var(--font-size-meta);
-  font-weight: var(--weight-semibold);
+.kanban-lane-label {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.07em;
-  margin-bottom: var(--space-2);
+  letter-spacing: var(--tracking-wide);
+  margin-bottom: var(--s-4);
 }
 
-.kanban__columns {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(240px, 1fr);
-  gap: var(--space-3);
-  overflow-x: auto;
-  overflow-y: hidden;
-  flex: 1 1 auto;
-  min-height: 0;
-  padding-bottom: var(--space-2);
-}
-
+/* ColumnsButton (column visibility toggle) */
 .columns-button__check {
   width: 14px;
   height: 14px;
@@ -46,16 +37,14 @@
               border-color var(--dur-fast) var(--ease-out);
 }
 .columns-button__check.is-on {
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 .columns-button__check.is-on::after {
   content: "";
   position: absolute;
-  left: 4px;
-  top: 1px;
-  width: 4px;
-  height: 8px;
+  left: 4px; top: 1px;
+  width: 4px; height: 8px;
   border-right: 2px solid white;
   border-bottom: 2px solid white;
   transform: rotate(45deg);
@@ -65,13 +54,13 @@
   margin-left: 4px;
   font-family: var(--font-mono);
   font-size: 10px;
-  background: var(--accent-primary-muted);
-  color: var(--accent-primary);
+  background: var(--accent-soft-2);
+  color: var(--accent);
   padding: 1px 5px;
-  border-radius: var(--radius-xs);
+  border-radius: var(--r-xs);
 }
 
 .columns-button__alias {
-  color: var(--text-tertiary);
-  font-size: 11px;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
 }

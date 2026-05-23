@@ -135,13 +135,13 @@ export function KanbanBoard({
 
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="kanban">
+      <div className="kanban-wrap">
         {displayed.swimlanes.map((lane) => (
-          <div key={lane.key} className="kanban__lane">
+          <div key={lane.key} className="kanban-lane">
             {displayed.swimlanes.length > 1 && (
-              <div className="kanban__lane-label">{lane.label}</div>
+              <div className="kanban-lane-label">{lane.label}</div>
             )}
-            <div className="kanban__columns">
+            <div className="kanban">
               {lane.columns.filter((col) => isVisible(col.status)).map((col) => {
                 const cfg = statusConfigs?.find((c) => c.status === col.status);
                 const pts = col.cards.reduce((s, c) => s + (c.storyPoints ?? 0), 0);

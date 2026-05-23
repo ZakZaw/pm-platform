@@ -1,38 +1,38 @@
 .run-detail-page__back {
-  margin-bottom: var(--space-3);
-  font-size: var(--font-size-meta);
+  margin-bottom: var(--s-5);
+  font-size: var(--fs-xs);
 }
 
 .run-detail-page__back a {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--text-tertiary);
+  color: var(--text-muted);
   text-decoration: none;
 }
 
 .run-detail-page__back a:hover {
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .run-detail-page__skipped {
-  margin-bottom: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border-left: 3px solid var(--status-warning);
+  margin-bottom: var(--s-5);
+  padding: var(--s-5) var(--s-6);
+  border-left: 3px solid var(--warning);
   color: var(--text-secondary);
-  font-size: var(--font-size-dense);
+  font-size: var(--fs-md);
 }
 
 .run-detail-page__checklist {
-  padding: var(--space-4);
+  padding: var(--s-6);
 }
 
 .run-detail-page__item {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  gap: var(--space-3);
+  gap: var(--s-5);
   align-items: center;
-  padding: var(--space-2) 0;
+  padding: var(--s-4) 0;
   border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -48,19 +48,19 @@
   height: 28px;
   border: none;
   background: transparent;
-  color: var(--text-tertiary);
+  color: var(--text-muted);
   cursor: pointer;
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
   transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 }
 
 .run-detail-page__check:hover:not(:disabled) {
-  background: var(--bg-hover);
-  color: var(--text-primary);
+  background: var(--surface-hover);
+  color: var(--text);
 }
 
 .run-detail-page__check.is-checked {
-  color: var(--status-success);
+  color: var(--success);
 }
 
 .run-detail-page__check.is-locked {
@@ -74,11 +74,11 @@
 }
 
 .run-detail-page__item-title {
-  color: var(--text-primary);
-  font-size: var(--font-size-dense);
+  color: var(--text);
+  font-size: var(--fs-md);
 }
 
 .run-detail-page__item-title.is-completed {
   text-decoration: line-through;
-  color: var(--text-tertiary);
+  color: var(--text-muted);
 }

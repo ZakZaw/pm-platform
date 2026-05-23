@@ -162,7 +162,7 @@ function CreateLeadModal({ projectId, onClose, onCreated }) {
             <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             <Input label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
             <Input label="Source" value={source} onChange={(e) => setSource(e.target.value)} placeholder="Inbound / Referral / …" />
-            {error && <p style={{ color: 'var(--status-danger)', margin: 0 }}>{error}</p>}
+            {error && <p style={{ color: 'var(--danger)', margin: 0 }}>{error}</p>}
           </div>
         </ModalBody>
         <ModalFooter>
@@ -234,7 +234,7 @@ function ConvertLeadModal({ projectId, lead, onClose, onConverted }) {
               options={stages.filter((s) => !s.isTerminalWon && !s.isTerminalLost)
                 .map((s) => ({ value: s.id, label: s.name }))}
             />
-            {error && <p style={{ color: 'var(--status-danger)', margin: 0 }}>{error}</p>}
+            {error && <p style={{ color: 'var(--danger)', margin: 0 }}>{error}</p>}
           </div>
         </ModalBody>
         <ModalFooter>

@@ -1,8 +1,8 @@
 .epic-card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-4);
+  gap: var(--s-4);
+  padding: var(--s-6);
   position: relative;
 }
 
@@ -13,10 +13,10 @@
     background var(--dur-fast) var(--ease-out);
 }
 .epic-card.is-interactive:hover {
-  border-color: var(--accent-primary);
-  background: var(--bg-hover);
+  border-color: var(--accent);
+  background: var(--surface-hover);
 }
-.epic-card.is-interactive:focus-within { border-color: var(--border-focus); }
+.epic-card.is-interactive:focus-within { border-color: var(--accent-bright); }
 
 /* The whole-card click target sits behind the content. Children like the
    edit button stopPropagation on click so they aren't swallowed. */
@@ -31,7 +31,7 @@
 }
 .epic-card__hit:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 1px var(--border-focus);
+  box-shadow: inset 0 0 0 1px var(--accent-bright);
 }
 .epic-card__head,
 .epic-card__desc,
@@ -41,7 +41,7 @@
 .epic-card__head {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--s-4);
 }
 
 .epic-card__color {
@@ -53,8 +53,8 @@
 
 .epic-card__title {
   flex: 1;
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -70,20 +70,20 @@
   height: 24px;
   background: transparent;
   border: 1px solid transparent;
-  color: var(--text-tertiary);
+  color: var(--text-muted);
   cursor: pointer;
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
 }
 .epic-card__edit:hover {
-  background: var(--bg-hover);
+  background: var(--surface-hover);
   color: var(--text-secondary);
   border-color: var(--border-subtle);
 }
 
 .epic-card__desc {
   color: var(--text-secondary);
-  font-size: var(--font-size-dense);
-  line-height: var(--leading-snug);
+  font-size: var(--fs-md);
+  line-height: var(--lh-snug);
   margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -94,21 +94,21 @@
 .epic-card__meta {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
-  color: var(--text-tertiary);
-  font-size: var(--font-size-meta);
+  gap: var(--s-2);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
   font-family: var(--font-mono);
 }
 
 .epic-card__bar {
   height: 4px;
-  background: var(--bg-surface-3);
-  border-radius: var(--radius-pill);
+  background: var(--surface-hover);
+  border-radius: var(--r-pill);
   overflow: hidden;
 }
 
 .epic-card__bar-fill {
   height: 100%;
-  background: var(--accent-primary);
-  transition: width var(--dur-med) var(--ease-out);
+  background: var(--accent);
+  transition: width var(--dur-base) var(--ease-out);
 }

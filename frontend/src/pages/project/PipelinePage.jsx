@@ -11,7 +11,7 @@ import {
 } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { Filter, Plus, RefreshCw } from 'lucide-react';
-import { Badge, Button, Skeleton, useToast } from '@/components/ui';
+import { Button, Skeleton, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { salesApi } from '@/api/sales.api';
 import { DealDetailDrawer } from '@/components/deals/DealDetailDrawer';
@@ -32,14 +32,18 @@ function fmtCurrency(value, currency) {
 }
 
 function fmtMixed(stage) {
-  // Stages may hold deals in different currencies; show the bare number
-  // when mixed, the proper currency symbol otherwise.
   const currencies = new Set(stage.deals.map((d) => d.currency));
   if (currencies.size <= 1) {
     return fmtCurrency(stage.totalValue, [...currencies][0] ?? 'USD');
   }
   return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 })
     .format(stage.totalValue ?? 0);
+}
+
+function stageBarColor(stage) {
+  if (stage.isTerminalWon) return 'var(--success)';
+  if (stage.isTerminalLost) return 'var(--danger)';
+  return 'var(--accent)';
 }
 
 export function PipelinePage() {
@@ -52,7 +56,7 @@ export function PipelinePage() {
   const [activeDeal, setActiveDeal] = useState(null);
   const [openDealId, setOpenDealId] = useState(null);
   const [createOpen, setCreateOpen] = useState(false);
-  const [pendingLost, setPendingLost] = useState(null); // { deal, toStage }
+  const [pendingLost, setPendingLost] = useState(null);
   const [error, setError] = useState(null);
 
   const refresh = useCallback(async (projectId) => {
@@ -111,7 +115,6 @@ export function PipelinePage() {
     if (!targetStage) return;
 
     if (targetStage.isTerminalLost) {
-      // Lost requires a reason — defer the move until the user provides one.
       setPendingLost({ deal: hit.deal, toStage: targetStage });
       return;
     }
@@ -120,7 +123,6 @@ export function PipelinePage() {
   }
 
   async function applyStageChange(deal, toStage, reason) {
-    // Optimistic UI: remove from source, place in target.
     const next = {
       ...displayed,
       stages: displayed.stages.map((s) => {
@@ -169,21 +171,21 @@ export function PipelinePage() {
 
   if (error) {
     return (
-      <div className="page">
-        <p className="ai-wizard__error">{error}</p>
-      </div>
+      <div className="main-inner"><p className="muted">{error}</p></div>
     );
   }
 
   if (!project || !displayed) {
     return (
-      <div className="page pipeline">
-        <header className="page-header">
-          <h1 className="page-title">Pipeline</h1>
-        </header>
-        <div className="pipeline__columns">
+      <div className="main-inner pipeline-page">
+        <div className="page-head">
+          <div className="page-title-row">
+            <h1 className="page-title">Pipeline</h1>
+          </div>
+        </div>
+        <div className="pipeline">
           {[0, 1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="kanban-col">
+            <div key={i} className="pipe-col">
               <Skeleton height={20} width="60%" />
               <div style={{ marginTop: 12 }}>
                 <Skeleton height={64} />
@@ -204,29 +206,32 @@ export function PipelinePage() {
     .reduce((acc, s) => acc + s.dealCount, 0);
 
   return (
-    <div className="page pipeline">
-      <header className="page-header">
-        <div className="hstack" style={{ gap: 12, alignItems: 'baseline' }}>
-          <h1 className="page-title">Pipeline</h1>
-          <span className="muted">
-            · {totalOpenCount} open deals · {fmtCurrency(totalOpenValue, 'USD')}
-          </span>
+    <div className="main-inner pipeline-page">
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>Sales · Pipeline</div>
+            <h1 className="page-title">Pipeline</h1>
+            <div className="page-subtitle">
+              {totalOpenCount} open deals · {fmtCurrency(totalOpenValue, 'USD')} in flight
+            </div>
+          </div>
+          <div className="row gap-3">
+            <Button variant="ghost" size="sm" disabled>
+              <Filter size={13} aria-hidden="true" /> Filter
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => refresh(project.id).catch(() => {})}>
+              <RefreshCw size={13} aria-hidden="true" /> Refresh
+            </Button>
+            <Button variant="primary" size="sm" onClick={() => setCreateOpen(true)}>
+              <Plus size={13} aria-hidden="true" /> New deal
+            </Button>
+          </div>
         </div>
-        <div className="hstack" style={{ gap: 8 }}>
-          <Button variant="ghost" size="sm" disabled>
-            <Filter size={13} aria-hidden="true" /> Filter
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => refresh(project.id).catch(() => {})}>
-            <RefreshCw size={13} aria-hidden="true" /> Refresh
-          </Button>
-          <Button size="sm" onClick={() => setCreateOpen(true)}>
-            <Plus size={13} aria-hidden="true" /> New deal
-          </Button>
-        </div>
-      </header>
+      </div>
 
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        <div className="pipeline__columns">
+        <div className="pipeline">
           {displayed.stages.map((stage) => (
             <PipelineColumn key={stage.id} stage={stage} onOpenDeal={setOpenDealId} />
           ))}
@@ -275,27 +280,30 @@ export function PipelinePage() {
 
 function PipelineColumn({ stage, onOpenDeal }) {
   const { isOver, setNodeRef } = useDroppable({ id: `stage:${stage.id}` });
-  const tone = stage.isTerminalWon ? 'success' : stage.isTerminalLost ? 'danger' : 'neutral';
   return (
     <div
       ref={setNodeRef}
-      className={['kanban-col', 'pipeline-col', isOver ? 'is-over' : ''].filter(Boolean).join(' ')}
+      className={['pipe-col', isOver ? 'is-over' : ''].filter(Boolean).join(' ')}
     >
-      <header className="hstack kanban-col__head">
-        <div className="hstack" style={{ gap: 8, flexWrap: 'wrap' }}>
-          <Badge tone={tone}>{stage.name}</Badge>
-          <span className="mono dim kanban-col__count">
-            {stage.dealCount}
-            {stage.totalValue > 0 && ` · ${fmtMixed(stage)}`}
-          </span>
+      <div className="pipe-col-head">
+        <div className="pipe-stage-bar" style={{ background: stageBarColor(stage) }} />
+        <div className="pipe-col-title">
+          <span className="pipe-col-name">{stage.name}</span>
+          <span className="pipe-col-amount">{fmtMixed(stage)}</span>
         </div>
-      </header>
-      <div className="kanban-col__body">
+        <div className="pipe-col-sub">
+          <span>{stage.dealCount} {stage.dealCount === 1 ? 'deal' : 'deals'}</span>
+          {stage.defaultProbability != null && (
+            <span className="mono">{stage.defaultProbability}%</span>
+          )}
+        </div>
+      </div>
+      <div className="pipe-col-body">
         {stage.deals.map((deal) => (
           <DealCardView key={deal.id} deal={deal} onOpen={onOpenDeal} />
         ))}
         {stage.deals.length === 0 && (
-          <div className="pipeline-col__empty">No deals</div>
+          <div className="pipe-col-empty">No deals</div>
         )}
       </div>
     </div>
@@ -338,14 +346,13 @@ function DealCardView({ deal, onOpen, isOverlay = false }) {
         }
       }}
     >
-      <div className="deal-card__title truncate">{deal.name}</div>
-      <div className="deal-card__account muted truncate">{deal.accountName}</div>
-      <div className="hstack deal-card__foot">
-        <span className="deal-card__value mono">
-          {fmtCurrency(deal.value, deal.currency)}
+      <div className="deal-name truncate">{deal.name}</div>
+      <div className="deal-company truncate">{deal.accountName}</div>
+      <div className="deal-meta">
+        <span className="deal-amt">{fmtCurrency(deal.value, deal.currency)}</span>
+        <span className="mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)' }}>
+          {deal.probability}%
         </span>
-        <span className="grow" />
-        <span className="mono dim">{deal.probability}%</span>
       </div>
     </div>
   );

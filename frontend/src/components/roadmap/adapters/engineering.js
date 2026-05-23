@@ -72,7 +72,7 @@ export async function engineeringRoadmap(projectId) {
       id: `sprint-${active.id}`,
       label: `${active.name} ends`,
       at: active.endDate,
-      color: 'var(--accent-primary)',
+      color: 'var(--accent)',
       kind: 'milestone',
     });
   }

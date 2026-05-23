@@ -18,11 +18,18 @@ import './ContentCalendarPage.css';
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+// Maps an asset channel to the .evt-{key} class in stratos.css.
+const CHANNEL_TO_EVT = {
+  Email: 'evt-email',
+  Social: 'evt-social',
+  Blog: 'evt-blog',
+  Paid: 'evt-ad',
+  Event: 'evt-event',
+  Other: 'evt-blog',
+};
+
 function startOfMonth(d) {
   return new Date(d.getFullYear(), d.getMonth(), 1);
-}
-function endOfMonth(d) {
-  return new Date(d.getFullYear(), d.getMonth() + 1, 1);
 }
 function ymd(d) {
   const y = d.getFullYear();
@@ -127,42 +134,46 @@ export function ContentCalendarPage() {
   const today = ymd(new Date());
 
   if (error) {
-    return <div className="page"><p style={{ color: 'var(--status-danger)' }}>{error}</p></div>;
+    return <div className="main-inner"><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
   }
 
   return (
-    <div className="page calendar-page">
-      <header className="page-header calendar-page__head">
-        <div className="hstack" style={{ gap: 12, alignItems: 'baseline' }}>
-          <h1 className="page-title">Calendar</h1>
-          <span className="muted">· {monthLabel}</span>
+    <div className="main-inner calendar-page">
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>
+              {project?.name ? `${project.name} · ` : ''}Content calendar
+            </div>
+            <h1 className="page-title">{monthLabel}</h1>
+          </div>
+          <div className="row gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setAnchor(new Date(anchor.getFullYear(), anchor.getMonth() - 1, 1))}
+              aria-label="Previous month"
+            >
+              <ChevronLeft size={14} aria-hidden="true" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setAnchor(startOfMonth(new Date()))}
+            >
+              Today
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setAnchor(new Date(anchor.getFullYear(), anchor.getMonth() + 1, 1))}
+              aria-label="Next month"
+            >
+              <ChevronRight size={14} aria-hidden="true" />
+            </Button>
+          </div>
         </div>
-        <div className="calendar-nav">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setAnchor(new Date(anchor.getFullYear(), anchor.getMonth() - 1, 1))}
-            aria-label="Previous month"
-          >
-            <ChevronLeft size={14} aria-hidden="true" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setAnchor(startOfMonth(new Date()))}
-          >
-            Today
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setAnchor(new Date(anchor.getFullYear(), anchor.getMonth() + 1, 1))}
-            aria-label="Next month"
-          >
-            <ChevronRight size={14} aria-hidden="true" />
-          </Button>
-        </div>
-      </header>
+      </div>
 
       {!calendar ? (
         <Skeleton height={520} />
@@ -176,24 +187,28 @@ export function ContentCalendarPage() {
           onDragCancel={() => setActiveAsset(null)}
           onDragEnd={handleDragEnd}
         >
-          <div className="calendar-grid">
-            {DAY_NAMES.map((d) => (
-              <div key={d} className="calendar-grid__dayhead">{d}</div>
-            ))}
-            {cells.map((d) => {
-              const key = ymd(d);
-              const inMonth = d.getMonth() === anchor.getMonth();
-              return (
-                <CalendarCell
-                  key={key}
-                  dayKey={key}
-                  date={d}
-                  isOtherMonth={!inMonth}
-                  isToday={key === today}
-                  assets={assetsByDay.get(key) ?? []}
-                />
-              );
-            })}
+          <div className="cal">
+            <div className="cal-head">
+              {DAY_NAMES.map((d) => (
+                <div key={d}>{d}</div>
+              ))}
+            </div>
+            <div className="cal-grid">
+              {cells.map((d) => {
+                const key = ymd(d);
+                const inMonth = d.getMonth() === anchor.getMonth();
+                return (
+                  <CalendarCell
+                    key={key}
+                    dayKey={key}
+                    date={d}
+                    isOtherMonth={!inMonth}
+                    isToday={key === today}
+                    assets={assetsByDay.get(key) ?? []}
+                  />
+                );
+              })}
+            </div>
           </div>
 
           <DragOverlay>
@@ -220,14 +235,14 @@ export function ContentCalendarPage() {
 function CalendarCell({ dayKey, date, isOtherMonth, isToday, assets }) {
   const { setNodeRef, isOver } = useDroppable({ id: dayKey });
   const classes = [
-    'calendar-cell',
-    isOtherMonth && 'is-other-month',
+    'cal-cell',
+    isOtherMonth && 'is-other',
     isToday && 'is-today',
     isOver && 'is-over',
   ].filter(Boolean).join(' ');
   return (
     <div ref={setNodeRef} className={classes}>
-      <div className="calendar-cell__date">{date.getDate()}</div>
+      <div className="cal-date">{date.getDate()}</div>
       {assets.map((a) => (
         <AssetChip key={a.id} asset={a} />
       ))}
@@ -240,22 +255,20 @@ function AssetChip({ asset, overlay = false }) {
     id: asset.id,
     disabled: overlay,
   });
-  const tokens = channelTokens(asset.channel);
-  const classes = ['calendar-chip', isDragging && !overlay && 'is-dragging']
+  const evtClass = CHANNEL_TO_EVT[asset.channel] ?? 'evt-blog';
+  const classes = ['cal-event', evtClass, isDragging && !overlay && 'is-dragging']
     .filter(Boolean)
     .join(' ');
   return (
     <div
       ref={overlay ? undefined : setNodeRef}
       className={classes}
-      style={{ background: tokens.bg, color: tokens.fg }}
       data-status={asset.status}
       title={`${asset.title} · ${asset.channel} · ${asset.status}`}
       {...(overlay ? {} : listeners)}
       {...(overlay ? {} : attributes)}
     >
-      <span className="calendar-chip__dot" aria-hidden="true" />
-      <span className="calendar-chip__title">{asset.title}</span>
+      {asset.title}
     </div>
   );
 }

@@ -82,7 +82,7 @@ export function RunDetailPage() {
     }
   }
 
-  if (error) return <div className="page"><p style={{ color: 'var(--status-danger)' }}>{error}</p></div>;
+  if (error) return <div className="page"><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
   if (!data) {
     return (
       <div className="page" aria-busy="true">

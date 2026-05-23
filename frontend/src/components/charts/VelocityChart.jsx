@@ -42,7 +42,7 @@ export function VelocityChart({ sprints = [], width = 320, height = 140 }) {
               y={height - hCom}
               width={bw}
               height={hCom}
-              fill={s.current ? 'rgba(91,106,240,0.20)' : 'var(--bg-surface-3)'}
+              fill={s.current ? 'rgba(91,106,240,0.20)' : 'var(--surface-hover)'}
               rx="2"
             />
             <rect
@@ -50,7 +50,7 @@ export function VelocityChart({ sprints = [], width = 320, height = 140 }) {
               y={height - hP}
               width={bw}
               height={hP}
-              fill="var(--accent-primary)"
+              fill="var(--accent)"
               opacity={s.current ? 1 : 0.7}
               rx="2"
             />

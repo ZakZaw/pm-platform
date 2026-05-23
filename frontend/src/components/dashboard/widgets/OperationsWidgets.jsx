@@ -68,7 +68,7 @@ export function OperationsOverdueRunsWidget({ project }) {
       <MetricRow
         label="Past their scheduled time"
         value={overdueTotal}
-        accent="var(--status-danger)"
+        accent="var(--danger)"
       />
       <ul className="dashboard-widget__rows">
         {top.map((w) => (
@@ -102,7 +102,7 @@ export function OperationsSkipRateWidget({ project }) {
       <MetricRow
         label="Workflows whose last run was skipped"
         value={`${skipped} (${pct}%)`}
-        accent={pct >= 20 ? 'var(--status-warning)' : undefined}
+        accent={pct >= 20 ? 'var(--warning)' : undefined}
       />
     </DashboardWidget>
   );

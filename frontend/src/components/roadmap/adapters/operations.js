@@ -32,7 +32,7 @@ export async function operationsRoadmap(projectId) {
         // Overdue runs are by definition in the past — pin them to "now"
         // so they show at the playhead rather than off-screen.
         at: new Date(now).toISOString(),
-        color: 'var(--status-danger)',
+        color: 'var(--danger)',
         kind: 'run',
         sublabel: 'past scheduled',
       });

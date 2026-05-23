@@ -415,7 +415,7 @@ export function OrgHomePage() {
                 points={PLACEHOLDER_VELOCITY}
                 width={260}
                 height={56}
-                stroke="var(--accent-primary)"
+                stroke="var(--accent)"
               />
             </div>
             <div className="org-home__spark-meta">

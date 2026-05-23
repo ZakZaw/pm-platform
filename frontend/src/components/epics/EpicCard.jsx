@@ -34,7 +34,7 @@ export function EpicCard({ epic, orgSlug, projectSlug }) {
         aria-label={`Open epic ${epic.title}`}
       />
       <div className="epic-card__head">
-        <span className="epic-card__color" style={{ background: epic.color || 'var(--accent-primary)' }} />
+        <span className="epic-card__color" style={{ background: epic.color || 'var(--accent)' }} />
         <div className="epic-card__title">{epic.title}</div>
         <Badge tone={statusTone(epic.status)}>{epic.status}</Badge>
       </div>
@@ -52,7 +52,7 @@ export function EpicCard({ epic, orgSlug, projectSlug }) {
       <div className="epic-card__bar" aria-label={`Progress ${pct}%`}>
         <div
           className="epic-card__bar-fill"
-          style={{ width: `${pct}%`, background: epic.color || 'var(--accent-primary)' }}
+          style={{ width: `${pct}%`, background: epic.color || 'var(--accent)' }}
         />
       </div>
     </Card>

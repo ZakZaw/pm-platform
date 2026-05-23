@@ -4,7 +4,7 @@ import { Dropdown } from '@/components/ui';
 import { epicsApi } from '@/api/epics.api';
 import './FieldPicker.css';
 
-const DEFAULT_COLOR = 'var(--accent-primary)';
+const DEFAULT_COLOR = 'var(--accent)';
 
 /**
  * Picker for the task's epic. Lists every non-archived epic in the project.

@@ -20,7 +20,7 @@ export async function genericRoadmap(projectId) {
       id: `task-${t.id}`,
       label: t.title,
       at: t.dueDate,
-      color: 'var(--accent-primary)',
+      color: 'var(--accent)',
       kind: 'milestone',
       sublabel: t.listName,
     }));

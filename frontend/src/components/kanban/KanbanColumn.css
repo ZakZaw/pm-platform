@@ -1,71 +1,39 @@
-.kanban-col {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 0;
-  max-height: 100%;
-  transition: background var(--dur-fast) var(--ease-out);
-}
+/* Base .kanban-col / .kanban-col-head / .kanban-col-title / .kanban-col-body
+   live in stratos.css. This file adds the drop-state, inline add-task form,
+   and column-collapsed checkbox styles used by ColumnsButton. */
+
 .kanban-col.is-over {
-  background: var(--bg-selected);
-  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
 }
 
-.kanban-col__head {
-  justify-content: space-between;
-  padding: 4px 4px 4px 6px;
-  flex-shrink: 0;
-}
-
-.kanban-col__count { font-size: 11px; }
-
-.kanban-col__body {
+.kanban-col-add-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  flex: 1 1 auto;
-  overflow-y: auto;
-  min-height: 0;
-  padding-right: 2px;
+  gap: var(--s-4);
 }
-
-.kanban-col__footer { flex-shrink: 0; }
-
-.kanban-col__add-trigger {
+.kanban-col-add-actions {
+  display: flex;
+  gap: var(--s-4);
+  justify-content: flex-end;
+}
+.kanban-col-add-trigger {
   width: 100%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: var(--s-3);
   background: transparent;
-  border: 1px dashed var(--border-default);
+  border: 1px dashed var(--border);
   color: var(--text-muted);
-  font-size: 12px;
-  padding: 8px 10px;
-  border-radius: var(--radius-md);
+  font-size: var(--fs-sm);
+  padding: var(--s-4) var(--s-5);
+  border-radius: var(--r-md);
   cursor: pointer;
   transition: border-color var(--dur-fast) var(--ease-out),
               color var(--dur-fast) var(--ease-out);
 }
-.kanban-col__add-trigger:hover {
+.kanban-col-add-trigger:hover {
   border-color: var(--border-strong);
   color: var(--text-secondary);
-}
-
-.kanban-col__add-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.kanban-col__add-input {
-  height: auto;
-  padding: var(--space-2);
-  font-size: var(--font-size-dense);
-}
-
-.kanban-col__add-actions {
-  display: flex;
-  gap: var(--space-2);
-  justify-content: flex-end;
 }

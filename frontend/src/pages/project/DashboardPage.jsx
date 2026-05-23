@@ -53,10 +53,10 @@ const PLACEHOLDER_ACTIVITY = [
 ];
 
 const HEALTH_SIGNALS = [
-  ['Burn rate', 'var(--status-warning)', '+0.4d'],
-  ['Blockers', 'var(--status-success)', '1'],
-  ['Coverage', 'var(--status-success)', '94%'],
-  ['WIP', 'var(--status-warning)', 'high'],
+  ['Burn rate', 'var(--warning)', '+0.4d'],
+  ['Blockers', 'var(--success)', '1'],
+  ['Coverage', 'var(--success)', '94%'],
+  ['WIP', 'var(--warning)', 'high'],
 ];
 
 const EPIC_COLORS = ['#5B6AF0', '#4FD1E0', '#7A6BFF', '#C77BFF', '#3FB984', '#E0A23A', '#E5484D', '#4F9EFF'];
@@ -362,13 +362,13 @@ function EngineeringDashboard({ project }) {
             </div>
             <div className="hstack dashboard__legend">
               <span className="hstack">
-                <span className="dashboard__legend-swatch" style={{ background: 'var(--bg-surface-3)' }} />
+                <span className="dashboard__legend-swatch" style={{ background: 'var(--surface-hover)' }} />
                 Committed
               </span>
               <span className="hstack">
                 <span
                   className="dashboard__legend-swatch"
-                  style={{ background: 'var(--accent-primary)' }}
+                  style={{ background: 'var(--accent)' }}
                 />
                 Completed
               </span>
@@ -537,7 +537,7 @@ function EngineeringDashboard({ project }) {
                 <span className="dashboard__activity-text">
                   <span style={{ fontWeight: 500 }}>{a.who}</span>{' '}
                   <span className="muted">{a.action}</span>{' '}
-                  <span className="mono" style={{ color: 'var(--accent-primary)' }}>
+                  <span className="mono" style={{ color: 'var(--accent)' }}>
                     {a.target}
                   </span>
                 </span>

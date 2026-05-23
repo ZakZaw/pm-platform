@@ -3,16 +3,18 @@
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
+  padding: var(--s-7) var(--s-9);
 }
 
 .board-page__sprint {
-  display: grid;
-  grid-template-columns: 1fr auto auto auto auto;
+  display: flex;
   align-items: center;
-  gap: 24px;
-  padding: 12px 20px;
-  border-bottom: 1px solid var(--border-subtle);
+  gap: var(--s-6);
+  padding: var(--s-5) 0;
+  margin-bottom: var(--s-6);
+  border-bottom: 1px solid var(--divider);
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .board-page__kpi {
@@ -21,22 +23,27 @@
   white-space: nowrap;
 }
 .board-page__kpi--bordered {
-  padding-left: 16px;
-  border-left: 1px solid var(--border-subtle);
+  padding-left: var(--s-6);
+  margin-left: var(--s-4);
+  border-left: 1px solid var(--divider);
 }
 .kpi-label {
-  font-size: 11px;
-  color: var(--text-tertiary);
-  letter-spacing: 0.04em;
+  font-size: var(--fs-2xs);
+  color: var(--text-muted);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  font-weight: var(--fw-semibold);
 }
 .board-page__kpi-value {
-  font-size: 18px;
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  color: var(--text);
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
 }
 .board-page__kpi-suffix {
-  font-size: 13px;
-  font-weight: var(--weight-regular);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-regular);
 }
 
 .board-page__filter-dot {
@@ -44,36 +51,33 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--accent-primary);
+  background: var(--accent);
+  margin-left: var(--s-2);
 }
 
 .board-page__filters {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: var(--space-3);
-  padding: var(--space-3) 20px;
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--bg-surface-1);
+  gap: var(--s-5);
+  padding: var(--s-5) 0;
+  margin-bottom: var(--s-5);
+  border-bottom: 1px solid var(--divider);
   flex-shrink: 0;
 }
 
 .board-page__board {
   flex: 1 1 auto;
   min-height: 0;
-  padding: 16px;
   overflow: hidden;
   display: flex;
 }
 
 .board-page__placeholder {
-  color: var(--text-tertiary);
-  padding: var(--space-6);
+  color: var(--text-muted);
+  padding: var(--s-9);
 }
 
 @media (max-width: 1100px) {
-  .board-page__sprint {
-    grid-template-columns: 1fr auto;
-  }
-  .board-page__kpi--bordered { border-left: 0; padding-left: 0; }
+  .board-page__kpi--bordered { border-left: 0; padding-left: 0; margin-left: 0; }
 }

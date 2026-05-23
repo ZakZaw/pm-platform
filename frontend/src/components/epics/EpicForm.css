@@ -1,41 +1,41 @@
 .epic-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--s-5);
 }
 
 .epic-form__field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--s-2);
 }
 
 .epic-form__label {
-  font-size: var(--font-size-meta);
-  font-weight: var(--weight-medium);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
   color: var(--text-secondary);
 }
 
 .epic-form__textarea {
   font-family: inherit;
-  font-size: var(--font-size-dense);
-  color: var(--text-primary);
-  background: var(--bg-surface-1);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  padding: var(--space-2) var(--space-3);
+  font-size: var(--fs-md);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--s-4) var(--s-5);
   resize: vertical;
   min-height: 60px;
 }
 .epic-form__textarea:focus {
   outline: none;
-  border-color: var(--border-focus);
+  border-color: var(--accent-bright);
   box-shadow: var(--shadow-focus);
 }
 
 .epic-form__colors {
   display: flex;
-  gap: var(--space-2);
+  gap: var(--s-4);
   flex-wrap: wrap;
 }
 
@@ -48,18 +48,18 @@
   padding: 0;
 }
 .epic-form__color.is-active {
-  border-color: var(--text-primary);
-  box-shadow: 0 0 0 2px var(--bg-base);
+  border-color: var(--text);
+  box-shadow: 0 0 0 2px var(--surface);
 }
 
 .epic-form__error {
-  color: var(--status-danger);
-  font-size: var(--font-size-meta);
+  color: var(--danger);
+  font-size: var(--fs-xs);
   margin: 0;
 }
 
 .epic-form__actions {
   display: flex;
   justify-content: flex-end;
-  gap: var(--space-2);
+  gap: var(--s-4);
 }

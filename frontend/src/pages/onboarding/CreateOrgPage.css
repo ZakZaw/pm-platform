@@ -2,7 +2,7 @@
   min-height: 100vh;
   display: grid;
   place-items: center;
-  padding: var(--space-6);
+  padding: var(--s-8);
 }
 
 .create-org__card {
@@ -13,18 +13,18 @@
 .create-org__form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--s-7);
 }
 
 .create-org__logo-row {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--s-6);
 }
 
 .create-org__logo-help {
-  font-size: var(--font-size-meta);
-  color: var(--text-tertiary);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
 }
 
 .create-org__file-input {
@@ -32,6 +32,6 @@
 }
 
 .create-org__error {
-  font-size: var(--font-size-meta);
-  color: var(--status-danger);
+  font-size: var(--fs-xs);
+  color: var(--danger);
 }

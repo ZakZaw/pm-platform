@@ -1,16 +1,16 @@
 .accounts__table {
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  background: var(--bg-surface-1);
+  border-radius: var(--r-md);
+  background: var(--surface);
   overflow: hidden;
 }
 
 .accounts__row {
   display: grid;
   grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1fr;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  font-size: var(--font-size-dense);
+  gap: var(--s-5);
+  padding: var(--s-5) var(--s-6);
+  font-size: var(--fs-md);
   border-bottom: 1px solid var(--border-subtle);
   align-items: center;
 }
@@ -18,14 +18,14 @@
 .accounts__row:last-child { border-bottom: none; }
 
 .accounts__row--head {
-  font-size: var(--font-size-meta);
-  color: var(--text-tertiary);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  background: var(--bg-surface-2);
+  background: var(--surface-2);
 }
 
 .accounts__name {
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
 }

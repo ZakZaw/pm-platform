@@ -207,7 +207,7 @@ export function ListsPage() {
     }
   }
 
-  if (error) return <div className="page"><p style={{ color: 'var(--status-danger)' }}>{error}</p></div>;
+  if (error) return <div className="page"><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
   if (!project || !view) {
     return (
       <div className="page lists-page" aria-busy="true">

@@ -134,7 +134,7 @@ function CreateAccountModal({ projectId, onClose, onCreated }) {
             <Input label="Name" autoFocus value={name} onChange={(e) => setName(e.target.value)} required />
             <Input label="Domain" value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="acme.com" />
             <Input label="Industry" value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder="SaaS" />
-            {error && <p style={{ color: 'var(--status-danger)', margin: 0 }}>{error}</p>}
+            {error && <p style={{ color: 'var(--danger)', margin: 0 }}>{error}</p>}
           </div>
         </ModalBody>
         <ModalFooter>

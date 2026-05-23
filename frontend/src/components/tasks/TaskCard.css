@@ -1,11 +1,11 @@
 .task-card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-3);
-  background: var(--bg-surface-1);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
+  gap: var(--s-2);
+  padding: var(--s-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
   text-align: left;
   cursor: pointer;
   font-family: inherit;
@@ -14,22 +14,22 @@
   transition: border-color var(--dur-fast) var(--ease-out),
     background var(--dur-fast) var(--ease-out);
 }
-.task-card:hover { border-color: var(--border-strong); background: var(--bg-hover); }
-.task-card.is-compact { padding: var(--space-2) var(--space-3); }
+.task-card:hover { border-color: var(--border-strong); background: var(--surface-hover); }
+.task-card.is-compact { padding: var(--s-4) var(--s-5); }
 
 .task-card__row {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--s-4);
 }
 
-.task-card__row--meta { color: var(--text-tertiary); }
+.task-card__row--meta { color: var(--text-muted); }
 
 .task-card__title {
   flex: 1;
-  font-weight: var(--weight-medium);
-  color: var(--text-primary);
-  font-size: var(--font-size-dense);
+  font-weight: var(--fw-medium);
+  color: var(--text);
+  font-size: var(--fs-md);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -38,19 +38,19 @@
 .task-card__prio {
   width: 3px;
   height: 14px;
-  border-radius: var(--radius-pill);
+  border-radius: var(--r-pill);
   background: var(--text-muted);
   flex-shrink: 0;
 }
-.task-card__prio.prio-urgent { background: var(--prio-urgent); }
-.task-card__prio.prio-high { background: var(--prio-high); }
-.task-card__prio.prio-med { background: var(--prio-med); }
-.task-card__prio.prio-low { background: var(--prio-low); }
+.task-card__prio.prio-urgent { background: var(--pri-urgent); }
+.task-card__prio.prio-high { background: var(--pri-high); }
+.task-card__prio.prio-med { background: var(--pri-medium); }
+.task-card__prio.prio-low { background: var(--pri-low); }
 
 .task-card__unassigned {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 1px dashed var(--border-default);
+  border: 1px dashed var(--border);
   flex-shrink: 0;
 }

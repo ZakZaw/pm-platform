@@ -46,7 +46,7 @@ export function RunbooksPage() {
     return () => { cancelled = true; };
   }, [orgSlug, projectSlug]);
 
-  if (error) return <div className="page"><p style={{ color: 'var(--status-danger)' }}>{error}</p></div>;
+  if (error) return <div className="page"><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
   if (!project || !workflows) {
     return (
       <div className="page runbooks-page" aria-busy="true">

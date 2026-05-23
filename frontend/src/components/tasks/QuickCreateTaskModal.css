@@ -1,18 +1,18 @@
 .qct-backdrop {
   position: fixed;
   inset: 0;
-  background: var(--bg-overlay);
+  background: var(--overlay);
   display: grid;
   place-items: center;
   z-index: 100;
 }
 
 .qct-modal {
-  width: min(560px, calc(100vw - var(--space-6)));
-  max-height: calc(100vh - var(--space-12));
-  background: var(--bg-surface-2);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
+  width: min(560px, calc(100vw - var(--s-8)));
+  max-height: calc(100vh - var(--s-11));
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
   box-shadow: var(--shadow-xl);
   display: flex;
   flex-direction: column;
@@ -21,12 +21,12 @@
 .qct-modal__grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
+  gap: var(--s-5);
 }
 .qct-modal__grid-3 {
   display: grid;
   grid-template-columns: 1fr 80px 1fr;
-  gap: var(--space-3);
+  gap: var(--s-5);
 }
 @media (max-width: 520px) {
   .qct-modal__grid-2,
@@ -37,72 +37,72 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-4) var(--space-5);
+  padding: var(--s-6) var(--s-7);
   border-bottom: 1px solid var(--border-subtle);
 }
 
 .qct-modal__title {
   margin: 0;
-  font-size: var(--font-size-h3);
-  font-weight: var(--weight-semibold);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
 }
 
 .qct-modal__close {
   background: transparent;
   border: 0;
   font-size: 22px;
-  color: var(--text-tertiary);
+  color: var(--text-muted);
   cursor: pointer;
   line-height: 1;
-  padding: 0 var(--space-2);
+  padding: 0 var(--s-4);
 }
 
 .qct-modal__close:hover {
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .qct-modal__form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-5);
+  gap: var(--s-5);
+  padding: var(--s-7);
   overflow-y: auto;
 }
 
 .qct-modal__label {
-  font-size: var(--font-size-meta);
+  font-size: var(--fs-xs);
   color: var(--text-secondary);
-  font-weight: var(--weight-medium);
+  font-weight: var(--fw-medium);
 }
 
 .qct-modal__textarea {
   width: 100%;
-  background: var(--bg-base);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  font-size: var(--font-size-dense);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text);
+  font-size: var(--fs-md);
   font-family: inherit;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--s-4) var(--s-5);
   resize: vertical;
   min-height: 72px;
 }
 
 .qct-modal__textarea:focus {
   outline: none;
-  border-color: var(--border-focus);
+  border-color: var(--accent-bright);
   box-shadow: var(--shadow-focus);
 }
 
 .qct-modal__error {
-  color: var(--status-danger);
-  font-size: var(--font-size-meta);
+  color: var(--danger);
+  font-size: var(--fs-xs);
   margin: 0;
 }
 
 .qct-modal__actions {
   display: flex;
   justify-content: flex-end;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
+  gap: var(--s-4);
+  margin-top: var(--s-4);
 }

@@ -103,7 +103,7 @@ export function HomePage() {
             points={PLACEHOLDER_TREND}
             width={520}
             height={120}
-            stroke="var(--status-success)"
+            stroke="var(--success)"
           />
         </div>
 

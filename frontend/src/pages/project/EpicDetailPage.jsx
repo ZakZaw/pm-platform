@@ -28,7 +28,7 @@ const STATUS_OPTIONS = ['Planning', 'InProgress', 'Done', 'Archived'];
 
 // Stratos epic palette — kept short so the picker reads as a row of swatches.
 const COLOR_OPTIONS = [
-  'var(--accent-primary)',
+  'var(--accent)',
   '#4FD1E0',
   '#A78BFA',
   '#3FB984',
@@ -182,15 +182,15 @@ export function EpicDetailPage() {
 
       <header
         className="epic-detail__header"
-        style={{ '--epic-color': epic.color || 'var(--accent-primary)' }}
+        style={{ '--epic-color': epic.color || 'var(--accent)' }}
       >
         <span
           className="epic-detail__color"
-          style={{ background: epic.color || 'var(--accent-primary)' }}
+          style={{ background: epic.color || 'var(--accent)' }}
         />
         <div className="epic-detail__head-text">
           <div className="epic-detail__head-row">
-            <Layers size={18} aria-hidden="true" style={{ color: epic.color || 'var(--accent-primary)' }} />
+            <Layers size={18} aria-hidden="true" style={{ color: epic.color || 'var(--accent)' }} />
             {editingTitle ? (
               <input
                 className="epic-detail__title-input"
@@ -247,7 +247,7 @@ export function EpicDetailPage() {
             <Badge tone={STATUS_TONE[epic.status] ?? 'neutral'}>{epic.status}</Badge>
           </div>
           <div className="epic-detail__bar" aria-label={`Progress ${pct}%`}>
-            <div className="epic-detail__bar-fill" style={{ width: `${pct}%`, background: epic.color || 'var(--accent-primary)' }} />
+            <div className="epic-detail__bar-fill" style={{ width: `${pct}%`, background: epic.color || 'var(--accent)' }} />
           </div>
         </div>
       </header>

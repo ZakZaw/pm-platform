@@ -1,19 +1,19 @@
 .assignee-picker {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--s-4);
 }
 
 .assignee-picker.is-field {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: var(--space-1);
+  gap: var(--s-2);
 }
 
 .assignee-picker__label {
-  font-size: var(--font-size-meta);
-  font-weight: var(--weight-medium);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
   color: var(--text-secondary);
 }
 
@@ -25,14 +25,14 @@
 .assignee-picker__trigger {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--s-4);
   padding: 4px 8px 4px 4px;
   background: transparent;
-  border: 1px dashed var(--border-default);
-  border-radius: var(--radius-pill);
-  color: var(--text-primary);
+  border: 1px dashed var(--border);
+  border-radius: var(--r-pill);
+  color: var(--text);
   font-family: inherit;
-  font-size: var(--font-size-dense);
+  font-size: var(--fs-md);
   cursor: pointer;
   transition:
     background var(--dur-fast) var(--ease-out),
@@ -41,19 +41,19 @@
 }
 
 .assignee-picker__trigger:hover:not(.is-disabled) {
-  background: var(--bg-hover);
+  background: var(--surface-hover);
   border-color: var(--border-strong);
 }
 
 .assignee-picker__trigger:focus-visible {
   outline: none;
-  border-color: var(--border-focus);
+  border-color: var(--accent-bright);
   box-shadow: var(--shadow-focus);
 }
 
 .assignee-picker__trigger.is-sm {
   padding: 2px 6px 2px 2px;
-  font-size: var(--font-size-meta);
+  font-size: var(--fs-xs);
 }
 
 .assignee-picker__trigger.is-disabled {
@@ -75,28 +75,28 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 1px dashed var(--border-default);
+  border: 1px dashed var(--border);
   flex-shrink: 0;
 }
 
 .assignee-picker__search {
-  padding: var(--space-2);
+  padding: var(--s-4);
   border-bottom: 1px solid var(--border-subtle);
 }
 
 .assignee-picker__search-input {
   width: 100%;
-  background: var(--bg-surface-1);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  padding: 4px var(--space-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  padding: 4px var(--s-4);
   font: inherit;
-  font-size: var(--font-size-meta);
+  font-size: var(--fs-xs);
 }
 
 .assignee-picker__search-input:focus {
   outline: none;
-  border-color: var(--border-focus);
+  border-color: var(--accent-bright);
   box-shadow: var(--shadow-focus);
 }

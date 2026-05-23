@@ -2,15 +2,17 @@ import { Sparkles } from 'lucide-react';
 import './AIChip.css';
 
 /**
- * Stratos AI badge — violet/cyan gradient pill used wherever the surface
- * is AI-generated or AI-driven. Variant "soft" gives a translucent fill
- * for inline use next to body text.
+ * Iridescent AI pill — used wherever a surface is AI-generated or AI-driven.
+ * The `variant` prop is accepted for backwards compatibility but ignored; the
+ * new design has a single canonical look.
  */
-export function AIChip({ label = 'AI', variant = 'gradient', className = '' }) {
-  const classes = ['ai-chip', `ai-chip-${variant}`, className].filter(Boolean).join(' ');
+export function AIChip({ label = 'AI', variant: _variant, className = '' }) {
+  const classes = ['ai-chip', className].filter(Boolean).join(' ');
   return (
     <span className={classes}>
-      <Sparkles size={12} aria-hidden="true" />
+      <span className="ai-chip-icon">
+        <Sparkles size={9} strokeWidth={2.5} aria-hidden="true" />
+      </span>
       <span>{label}</span>
     </span>
   );

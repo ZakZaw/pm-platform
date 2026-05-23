@@ -12,10 +12,10 @@ export const useUiStore = create(
       lastOrgSlug: null,
       setLastOrgSlug: (slug) => set({ lastOrgSlug: slug || null }),
 
-      theme: 'dark',
+      theme: 'light',
       toggleTheme: () =>
         set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
-      setTheme: (value) => set({ theme: value === 'light' ? 'light' : 'dark' }),
+      setTheme: (value) => set({ theme: value === 'dark' ? 'dark' : 'light' }),
 
       quickCreateOpen: false,
       openQuickCreate: () => set({ quickCreateOpen: true }),

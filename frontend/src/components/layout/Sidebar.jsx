@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Briefcase,
-  ChevronsUpDown,
+  ChevronDown,
   FolderKanban,
   Home,
   LayoutGrid,
   Plus,
   Settings,
+  Sparkles,
 } from 'lucide-react';
 import { Avatar } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
@@ -17,19 +17,23 @@ import { useUiStore } from '@/store/uiStore';
 import { navItemsForType, DEFAULT_PROJECT_TYPE_ID } from '@/constants/projectTypes';
 import './Sidebar.css';
 
-// Maps a project to one of the eight Stratos avatar gradient slots so
-// the swatch alongside the project name stays stable for that project.
-function projectSwatch(name) {
-  if (!name) return 'av-1';
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
-  }
-  return `av-${(hash % 8) + 1}`;
+function projectAccent(type) {
+  const k = String(type ?? '').toLowerCase();
+  if (k === 'engineering') return 'engineering';
+  if (k === 'sales') return 'sales';
+  if (k === 'support') return 'support';
+  if (k === 'marketing') return 'marketing';
+  if (k === 'operations') return 'operations';
+  return 'generic';
+}
+
+function projectInitial(name) {
+  return (name?.trim()?.[0] ?? '·').toUpperCase();
 }
 
 export function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
 
   const orgs = useOrgStore((s) => s.orgs);
@@ -69,114 +73,174 @@ export function Sidebar() {
   }, [slug, projectsLoadedByOrg, refreshProjects]);
 
   const projects = slug ? projectsByOrg[slug] ?? [] : [];
+  const activeProject = projects.find((p) => p.slug === projectSlug) ?? null;
+  const otherProjects = projects.filter((p) => p.slug !== projectSlug).slice(0, 4);
 
-  const sideClass = ({ isActive }) =>
-    ['side-item', isActive ? 'is-active' : ''].filter(Boolean).join(' ');
+  const navCls = ({ isActive }) =>
+    ['nav-item', isActive ? 'is-active' : ''].filter(Boolean).join(' ');
 
-  const orgMark = (currentOrg?.name?.[0] ?? '·').toUpperCase();
+  const orgInitial = (currentOrg?.name?.[0] ?? '·').toUpperCase();
 
   return (
-    <aside className="app-sidebar" aria-label="Primary navigation">
+    <aside className="sidebar" aria-label="Primary navigation">
       {currentOrg && (
-        <NavLink to={`/${currentOrg.slug}/home`} className="org" title={currentOrg.name}>
-          <div className="org-mark" aria-hidden="true">{orgMark}</div>
-          <div className="grow">
-            <div className="org-name">{currentOrg.name}</div>
-            <div className="org-plan">{currentOrg.role}</div>
+        <button
+          type="button"
+          className="sidebar-org"
+          onClick={() => navigate(`/${currentOrg.slug}/home`)}
+          title={currentOrg.name}
+        >
+          <div className="sidebar-logo" aria-hidden="true"><span>{orgInitial}</span></div>
+          <div className="col" style={{ gap: 1, flex: 1, minWidth: 0 }}>
+            <div className="sidebar-org-name truncate">{currentOrg.name}</div>
+            <div className="sidebar-org-slug truncate">/{currentOrg.slug}</div>
           </div>
-          <ChevronsUpDown size={12} color="var(--text-muted)" aria-hidden="true" />
-        </NavLink>
+          <ChevronDown size={14} aria-hidden="true" />
+        </button>
       )}
 
-      <div className="side-section">Workspace</div>
-      <NavLink to="/home" className={sideClass} title="Home">
-        <Home size={13} aria-hidden="true" />
-        <span className="side-item__label">Home</span>
-      </NavLink>
-      <NavLink to="/dashboard" className={sideClass} title="My work">
-        <LayoutGrid size={13} aria-hidden="true" />
-        <span className="side-item__label">My work</span>
-      </NavLink>
-      {slug && (
-        <NavLink to={`/${slug}/home`} className={sideClass} end title="Organization">
-          <Briefcase size={13} aria-hidden="true" />
-          <span className="side-item__label">Organization</span>
-        </NavLink>
-      )}
-      {slug && (
-        <NavLink to={`/${slug}/portfolio`} className={sideClass} title="Portfolio">
-          <FolderKanban size={13} aria-hidden="true" />
-          <span className="side-item__label">Portfolio</span>
-        </NavLink>
-      )}
-
-      {slug && (
-        <>
-          <div className="side-section">
-            <span>Projects</span>
-            <NavLink
-              to={`/${slug}/projects/new`}
-              className="side-section__add"
-              title="New project"
-              aria-label="New project"
+      <div className="sidebar-scroll">
+        {slug && (
+          <div className="sidebar-section">
+            <button
+              type="button"
+              className="btn btn-ai btn-block"
+              style={{ height: 36 }}
+              onClick={() => navigate(`/${slug}/projects/new`)}
             >
-              <Plus size={11} aria-hidden="true" />
-            </NavLink>
+              <Sparkles size={14} strokeWidth={2.4} aria-hidden="true" />
+              <span>New project with AI</span>
+            </button>
           </div>
-          {projects.length === 0 && (
-            <div className="side-item" style={{ color: 'var(--text-muted)', cursor: 'default' }}>
-              <span className="side-item__label">No projects yet</span>
-            </div>
-          )}
-          {projects.map((p) => {
-            const isActive = p.slug === projectSlug;
-            const navItems = navItemsForType(p.type ?? DEFAULT_PROJECT_TYPE_ID);
-            return (
-              <div key={p.id} className="sidebar-project">
-                <NavLink
-                  to={`/${slug}/projects/${p.slug}`}
-                  className={sideClass}
-                  end
-                  title={p.name}
-                >
-                  <span className={['side-item__swatch', projectSwatch(p.name)].join(' ')} aria-hidden="true" />
-                  <span className="side-item__label truncate">{p.name}</span>
-                </NavLink>
-                {isActive && (
-                  <div className="sidebar-project__sub">
-                    {navItems.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <NavLink
-                          key={item.key}
-                          to={`/${slug}/projects/${p.slug}/${item.path}`}
-                          className={sideClass}
-                        >
-                          <Icon size={13} aria-hidden="true" />
-                          <span className="side-item__label">{item.label}</span>
-                        </NavLink>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </>
-      )}
+        )}
 
-      <div className="side-footer">
+        <div className="sidebar-section">
+          <div className="sidebar-label">Workspace</div>
+          <NavLink to="/home" className={navCls} title="Home">
+            <span className="nav-icon"><Home size={14} aria-hidden="true" /></span>
+            <span>Home</span>
+          </NavLink>
+          <NavLink to="/dashboard" className={navCls} title="My work">
+            <span className="nav-icon"><LayoutGrid size={14} aria-hidden="true" /></span>
+            <span>My work</span>
+          </NavLink>
+          {slug && (
+            <NavLink to={`/${slug}/home`} className={navCls} end title="Organization">
+              <span className="nav-icon"><Home size={14} aria-hidden="true" /></span>
+              <span>Organization</span>
+            </NavLink>
+          )}
+          {slug && (
+            <NavLink to={`/${slug}/portfolio`} className={navCls} title="Portfolio">
+              <span className="nav-icon"><FolderKanban size={14} aria-hidden="true" /></span>
+              <span>Portfolio</span>
+            </NavLink>
+          )}
+        </div>
+
+        {slug && activeProject && (
+          <>
+            <div className="sidebar-section">
+              <div className="sidebar-label">
+                <span>Active Project</span>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-icon-sm"
+                  onClick={() => navigate(`/${slug}/home`)}
+                  title="All projects"
+                  aria-label="All projects"
+                >
+                  <Plus size={12} aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+            <div
+              className="proj-card"
+              onClick={() => navigate(`/${slug}/projects/${activeProject.slug}`)}
+            >
+              <div className={`proj-icon proj-icon-${projectAccent(activeProject.type)}`}>
+                {projectInitial(activeProject.name)}
+              </div>
+              <div className="col" style={{ gap: 1, flex: 1, minWidth: 0 }}>
+                <div className="proj-card-name truncate">{activeProject.name}</div>
+                <div className="proj-card-type">{activeProject.type ?? 'Project'}</div>
+              </div>
+            </div>
+            <div className="sidebar-section">
+              {navItemsForType(activeProject.type ?? DEFAULT_PROJECT_TYPE_ID).map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.key}
+                    to={`/${slug}/projects/${activeProject.slug}/${item.path}`}
+                    className={navCls}
+                  >
+                    <span className="nav-icon"><Icon size={14} aria-hidden="true" /></span>
+                    <span>{item.label}</span>
+                  </NavLink>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {slug && projects.length > 0 && (
+          <div className="sidebar-section">
+            <div className="sidebar-label">
+              <span>{activeProject ? 'Other Projects' : 'Projects'}</span>
+              <button
+                type="button"
+                className="btn btn-ghost btn-icon-sm"
+                onClick={() => navigate(`/${slug}/projects/new`)}
+                title="New project"
+                aria-label="New project"
+              >
+                <Plus size={12} aria-hidden="true" />
+              </button>
+            </div>
+            {(activeProject ? otherProjects : projects).map((p) => (
+              <NavLink
+                key={p.id}
+                to={`/${slug}/projects/${p.slug}`}
+                className={navCls}
+                end
+                title={p.name}
+              >
+                <div
+                  className={`proj-icon proj-icon-${projectAccent(p.type)}`}
+                  style={{ width: 18, height: 18, fontSize: 9, borderRadius: 4 }}
+                >
+                  {projectInitial(p.name)}
+                </div>
+                <span className="truncate">{p.name}</span>
+              </NavLink>
+            ))}
+            {projects.length === 0 && (
+              <div className="nav-item" style={{ color: 'var(--text-muted)', cursor: 'default' }}>
+                <span>No projects yet</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="sidebar-foot">
         <Avatar
           src={user?.avatarUrl}
           name={user?.fullName || user?.email}
-          size="sm"
+          size="md"
         />
-        <div className="grow">
-          <div className="side-footer__name">{user?.fullName ?? 'You'}</div>
-          <div className="side-footer__email">{user?.email}</div>
+        <div className="col" style={{ gap: 1, flex: 1, minWidth: 0 }}>
+          <div className="sidebar-foot-name truncate">{user?.fullName ?? 'You'}</div>
+          <div className="sidebar-foot-mail truncate">{user?.email}</div>
         </div>
-        <NavLink to="/settings/profile" className="icon-btn icon-btn-sm" title="Settings" aria-label="Settings">
-          <Settings size={13} aria-hidden="true" />
+        <NavLink
+          to="/settings/profile"
+          className="btn btn-ghost btn-icon-sm"
+          title="Settings"
+          aria-label="Settings"
+        >
+          <Settings size={14} aria-hidden="true" />
         </NavLink>
       </div>
     </aside>

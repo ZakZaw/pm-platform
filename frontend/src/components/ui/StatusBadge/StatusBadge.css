@@ -1,5 +1,1 @@
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
+/* Status styles live in stratos.css (.status, .status-{key}). */

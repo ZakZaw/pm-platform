@@ -11,10 +11,8 @@ export function AppShell() {
     <div className={['app', collapsed ? 'is-collapsed' : ''].filter(Boolean).join(' ')}>
       <Sidebar />
       <Topbar />
-      <main className="app-main">
-        <div className="app-main__scroll">
-          <Outlet />
-        </div>
+      <main className="main">
+        <Outlet />
       </main>
       <QuickCreateTaskModal />
     </div>

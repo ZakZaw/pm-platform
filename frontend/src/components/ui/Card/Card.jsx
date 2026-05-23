@@ -1,8 +1,9 @@
 import './Card.css';
 
 export function Card({ variant = 'default', title, subtitle, className = '', children }) {
-  const variantClass = variant === 'default' ? 'card' : `card-${variant}`;
-  const classes = [variantClass, className].filter(Boolean).join(' ');
+  const base = variant === 'ai' ? 'card-ai' : 'card';
+  const elevated = variant === 'elevated' ? 'card-elevated' : '';
+  const classes = [base, 'card-pad', elevated, className].filter(Boolean).join(' ');
   return (
     <div className={classes}>
       {title && <h2 className="card__title">{title}</h2>}

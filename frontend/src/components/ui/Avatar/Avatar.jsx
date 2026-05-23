@@ -8,21 +8,27 @@ function initialsFor(name) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-// Deterministically map a name to one of 8 gradient slots (Stratos palette).
+// Deterministically map a name to one of 8 palette slots (avatar-c0 .. avatar-c7).
 function colorIndexFor(name) {
-  if (!name) return 1;
+  if (!name) return 0;
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
   }
-  return (hash % 8) + 1;
+  return hash % 8;
 }
 
 export function Avatar({ src, name, alt, size = 'md', color, status, className = '' }) {
-  const palette = color ?? colorIndexFor(name);
-  const classes = ['avatar', `avatar-${size}`, src ? '' : `av-${palette}`, className]
-    .filter(Boolean)
-    .join(' ');
+  // Accept both 0-indexed (new) and 1-indexed (legacy) color values.
+  const palette = color != null
+    ? (color >= 1 && color <= 8 ? color - 1 : color)
+    : colorIndexFor(name);
+  const classes = [
+    'avatar',
+    `avatar-${size}`,
+    src ? '' : `avatar-c${palette}`,
+    className,
+  ].filter(Boolean).join(' ');
   return (
     <span className={classes} aria-label={alt ?? name ?? undefined}>
       {src ? (
@@ -30,7 +36,7 @@ export function Avatar({ src, name, alt, size = 'md', color, status, className =
       ) : (
         <span aria-hidden="true">{initialsFor(name)}</span>
       )}
-      {status && <span className={`status-dot ${status}`} aria-hidden="true" />}
+      {status && <span className={`avatar-status-dot avatar-status-${status}`} aria-hidden="true" />}
     </span>
   );
 }

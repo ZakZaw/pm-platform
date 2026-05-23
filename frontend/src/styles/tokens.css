@@ -1,252 +1,457 @@
-/* ============================================
-   Stratos — Design Tokens
-   Single source of truth for the UI.
-   All component CSS consumes these via var(--token-name).
-   See: /Design Files/ for the design-time reference artifacts.
-   ============================================ */
+/* ============================================================
+   DESIGN TOKENS — PMO Platform
+   Single source of truth. Theme-aware via [data-theme].
+
+   Light is the default (`:root`). Dark overrides via
+   [data-theme="dark"]. New-design vocabulary; old token names
+   are aliased at the bottom for backwards compatibility until
+   the Phase 2 sweep replaces them at every call site.
+   ============================================================ */
 
 :root,
-[data-theme="dark"] {
-  /* --- Surfaces --- */
-  --bg-app:        #0F1117;
-  --bg-base:       #0F1117;
-  --bg-surface-1:  #181C27;
-  --bg-surface-2:  #1E2235;
-  --bg-surface-3:  #242843;
-  --bg-overlay:    rgba(15, 17, 23, 0.72);
-  --bg-hover:      rgba(255, 255, 255, 0.04);
-  --bg-active:     rgba(255, 255, 255, 0.07);
-  --bg-selected:   rgba(91, 106, 240, 0.10);
+[data-theme="light"] {
+  /* === SURFACES ============================================ */
+  --bg: hsl(32 33% 97.5%);                /* warm paper canvas */
+  --bg-subtle: hsl(32 28% 95%);
+  --surface: hsl(0 0% 100%);
+  --surface-2: hsl(32 28% 96.5%);
+  --surface-hover: hsl(32 28% 94%);
+  --surface-active: hsl(32 25% 91%);
+  --overlay: hsl(220 30% 10% / 0.4);
+  --scrim: hsl(220 25% 12% / 0.55);
 
-  /* --- Borders --- */
-  --border-subtle:  #232739;
-  --border-default: #2A2F45;
-  --border-strong:  #353B58;
-  --border-focus:   #5B6AF0;
+  /* === BORDERS ============================================= */
+  --border: hsl(30 15% 88%);
+  --border-strong: hsl(30 12% 78%);
+  --border-subtle: hsl(30 18% 92%);
+  --ring: hsl(220 85% 55% / 0.35);
+  --divider: hsl(30 15% 90%);
 
-  /* --- Text --- */
-  --text-primary:   #E8EAF2;
-  --text-secondary: #A4ABC4;
-  --text-tertiary:  #8B91A8;
-  --text-muted:     #5E647A;
-  --text-disabled:  #424658;
-  --text-on-accent: #FFFFFF;
-  --text-inverse:   #0F1117;
+  /* === TEXT ================================================ */
+  --text: hsl(220 30% 12%);
+  --text-secondary: hsl(220 15% 35%);
+  --text-muted: hsl(220 10% 50%);
+  --text-subtle: hsl(220 8% 62%);
+  --text-on-accent: hsl(0 0% 100%);
+  --text-link: hsl(222 78% 45%);
 
-  /* --- Brand / Accents --- */
-  --accent-primary:        #5B6AF0;
-  --accent-primary-hover:  #6E7BF3;
-  --accent-primary-active: #4A57D6;
-  --accent-primary-muted:  rgba(91, 106, 240, 0.16);
-  --accent-primary-soft:   rgba(91, 106, 240, 0.08);
+  /* === ACCENT (primary blue) =============================== */
+  --accent: hsl(222 76% 38%);
+  --accent-hover: hsl(222 78% 33%);
+  --accent-active: hsl(222 80% 28%);
+  --accent-bright: hsl(217 91% 60%);
+  --accent-soft: hsl(217 91% 96%);
+  --accent-soft-2: hsl(217 91% 92%);
+  --accent-border: hsl(217 85% 80%);
 
-  /* --- Indigo scale (brand accent) --- */
-  --indigo-50:   #ECEEFF;
-  --indigo-100:  #D9DDFF;
-  --indigo-200:  #B6BCFF;
-  --indigo-300:  #8E97FB;
-  --indigo-400:  #6E7BF3;
-  --indigo-500:  #5B6AF0;
-  --indigo-600:  #4A57D6;
-  --indigo-700:  #3C46AE;
-  --indigo-800:  #2F3789;
-  --indigo-900:  #232966;
-  --indigo-950:  #161A42;
+  /* === STATUS (jewel-toned) ================================ */
+  --success: hsl(160 65% 38%);
+  --success-soft: hsl(160 55% 94%);
+  --success-border: hsl(160 50% 78%);
 
-  /* --- Blue scale (info, data viz) --- */
-  --blue-50:   #EAF2FF;
-  --blue-100:  #D2E2FF;
-  --blue-200:  #A8C7FF;
-  --blue-300:  #7BA8FF;
-  --blue-400:  #4F8BFF;
-  --blue-500:  #2A6FDB;
-  --blue-600:  #1F5BC0;
-  --blue-700:  #1A4A9E;
-  --blue-800:  #173E80;
-  --blue-900:  #122F62;
-  --blue-950:  #0C1F40;
+  --warning: hsl(35 92% 48%);
+  --warning-soft: hsl(40 95% 94%);
+  --warning-border: hsl(38 90% 78%);
 
-  /* --- Sky / Cyan scale (AI accent) --- */
-  --sky-50:   #E6FAFE;
-  --sky-100:  #C2F1FA;
-  --sky-200:  #8FE5F3;
-  --sky-300:  #4FD1E0;
-  --sky-400:  #2EB8C9;
-  --sky-500:  #1E96A6;
-  --sky-600:  #176E7E;
-  --sky-700:  #114F5C;
-  --sky-800:  #0B3540;
-  --sky-900:  #061F25;
+  --danger: hsl(354 78% 50%);
+  --danger-soft: hsl(354 85% 96%);
+  --danger-border: hsl(354 75% 82%);
 
-  /* --- Slate scale (neutral cool grays) --- */
-  --slate-50:   #F4F6FA;
-  --slate-100:  #E8EAF2;
-  --slate-200:  #C2C9D6;
-  --slate-300:  #A4ABC4;
-  --slate-400:  #8B91A8;
-  --slate-500:  #5E647A;
-  --slate-600:  #424658;
-  --slate-700:  #2A2F45;
-  --slate-800:  #1E2235;
-  --slate-900:  #181C27;
-  --slate-950:  #0F1117;
+  --info: hsl(195 85% 42%);
+  --info-soft: hsl(195 80% 94%);
+  --info-border: hsl(195 70% 78%);
 
-  /* --- AI surface (hue shift + glow) --- */
-  --ai-violet:   #7A6BFF;
-  --ai-cyan:     #4FD1E0;
-  --ai-pink:     #C77BFF;
-  --ai-bg:       linear-gradient(135deg, rgba(122,107,255,0.07) 0%, rgba(79,209,224,0.04) 100%);
-  --ai-border:   linear-gradient(135deg, #7A6BFF 0%, #4FD1E0 100%);
-  --ai-glow:     0 0 0 1px rgba(122,107,255,0.18), 0 8px 28px -8px rgba(122,107,255,0.35);
+  --violet: hsl(264 68% 55%);
+  --violet-soft: hsl(264 75% 96%);
+  --violet-border: hsl(264 65% 82%);
 
-  /* --- Status --- */
-  --status-success:        #3FB984;
-  --status-success-bg:     rgba(63, 185, 132, 0.12);
-  --status-success-border: rgba(63, 185, 132, 0.30);
+  --teal: hsl(178 70% 38%);
+  --teal-soft: hsl(178 60% 94%);
+  --teal-border: hsl(178 55% 78%);
 
-  --status-warning:        #E0A23A;
-  --status-warning-bg:     rgba(224, 162, 58, 0.12);
-  --status-warning-border: rgba(224, 162, 58, 0.30);
+  --rose: hsl(338 75% 55%);
+  --rose-soft: hsl(338 80% 96%);
+  --rose-border: hsl(338 70% 82%);
 
-  --status-danger:         #E5484D;
-  --status-danger-bg:      rgba(229, 72, 77, 0.12);
-  --status-danger-border:  rgba(229, 72, 77, 0.30);
+  --amber: hsl(28 90% 52%);
+  --amber-soft: hsl(28 90% 95%);
 
-  --status-info:           #4F9EFF;
-  --status-info-bg:        rgba(79, 158, 255, 0.12);
-  --status-info-border:    rgba(79, 158, 255, 0.30);
+  /* === PRIORITY ============================================ */
+  --pri-urgent: var(--danger);
+  --pri-high: var(--amber);
+  --pri-medium: var(--accent-bright);
+  --pri-low: hsl(220 10% 55%);
 
-  --status-neutral:        #8B91A8;
-  --status-neutral-bg:     rgba(139, 145, 168, 0.12);
-  --status-neutral-border: rgba(139, 145, 168, 0.30);
+  /* === AI SURFACE (iridescent) ============================= */
+  --ai-1: hsl(222 90% 55%);
+  --ai-2: hsl(264 80% 60%);
+  --ai-3: hsl(192 85% 55%);
+  --ai-gradient: linear-gradient(120deg, var(--ai-1) 0%, var(--ai-2) 50%, var(--ai-3) 100%);
+  --ai-gradient-soft: linear-gradient(120deg,
+    hsl(222 85% 96%) 0%, hsl(264 80% 96%) 50%, hsl(192 80% 96%) 100%);
+  --ai-gradient-mid: linear-gradient(120deg,
+    hsl(222 90% 88%) 0%, hsl(264 80% 90%) 50%, hsl(192 85% 88%) 100%);
+  --ai-text: hsl(258 65% 38%);
+  --ai-border: hsl(258 60% 82%);
+  --ai-glow: 0 0 0 1px hsl(258 70% 70% / 0.35), 0 4px 20px -4px hsl(258 80% 55% / 0.3);
 
-  --status-purple:         #A78BFA;
-  --status-purple-bg:      rgba(167, 139, 250, 0.12);
-  --status-purple-border:  rgba(167, 139, 250, 0.30);
+  /* === SHADOW ============================================== */
+  --shadow-xs: 0 1px 1px hsl(220 30% 12% / 0.04);
+  --shadow-sm: 0 1px 2px hsl(220 30% 12% / 0.05), 0 1px 1px hsl(220 30% 12% / 0.03);
+  --shadow-md: 0 4px 12px -2px hsl(220 30% 12% / 0.08), 0 2px 4px hsl(220 30% 12% / 0.04);
+  --shadow-lg: 0 12px 28px -8px hsl(220 30% 12% / 0.14), 0 4px 10px -2px hsl(220 30% 12% / 0.06);
+  --shadow-xl: 0 24px 48px -12px hsl(220 30% 12% / 0.2), 0 8px 16px -4px hsl(220 30% 12% / 0.08);
+  --shadow-pop: 0 0 0 1px hsl(220 25% 50% / 0.08), 0 8px 24px -6px hsl(220 30% 12% / 0.12);
+  --shadow-inset: inset 0 1px 0 hsl(0 0% 100% / 0.6);
+  --shadow-accent: 0 6px 18px -6px hsl(222 76% 38% / 0.4);
+  --shadow-focus: 0 0 0 3px var(--ring);
+  --shadow-focus-danger: 0 0 0 3px hsl(354 78% 50% / 0.25);
 
-  /* --- Priority --- */
-  --prio-urgent:  #E5484D;
-  --prio-high:    #E0A23A;
-  --prio-med:     #8B91A8;
-  --prio-low:     #5E647A;
+  /* === RADII =============================================== */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  --r-2xl: 20px;
+  --r-pill: 999px;
 
-  /* --- Marketing channels (F1.5-04) --- */
-  --mkt-channel-email:    #4F9EFF;
-  --mkt-channel-email-bg: rgba(79, 158, 255, 0.14);
-  --mkt-channel-social:   #C77BFF;
-  --mkt-channel-social-bg: rgba(199, 123, 255, 0.14);
-  --mkt-channel-blog:     #3FB984;
-  --mkt-channel-blog-bg:  rgba(63, 185, 132, 0.14);
-  --mkt-channel-paid:     #E0A23A;
-  --mkt-channel-paid-bg:  rgba(224, 162, 58, 0.14);
-  --mkt-channel-event:    #4FD1E0;
-  --mkt-channel-event-bg: rgba(79, 209, 224, 0.14);
-  --mkt-channel-other:    #8B91A8;
-  --mkt-channel-other-bg: rgba(139, 145, 168, 0.14);
+  /* === SPACING (4px base) ================================== */
+  --s-0: 0;
+  --s-1: 2px;
+  --s-2: 4px;
+  --s-3: 6px;
+  --s-4: 8px;
+  --s-5: 12px;
+  --s-6: 16px;
+  --s-7: 20px;
+  --s-8: 24px;
+  --s-9: 32px;
+  --s-10: 40px;
+  --s-11: 48px;
+  --s-12: 64px;
+  --s-13: 80px;
 
-  /* --- Shadows --- */
-  --shadow-xs: 0 1px 0 rgba(0,0,0,0.20);
-  --shadow-sm: 0 2px 4px rgba(0,0,0,0.24);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.30), 0 1px 2px rgba(0,0,0,0.20);
-  --shadow-lg: 0 12px 32px rgba(0,0,0,0.40), 0 2px 6px rgba(0,0,0,0.24);
-  --shadow-xl: 0 24px 60px rgba(0,0,0,0.50), 0 4px 12px rgba(0,0,0,0.30);
-  --shadow-focus:        0 0 0 3px rgba(91,106,240,0.30);
-  --shadow-focus-danger: 0 0 0 3px rgba(229,72,77,0.30);
+  /* === TYPOGRAPHY ========================================== */
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-display: "Plus Jakarta Sans", system-ui, sans-serif;
 
-  /* --- Radius --- */
-  --radius-xs:   3px;
-  --radius-sm:   4px;
-  --radius-md:   6px;
-  --radius-lg:   10px;
-  --radius-xl:   14px;
-  --radius-2xl:  20px;
-  --radius-pill: 999px;
+  --fs-2xs: 10px;
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-base: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 18px;
+  --fs-2xl: 22px;
+  --fs-3xl: 28px;
+  --fs-4xl: 36px;
+  --fs-5xl: 48px;
 
-  /* --- Spacing --- */
-  --space-1:  4px;
-  --space-2:  8px;
-  --space-3:  12px;
-  --space-4:  16px;
-  --space-5:  20px;
-  --space-6:  24px;
-  --space-8:  32px;
-  --space-10: 40px;
-  --space-12: 48px;
-  --space-16: 64px;
+  --lh-tight: 1.15;
+  --lh-snug: 1.3;
+  --lh-normal: 1.5;
+  --lh-relaxed: 1.65;
 
-  /* --- Typography --- */
-  --font-ui:   "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  --tracking-tight: -0.02em;
+  --tracking-snug: -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;
+  --tracking-mono: -0.01em;
 
-  --font-size-display: 30px;
-  --font-size-h1:      24px;
-  --font-size-h2:      20px;
-  --font-size-h3:      17px;
-  --font-size-h4:      15px;
-  --font-size-body:    14px;
-  --font-size-dense:   13px;
-  --font-size-meta:    11px;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
 
-  --leading-tight: 1.2;
-  --leading-snug:  1.35;
-  --leading-norm:  1.5;
+  /* === MOTION ============================================== */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-instant: 80ms;
+  --dur-fast: 140ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+  --dur-slower: 520ms;
 
-  --weight-regular:  400;
-  --weight-medium:   500;
-  --weight-semibold: 600;
-  --weight-bold:     700;
+  /* === LAYOUT ============================================== */
+  --sidebar-w: 248px;
+  --sidebar-w-collapsed: 60px;
+  --topbar-h: 56px;
+  --drawer-w: 520px;
+  --row-h: 40px;
+  --content-max: 1440px;
 
-  /* --- Motion --- */
-  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --dur-fast: 120ms;
-  --dur-med:  220ms;
+  /* === MARKETING CHANNELS (project-type accent) ============ */
+  --mkt-channel-email:    hsl(222 76% 45%);
+  --mkt-channel-email-bg: hsl(222 76% 95%);
+  --mkt-channel-social:   hsl(338 75% 55%);
+  --mkt-channel-social-bg:hsl(338 75% 95%);
+  --mkt-channel-blog:     hsl(160 65% 38%);
+  --mkt-channel-blog-bg:  hsl(160 55% 94%);
+  --mkt-channel-paid:     hsl(35 92% 48%);
+  --mkt-channel-paid-bg:  hsl(35 95% 94%);
+  --mkt-channel-event:    hsl(264 68% 55%);
+  --mkt-channel-event-bg: hsl(264 75% 96%);
+  --mkt-channel-other:    hsl(220 10% 50%);
+  --mkt-channel-other-bg: hsl(220 10% 94%);
 }
 
-/* --- Light theme overrides --- */
-[data-theme="light"] {
-  --bg-app:        #F7F8FA;
-  --bg-base:       #FFFFFF;
-  --bg-surface-1:  #FFFFFF;
-  --bg-surface-2:  #F2F4F8;
-  --bg-surface-3:  #E9ECF2;
-  --bg-overlay:    rgba(255, 255, 255, 0.72);
-  --bg-hover:      rgba(15, 17, 23, 0.04);
-  --bg-active:     rgba(15, 17, 23, 0.07);
-  --bg-selected:   rgba(91, 106, 240, 0.08);
+[data-theme="dark"] {
+  --bg: hsl(222 25% 7%);
+  --bg-subtle: hsl(222 22% 10%);
+  --surface: hsl(222 22% 11%);
+  --surface-2: hsl(222 20% 14%);
+  --surface-hover: hsl(222 20% 16%);
+  --surface-active: hsl(222 20% 19%);
+  --overlay: hsl(220 50% 4% / 0.7);
+  --scrim: hsl(220 50% 4% / 0.7);
 
-  --border-subtle:  #ECEFF4;
-  --border-default: #DBE0EA;
-  --border-strong:  #C2C9D6;
+  --border: hsl(222 15% 20%);
+  --border-strong: hsl(222 12% 30%);
+  --border-subtle: hsl(222 18% 16%);
+  --ring: hsl(217 90% 65% / 0.45);
+  --divider: hsl(222 15% 18%);
 
-  --text-primary:   #14161F;
-  --text-secondary: #43485A;
-  --text-tertiary:  #5E647A;
-  --text-muted:     #8B91A8;
-  --text-disabled:  #B7BCCB;
-  --text-inverse:   #FFFFFF;
+  --text: hsl(30 25% 96%);
+  --text-secondary: hsl(30 12% 75%);
+  --text-muted: hsl(220 8% 60%);
+  --text-subtle: hsl(220 6% 45%);
+  --text-link: hsl(217 95% 72%);
 
-  --accent-primary-muted: rgba(91, 106, 240, 0.12);
-  --accent-primary-soft:  rgba(91, 106, 240, 0.06);
+  --accent: hsl(217 91% 60%);
+  --accent-hover: hsl(217 95% 67%);
+  --accent-active: hsl(217 95% 72%);
+  --accent-bright: hsl(217 95% 67%);
+  --accent-soft: hsl(217 70% 16%);
+  --accent-soft-2: hsl(217 70% 20%);
+  --accent-border: hsl(217 60% 32%);
 
-  --ai-bg:   linear-gradient(135deg, rgba(122,107,255,0.06) 0%, rgba(79,209,224,0.04) 100%);
-  --ai-glow: 0 0 0 1px rgba(122,107,255,0.20), 0 8px 28px -8px rgba(122,107,255,0.25);
+  --success: hsl(160 60% 50%);
+  --success-soft: hsl(160 50% 14%);
+  --success-border: hsl(160 50% 28%);
 
-  --shadow-xs: 0 1px 0 rgba(15,17,23,0.04);
-  --shadow-sm: 0 1px 2px rgba(15,17,23,0.06);
-  --shadow-md: 0 4px 12px rgba(15,17,23,0.08), 0 1px 2px rgba(15,17,23,0.04);
-  --shadow-lg: 0 12px 32px rgba(15,17,23,0.10), 0 2px 6px rgba(15,17,23,0.06);
-  --shadow-xl: 0 24px 60px rgba(15,17,23,0.12), 0 4px 12px rgba(15,17,23,0.08);
+  --warning: hsl(35 90% 58%);
+  --warning-soft: hsl(35 60% 14%);
+  --warning-border: hsl(35 50% 28%);
 
-  --mkt-channel-email:    #2A6FDB;
-  --mkt-channel-email-bg: rgba(42, 111, 219, 0.12);
-  --mkt-channel-social:   #9A4FD9;
-  --mkt-channel-social-bg: rgba(154, 79, 217, 0.12);
-  --mkt-channel-blog:     #2F9E6E;
-  --mkt-channel-blog-bg:  rgba(47, 158, 110, 0.12);
-  --mkt-channel-paid:     #C28326;
-  --mkt-channel-paid-bg:  rgba(194, 131, 38, 0.12);
-  --mkt-channel-event:    #1E96A6;
-  --mkt-channel-event-bg: rgba(30, 150, 166, 0.12);
-  --mkt-channel-other:    #5E647A;
-  --mkt-channel-other-bg: rgba(94, 100, 122, 0.10);
+  --danger: hsl(354 78% 62%);
+  --danger-soft: hsl(354 55% 16%);
+  --danger-border: hsl(354 50% 32%);
+
+  --info: hsl(195 80% 55%);
+  --info-soft: hsl(195 60% 14%);
+  --info-border: hsl(195 50% 28%);
+
+  --violet: hsl(264 75% 68%);
+  --violet-soft: hsl(264 50% 18%);
+  --violet-border: hsl(264 45% 32%);
+
+  --teal: hsl(178 65% 50%);
+  --teal-soft: hsl(178 50% 14%);
+  --teal-border: hsl(178 45% 26%);
+
+  --rose: hsl(338 78% 65%);
+  --rose-soft: hsl(338 50% 18%);
+  --rose-border: hsl(338 45% 32%);
+
+  --amber: hsl(28 92% 60%);
+  --amber-soft: hsl(28 50% 14%);
+
+  --ai-1: hsl(222 95% 68%);
+  --ai-2: hsl(264 85% 70%);
+  --ai-3: hsl(192 90% 62%);
+  --ai-gradient-soft: linear-gradient(120deg,
+    hsl(222 60% 18%) 0%, hsl(264 55% 20%) 50%, hsl(192 60% 18%) 100%);
+  --ai-gradient-mid: linear-gradient(120deg,
+    hsl(222 65% 25%) 0%, hsl(264 60% 28%) 50%, hsl(192 65% 25%) 100%);
+  --ai-text: hsl(258 90% 82%);
+  --ai-border: hsl(258 55% 38%);
+  --ai-glow: 0 0 0 1px hsl(258 80% 65% / 0.4), 0 8px 28px -6px hsl(258 90% 60% / 0.45);
+
+  --shadow-xs: 0 1px 1px hsl(220 50% 2% / 0.4);
+  --shadow-sm: 0 1px 2px hsl(220 50% 2% / 0.5), 0 1px 1px hsl(220 50% 2% / 0.3);
+  --shadow-md: 0 4px 12px -2px hsl(220 50% 2% / 0.5), 0 2px 4px hsl(220 50% 2% / 0.3);
+  --shadow-lg: 0 12px 28px -8px hsl(220 50% 2% / 0.6), 0 4px 10px -2px hsl(220 50% 2% / 0.35);
+  --shadow-xl: 0 24px 48px -12px hsl(220 50% 2% / 0.7), 0 8px 16px -4px hsl(220 50% 2% / 0.4);
+  --shadow-pop: 0 0 0 1px hsl(220 25% 60% / 0.1), 0 8px 24px -6px hsl(220 50% 2% / 0.55);
+  --shadow-inset: inset 0 1px 0 hsl(0 0% 100% / 0.04);
+  --shadow-accent: 0 8px 22px -8px hsl(217 91% 60% / 0.55);
+
+  --mkt-channel-email:    hsl(217 91% 65%);
+  --mkt-channel-email-bg: hsl(217 60% 18%);
+  --mkt-channel-social:   hsl(338 78% 65%);
+  --mkt-channel-social-bg:hsl(338 50% 18%);
+  --mkt-channel-blog:     hsl(160 60% 50%);
+  --mkt-channel-blog-bg:  hsl(160 50% 14%);
+  --mkt-channel-paid:     hsl(35 90% 58%);
+  --mkt-channel-paid-bg:  hsl(35 60% 14%);
+  --mkt-channel-event:    hsl(264 75% 68%);
+  --mkt-channel-event-bg: hsl(264 50% 18%);
+  --mkt-channel-other:    hsl(220 8% 60%);
+  --mkt-channel-other-bg: hsl(220 15% 18%);
+}
+
+/* === DENSITY MODES =========================================== */
+[data-density="compact"] {
+  --row-h: 32px;
+  --s-6: 12px;
+  --s-7: 14px;
+  --s-8: 18px;
+  --s-9: 24px;
+  --s-10: 32px;
+}
+[data-density="spacious"] {
+  --row-h: 48px;
+  --s-6: 20px;
+  --s-7: 24px;
+  --s-8: 32px;
+  --s-9: 40px;
+  --s-10: 52px;
+}
+
+/* === REDUCED MOTION ========================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ============================================================
+   COMPATIBILITY ALIASES
+   These map old token names to the new tokens so existing
+   page-level CSS keeps working until the Phase 2 sweep
+   replaces every reference. Delete after the sweep.
+   ============================================================ */
+:root,
+[data-theme="light"],
+[data-theme="dark"] {
+  /* Surfaces */
+  --bg-app: var(--bg);
+  --bg-base: var(--surface);
+  --bg-surface-1: var(--surface);
+  --bg-surface-2: var(--surface-2);
+  --bg-surface-3: var(--surface-hover);
+  --bg-overlay: var(--overlay);
+  --bg-hover: var(--surface-hover);
+  --bg-active: var(--surface-active);
+  --bg-selected: var(--accent-soft);
+
+  /* Borders */
+  --border-default: var(--border);
+  --border-focus: var(--accent-bright);
+
+  /* Text */
+  --text-primary: var(--text);
+  --text-tertiary: var(--text-muted);
+  --text-disabled: var(--text-subtle);
+  --text-inverse: var(--text-on-accent);
+
+  /* Accent */
+  --accent-primary: var(--accent);
+  --accent-primary-hover: var(--accent-hover);
+  --accent-primary-active: var(--accent-active);
+  --accent-primary-muted: var(--accent-soft-2);
+  --accent-primary-soft: var(--accent-soft);
+
+  /* Status */
+  --status-success: var(--success);
+  --status-success-bg: var(--success-soft);
+  --status-success-border: var(--success-border);
+  --status-warning: var(--warning);
+  --status-warning-bg: var(--warning-soft);
+  --status-warning-border: var(--warning-border);
+  --status-danger: var(--danger);
+  --status-danger-bg: var(--danger-soft);
+  --status-danger-border: var(--danger-border);
+  --status-info: var(--info);
+  --status-info-bg: var(--info-soft);
+  --status-info-border: var(--info-border);
+  --status-neutral: var(--text-muted);
+  --status-neutral-bg: var(--surface-2);
+  --status-neutral-border: var(--border);
+  --status-purple: var(--violet);
+  --status-purple-bg: var(--violet-soft);
+  --status-purple-border: var(--violet-border);
+
+  /* Priority */
+  --prio-urgent: var(--pri-urgent);
+  --prio-high: var(--pri-high);
+  --prio-med: var(--pri-medium);
+  --prio-low: var(--pri-low);
+
+  /* AI */
+  --ai-violet: var(--ai-2);
+  --ai-cyan: var(--ai-3);
+  --ai-pink: var(--rose);
+  --ai-bg: var(--ai-gradient-soft);
+
+  /* Radius */
+  --radius-xs: var(--r-xs);
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+  --radius-2xl: var(--r-2xl);
+  --radius-pill: var(--r-pill);
+
+  /* Spacing — old --space-N → new --s-N (size-preserving mapping) */
+  --space-1: var(--s-2);   /* 4px */
+  --space-2: var(--s-4);   /* 8px */
+  --space-3: var(--s-5);   /* 12px */
+  --space-4: var(--s-6);   /* 16px */
+  --space-5: var(--s-7);   /* 20px */
+  --space-6: var(--s-8);   /* 24px */
+  --space-8: var(--s-9);   /* 32px */
+  --space-10: var(--s-10); /* 40px */
+  --space-12: var(--s-11); /* 48px */
+  --space-16: var(--s-12); /* 64px */
+
+  /* Typography */
+  --font-ui: var(--font-sans);
+  --font-size-display: var(--fs-3xl);  /* 28px (was 30px) */
+  --font-size-h1: var(--fs-2xl);       /* 22px (was 24px) */
+  --font-size-h2: var(--fs-xl);        /* 18px (was 20px) */
+  --font-size-h3: var(--fs-lg);        /* 16px (was 17px) */
+  --font-size-h4: var(--fs-base);      /* 14px (was 15px) */
+  --font-size-body: var(--fs-base);    /* 14px */
+  --font-size-dense: var(--fs-md);     /* 13px */
+  --font-size-meta: var(--fs-xs);      /* 11px */
+
+  --leading-tight: var(--lh-tight);
+  --leading-snug: var(--lh-snug);
+  --leading-norm: var(--lh-normal);
+
+  --weight-regular: var(--fw-regular);
+  --weight-medium: var(--fw-medium);
+  --weight-semibold: var(--fw-semibold);
+  --weight-bold: var(--fw-bold);
+
+  /* Motion */
+  --dur-med: var(--dur-base);
+
+  /* Legacy color scales — kept literal for components that
+     reference specific steps (indigo-500 etc.). These do NOT
+     follow theme. Phase 2 sweep replaces with semantic tokens. */
+  --indigo-50:  #ECEEFF;  --indigo-100: #D9DDFF;  --indigo-200: #B6BCFF;
+  --indigo-300: #8E97FB;  --indigo-400: #6E7BF3;  --indigo-500: #5B6AF0;
+  --indigo-600: #4A57D6;  --indigo-700: #3C46AE;  --indigo-800: #2F3789;
+  --indigo-900: #232966;  --indigo-950: #161A42;
+
+  --blue-50:  #EAF2FF;  --blue-100: #D2E2FF;  --blue-200: #A8C7FF;
+  --blue-300: #7BA8FF;  --blue-400: #4F8BFF;  --blue-500: #2A6FDB;
+  --blue-600: #1F5BC0;  --blue-700: #1A4A9E;  --blue-800: #173E80;
+  --blue-900: #122F62;  --blue-950: #0C1F40;
+
+  --sky-50:  #E6FAFE;  --sky-100: #C2F1FA;  --sky-200: #8FE5F3;
+  --sky-300: #4FD1E0;  --sky-400: #2EB8C9;  --sky-500: #1E96A6;
+  --sky-600: #176E7E;  --sky-700: #114F5C;  --sky-800: #0B3540;
+  --sky-900: #061F25;
+
+  --slate-50:  #F4F6FA;  --slate-100: #E8EAF2;  --slate-200: #C2C9D6;
+  --slate-300: #A4ABC4;  --slate-400: #8B91A8;  --slate-500: #5E647A;
+  --slate-600: #424658;  --slate-700: #2A2F45;  --slate-800: #1E2235;
+  --slate-900: #181C27;  --slate-950: #0F1117;
 }

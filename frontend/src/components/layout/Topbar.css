@@ -1,9 +1,7 @@
-/* Topbar shell lives in stratos.css (.app-topbar, .crumb, .icon-btn, .search-mini).
-   This file holds the user-menu trigger only. */
+/* Topbar layout lives in stratos.css (.topbar, .crumbs, .search).
+   This file holds the user-menu trigger. */
 
-.topbar-user {
-  position: relative;
-}
+.topbar-user { position: relative; }
 
 .topbar-user__trigger {
   display: inline-flex;
@@ -12,11 +10,12 @@
   background: transparent;
   border: 0;
   padding: 2px 4px;
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
+  border-radius: var(--r-md);
+  color: var(--text);
   cursor: pointer;
+  transition: background var(--dur-fast);
 }
-.topbar-user__trigger:hover { background: var(--bg-hover); }
+.topbar-user__trigger:hover { background: var(--surface-hover); }
 
 .topbar-user__menu {
   position: absolute;

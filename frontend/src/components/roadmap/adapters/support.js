@@ -21,7 +21,7 @@ export async function supportRoadmap(projectId) {
         id: `ticket-${t.id}`,
         label: t.subject,
         at: t.slaDueAt,
-        color: t.isBreached ? 'var(--status-danger)' : color,
+        color: t.isBreached ? 'var(--danger)' : color,
         kind: 'milestone',
         sublabel: `${q.name}${t.isBreached ? ' · breached' : ''}`,
       });

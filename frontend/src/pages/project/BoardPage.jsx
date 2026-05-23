@@ -254,7 +254,7 @@ export function BoardPage() {
               <span className="mono kpi-label">DAYS LEFT</span>
               <span
                 className="board-page__kpi-value"
-                style={{ color: left <= 3 ? 'var(--status-warning)' : undefined }}
+                style={{ color: left <= 3 ? 'var(--warning)' : undefined }}
               >
                 {left}
                 <span className="muted board-page__kpi-suffix"> of {length}</span>

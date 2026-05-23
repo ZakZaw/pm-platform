@@ -41,7 +41,7 @@ import { CommentList } from './CommentList';
 import { CommentInput } from './CommentInput';
 import './TaskDetail.css';
 
-const DEFAULT_TASK_COLOR = 'var(--accent-primary)';
+const DEFAULT_TASK_COLOR = 'var(--accent)';
 
 function shortKey(task) {
   if (task?.key) return task.key;
@@ -838,7 +838,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
 
             {currentEpic && (
               <MetaRow label="Epic name">
-                <span className="hstack" style={{ gap: 6, fontSize: 12, color: 'var(--accent-primary)' }}>
+                <span className="hstack" style={{ gap: 6, fontSize: 12, color: 'var(--accent)' }}>
                   <Layers size={11} aria-hidden="true" /> {currentEpic.title}
                 </span>
               </MetaRow>

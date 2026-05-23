@@ -8,7 +8,7 @@
 .mywork__header { flex-shrink: 0; }
 
 .mywork__filters {
-  gap: var(--space-2);
+  gap: var(--s-4);
 }
 .mywork__filters .select { min-width: 180px; }
 
@@ -32,9 +32,9 @@
 
 .mywork__project-row {
   justify-content: space-between;
-  gap: var(--space-2);
+  gap: var(--s-4);
   font-size: 11px;
-  color: var(--text-tertiary);
+  color: var(--text-muted);
 }
 .mywork__project-row .truncate { max-width: 100%; }
 
@@ -45,13 +45,13 @@
 .mywork__empty {
   color: var(--text-muted);
   font-size: 12px;
-  padding: var(--space-2);
+  padding: var(--s-4);
   margin: 0;
 }
 
 .mywork__placeholder {
-  color: var(--text-tertiary);
-  padding: var(--space-6);
+  color: var(--text-muted);
+  padding: var(--s-8);
 }
 
 @media (max-width: 900px) {
@@ -60,17 +60,17 @@
 }
 
 .mywork__ops {
-  margin-bottom: var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  background: var(--bg-surface-1);
+  margin-bottom: var(--s-6);
+  padding: var(--s-5) var(--s-6);
+  background: var(--surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: var(--r-md);
 }
 
 .mywork__ops-head {
-  gap: var(--space-3);
+  gap: var(--s-5);
   align-items: center;
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--s-4);
 }
 
 .mywork__ops-list {
@@ -85,15 +85,15 @@
 .mywork__ops-row {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-2) 0;
+  gap: var(--s-5);
+  padding: var(--s-4) 0;
   border-bottom: 1px dashed var(--border-subtle);
 }
 
 .mywork__ops-row:last-child { border-bottom: none; }
 
 .mywork__ops-row.is-overdue .mywork__ops-title {
-  color: var(--status-danger);
+  color: var(--danger);
 }
 
 .mywork__ops-link {
@@ -107,11 +107,11 @@
 }
 
 .mywork__ops-title {
-  color: var(--text-primary);
-  font-size: var(--font-size-dense);
-  font-weight: var(--weight-medium);
+  color: var(--text);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
 }
 
 .mywork__ops-meta {
-  font-size: var(--font-size-meta);
+  font-size: var(--fs-xs);
 }

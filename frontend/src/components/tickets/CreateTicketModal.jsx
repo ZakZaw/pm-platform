@@ -145,7 +145,7 @@ export function CreateTicketModal({ projectId, queues, onClose, onCreated }) {
                 ]}
               />
             </div>
-            {error && <p style={{ color: 'var(--status-danger)', margin: 0 }}>{error}</p>}
+            {error && <p style={{ color: 'var(--danger)', margin: 0 }}>{error}</p>}
           </div>
         </ModalBody>
         <ModalFooter>

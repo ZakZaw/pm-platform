@@ -29,8 +29,8 @@ export function BurndownChart({
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block' }}>
       <defs>
         <linearGradient id="bd-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--accent-primary)" stopOpacity="0.20" />
-          <stop offset="100%" stopColor="var(--accent-primary)" stopOpacity="0" />
+          <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.20" />
+          <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
         </linearGradient>
       </defs>
       {[10, 20, 30, 40].filter((v) => v <= max).map((v) => (
@@ -58,7 +58,7 @@ export function BurndownChart({
       {actualPath && (
         <path
           d={actualPath}
-          stroke="var(--accent-primary)"
+          stroke="var(--accent)"
           strokeWidth="1.75"
           fill="none"
           strokeLinecap="round"
@@ -66,13 +66,13 @@ export function BurndownChart({
       )}
       {drawn.length > 0 && todayIdx >= 0 && todayIdx < drawn.length && (
         <>
-          <circle cx={todayIdx * xStep} cy={y(drawn[todayIdx])} r="3" fill="var(--accent-primary)" />
+          <circle cx={todayIdx * xStep} cy={y(drawn[todayIdx])} r="3" fill="var(--accent)" />
           <line
             x1={todayIdx * xStep}
             y1={0}
             x2={todayIdx * xStep}
             y2={height}
-            stroke="var(--accent-primary)"
+            stroke="var(--accent)"
             strokeOpacity="0.3"
             strokeWidth="1"
             strokeDasharray="2 3"

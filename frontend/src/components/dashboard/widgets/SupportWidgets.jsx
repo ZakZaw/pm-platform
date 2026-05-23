@@ -34,7 +34,7 @@ export function SupportOpenTicketsWidget({ project }) {
         label="Currently open"
         value={open}
         sublabel={breached > 0 ? `${breached} past SLA` : 'All within SLA'}
-        accent={breached > 0 ? 'var(--status-danger)' : undefined}
+        accent={breached > 0 ? 'var(--danger)' : undefined}
       />
     </DashboardWidget>
   );
@@ -53,7 +53,7 @@ export function SupportSlaBreachWidget({ project }) {
       empty={!loading && flat.length === 0}
       emptyText="No SLA breaches right now."
     >
-      <MetricRow label="Tickets past SLA" value={flat.length} accent="var(--status-danger)" />
+      <MetricRow label="Tickets past SLA" value={flat.length} accent="var(--danger)" />
       <ul className="dashboard-widget__rows">
         {flat.slice(0, 5).map((t) => (
           <li key={t.id} className="dashboard-widget__row">

@@ -146,7 +146,7 @@ function CreateCustomerModal({ projectId, onClose, onCreated }) {
             <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             <Input label="Company" value={company} onChange={(e) => setCompany(e.target.value)} />
             <Input label="Tier" value={tier} onChange={(e) => setTier(e.target.value)} placeholder="Free / Standard / Premium / Enterprise" />
-            {error && <p style={{ color: 'var(--status-danger)', margin: 0 }}>{error}</p>}
+            {error && <p style={{ color: 'var(--danger)', margin: 0 }}>{error}</p>}
           </div>
         </ModalBody>
         <ModalFooter>

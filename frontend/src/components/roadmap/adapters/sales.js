@@ -38,7 +38,7 @@ export async function salesRoadmap(projectId) {
     label: q.label,
     start: q.start,
     end: q.end,
-    color: i % 2 === 0 ? 'var(--accent-primary-soft)' : 'var(--bg-surface-2)',
+    color: i % 2 === 0 ? 'var(--accent-soft)' : 'var(--surface-2)',
     sublabel: `${deals.filter((d) => d.expectedClose >= q.start && d.expectedClose < q.end).length} deals`,
   }));
 

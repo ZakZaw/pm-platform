@@ -1,22 +1,22 @@
 .sprints-page__header {
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--s-6);
 }
 
 .sprints-page__title {
-  font-size: var(--font-size-h1);
-  font-weight: var(--weight-semibold);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-semibold);
   margin: 0;
 }
 
 .sprints-page__create {
-  padding: var(--space-4);
-  margin-bottom: var(--space-4);
+  padding: var(--s-6);
+  margin-bottom: var(--s-6);
 }
 
 .sprints-page__form {
   display: grid;
   grid-template-columns: 2fr 3fr 1fr 1fr;
-  gap: var(--space-3);
+  gap: var(--s-5);
   align-items: end;
 }
 
@@ -34,9 +34,9 @@
 .sprints-page__row {
   display: grid;
   grid-template-columns: 1.5fr auto 1fr 1fr auto;
-  gap: var(--space-3);
+  gap: var(--s-5);
   align-items: center;
-  padding: var(--space-3);
+  padding: var(--s-5);
   border-bottom: 1px solid var(--border-subtle);
 }
 .sprints-page__row:last-child { border-bottom: 0; }
@@ -46,30 +46,30 @@
   transition: background var(--dur-fast) var(--ease-out);
 }
 .sprints-page__row.is-interactive:hover {
-  background: var(--bg-hover);
+  background: var(--surface-hover);
 }
 .sprints-page__row.is-interactive:focus-visible {
   outline: none;
-  background: var(--bg-hover);
-  box-shadow: inset 0 0 0 1px var(--border-focus);
+  background: var(--surface-hover);
+  box-shadow: inset 0 0 0 1px var(--accent-bright);
 }
 
-.sprints-page__name { font-weight: var(--weight-medium); color: var(--text-primary); }
-.sprints-page__goal { font-size: var(--font-size-meta); color: var(--text-tertiary); }
+.sprints-page__name { font-weight: var(--fw-medium); color: var(--text); }
+.sprints-page__goal { font-size: var(--fs-xs); color: var(--text-muted); }
 
 .sprints-page__cell-meta {
   color: var(--text-secondary);
-  font-size: var(--font-size-meta);
+  font-size: var(--fs-xs);
   font-family: var(--font-mono);
 }
 
 .sprints-page__actions {
   display: flex;
-  gap: var(--space-2);
+  gap: var(--s-4);
   justify-content: flex-end;
 }
 
-.sprints-page__placeholder { color: var(--text-tertiary); font-size: var(--font-size-dense); }
+.sprints-page__placeholder { color: var(--text-muted); font-size: var(--fs-md); }
 
 @media (max-width: 900px) {
   .sprints-page__form { grid-template-columns: 1fr 1fr; }

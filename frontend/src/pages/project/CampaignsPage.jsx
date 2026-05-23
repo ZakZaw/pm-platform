@@ -75,7 +75,7 @@ export function CampaignsPage() {
   }, [orgSlug, projectSlug]);
 
   if (error) {
-    return <div className="page"><p style={{ color: 'var(--status-danger)' }}>{error}</p></div>;
+    return <div className="page"><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
   }
 
   return (
@@ -250,7 +250,7 @@ function CreateCampaignModal({ projectId, onClose, onCreated }) {
               onChange={(e) => setGoal(e.target.value)}
               placeholder="e.g. 200 trial signups"
             />
-            {error && <p style={{ color: 'var(--status-danger)', margin: 0 }}>{error}</p>}
+            {error && <p style={{ color: 'var(--danger)', margin: 0 }}>{error}</p>}
           </div>
         </ModalBody>
         <ModalFooter>

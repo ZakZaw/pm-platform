@@ -121,7 +121,7 @@ export function AISuggestionCard({
 
       {variant === 'auto' && (
         <div className="ai-suggest__undo hstack">
-          <Check size={14} color="var(--status-success)" aria-hidden="true" />
+          <Check size={14} color="var(--success)" aria-hidden="true" />
           <div className="grow">
             {undoMessage && <div className="ai-suggest__undo-title">{undoMessage}</div>}
             {undoSubtext && <div className="ai-suggest__undo-sub">{undoSubtext}</div>}

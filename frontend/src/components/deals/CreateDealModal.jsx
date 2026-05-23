@@ -144,7 +144,7 @@ export function CreateDealModal({ projectId, stages, onClose, onCreated }) {
                 .filter((s) => !s.isTerminalWon && !s.isTerminalLost)
                 .map((s) => ({ value: s.id, label: s.name }))}
             />
-            {error && <p style={{ color: 'var(--status-danger)', margin: 0 }}>{error}</p>}
+            {error && <p style={{ color: 'var(--danger)', margin: 0 }}>{error}</p>}
           </div>
         </ModalBody>
         <ModalFooter>

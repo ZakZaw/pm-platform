@@ -517,7 +517,7 @@ export function SprintDetailPage() {
               </div>
 
               {aiFillPlan && (
-                <div style={{ marginTop: 'var(--space-3)' }}>
+                <div style={{ marginTop: 'var(--s-5)' }}>
                   <AISuggestionCard
                     chipLabel="AI fill"
                     title={`Add ${aiFillPlan.picks.length} tasks (${aiFillPlan.selectedPoints} / ${aiFillPlan.targetCapacityPoints} pts)`}

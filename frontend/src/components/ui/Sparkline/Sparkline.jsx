@@ -8,7 +8,7 @@ export function Sparkline({
   width = 140,
   height = 28,
   ideal = false,
-  stroke = 'var(--accent-primary)',
+  stroke = 'var(--accent)',
   className = '',
 }) {
   if (!points || points.length < 2) {

@@ -1,16 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Badge, Icon, Skeleton } from '@/components/ui';
+import { Badge, Skeleton } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { adapterForType } from '@/components/roadmap/roadmapRegistry';
 import { RoadmapView } from '@/components/roadmap/RoadmapView';
 import { findProjectType } from '@/constants/projectTypes';
 import './RoadmapPage.css';
 
-// F1.5-08 — Roadmap page. No type branching here; the registry picks
-// the right adapter for the project's type and the view renders whatever
-// shape the adapter returns. Adding a new project type means adding a
-// new adapter + registry entry — nothing in this file changes.
 export function RoadmapPage() {
   const { slug: orgSlug, projectSlug } = useParams();
   const [project, setProject] = useState(null);
@@ -44,17 +40,21 @@ export function RoadmapPage() {
 
   const meta = project ? findProjectType(project.type) : null;
 
-  if (error) return <p className="roadmap-page__error">{error}</p>;
+  if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
 
   return (
-    <div className="page roadmap-page">
-      <header className="page-header">
-        <div className="hstack" style={{ gap: 8 }}>
-          <Icon name="calendar" size={14} />
-          <div className="page-title">Roadmap</div>
+    <div className="main-inner roadmap-page">
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>
+              {project?.name ? `${project.name} · ` : ''}Timeline
+            </div>
+            <h1 className="page-title">Roadmap</h1>
+          </div>
           {meta && <Badge tone="neutral">{meta.label}</Badge>}
         </div>
-      </header>
+      </div>
 
       <div className="roadmap-page__body">
         {!project ? (

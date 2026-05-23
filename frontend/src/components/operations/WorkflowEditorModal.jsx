@@ -175,18 +175,18 @@ export function WorkflowEditorModal({ projectId, workflowId, onClose, onSaved })
                         maxLength={300}
                         style={{
                           flex: 1,
-                          background: 'var(--bg-surface-1)',
-                          border: '1px solid var(--border-default)',
-                          borderRadius: 'var(--radius-sm)',
-                          color: 'var(--text-primary)',
+                          background: 'var(--surface)',
+                          border: '1px solid var(--border)',
+                          borderRadius: 'var(--r-sm)',
+                          color: 'var(--text)',
                           font: 'inherit',
-                          fontSize: 'var(--font-size-dense)',
+                          fontSize: 'var(--fs-md)',
                           padding: '0 8px',
                           height: 30,
                           outline: 'none',
                         }}
                       />
-                      <label className="hstack" style={{ gap: 4, fontSize: 11, color: 'var(--text-tertiary)' }}>
+                      <label className="hstack" style={{ gap: 4, fontSize: 11, color: 'var(--text-muted)' }}>
                         <input
                           type="checkbox"
                           checked={item.sequential}

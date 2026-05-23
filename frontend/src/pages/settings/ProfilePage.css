@@ -3,20 +3,20 @@
 }
 
 .profile__title {
-  font-size: var(--font-size-h1);
-  font-weight: var(--weight-semibold);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-semibold);
   letter-spacing: -0.01em;
-  margin: 0 0 var(--space-6);
+  margin: 0 0 var(--s-8);
 }
 
 .profile__card {
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--s-7);
 }
 
 .profile__avatar-row {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--s-6);
 }
 
 .profile__file-input {
@@ -26,31 +26,31 @@
 .profile__avatar-actions {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--s-4);
 }
 
 .profile__hint {
-  font-size: var(--font-size-meta);
-  color: var(--text-tertiary);
-  margin: var(--space-2) 0 0;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin: var(--s-4) 0 0;
 }
 
 .profile__error {
-  color: var(--status-danger);
-  font-size: var(--font-size-meta);
-  margin: var(--space-2) 0 0;
+  color: var(--danger);
+  font-size: var(--fs-xs);
+  margin: var(--s-4) 0 0;
 }
 
 .profile__success {
-  color: var(--status-success);
-  font-size: var(--font-size-dense);
+  color: var(--success);
+  font-size: var(--fs-md);
   margin: 0;
 }
 
 .profile__form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--s-6);
 }
 
 .profile__chips {
@@ -60,13 +60,13 @@
   gap: 6px;
   padding: 6px 8px;
   min-height: 32px;
-  background: var(--bg-surface-1);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
 }
 
 .profile__chips:focus-within {
-  border-color: var(--border-focus);
+  border-color: var(--accent-bright);
   box-shadow: var(--shadow-focus);
 }
 
@@ -76,8 +76,8 @@
   background: transparent;
   border: 0;
   outline: 0;
-  color: var(--text-primary);
-  font-size: var(--font-size-dense);
+  color: var(--text);
+  font-size: var(--fs-md);
   padding: 2px 0;
 }
 
@@ -86,6 +86,6 @@
 }
 
 .profile__placeholder {
-  color: var(--text-tertiary);
-  font-size: var(--font-size-dense);
+  color: var(--text-muted);
+  font-size: var(--fs-md);
 }

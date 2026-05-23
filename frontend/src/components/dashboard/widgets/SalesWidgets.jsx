@@ -98,8 +98,8 @@ export function SalesConversionWidget({ project }) {
                 style={{
                   position: 'absolute',
                   inset: 0,
-                  background: `linear-gradient(to right, var(--accent-primary-soft) 0%, var(--accent-primary-soft) ${pct}%, transparent ${pct}%)`,
-                  borderRadius: 'var(--radius-sm)',
+                  background: `linear-gradient(to right, var(--accent-soft) 0%, var(--accent-soft) ${pct}%, transparent ${pct}%)`,
+                  borderRadius: 'var(--r-sm)',
                 }}
               />
             </li>
@@ -143,7 +143,7 @@ export function SalesDealsAtRiskWidget({ project }) {
       empty={!loading && atRisk.length === 0}
       emptyText="No at-risk deals — low probability with close in next 14 days."
     >
-      <MetricRow label="Flagged" value={atRisk.length} accent="var(--status-danger)" />
+      <MetricRow label="Flagged" value={atRisk.length} accent="var(--danger)" />
       <ul className="dashboard-widget__rows">
         {atRisk.slice(0, 5).map((d) => (
           <li key={d.id} className="dashboard-widget__row">

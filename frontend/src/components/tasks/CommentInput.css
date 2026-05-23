@@ -1,6 +1,6 @@
 .comment-input {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--s-4);
 }
 
 .comment-input__wrap {
@@ -10,20 +10,20 @@
 .comment-input__textarea {
   width: 100%;
   min-height: 64px;
-  padding: var(--space-3);
-  background: var(--bg-surface-1);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  font-family: var(--font-ui);
-  font-size: var(--font-size-body);
-  line-height: var(--leading-norm);
+  padding: var(--s-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
   resize: vertical;
 }
 
 .comment-input__textarea:focus {
   outline: none;
-  border-color: var(--border-focus);
+  border-color: var(--accent-bright);
   box-shadow: var(--shadow-focus);
 }
 
@@ -34,27 +34,27 @@
   margin-top: 4px;
   width: 280px;
   max-width: 100%;
-  background: var(--bg-surface-2);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
   box-shadow: var(--shadow-lg);
   list-style: none;
-  padding: var(--space-1);
+  padding: var(--s-2);
   z-index: 50;
 }
 
 .comment-input__menu-item {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2);
-  border-radius: var(--radius-sm);
+  gap: var(--s-4);
+  padding: var(--s-4);
+  border-radius: var(--r-sm);
   cursor: pointer;
 }
 
 .comment-input__menu-item.is-active,
 .comment-input__menu-item:hover {
-  background: var(--bg-hover);
+  background: var(--surface-hover);
 }
 
 .comment-input__menu-text {
@@ -64,17 +64,17 @@
 }
 
 .comment-input__menu-name {
-  color: var(--text-primary);
-  font-size: var(--font-size-dense);
-  font-weight: var(--weight-medium);
+  color: var(--text);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .comment-input__menu-email {
-  color: var(--text-tertiary);
-  font-size: var(--font-size-meta);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -82,6 +82,6 @@
 
 .comment-input__actions {
   display: flex;
-  gap: var(--space-2);
+  gap: var(--s-4);
   justify-content: flex-end;
 }

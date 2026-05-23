@@ -5,8 +5,8 @@
 }
 
 .dashboard__placeholder {
-  color: var(--text-tertiary);
-  padding: var(--space-6);
+  color: var(--text-muted);
+  padding: var(--s-8);
 }
 
 .dashboard__note {
@@ -15,8 +15,8 @@
   gap: 6px;
   padding: 8px 20px;
   font-size: 11px;
-  color: var(--text-tertiary);
-  background: var(--bg-surface-1);
+  color: var(--text-muted);
+  background: var(--surface);
   border-bottom: 1px solid var(--border-subtle);
 }
 .dashboard__note em { color: var(--text-secondary); font-style: normal; }
@@ -62,14 +62,14 @@
 .dashboard__kpi-icon {
   width: 22px;
   height: 22px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 .dashboard__kpi-label {
   font-size: 11px;
-  color: var(--text-tertiary);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-weight: 600;
@@ -94,7 +94,7 @@
 .dashboard__widget-title {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
 }
 .dashboard__widget-sub {
   font-size: 11px;
@@ -102,7 +102,7 @@
 .dashboard__sample {
   font-size: 10px;
   color: var(--text-muted);
-  font-weight: var(--weight-regular);
+  font-weight: var(--fw-regular);
   text-transform: none;
   letter-spacing: 0;
   font-style: italic;
@@ -110,7 +110,7 @@
 .dashboard__legend {
   gap: 10px;
   font-size: 11px;
-  color: var(--text-tertiary);
+  color: var(--text-muted);
 }
 .dashboard__legend > span { gap: 4px; }
 .dashboard__legend-swatch {
@@ -154,7 +154,7 @@
   justify-content: space-between;
   margin-bottom: 4px;
   font-size: 12px;
-  gap: var(--space-2);
+  gap: var(--s-4);
 }
 .dashboard__epic-head .truncate { max-width: 180px; }
 .dashboard__epic-swatch {
@@ -165,14 +165,14 @@
 }
 .dashboard__epic-track {
   height: 6px;
-  background: var(--bg-surface-3);
+  background: var(--surface-hover);
   border-radius: 3px;
   overflow: hidden;
 }
 .dashboard__epic-fill {
   height: 100%;
   border-radius: 3px;
-  transition: width var(--dur-med) var(--ease-out);
+  transition: width var(--dur-base) var(--ease-out);
 }
 
 /* AI insight card */
@@ -203,7 +203,7 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--ai-violet), var(--accent-primary));
+  background: linear-gradient(135deg, var(--ai-violet), var(--accent));
   display: inline-flex;
   align-items: center;
   justify-content: center;

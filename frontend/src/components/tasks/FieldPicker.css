@@ -1,19 +1,19 @@
 .field-picker__trigger {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: 4px var(--space-2);
+  gap: var(--s-4);
+  padding: 4px var(--s-4);
   background: transparent;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text);
   cursor: pointer;
   font-family: inherit;
-  font-size: var(--font-size-dense);
+  font-size: var(--fs-md);
   max-width: 100%;
   min-width: 0;
 }
-.field-picker__trigger:hover:not(:disabled) { background: var(--bg-hover); }
+.field-picker__trigger:hover:not(:disabled) { background: var(--surface-hover); }
 .field-picker__trigger:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .field-picker__label {
@@ -23,7 +23,7 @@
 }
 
 .field-picker__placeholder {
-  color: var(--text-tertiary);
+  color: var(--text-muted);
 }
 
 .field-picker__swatch {
@@ -38,21 +38,21 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--text-tertiary);
+  background: var(--text-muted);
   display: inline-block;
 }
-.field-picker__status-dot[data-status="Active"] { background: var(--status-success); }
-.field-picker__status-dot[data-status="Planning"] { background: var(--status-info); }
+.field-picker__status-dot[data-status="Active"] { background: var(--success); }
+.field-picker__status-dot[data-status="Planning"] { background: var(--info); }
 .field-picker__status-dot[data-status="Closed"] { background: var(--text-muted); }
 
 .field-picker__hint {
-  margin-left: var(--space-2);
-  color: var(--text-tertiary);
-  font-size: var(--font-size-meta);
+  margin-left: var(--s-4);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
 }
 
 .field-picker__empty {
-  padding: var(--space-2) var(--space-3);
-  color: var(--text-tertiary);
-  font-size: var(--font-size-dense);
+  padding: var(--s-4) var(--s-5);
+  color: var(--text-muted);
+  font-size: var(--fs-md);
 }

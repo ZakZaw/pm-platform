@@ -2,40 +2,40 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--s-7);
 }
 
 .epics-page__title {
-  font-size: var(--font-size-h1);
-  font-weight: var(--weight-semibold);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-semibold);
   margin: 0;
 }
 
 .epics-page__actions {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--s-5);
 }
 
 .epics-page__toggle {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--s-4);
   color: var(--text-secondary);
-  font-size: var(--font-size-dense);
+  font-size: var(--fs-md);
 }
 
 .epics-page__form-card {
-  padding: var(--space-4);
-  margin-bottom: var(--space-4);
+  padding: var(--s-6);
+  margin-bottom: var(--s-6);
 }
 
 .epics-page__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--space-3);
+  gap: var(--s-5);
 }
 
 .epics-page__placeholder {
-  color: var(--text-tertiary);
+  color: var(--text-muted);
 }

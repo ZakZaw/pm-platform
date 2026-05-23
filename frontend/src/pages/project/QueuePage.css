@@ -1,60 +1,13 @@
-.queue-page__sections {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
+/* Base .queue / .queue-row / .queue-head / .sla / .sla-dot live in stratos.css. */
+
+.queue-page {
+  padding: var(--s-7) var(--s-9);
 }
 
-.queue-section {
-  background: var(--bg-surface-1);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.queue-section__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-3) var(--space-4);
-  background: var(--bg-surface-2);
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.queue-section__name {
-  font-size: var(--font-size-h4);
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.queue-section__empty {
-  padding: var(--space-4);
+.queue-empty {
+  padding: var(--s-7) var(--s-6);
   text-align: center;
   color: var(--text-muted);
-  font-size: var(--font-size-meta);
-}
-
-.queue-section__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.ticket-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--border-subtle);
-  cursor: pointer;
-  transition: background var(--dur-fast) var(--ease-out);
-}
-
-.ticket-row:hover { background: var(--bg-hover); }
-.ticket-row:last-child { border-bottom: none; }
-
-.ticket-row__subject {
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
-  font-size: var(--font-size-body);
+  background: var(--surface);
+  font-size: var(--fs-sm);
 }

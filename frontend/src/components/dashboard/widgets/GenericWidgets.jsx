@@ -106,7 +106,7 @@ export function GenericCompletionRateWidget({ project }) {
       <div className="dashboard-widget__bar" aria-hidden="true">
         <span
           className="dashboard-widget__bar-seg"
-          style={{ width: `${pct}%`, background: 'var(--status-success)' }}
+          style={{ width: `${pct}%`, background: 'var(--success)' }}
         />
       </div>
     </DashboardWidget>

@@ -3,11 +3,11 @@
   align-items: center;
   gap: 6px;
   padding: 2px 8px;
-  border-radius: var(--radius-pill);
-  font-size: var(--font-size-meta);
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
   font-family: var(--font-mono);
   color: var(--text-secondary);
-  background: var(--bg-surface-1);
+  background: var(--surface);
   border: 1px solid var(--border-subtle);
 }
 
@@ -15,22 +15,22 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--text-tertiary);
+  background: var(--text-muted);
 }
 
 .live-indicator.is-connected .live-indicator__dot {
-  background: var(--status-success);
-  box-shadow: 0 0 0 2px var(--status-success-bg);
+  background: var(--success);
+  box-shadow: 0 0 0 2px var(--success-soft);
 }
 .live-indicator.is-connecting .live-indicator__dot,
 .live-indicator.is-reconnecting .live-indicator__dot {
-  background: var(--status-warning);
+  background: var(--warning);
 }
 .live-indicator.is-failed {
-  color: var(--status-danger);
-  border-color: var(--status-danger-border);
-  background: var(--status-danger-bg);
+  color: var(--danger);
+  border-color: var(--danger-border);
+  background: var(--danger-soft);
 }
 .live-indicator.is-failed .live-indicator__dot {
-  background: var(--status-danger);
+  background: var(--danger);
 }

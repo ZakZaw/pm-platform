@@ -454,7 +454,7 @@ function Row({ task, assignee, epic }) {
     <>
       <span
         className="backlog-page__epic-color"
-        style={{ background: epic?.color || 'var(--accent-primary)' }}
+        style={{ background: epic?.color || 'var(--accent)' }}
         title={epic ? `Epic: ${epic.title}` : 'No epic'}
         aria-hidden="true"
       />

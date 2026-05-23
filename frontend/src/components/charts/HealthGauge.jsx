@@ -9,10 +9,10 @@ export function HealthGauge({ score = 0, size = 160, stroke = 10 }) {
   const clamped = Math.max(0, Math.min(100, score));
   const dashOffset = circumference * (1 - clamped / 100);
   const color =
-    clamped >= 75 ? 'var(--status-success)' : clamped >= 50 ? 'var(--status-warning)' : 'var(--status-danger)';
+    clamped >= 75 ? 'var(--success)' : clamped >= 50 ? 'var(--warning)' : 'var(--danger)';
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-label={`Health score ${clamped} of 100`}>
-      <circle cx={cx} cy={cx} r={r} fill="none" stroke="var(--bg-surface-3)" strokeWidth={stroke} />
+      <circle cx={cx} cy={cx} r={r} fill="none" stroke="var(--surface-hover)" strokeWidth={stroke} />
       <circle
         cx={cx}
         cy={cx}
@@ -31,8 +31,8 @@ export function HealthGauge({ score = 0, size = 160, stroke = 10 }) {
         textAnchor="middle"
         fontSize={size / 4.7}
         fontWeight="600"
-        fill="var(--text-primary)"
-        fontFamily="var(--font-ui)"
+        fill="var(--text)"
+        fontFamily="var(--font-sans)"
       >
         {clamped}
       </text>
@@ -41,7 +41,7 @@ export function HealthGauge({ score = 0, size = 160, stroke = 10 }) {
         y={cx + size / 8}
         textAnchor="middle"
         fontSize="11"
-        fill="var(--text-tertiary)"
+        fill="var(--text-muted)"
         fontFamily="var(--font-mono)"
       >
         / 100

@@ -18,6 +18,8 @@ import { projectsApi } from '@/api/projects.api';
 import { boardApi } from '@/api/board.api';
 import { sprintsApi } from '@/api/sprints.api';
 import { epicsApi } from '@/api/epics.api';
+import { widgetsForType } from '@/components/dashboard/dashboardRegistry';
+import { findProjectType } from '@/constants/projectTypes';
 import './DashboardPage.css';
 
 // Placeholder data — backend doesn't expose these aggregates yet (Phase 2).
@@ -95,9 +97,70 @@ function daysBetween(a, b) {
   return Math.max(1, Math.round((new Date(b).getTime() - new Date(a).getTime()) / 86_400_000));
 }
 
+// F1.5-08 dispatch shell. For non-Engineering project types we delegate
+// the entire body to the per-type widget set registered in
+// `dashboardRegistry`. Engineering keeps the original implementation
+// inline below — the AC's "no page-level type branches" only applies to
+// the *typed* renderers; Engineering is the legacy baseline.
 export function DashboardPage() {
   const { slug: orgSlug, projectSlug } = useParams();
   const [project, setProject] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const p = await projectsApi.getBySlug(orgSlug, projectSlug);
+        if (!cancelled) setProject(p);
+      } catch (err) {
+        if (!cancelled) setError(err.response?.data?.detail ?? 'Could not load dashboard.');
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [orgSlug, projectSlug]);
+
+  if (error) return <p className="dashboard__placeholder">{error}</p>;
+  if (!project) {
+    return (
+      <div className="dashboard" aria-busy="true" style={{ padding: 20 }}>
+        <Skeleton width={200} height={20} />
+        <div style={{ height: 16 }} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} height={88} radius="md" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const widgets = widgetsForType(project.type);
+  if (widgets) return <TypedDashboard project={project} widgets={widgets} />;
+  return <EngineeringDashboard project={project} />;
+}
+
+function TypedDashboard({ project, widgets }) {
+  const meta = findProjectType(project.type);
+  return (
+    <div className="dashboard">
+      <header className="page-header">
+        <div className="hstack" style={{ gap: 8 }}>
+          <Icon name="bar-chart-3" size={14} />
+          <div className="page-title">Dashboard</div>
+          <Badge tone="neutral">{meta?.label ?? project.type}</Badge>
+        </div>
+      </header>
+      <div className="dashboard__typed-grid">
+        {widgets.map((Widget, i) => (
+          <Widget key={i} project={project} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function EngineeringDashboard({ project }) {
   const [board, setBoard] = useState(null);
   const [sprint, setSprint] = useState(null);
   const [epics, setEpics] = useState([]);
@@ -107,13 +170,10 @@ export function DashboardPage() {
     let cancelled = false;
     (async () => {
       try {
-        const p = await projectsApi.getBySlug(orgSlug, projectSlug);
-        if (cancelled) return;
-        setProject(p);
         const [b, s, eps] = await Promise.all([
-          boardApi.get(p.id).catch(() => null),
-          sprintsApi.getActive(p.id).catch(() => null),
-          epicsApi.listForProject(p.id).catch(() => []),
+          boardApi.get(project.id).catch(() => null),
+          sprintsApi.getActive(project.id).catch(() => null),
+          epicsApi.listForProject(project.id).catch(() => []),
         ]);
         if (cancelled) return;
         setBoard(b);
@@ -123,10 +183,8 @@ export function DashboardPage() {
         if (!cancelled) setError(err.response?.data?.detail ?? 'Could not load dashboard.');
       }
     })();
-    return () => {
-      cancelled = true;
-    };
-  }, [orgSlug, projectSlug]);
+    return () => { cancelled = true; };
+  }, [project.id]);
 
   // Live counts derived from board.
   const openTasks = useMemo(() => {
@@ -203,21 +261,6 @@ export function DashboardPage() {
   ];
 
   if (error) return <p className="dashboard__placeholder">{error}</p>;
-  if (!project) {
-    return (
-      <div className="dashboard" aria-busy="true" style={{ padding: 20 }}>
-        <Skeleton width={200} height={20} />
-        <div style={{ height: 16 }} />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} height={88} radius="md" />
-          ))}
-        </div>
-        <div style={{ height: 16 }} />
-        <Skeleton height={220} radius="md" />
-      </div>
-    );
-  }
 
   return (
     <div className="dashboard">

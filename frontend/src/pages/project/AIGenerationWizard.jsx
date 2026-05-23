@@ -28,6 +28,7 @@ import {
 import { aiApi } from '@/api/ai.api';
 import { useProjectStore } from '@/store/projectStore';
 import { PROJECT_TYPES, DEFAULT_PROJECT_TYPE_ID, findProjectType } from '@/constants/projectTypes';
+import { TypedGenerationPreview, typedDraftTotals } from '@/components/ai/TypedGenerationPreview';
 import './AIGenerationWizard.css';
 
 const TYPE_OPTIONS = PROJECT_TYPES.map((t) => ({ value: t.id, label: t.label }));
@@ -146,11 +147,17 @@ export function AIGenerationWizard() {
     setError(null);
     setLoading(true);
     try {
-      const project = await aiApi.applyGeneratedProject(preview.requestId, {
-        projectName: projectName.trim(),
-        type: preview.type ?? projectType,
-        epics: preview.epics,
-      });
+      // F1.5-07 — Engineering keeps the editable-tree apply (sends the
+      // wizard's edited epics back). Every other type sends just the
+      // project name; the server already has the canonical draft.
+      const isEngineeringApply = (preview.type ?? projectType) === 'Engineering';
+      const project = isEngineeringApply
+        ? await aiApi.applyGeneratedProject(preview.requestId, {
+            projectName: projectName.trim(),
+            type: preview.type ?? projectType,
+            epics: preview.epics,
+          })
+        : await aiApi.applyTypedGeneratedProject(preview.requestId, projectName.trim());
       await refreshOrg(orgSlug).catch(() => {});
       toast.show({ tone: 'success', message: 'Project created.' });
       navigate(`/${orgSlug}/projects/${project.slug}`);
@@ -195,8 +202,11 @@ export function AIGenerationWizard() {
     }));
   }
 
-  // Summary counts for the generated-plan header strip.
-  const totals = preview
+  // Summary counts for the generated-plan header strip. Engineering keeps
+  // its existing epics/tasks/points triplet; non-Engineering types report
+  // a per-type string derived from the typed draft instead.
+  const isTypedPreview = preview ? preview.type !== 'Engineering' : false;
+  const totals = preview && !isTypedPreview
     ? preview.epics.reduce(
         (acc, e) => ({
           epics: acc.epics + 1,
@@ -206,6 +216,7 @@ export function AIGenerationWizard() {
         { epics: 0, tasks: 0, points: 0 },
       )
     : null;
+  const typedTotalsLabel = isTypedPreview ? typedDraftTotals(preview) : null;
 
   return (
     <div className="ai-wizard">
@@ -359,11 +370,16 @@ export function AIGenerationWizard() {
             <div className="card-ai ai-wizard__plan">
               <div className="hstack ai-wizard__plan-head">
                 <Sparkles size={14} color="var(--ai-violet)" aria-hidden="true" />
-                <span style={{ fontSize: 13, fontWeight: 600 }}>Generated plan</span>
+                <span style={{ fontSize: 13, fontWeight: 600 }}>
+                  {isTypedPreview ? `${preview.type} project` : 'Generated plan'}
+                </span>
                 {totals && (
                   <span className="mono dim" style={{ fontSize: 11 }}>
                     · {totals.epics} epics · {totals.tasks} tasks · {totals.points} points
                   </span>
+                )}
+                {isTypedPreview && typedTotalsLabel && (
+                  <span className="mono dim" style={{ fontSize: 11 }}>· {typedTotalsLabel}</span>
                 )}
                 <span className="grow" />
                 <span className="muted" style={{ fontSize: 11 }}>
@@ -371,29 +387,37 @@ export function AIGenerationWizard() {
                 </span>
               </div>
               <div className="ai-wizard__plan-body">
-                {preview.epics.map((epic, ei) => (
-                  <EpicNode
-                    key={ei}
-                    epic={epic}
-                    onChange={(patch) => updateEpic(ei, patch)}
-                    onRemove={() => removeEpic(ei)}
-                    onChangeTask={(ti, patch) => updateTask(ei, ti, patch)}
-                    onRemoveTask={(ti) => removeTask(ei, ti)}
-                  />
-                ))}
-                {preview.epics.length === 0 && (
-                  <p className="ai-wizard__placeholder" style={{ padding: 16 }}>
-                    All epics removed. Regenerate to start over.
-                  </p>
+                {isTypedPreview ? (
+                  <TypedGenerationPreview preview={preview} />
+                ) : (
+                  <>
+                    {preview.epics.map((epic, ei) => (
+                      <EpicNode
+                        key={ei}
+                        epic={epic}
+                        onChange={(patch) => updateEpic(ei, patch)}
+                        onRemove={() => removeEpic(ei)}
+                        onChangeTask={(ti, patch) => updateTask(ei, ti, patch)}
+                        onRemoveTask={(ti) => removeTask(ei, ti)}
+                      />
+                    ))}
+                    {preview.epics.length === 0 && (
+                      <p className="ai-wizard__placeholder" style={{ padding: 16 }}>
+                        All epics removed. Regenerate to start over.
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
               <div className="hstack ai-wizard__plan-foot">
                 <Button variant="ghost" size="md" onClick={regenerate} disabled={loading}>
                   <RefreshCw size={13} aria-hidden="true" /> Regenerate
                 </Button>
-                <Button variant="ghost" size="md" disabled>
-                  <Plus size={13} aria-hidden="true" /> Add epic
-                </Button>
+                {!isTypedPreview && (
+                  <Button variant="ghost" size="md" disabled>
+                    <Plus size={13} aria-hidden="true" /> Add epic
+                  </Button>
+                )}
                 <span className="grow" />
                 <Button variant="secondary" size="md" disabled>
                   Save as draft
@@ -403,7 +427,9 @@ export function AIGenerationWizard() {
                   size="md"
                   onClick={applyPreview}
                   disabled={
-                    loading || preview.epics.length === 0 || projectName.trim().length < 2
+                    loading
+                    || (!isTypedPreview && preview.epics.length === 0)
+                    || projectName.trim().length < 2
                   }
                 >
                   <Check size={13} aria-hidden="true" />

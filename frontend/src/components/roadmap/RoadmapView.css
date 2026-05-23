@@ -1,0 +1,201 @@
+.roadmap-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--bg-base);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.roadmap-view--loading,
+.roadmap-view__error {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-dense);
+  padding: var(--space-6);
+}
+
+.roadmap-view__hint {
+  font-size: var(--font-size-meta);
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+.roadmap-view__axis {
+  position: relative;
+  height: 24px;
+  border-bottom: 1px dashed var(--border-subtle);
+  margin-left: 160px;
+}
+
+.roadmap-view__tick {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  font-size: var(--font-size-meta);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.roadmap-view__today {
+  position: absolute;
+  top: -2px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.roadmap-view__lanes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.roadmap-view__lane {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.roadmap-view__lane-label {
+  font-size: var(--font-size-dense);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.roadmap-view__lane-sub {
+  font-size: var(--font-size-meta);
+}
+
+.roadmap-view__track {
+  position: relative;
+  height: 28px;
+  background: var(--bg-surface-1);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.roadmap-view__track-today {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--accent-primary);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.roadmap-view__bar {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.roadmap-view__bar-label {
+  font-size: var(--font-size-meta);
+  font-weight: var(--weight-medium);
+  color: var(--text-on-accent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.roadmap-view__points-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-left: 160px;
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--border-subtle);
+}
+
+.roadmap-view__points-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.roadmap-view__points-track {
+  position: relative;
+  height: 16px;
+  background: var(--bg-surface-1);
+  border-radius: var(--radius-sm);
+}
+
+.roadmap-view__point {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 2px var(--bg-base);
+}
+
+.roadmap-view__point--target {
+  border-radius: 2px;
+  width: 8px;
+  height: 14px;
+}
+
+.roadmap-view__point--run {
+  border-radius: 2px;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.roadmap-view__points-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-1) var(--space-3);
+  font-size: var(--font-size-meta);
+  color: var(--text-secondary);
+}
+
+.roadmap-view__points-legend li {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.roadmap-view__point-swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.roadmap-view__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.roadmap-view__empty-text {
+  margin: 0;
+  font-size: var(--font-size-dense);
+  max-width: 380px;
+}

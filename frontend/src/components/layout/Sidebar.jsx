@@ -3,6 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import {
   Briefcase,
   ChevronsUpDown,
+  FolderKanban,
   Home,
   LayoutGrid,
   Plus,
@@ -100,6 +101,12 @@ export function Sidebar() {
         <NavLink to={`/${slug}/home`} className={sideClass} end title="Organization">
           <Briefcase size={13} aria-hidden="true" />
           <span className="side-item__label">Organization</span>
+        </NavLink>
+      )}
+      {slug && (
+        <NavLink to={`/${slug}/portfolio`} className={sideClass} title="Portfolio">
+          <FolderKanban size={13} aria-hidden="true" />
+          <span className="side-item__label">Portfolio</span>
         </NavLink>
       )}
 

@@ -24,6 +24,13 @@ export const aiApi = {
       })
       .then((r) => r.data),
 
+  // F1.5-07 — non-Engineering apply. The server already has the typed
+  // draft canonical in PreviewJson, so we just commit it under a name.
+  applyTypedGeneratedProject: (requestId, projectName) =>
+    apiClient
+      .post(`/ai/generate-typed-project/${requestId}/apply`, { projectName })
+      .then((r) => r.data),
+
   estimateTask: (taskId) =>
     apiClient.post(`/tasks/${taskId}/estimate`).then((r) => r.data),
 

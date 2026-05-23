@@ -34,7 +34,7 @@ public class GenerateSprintHealthInsightCommandHandler(
 
         var project = await db.Projects
             .Where(p => p.Id == request.ProjectId)
-            .Select(p => new { p.Id, p.Name })
+            .Select(p => new { p.Id, p.Name, p.Type })
             .FirstOrDefaultAsync(ct);
         if (project is null)
             return Result.Failure<AISuggestionDto>(ProjectErrors.NotFound);
@@ -139,7 +139,8 @@ public class GenerateSprintHealthInsightCommandHandler(
         await db.SaveChangesAsync(ct);
 
         return Result.Success(new AISuggestionDto(
-            suggestion.Id, suggestion.ProjectId, suggestion.Kind,
+            suggestion.Id, suggestion.ProjectId, project.Type.ToString(),
+            suggestion.Kind,
             suggestion.Title, suggestion.Body, suggestion.PayloadJson,
             suggestion.Status, suggestion.CreatedAt, suggestion.ActedAt,
             suggestion.Provider));

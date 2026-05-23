@@ -22,9 +22,11 @@ public class ListProjectSuggestionsQueryHandler(IAppDbContext db)
 
         var rows = await q
             .OrderByDescending(s => s.CreatedAt)
-            .Select(s => new AISuggestionDto(
-                s.Id, s.ProjectId, s.Kind, s.Title, s.Body, s.PayloadJson,
-                s.Status, s.CreatedAt, s.ActedAt, s.Provider))
+            .Join(db.Projects, s => s.ProjectId, p => p.Id,
+                (s, p) => new AISuggestionDto(
+                    s.Id, s.ProjectId, p.Type.ToString(),
+                    s.Kind, s.Title, s.Body, s.PayloadJson,
+                    s.Status, s.CreatedAt, s.ActedAt, s.Provider))
             .ToListAsync(ct);
 
         return Result.Success<IReadOnlyList<AISuggestionDto>>(rows);

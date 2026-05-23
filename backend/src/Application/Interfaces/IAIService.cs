@@ -28,6 +28,20 @@ public interface IAIService
         CancellationToken ct);
 
     /// <summary>
+    /// F1.5-07 — generates a typed project draft for non-Engineering
+    /// project types (Sales, Support, Marketing, Operations, Generic).
+    /// Each type returns its own work-model shape so the wizard and the
+    /// apply command can materialise the right entities atomically.
+    /// Engineering keeps using <see cref="GenerateProjectStructureAsync"/>
+    /// unchanged.
+    /// </summary>
+    Task<AITypedProjectDraft> GenerateTypedProjectDraftAsync(
+        string description,
+        string projectType,
+        IReadOnlyList<AIClarificationAnswer>? clarifications,
+        CancellationToken ct);
+
+    /// <summary>
     /// Generate a single epic with its tasks, scoped to an existing project.
     /// The caller passes project context (name, environment, existing-epic
     /// titles) so the AI can fit the new epic into the project without

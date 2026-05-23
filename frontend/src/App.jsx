@@ -33,6 +33,8 @@ import { ContentCalendarPage } from '@/pages/project/ContentCalendarPage';
 import { ListsPage } from '@/pages/project/ListsPage';
 import { RunbooksPage } from '@/pages/project/RunbooksPage';
 import { RunDetailPage } from '@/pages/project/RunDetailPage';
+import { RoadmapPage } from '@/pages/project/RoadmapPage';
+import { OrgPortfolioPage } from '@/pages/dashboard/OrgPortfolioPage';
 import { AppShell } from '@/components/layout/AppShell';
 import { ToastProvider } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
@@ -97,6 +99,14 @@ function App() {
             <Route
               path="/:slug/projects/:projectSlug/dashboard"
               element={<Keyed paramKey="projectSlug"><DashboardPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/roadmap"
+              element={<Keyed paramKey="projectSlug"><RoadmapPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/portfolio"
+              element={<Keyed paramKey="slug"><OrgPortfolioPage /></Keyed>}
             />
             <Route
               path="/:slug/projects/:projectSlug/backlog"

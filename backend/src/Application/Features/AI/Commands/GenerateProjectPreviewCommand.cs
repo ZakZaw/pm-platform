@@ -62,11 +62,55 @@ public class GenerateProjectPreviewCommandHandler(
         };
         db.AIAuditLogs.Add(audit);
 
-        Application.Features.AI.AIGeneratedProject generated;
+        // F1.5-07 — Engineering keeps the original epics+tasks path; all
+        // other types take the typed-draft branch. The unified preview DTO
+        // carries whichever shape was produced so the wizard can pick a
+        // renderer client-side.
+        var isEngineering = string.Equals(request.Type, "Engineering", StringComparison.OrdinalIgnoreCase);
+
+        AIGenerationPreviewDto previewDto;
+        string suggestedName;
         try
         {
-            generated = await ai.GenerateProjectStructureAsync(
-                description, request.Type, clarificationInputs, ct);
+            if (isEngineering)
+            {
+                var generated = await ai.GenerateProjectStructureAsync(
+                    description, request.Type, clarificationInputs, ct);
+                if (generated.Epics.Count == 0)
+                {
+                    audit.ErrorMessage = "Empty epics array";
+                    await db.SaveChangesAsync(ct);
+                    return Result.Failure<AIGenerationPreviewDto>(AIErrors.EmptyResult);
+                }
+                foreach (var epic in generated.Epics)
+                {
+                    foreach (var task in epic.Tasks)
+                    {
+                        if (task.AcceptanceCriteria.Count is < 2 or > 5)
+                        {
+                            audit.ErrorMessage = "AC count out of range for task: " + task.Title;
+                            await db.SaveChangesAsync(ct);
+                            return Result.Failure<AIGenerationPreviewDto>(AIErrors.MissingAcceptanceCriteria);
+                        }
+                    }
+                }
+                previewDto = ToEngineeringPreviewDto(generated, request.Type);
+                suggestedName = generated.SuggestedName;
+            }
+            else
+            {
+                var draft = await ai.GenerateTypedProjectDraftAsync(
+                    description, request.Type, clarificationInputs, ct);
+                var (preview, name, isEmpty) = ToTypedPreviewDto(draft, request.Type);
+                if (isEmpty)
+                {
+                    audit.ErrorMessage = "AI typed draft contained no entities.";
+                    await db.SaveChangesAsync(ct);
+                    return Result.Failure<AIGenerationPreviewDto>(AIErrors.EmptyResult);
+                }
+                previewDto = preview;
+                suggestedName = name;
+            }
         }
         catch (Exception ex)
         {
@@ -74,30 +118,6 @@ public class GenerateProjectPreviewCommandHandler(
             await db.SaveChangesAsync(ct);
             return Result.Failure<AIGenerationPreviewDto>(AIErrors.ProviderFailed);
         }
-
-        if (generated.Epics.Count == 0)
-        {
-            audit.ErrorMessage = "Empty epics array";
-            await db.SaveChangesAsync(ct);
-            return Result.Failure<AIGenerationPreviewDto>(AIErrors.EmptyResult);
-        }
-
-        // Each generated task must carry 2-5 acceptance criteria (F1-21 rule
-        // re-homed onto tasks now that Stories are gone).
-        foreach (var epic in generated.Epics)
-        {
-            foreach (var task in epic.Tasks)
-            {
-                if (task.AcceptanceCriteria.Count is < 2 or > 5)
-                {
-                    audit.ErrorMessage = "AC count out of range for task: " + task.Title;
-                    await db.SaveChangesAsync(ct);
-                    return Result.Failure<AIGenerationPreviewDto>(AIErrors.MissingAcceptanceCriteria);
-                }
-            }
-        }
-
-        var previewDto = ToPreviewDto(generated, request.Type);
 
         var requestRow = new AIGenerationRequest
         {
@@ -113,16 +133,16 @@ public class GenerateProjectPreviewCommandHandler(
         audit.Response = requestRow.PreviewJson;
         await db.SaveChangesAsync(ct);
 
-        return Result.Success(new AIGenerationPreviewDto(
-            requestRow.Id,
-            ai.ProviderName,
-            ai.Model,
-            generated.SuggestedName,
-            request.Type,
-            previewDto.Epics));
+        return Result.Success(previewDto with
+        {
+            RequestId = requestRow.Id,
+            Provider = ai.ProviderName,
+            Model = ai.Model,
+            SuggestedName = suggestedName,
+        });
     }
 
-    internal static AIGenerationPreviewDto ToPreviewDto(
+    internal static AIGenerationPreviewDto ToEngineeringPreviewDto(
         AIGeneratedProject project, string projectType)
     {
         var epics = project.Epics.Select(e => new AIGeneratedEpicDto(
@@ -135,5 +155,40 @@ public class GenerateProjectPreviewCommandHandler(
         )).ToList();
         return new AIGenerationPreviewDto(
             Guid.Empty, "", "", project.SuggestedName, projectType, epics);
+    }
+
+    private static (AIGenerationPreviewDto Preview, string Name, bool IsEmpty) ToTypedPreviewDto(
+        AITypedProjectDraft draft, string projectType)
+    {
+        return draft switch
+        {
+            AISalesProjectDraft s => (
+                new AIGenerationPreviewDto(
+                    Guid.Empty, "", "", s.SuggestedName, projectType, null, Sales: s),
+                s.SuggestedName,
+                s.Stages.Count == 0 && s.Accounts.Count == 0 && s.Deals.Count == 0),
+            AISupportProjectDraft s => (
+                new AIGenerationPreviewDto(
+                    Guid.Empty, "", "", s.SuggestedName, projectType, null, Support: s),
+                s.SuggestedName,
+                s.Queues.Count == 0 && s.Tickets.Count == 0),
+            AIMarketingProjectDraft m => (
+                new AIGenerationPreviewDto(
+                    Guid.Empty, "", "", m.SuggestedName, projectType, null, Marketing: m),
+                m.SuggestedName,
+                m.Campaigns.Count == 0),
+            AIOperationsProjectDraft o => (
+                new AIGenerationPreviewDto(
+                    Guid.Empty, "", "", o.SuggestedName, projectType, null, Operations: o),
+                o.SuggestedName,
+                o.Workflows.Count == 0),
+            AIGenericProjectDraft g => (
+                new AIGenerationPreviewDto(
+                    Guid.Empty, "", "", g.SuggestedName, projectType, null, Generic: g),
+                g.SuggestedName,
+                g.Lists.Count == 0),
+            _ => throw new InvalidOperationException(
+                $"Unknown typed-project draft variant: {draft.GetType().Name}"),
+        };
     }
 }

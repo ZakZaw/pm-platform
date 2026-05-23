@@ -56,6 +56,20 @@ public class AIController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    // F1.5-07 — apply endpoint for non-Engineering AI drafts. The draft
+    // stays canonical on the server (stored in AIGenerationRequest.PreviewJson),
+    // so the wizard only needs to send the chosen project name.
+    [HttpPost("api/v1/ai/generate-typed-project/{requestId:guid}/apply")]
+    public async Task<ActionResult<ProjectDto>> ApplyTypedGeneratedProject(
+        Guid requestId,
+        [FromBody] ApplyTypedGenerationBodyDto body,
+        CancellationToken ct)
+    {
+        var result = await mediator.Send(new ApplyTypedProjectGenerationCommand(
+            requestId, body.ProjectName ?? string.Empty), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     [HttpPost("api/v1/tasks/{taskId:guid}/estimate")]
     public async Task<ActionResult<TaskEstimateDto>> Estimate(
         Guid taskId, CancellationToken ct)
@@ -198,6 +212,8 @@ public record ApplyGenerationBodyDto(
     string? ProjectName,
     string? Type,
     IReadOnlyList<AIGeneratedEpicDto>? Epics);
+
+public record ApplyTypedGenerationBodyDto(string? ProjectName);
 
 public record GenerateEpicBodyDto(string? Description);
 public record ApplyEpicBodyDto(AIGeneratedEpicDto? Epic);

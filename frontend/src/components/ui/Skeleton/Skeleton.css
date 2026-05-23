@@ -1,33 +1,15 @@
-.skeleton {
-  display: block;
-  background: linear-gradient(
-    90deg,
-    var(--bg-surface-1) 0%,
-    var(--bg-surface-2) 50%,
-    var(--bg-surface-1) 100%
-  );
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.4s ease-in-out infinite;
-}
+/* Base .skeleton + shimmer keyframes live in reset.css. */
 
-.skeleton--r-xs { border-radius: var(--radius-xs); }
-.skeleton--r-sm { border-radius: var(--radius-sm); }
-.skeleton--r-md { border-radius: var(--radius-md); }
-.skeleton--r-lg { border-radius: var(--radius-lg); }
-.skeleton--r-pill { border-radius: var(--radius-pill); }
+.skeleton { display: block; }
+.skeleton--r-xs   { border-radius: var(--r-xs); }
+.skeleton--r-sm   { border-radius: var(--r-sm); }
+.skeleton--r-md   { border-radius: var(--r-md); }
+.skeleton--r-lg   { border-radius: var(--r-lg); }
+.skeleton--r-pill { border-radius: var(--r-pill); }
 
 .skeleton-stack {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--s-4);
 }
 .skeleton-stack .skeleton { display: block; }
-
-@keyframes skeleton-shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .skeleton { animation: none; opacity: 0.7; }
-}

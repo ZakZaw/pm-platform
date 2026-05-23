@@ -1,21 +1,25 @@
-/* Sidebar shell and items live in stratos.css (.app-sidebar, .org, .side-*).
-   This file only carries sidebar-only overrides + project sub-nav. */
+/* All sidebar styles live in stratos.css (.sidebar, .sidebar-org, .sidebar-logo,
+   .sidebar-scroll, .sidebar-section, .sidebar-label, .nav-item, .proj-card,
+   .proj-icon-{type}, .sidebar-foot). */
 
-.sidebar-project { display: contents; }
+.sidebar-org { width: 100%; }
 
-.sidebar-project__sub {
-  display: flex;
-  flex-direction: column;
-  margin: 2px 6px 6px 22px;
-  padding-left: 8px;
-  border-left: 1px solid var(--border-subtle);
-}
-.sidebar-project__sub .side-item {
-  margin-left: 0;
-  margin-right: 0;
-  width: auto;
-}
+/* Active project highlight already provided by .nav-item.is-active */
 
-.app.is-collapsed .sidebar-project__sub {
+.app.is-collapsed .sidebar .sidebar-org-name,
+.app.is-collapsed .sidebar .sidebar-org-slug,
+.app.is-collapsed .sidebar .sidebar-label,
+.app.is-collapsed .sidebar .nav-item > span:not(.nav-icon),
+.app.is-collapsed .sidebar .proj-card-name,
+.app.is-collapsed .sidebar .proj-card-type,
+.app.is-collapsed .sidebar .sidebar-foot-name,
+.app.is-collapsed .sidebar .sidebar-foot-mail,
+.app.is-collapsed .sidebar .nav-count {
   display: none;
+}
+.app.is-collapsed .sidebar .nav-item {
+  justify-content: center;
+}
+.app.is-collapsed .sidebar .proj-card {
+  justify-content: center;
 }

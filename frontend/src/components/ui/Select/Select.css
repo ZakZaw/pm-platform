@@ -1,39 +1,33 @@
 .select {
   display: block;
   width: 100%;
-  background: var(--bg-surface-1);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  padding: 0 28px 0 10px;
-  height: 30px;
-  font-size: var(--font-size-dense);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 0 28px 0 var(--s-5);
+  height: 34px;
+  font-size: var(--fs-md);
   font-family: inherit;
-  color: var(--text-primary);
+  color: var(--text);
   outline: none;
   appearance: none;
   -webkit-appearance: none;
   background-image:
-    linear-gradient(45deg, transparent 50%, var(--text-tertiary) 50%),
-    linear-gradient(135deg, var(--text-tertiary) 50%, transparent 50%);
-  background-position: calc(100% - 14px) 13px, calc(100% - 9px) 13px;
+    linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+    linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
+  background-position: calc(100% - 14px) 15px, calc(100% - 9px) 15px;
   background-size: 5px 5px;
   background-repeat: no-repeat;
-  transition:
-    border-color var(--dur-fast) var(--ease-out),
-    box-shadow var(--dur-fast) var(--ease-out);
+  transition: border-color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out);
 }
-
 .select:hover { border-color: var(--border-strong); }
 .select:focus {
-  border-color: var(--border-focus);
-  box-shadow: var(--shadow-focus);
+  border-color: var(--accent-bright);
+  box-shadow: 0 0 0 3px var(--ring);
 }
-.select:disabled {
-  color: var(--text-disabled);
-  cursor: not-allowed;
-}
-
+.select:disabled { color: var(--text-subtle); cursor: not-allowed; }
 .select.is-error {
-  border-color: var(--status-danger);
+  border-color: var(--danger);
   box-shadow: var(--shadow-focus-danger);
 }

@@ -1,56 +1,25 @@
-.input-group {
-  display: flex;
-  flex-direction: column;
-}
+/* Base .input lives in stratos.css. This file provides the label/help
+   scaffolding the Input component renders. */
+
+.input-group { display: flex; flex-direction: column; }
 
 .input-label {
   display: block;
-  font-size: var(--font-size-meta);
-  font-weight: var(--weight-medium);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
   color: var(--text-secondary);
-  margin-bottom: 6px;
-  letter-spacing: 0.02em;
+  margin-bottom: var(--s-3);
+  letter-spacing: var(--tracking-snug);
 }
-
-.input {
-  display: block;
-  width: 100%;
-  background: var(--bg-surface-1);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  padding: 0 10px;
-  height: 30px;
-  font-size: var(--font-size-dense);
-  font-family: inherit;
-  color: var(--text-primary);
-  outline: none;
-  transition:
-    border-color var(--dur-fast) var(--ease-out),
-    box-shadow var(--dur-fast) var(--ease-out);
-}
-
-.input:hover { border-color: var(--border-strong); }
-.input:focus,
-.input.is-focused {
-  border-color: var(--border-focus);
-  box-shadow: var(--shadow-focus);
-}
-.input::placeholder { color: var(--text-muted); }
-.input:disabled {
-  background: var(--bg-surface-1);
-  color: var(--text-disabled);
-  cursor: not-allowed;
-}
-.input:read-only { color: var(--text-tertiary); }
 
 .input.is-error {
-  border-color: var(--status-danger);
+  border-color: var(--danger);
   box-shadow: var(--shadow-focus-danger);
 }
 
 .input-help {
-  font-size: var(--font-size-meta);
-  color: var(--text-tertiary);
-  margin-top: 6px;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin-top: var(--s-3);
 }
-.input-help.is-error { color: var(--status-danger); }
+.input-help.is-error { color: var(--danger); }

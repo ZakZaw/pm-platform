@@ -1,23 +1,13 @@
-import {
-  CircleCheck,
-  CircleDashed,
-  Circle,
-  CircleDot,
-  GitPullRequest,
-  OctagonX,
-  Slash,
-} from 'lucide-react';
-
-// Status -> (tone, icon, label). See /Design Files/shared.jsx for the
-// canonical Stratos mapping.
+// Maps the backend TaskStatus enum to the new design's .status-{key} capsule.
+// Keys: todo / progress / review / done / blocked (see stratos.css).
 export const STATUS_MAP = {
-  Backlog: { tone: 'neutral', Icon: CircleDashed, label: 'Backlog' },
-  ToDo: { tone: 'neutral', Icon: Circle, label: 'To do' },
-  InProgress: { tone: 'info', Icon: CircleDot, label: 'In progress' },
-  InReview: { tone: 'purple', Icon: GitPullRequest, label: 'In review' },
-  Blocked: { tone: 'danger', Icon: OctagonX, label: 'Blocked' },
-  Done: { tone: 'success', Icon: CircleCheck, label: 'Done' },
-  WontDo: { tone: 'neutral', Icon: Slash, label: "Won't do" },
+  Backlog:    { key: 'todo',     label: 'Backlog' },
+  ToDo:       { key: 'todo',     label: 'To do' },
+  InProgress: { key: 'progress', label: 'In progress' },
+  InReview:   { key: 'review',   label: 'In review' },
+  Blocked:    { key: 'blocked',  label: 'Blocked' },
+  Done:       { key: 'done',     label: 'Done' },
+  WontDo:     { key: 'todo',     label: "Won't do" },
 };
 
 export const TASK_STATUSES = Object.keys(STATUS_MAP);

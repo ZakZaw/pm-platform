@@ -1,6 +1,1 @@
-/* Shell layout lives in stratos.css (.app, .app-main).
-   This file holds shell-only overrides. */
-
-.app .app-main__scroll {
-  background: var(--bg-app);
-}
+/* Shell layout (.app, .main) lives in stratos.css. */

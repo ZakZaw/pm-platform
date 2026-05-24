@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { RefreshCw, Zap } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { Badge, Button, Sparkline } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { sprintsApi } from '@/api/sprints.api';
@@ -107,72 +107,62 @@ export function SprintBoardPage() {
   const closed = sprint?.status === 'Closed';
 
   return (
-    <div className="board-page sprint-board">
-      <header className="board-page-head board-page-sprint">
-        <div className="board-page-sprint-meta">
-          <div className="row gap-3" style={{ marginBottom: 4 }}>
-            <Badge tone={closed ? 'neutral' : 'info'}>
-              <Zap size={11} aria-hidden="true" /> {sprint?.name ?? 'Sprint'}
-            </Badge>
-            {range && <span className="mono muted" style={{ fontSize: 'var(--fs-xs)' }}>{range}</span>}
-            {closed && <Badge tone="neutral">Closed</Badge>}
-            <LiveIndicator status={hubStatus} />
-          </div>
-          {sprint?.goal && (
-            <div className="board-page-sprint-goal">
-              <span className="muted">Goal · </span>
-              {sprint.goal}
+    <div className="main-inner board-page sprint-board">
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>
+              {project.name} · Sprint board {range && <>· <span className="mono">{range}</span></>}
             </div>
-          )}
+            <h1 className="page-title row gap-3" style={{ fontSize: 'var(--fs-2xl)' }}>
+              {sprint?.name ?? 'Sprint'}
+              {closed && <Badge tone="neutral">Closed</Badge>}
+              <LiveIndicator status={hubStatus} />
+            </h1>
+            {sprint?.goal && (
+              <p className="page-subtitle" style={{ marginTop: 6 }}>
+                <span className="muted">Goal · </span>{sprint.goal}
+              </p>
+            )}
+          </div>
+          <div className="row gap-4">
+            {burnPoints && (
+              <div className="board-page-banner">
+                <div className="col" style={{ gap: 0 }}>
+                  <div className="eyebrow board-page-banner-label">Burndown</div>
+                  <div className="row gap-3" style={{ marginTop: 2 }}>
+                    <Sparkline points={burnPoints} width={88} height={20} ideal />
+                    {totalPts > 0 && (
+                      <span className="mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-secondary)' }}>
+                        {donePts}/{totalPts} pts
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {length != null && !closed && (
+                  <>
+                    <div className="divider-v" style={{ alignSelf: 'stretch' }} />
+                    <div className="col center board-page-banner-days">
+                      <div className="mono board-page-banner-days-num" style={{ color: daysLeft <= 3 ? 'var(--warning)' : undefined }}>
+                        {daysLeft}d
+                      </div>
+                      <div className="muted board-page-banner-days-label">left</div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+            <Button variant="ghost" size="sm" onClick={() => load(project.id).catch(() => {})} aria-label="Refresh" title="Refresh">
+              <RefreshCw size={14} aria-hidden="true" />
+            </Button>
+            <ColumnsButton
+              statuses={statusConfigs ?? []}
+              isVisible={isStatusVisible}
+              toggle={toggleStatus}
+            />
+          </div>
         </div>
-
-        {burnPoints && (
-          <div className="board-page-kpi">
-            <span className="eyebrow">Burndown</span>
-            <Sparkline points={burnPoints} ideal />
-          </div>
-        )}
-
-        {totalPts > 0 && (
-          <div className="board-page-kpi board-page-kpi-bordered">
-            <span className="eyebrow">Points</span>
-            <span className="board-page-kpi-value">
-              {donePts}
-              <span className="muted board-page-kpi-suffix"> / {totalPts}</span>
-            </span>
-          </div>
-        )}
-
-        {length != null && !closed && (
-          <div className="board-page-kpi board-page-kpi-bordered">
-            <span className="eyebrow">Days left</span>
-            <span
-              className="board-page-kpi-value"
-              style={{ color: daysLeft <= 3 ? 'var(--warning)' : undefined }}
-            >
-              {daysLeft}
-              <span className="muted board-page-kpi-suffix"> of {length}</span>
-            </span>
-          </div>
-        )}
-
-        <div className="row gap-2">
-          <Button
-            variant="ghost"
-            size="md"
-            onClick={() => load(project.id).catch(() => {})}
-            aria-label="Refresh"
-            title="Refresh"
-          >
-            <RefreshCw size={14} aria-hidden="true" />
-          </Button>
-          <ColumnsButton
-            statuses={statusConfigs ?? []}
-            isVisible={isStatusVisible}
-            toggle={toggleStatus}
-          />
-        </div>
-      </header>
+      </div>
 
       {totalPts > 0 && (
         <div className="sprint-board-progress" aria-label={`Sprint progress ${pct}%`}>

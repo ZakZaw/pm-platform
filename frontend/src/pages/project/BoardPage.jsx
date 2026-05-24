@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { Filter, Plus, RefreshCw, X, Zap } from 'lucide-react';
-import { Badge, Button, Select, Skeleton, Sparkline } from '@/components/ui';
+import { Filter, Plus, RefreshCw, X } from 'lucide-react';
+import { Button, Select, Skeleton, Sparkline } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { boardApi } from '@/api/board.api';
 import { workflowApi } from '@/api/workflow.api';
@@ -154,8 +154,8 @@ export function BoardPage() {
   if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
   if (!project || !filteredBoard) {
     return (
-      <div className="board-page" aria-busy="true">
-        <div className="board-page-head">
+      <div className="main-inner board-page" aria-busy="true">
+        <div className="page-head">
           <Skeleton width="35%" height={20} />
         </div>
         <div className="board-page-board">
@@ -218,61 +218,59 @@ export function BoardPage() {
     : null;
 
   return (
-    <div className="board-page">
-      {sprint ? (
-        <header className="board-page-head board-page-sprint">
-          <div className="board-page-sprint-meta">
-            <div className="row gap-3" style={{ marginBottom: 4 }}>
-              <Badge tone="info">
-                <Zap size={11} aria-hidden="true" /> {sprint.name}
-              </Badge>
-              {range && <span className="mono muted" style={{ fontSize: 'var(--fs-xs)' }}>{range}</span>}
-              <LiveIndicator status={hubStatus} />
+    <div className="main-inner board-page">
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>
+              {project.name} · {sprint ? 'Sprint board' : 'Board'}
             </div>
-            {sprint.goal && (
-              <div className="board-page-sprint-goal">
-                <span className="muted">Goal · </span>
-                {sprint.goal}
-              </div>
+            <h1 className="page-title row gap-3" style={{ fontSize: 'var(--fs-2xl)' }}>
+              {sprint ? sprint.name : 'Board'}
+              <LiveIndicator status={hubStatus} />
+            </h1>
+            {sprint?.goal && (
+              <p className="page-subtitle" style={{ marginTop: 6 }}>
+                <span className="muted">Goal · </span>{sprint.goal}
+              </p>
+            )}
+            {!sprint && (
+              <p className="page-subtitle" style={{ marginTop: 6 }}>
+                No active sprint. Drag tasks across status columns; updates push to teammates live.
+              </p>
             )}
           </div>
-
-          {burnPoints && (
-            <div className="board-page-kpi">
-              <span className="eyebrow">Burndown</span>
-              <Sparkline points={burnPoints} ideal />
-            </div>
-          )}
-
-          {totalPts > 0 && (
-            <div className="board-page-kpi board-page-kpi-bordered">
-              <span className="eyebrow">Points</span>
-              <span className="board-page-kpi-value">
-                {donePts}
-                <span className="muted board-page-kpi-suffix"> / {totalPts}</span>
-              </span>
-            </div>
-          )}
-
-          {length && (
-            <div className="board-page-kpi board-page-kpi-bordered">
-              <span className="eyebrow">Days left</span>
-              <span
-                className="board-page-kpi-value"
-                style={{ color: left <= 3 ? 'var(--warning)' : undefined }}
-              >
-                {left}
-                <span className="muted board-page-kpi-suffix"> of {length}</span>
-              </span>
-            </div>
-          )}
-
-          <div className="row gap-2">
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={() => setFiltersOpen((v) => !v)}
-            >
+          <div className="row gap-4">
+            {sprint && burnPoints && (
+              <div className="board-page-banner">
+                <div className="col" style={{ gap: 0 }}>
+                  <div className="eyebrow board-page-banner-label">Burndown</div>
+                  <div className="row gap-3" style={{ marginTop: 2 }}>
+                    <Sparkline points={burnPoints} width={88} height={20} ideal />
+                    {totalPts > 0 && (
+                      <span className="mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-secondary)' }}>
+                        {donePts}/{totalPts} pts
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {length && (
+                  <>
+                    <div className="divider-v" style={{ alignSelf: 'stretch' }} />
+                    <div className="col center board-page-banner-days">
+                      <div className="mono board-page-banner-days-num" style={{ color: left <= 3 ? 'var(--warning)' : undefined }}>
+                        {left}d
+                      </div>
+                      <div className="muted board-page-banner-days-label">left</div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+            <Button variant="ghost" size="sm" onClick={() => load(project.id, swimlane).catch(() => {})} aria-label="Refresh" title="Refresh">
+              <RefreshCw size={14} aria-hidden="true" />
+            </Button>
+            <Button size="sm" onClick={() => setFiltersOpen((v) => !v)}>
               <Filter size={14} aria-hidden="true" /> Filter
               {anyFilter && <span className="board-page-filter-dot" aria-hidden="true" />}
             </Button>
@@ -281,53 +279,12 @@ export function BoardPage() {
               isVisible={isStatusVisible}
               toggle={toggleStatus}
             />
-            <Button variant="primary" size="md" onClick={() => openQuickCreate?.()}>
+            <Button variant="primary" size="sm" onClick={() => openQuickCreate?.()}>
               <Plus size={14} aria-hidden="true" /> Add task
             </Button>
           </div>
-        </header>
-      ) : (
-        <header className="board-page-head">
-          <div className="page-title-row">
-            <div>
-              <div className="eyebrow" style={{ marginBottom: 6 }}>{project.name}</div>
-              <h1 className="page-title">Board</h1>
-              <div className="page-subtitle">
-                Drag tasks across status columns; updates push to teammates live.
-              </div>
-            </div>
-            <div className="row gap-2">
-              <LiveIndicator status={hubStatus} />
-              <Button
-                variant="ghost"
-                size="md"
-                onClick={() => load(project.id, swimlane).catch(() => {})}
-                aria-label="Refresh"
-                title="Refresh"
-              >
-                <RefreshCw size={14} aria-hidden="true" />
-              </Button>
-              <Button
-                variant="secondary"
-                size="md"
-                onClick={() => setFiltersOpen((v) => !v)}
-              >
-                <Filter size={14} aria-hidden="true" /> Filter
-                {anyFilter && <span className="board-page-filter-dot" aria-hidden="true" />}
-              </Button>
-              <ColumnsButton
-                statuses={statusConfigs ?? []}
-                isVisible={isStatusVisible}
-                toggle={toggleStatus}
-              />
-              <Button variant="primary" size="md" onClick={() => openQuickCreate?.()}>
-                <Plus size={14} aria-hidden="true" /> Add task
-              </Button>
-            </div>
-          </div>
-          <Badge tone="neutral" style={{ marginTop: 8 }}>No active sprint</Badge>
-        </header>
-      )}
+        </div>
+      </div>
 
       {filtersOpen && (
         <div className="board-page-filters">

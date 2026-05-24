@@ -10,6 +10,7 @@ export { AvatarStack } from './AvatarStack/AvatarStack';
 export { Sparkline } from './Sparkline/Sparkline';
 export { Icon } from './Icon/Icon';
 export { Chip } from './Chip/Chip';
+export { Segmented } from './Segmented/Segmented';
 export { Table } from './Table/Table';
 export { StatusBadge } from './StatusBadge/StatusBadge';
 export { TASK_STATUSES, STATUS_LABELS } from './StatusBadge/constants';

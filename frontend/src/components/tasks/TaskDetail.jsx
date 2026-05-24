@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom';
 import {
   ArrowUpRight,
   Check,
-  Copy,
   ExternalLink,
   Eye,
   GitCommit,
@@ -15,11 +14,11 @@ import {
   MoreHorizontal,
   Sparkles,
   Trash2,
-  User,
   X,
 } from 'lucide-react';
 import {
   AssigneePicker,
+  Badge,
   Button,
   useToast,
 } from '@/components/ui';
@@ -54,15 +53,6 @@ function toDateInput(iso) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
   return d.toISOString().slice(0, 10);
-}
-
-function MetaRow({ label, children }) {
-  return (
-    <div className="task-detail__meta-row">
-      <div className="task-detail__meta-label">{label}</div>
-      <div className="task-detail__meta-value">{children}</div>
-    </div>
-  );
 }
 
 export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
@@ -421,6 +411,8 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
     return id ? members.find((m) => m.userId === id) : null;
   }, [task, members]);
 
+  const doneSubs = subtasks.filter((s) => s.completed).length;
+
   return (
     <>
       {dialog}
@@ -439,67 +431,35 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
         {/* Color accent bar — pulls from the assigned epic, or default. */}
         <div className="task-detail__color-bar" aria-hidden="true" />
 
-        {/* Drawer header */}
-        <div className="row task-detail__topbar">
-          <span className="mono muted task-detail__key">{shortKey(task)}</span>
-          <span
-            className="task-detail__color-chip"
-            style={{ background: epicColor }}
-            title={currentEpic ? `Epic: ${currentEpic.title}` : 'No epic — default color'}
-            aria-hidden="true"
-          />
-          <div className="fill" />
-          <button
-            type="button"
-            className="btn btn-ghost btn-icon-sm"
-            onClick={copyKey}
-            title="Copy task key"
-            aria-label="Copy task key"
-          >
-            <Copy size={13} aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className="btn btn-ghost btn-icon-sm"
-            title="Open full page"
-            aria-label="Open full page"
-            disabled
-          >
-            <ArrowUpRight size={13} aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className="btn btn-ghost btn-icon-sm"
-            title="More"
-            aria-label="More"
-          >
-            <MoreHorizontal size={13} aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className="btn btn-ghost btn-icon-sm"
-            onClick={onClose}
-            title="Close"
-            aria-label="Close"
-          >
-            <X size={13} aria-hidden="true" />
-          </button>
-        </div>
-
-        {/* Body grid */}
-        <div className="task-detail__body">
-          <div className="task-detail__main">
-            <button
-              type="button"
-              className="task-detail__id-chip"
-              onClick={copyKey}
-              title="Copy task ID"
-              aria-label={`Copy task ID ${shortKey(task)}`}
-            >
-              <span className="mono">{shortKey(task)}</span>
-              <Copy size={11} aria-hidden="true" />
-            </button>
-
+        {/* Drawer head: key + epic badge + PR badge, title, action buttons */}
+        <div className="drawer-head task-detail__head">
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="row gap-3" style={{ marginBottom: 'var(--s-3)' }}>
+              <button
+                type="button"
+                className="mono muted task-detail__key-btn"
+                onClick={copyKey}
+                title="Copy task key"
+              >
+                {shortKey(task)}
+              </button>
+              {currentEpic && (
+                <Badge tone="violet">
+                  <Layers size={10} aria-hidden="true" /> {currentEpic.title}
+                </Badge>
+              )}
+              {task.prUrl && (
+                <Badge>
+                  <GitPullRequest size={10} aria-hidden="true" /> PR
+                </Badge>
+              )}
+              <span
+                className="task-detail__color-chip"
+                style={{ background: epicColor }}
+                title={currentEpic ? `Epic: ${currentEpic.title}` : 'No epic — default color'}
+                aria-hidden="true"
+              />
+            </div>
             {editingTitle ? (
               <input
                 className="task-detail__title-input"
@@ -528,55 +488,181 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                 {task.title}
               </button>
             )}
+          </div>
+          <div className="row gap-3">
+            <button
+              type="button"
+              className="btn btn-ghost btn-icon-sm"
+              title="Watchers"
+              aria-label="Watchers"
+              disabled
+            >
+              <Eye size={13} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost btn-icon-sm"
+              title="Open full page"
+              aria-label="Open full page"
+              disabled
+            >
+              <ArrowUpRight size={13} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost btn-icon-sm"
+              title="More"
+              aria-label="More"
+            >
+              <MoreHorizontal size={13} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost btn-icon-sm"
+              onClick={onClose}
+              title="Close"
+              aria-label="Close"
+            >
+              <X size={13} aria-hidden="true" />
+            </button>
+          </div>
+        </div>
 
-            <div className="row task-detail__byline">
+        {/* Body */}
+        <div className="drawer-body task-detail__body">
+          <div className="task-detail__main">
+            {/* Properties */}
+            <div className="col task-detail__props">
+              <div className="drawer-prop">
+                <span className="label-key">Status</span>
+                <StatusDropdown status={task.status} onChange={changeStatus} />
+              </div>
+              <div className="drawer-prop">
+                <span className="label-key">Assignee</span>
+                <AssigneePicker orgSlug={orgSlug} value={task.assigneeId ?? null} onChange={changeAssignee} />
+              </div>
+              <div className="drawer-prop">
+                <span className="label-key">Reviewer</span>
+                <AssigneePicker orgSlug={orgSlug} value={task.reviewerId ?? null} onChange={changeReviewer} />
+              </div>
+              <div className="drawer-prop">
+                <span className="label-key">Priority</span>
+                <PriorityDropdown value={task.priority} onChange={changePriority} />
+              </div>
+              <div className="drawer-prop">
+                <span className="label-key">Points</span>
+                <div className="task-detail__pts-row">
+                  <input
+                    type="number"
+                    min={0}
+                    max={200}
+                    value={pointsDraft}
+                    onChange={(e) => setPointsDraft(e.target.value)}
+                    onBlur={commitPoints}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        e.currentTarget.blur();
+                      }
+                    }}
+                    placeholder="—"
+                    className="task-detail__pts-input"
+                    aria-label="Story points"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={requestAiEstimate}
+                    disabled={aiEstimateLoading}
+                    title="Ask the AI to estimate points based on similar past tasks."
+                  >
+                    <Sparkles size={11} aria-hidden="true" />{' '}
+                    {aiEstimateLoading ? 'Thinking…' : 'AI'}
+                  </Button>
+                </div>
+              </div>
+              <div className="drawer-prop">
+                <span className="label-key">Due</span>
+                <div className="task-detail__date-wrap">
+                  <input
+                    type="date"
+                    value={toDateInput(task.dueDate)}
+                    onChange={(e) => commitDueDate(e.target.value)}
+                    className="task-detail__date-input"
+                    aria-label="Due date"
+                  />
+                  {task.dueDate && (
+                    <button
+                      type="button"
+                      className="task-detail__date-clear"
+                      onClick={() => commitDueDate('')}
+                      aria-label="Clear due date"
+                      title="Clear"
+                    >
+                      <X size={11} aria-hidden="true" />
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="drawer-prop">
+                <span className="label-key">Sprint</span>
+                <SprintPicker projectId={projectId} value={task.sprintId ?? null} onChange={changeSprint} />
+              </div>
+              <div className="drawer-prop">
+                <span className="label-key">Epic</span>
+                <EpicPicker projectId={projectId} value={task.epicId ?? null} onChange={changeEpic} />
+              </div>
               {reporter && (
-                <span className="row gap-2">
-                  <User size={12} aria-hidden="true" /> {reporter.fullName} reported
-                </span>
+                <div className="drawer-prop">
+                  <span className="label-key">Reporter</span>
+                  <span>{reporter.fullName}</span>
+                </div>
               )}
-              <span>·</span>
-              <span className="row gap-2">
-                <Eye size={12} aria-hidden="true" /> {task.watcherCount ?? 0} watchers
-              </span>
+              <div className="drawer-prop">
+                <span className="label-key">PR URL</span>
+                {editingPrUrl ? (
+                  <input
+                    type="url"
+                    value={prUrlDraft}
+                    autoFocus
+                    className="task-detail__pr-input"
+                    placeholder="https://github.com/…"
+                    onChange={(e) => setPrUrlDraft(e.target.value)}
+                    onBlur={commitPrUrl}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        e.currentTarget.blur();
+                      } else if (e.key === 'Escape') {
+                        setPrUrlDraft(task.prUrl ?? '');
+                        setEditingPrUrl(false);
+                      }
+                    }}
+                  />
+                ) : task.prUrl ? (
+                  <span className="row task-detail__pr-link">
+                    <a href={task.prUrl} target="_blank" rel="noreferrer noopener" title={task.prUrl}>
+                      <ExternalLink size={11} aria-hidden="true" /> Open PR
+                    </a>
+                    <button
+                      type="button"
+                      className="task-detail__pr-edit"
+                      onClick={() => setEditingPrUrl(true)}
+                    >
+                      edit
+                    </button>
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    className="task-detail__pr-empty"
+                    onClick={() => setEditingPrUrl(true)}
+                  >
+                    Add URL…
+                  </button>
+                )}
+              </div>
             </div>
-
-            <div className="eyebrow task-detail__section-eyebrow">Description</div>
-            {editingDesc ? (
-              <textarea
-                className="task-detail__desc-input"
-                value={descDraft}
-                autoFocus
-                rows={4}
-                onChange={(e) => setDescDraft(e.target.value)}
-                onBlur={commitDesc}
-                onKeyDown={(e) => {
-                  if (e.key === 'Escape') {
-                    setDescDraft(task.description ?? '');
-                    setEditingDesc(false);
-                  } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-                    e.preventDefault();
-                    commitDesc();
-                  }
-                }}
-              />
-            ) : task.description ? (
-              <p
-                className="task-detail__desc task-detail__desc--edit"
-                onClick={() => setEditingDesc(true)}
-                title="Click to edit"
-              >
-                {task.description}
-              </p>
-            ) : (
-              <button
-                type="button"
-                className="task-detail__desc-empty"
-                onClick={() => setEditingDesc(true)}
-              >
-                Add a description…
-              </button>
-            )}
 
             {aiEstimate && (
               <div className="task-detail__ai-estimate">
@@ -592,60 +678,109 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
               </div>
             )}
 
-            <div className="task-detail__ac-head">
-              <span className="eyebrow task-detail__section-eyebrow">Acceptance criteria</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setAiBreakdownOpen(true)}
-                title="Let AI propose a tighter description, acceptance criteria, and points."
-              >
-                <Sparkles size={11} aria-hidden="true" /> AI: break down
-              </Button>
-            </div>
-            {subtasks.length === 0 && (
-              <p className="task-detail__placeholder">No acceptance criteria yet.</p>
-            )}
-            <ul className="task-detail__ac">
-              {subtasks.map((s) => (
-                <li key={s.id} className="task-detail__ac-row">
-                  <label className="task-detail__ac-check">
-                    <input
-                      type="checkbox"
-                      checked={s.completed}
-                      onChange={() => toggleSubtask(s)}
-                    />
-                    <span className="task-detail__ac-box" aria-hidden="true">
-                      {s.completed && <Check size={10} strokeWidth={3} />}
-                    </span>
-                    <span className={s.completed ? 'task-detail__ac-done' : ''}>{s.title}</span>
-                  </label>
+            {/* AI breakdown — description + acceptance criteria in an ai-card */}
+            <div className="ai-card task-detail__breakdown">
+              <div className="ai-card-body">
+                <div className="row gap-4" style={{ marginBottom: 'var(--s-4)' }}>
+                  <div className="ai-mark"><Sparkles size={14} /></div>
+                  <strong>AI breakdown</strong>
+                  <span style={{ marginLeft: 'auto' }}>
+                    <Button variant="ghost" size="sm" onClick={() => setAiBreakdownOpen(true)}>
+                      <Sparkles size={11} aria-hidden="true" /> Re-run
+                    </Button>
+                  </span>
+                </div>
+
+                <div className="eyebrow" style={{ marginBottom: 'var(--s-3)' }}>Description</div>
+                {editingDesc ? (
+                  <textarea
+                    className="task-detail__desc-input"
+                    value={descDraft}
+                    autoFocus
+                    rows={4}
+                    onChange={(e) => setDescDraft(e.target.value)}
+                    onBlur={commitDesc}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') {
+                        setDescDraft(task.description ?? '');
+                        setEditingDesc(false);
+                      } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                        e.preventDefault();
+                        commitDesc();
+                      }
+                    }}
+                  />
+                ) : task.description ? (
+                  <p
+                    className="task-detail__desc task-detail__desc--edit"
+                    onClick={() => setEditingDesc(true)}
+                    title="Click to edit"
+                  >
+                    {task.description}
+                  </p>
+                ) : (
                   <button
                     type="button"
-                    className="btn btn-ghost btn-icon-sm task-detail__ac-remove"
-                    onClick={() => removeSubtask(s)}
-                    aria-label="Remove criterion"
+                    className="task-detail__desc-empty"
+                    onClick={() => setEditingDesc(true)}
                   >
-                    <Trash2 size={12} aria-hidden="true" />
+                    Add a description…
                   </button>
-                </li>
-              ))}
-            </ul>
-            <form onSubmit={addSubtask} className="task-detail__ac-form">
-              <input
-                type="text"
-                value={newSub}
-                onChange={(e) => setNewSub(e.target.value)}
-                placeholder="Add criterion…"
-                className="input task-detail__ac-input"
-              />
-              <Button size="sm" type="submit" disabled={newSub.trim().length === 0}>
-                Add
-              </Button>
-            </form>
+                )}
+
+                <div className="eyebrow task-detail__ac-eyebrow">
+                  Acceptance criteria
+                  {subtasks.length > 0 && (
+                    <span className="muted task-detail__ac-progress">
+                      {doneSubs}/{subtasks.length}
+                    </span>
+                  )}
+                </div>
+                {subtasks.length === 0 && (
+                  <p className="task-detail__placeholder">No acceptance criteria yet.</p>
+                )}
+                <ul className="task-detail__ac">
+                  {subtasks.map((s) => (
+                    <li key={s.id} className="task-detail__ac-row">
+                      <label className="task-detail__ac-check">
+                        <input
+                          type="checkbox"
+                          checked={s.completed}
+                          onChange={() => toggleSubtask(s)}
+                        />
+                        <span className="task-detail__ac-box" aria-hidden="true">
+                          {s.completed && <Check size={10} strokeWidth={3} />}
+                        </span>
+                        <span className={s.completed ? 'task-detail__ac-done' : ''}>{s.title}</span>
+                      </label>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-icon-sm task-detail__ac-remove"
+                        onClick={() => removeSubtask(s)}
+                        aria-label="Remove criterion"
+                      >
+                        <Trash2 size={12} aria-hidden="true" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <form onSubmit={addSubtask} className="task-detail__ac-form">
+                  <input
+                    type="text"
+                    value={newSub}
+                    onChange={(e) => setNewSub(e.target.value)}
+                    placeholder="Add criterion…"
+                    className="input task-detail__ac-input"
+                  />
+                  <Button size="sm" type="submit" disabled={newSub.trim().length === 0}>
+                    Add
+                  </Button>
+                </form>
+              </div>
+            </div>
 
             {/* Activity */}
-            <div className="eyebrow task-detail__section-eyebrow">Activity</div>
+            <div className="eyebrow">Activity</div>
             <div className="tabs task-detail__tabs">
               <button
                 type="button"
@@ -694,171 +829,20 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
             </div>
           </div>
 
-          <div className="task-detail__meta">
-            <MetaRow label="Status">
-              <StatusDropdown status={task.status} onChange={changeStatus} />
-            </MetaRow>
-            <MetaRow label="Assignee">
-              <AssigneePicker orgSlug={orgSlug} value={task.assigneeId ?? null} onChange={changeAssignee} />
-            </MetaRow>
-            <MetaRow label="Reviewer">
-              <AssigneePicker orgSlug={orgSlug} value={task.reviewerId ?? null} onChange={changeReviewer} />
-            </MetaRow>
-            <MetaRow label="Priority">
-              <PriorityDropdown value={task.priority} onChange={changePriority} />
-            </MetaRow>
-
-            <MetaRow label="Points">
-              <div className="task-detail__pts-row">
-                <input
-                  type="number"
-                  min={0}
-                  max={200}
-                  value={pointsDraft}
-                  onChange={(e) => setPointsDraft(e.target.value)}
-                  onBlur={commitPoints}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      e.currentTarget.blur();
-                    }
-                  }}
-                  placeholder="—"
-                  className="task-detail__pts-input"
-                  aria-label="Story points"
-                />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={requestAiEstimate}
-                  disabled={aiEstimateLoading}
-                  title="Ask the AI to estimate points based on similar past tasks."
-                >
-                  <Sparkles size={11} aria-hidden="true" />{' '}
-                  {aiEstimateLoading ? 'Thinking…' : 'AI'}
-                </Button>
-              </div>
-            </MetaRow>
-
-            <MetaRow label="Due">
-              <div className="task-detail__date-wrap">
-                <input
-                  type="date"
-                  value={toDateInput(task.dueDate)}
-                  onChange={(e) => commitDueDate(e.target.value)}
-                  className="task-detail__date-input"
-                  aria-label="Due date"
-                />
-                {task.dueDate && (
-                  <button
-                    type="button"
-                    className="task-detail__date-clear"
-                    onClick={() => commitDueDate('')}
-                    aria-label="Clear due date"
-                    title="Clear"
-                  >
-                    <X size={11} aria-hidden="true" />
-                  </button>
-                )}
-              </div>
-            </MetaRow>
-
-            <MetaRow label="Sprint">
-              <SprintPicker
-                projectId={projectId}
-                value={task.sprintId ?? null}
-                onChange={changeSprint}
-              />
-            </MetaRow>
-
-            <MetaRow label="Epic">
-              <EpicPicker
-                projectId={projectId}
-                value={task.epicId ?? null}
-                onChange={changeEpic}
-              />
-            </MetaRow>
-
-            <MetaRow label="Color">
-              <div className="row task-detail__color-row">
-                <span
-                  className="task-detail__color-swatch"
-                  style={{ background: epicColor }}
-                  aria-hidden="true"
-                />
-                <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>
-                  {currentEpic ? `From epic "${currentEpic.title}"` : 'Default'}
-                </span>
-              </div>
-            </MetaRow>
-
-            <MetaRow label="PR URL">
-              {editingPrUrl ? (
-                <input
-                  type="url"
-                  value={prUrlDraft}
-                  autoFocus
-                  className="task-detail__pr-input"
-                  placeholder="https://github.com/…"
-                  onChange={(e) => setPrUrlDraft(e.target.value)}
-                  onBlur={commitPrUrl}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      e.currentTarget.blur();
-                    } else if (e.key === 'Escape') {
-                      setPrUrlDraft(task.prUrl ?? '');
-                      setEditingPrUrl(false);
-                    }
-                  }}
-                />
-              ) : task.prUrl ? (
-                <span className="row task-detail__pr-link">
-                  <a href={task.prUrl} target="_blank" rel="noreferrer noopener" title={task.prUrl}>
-                    <ExternalLink size={11} aria-hidden="true" /> Open PR
-                  </a>
-                  <button
-                    type="button"
-                    className="task-detail__pr-edit"
-                    onClick={() => setEditingPrUrl(true)}
-                  >
-                    edit
-                  </button>
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  className="task-detail__pr-empty"
-                  onClick={() => setEditingPrUrl(true)}
-                >
-                  Add URL…
-                </button>
-              )}
-            </MetaRow>
-
-            {currentEpic && (
-              <MetaRow label="Epic name">
-                <span className="row gap-2" style={{ fontSize: 'var(--fs-xs)', color: 'var(--accent)' }}>
-                  <Layers size={11} aria-hidden="true" /> {currentEpic.title}
-                </span>
-              </MetaRow>
-            )}
-
-            <div className="task-detail__divider" />
-
-            <button
-              type="button"
-              className="task-detail__delete"
-              onClick={deleteTask}
-            >
-              <Trash2 size={12} aria-hidden="true" /> Delete task
-            </button>
-          </div>
         </div>
 
         {/* Composer */}
         <div className="task-detail__composer">
           <CommentInput projectId={projectId} onSubmit={postComment} />
+        </div>
+
+        {/* Footer action bar */}
+        <div className="task-detail__footer">
+          <button type="button" className="btn btn-ghost btn-sm task-detail__delete" onClick={deleteTask}>
+            <Trash2 size={12} aria-hidden="true" /> Delete
+          </button>
+          <div style={{ flex: 1 }} />
+          <Button variant="ghost" size="sm" onClick={onClose}>Close</Button>
         </div>
       </aside>
     </>

@@ -223,16 +223,17 @@ export function AIGenerationWizard() {
       <div className="ai-wizard-inner">
         {/* Header */}
         <div className="ai-wizard-header">
-          <div className="row" style={{ justifyContent: 'center', marginBottom: 14 }}>
-            <AIChip label={preview?.provider ?? 'Plan with AI'} variant="soft" />
+          <div className="row gap-4" style={{ justifyContent: 'center', marginBottom: 'var(--s-5)' }}>
+            <div className="ai-mark"><Sparkles size={14} /></div>
+            <AIChip label={preview?.provider ?? 'Plan with AI'} />
           </div>
           <h1 className="ai-wizard-title">
-            {step === 'preview' ? 'Review your generated plan' : 'Plan a project with AI'}
+            {step === 'preview' ? 'Review your generated plan' : 'New project with AI'}
           </h1>
           <p className="ai-wizard-subtitle">
             {step === 'preview'
               ? 'Edit any title, regenerate a node, or remove what you don’t want. Nothing is saved until you confirm.'
-              : 'Describe the project in plain English. AI proposes epics and tasks; you edit before committing.'}
+              : 'Describe it once · AI picks the type · scaffolds the work.'}
           </p>
         </div>
 

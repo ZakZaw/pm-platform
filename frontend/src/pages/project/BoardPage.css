@@ -1,5 +1,5 @@
-/* Engineering board page — sprint banner + kanban columns. Uses the new
-   Stratos vocabulary; the kanban primitives themselves live in stratos.css. */
+/* Engineering board page — compact sprint banner + kanban columns.
+   Built on .main-inner / .page-head. Kanban primitives in stratos.css. */
 
 .board-page {
   display: flex;
@@ -9,56 +9,40 @@
   padding: var(--s-7) var(--s-9) 0;
 }
 
-.board-page-head {
+/* Override .main-inner default padding so the inner flex layout works */
+.main-inner.board-page { padding-bottom: 0; }
+
+.board-page .page-head {
   flex-shrink: 0;
-  padding-bottom: var(--s-5);
   margin-bottom: var(--s-5);
-  border-bottom: 1px solid var(--divider);
 }
 
-.board-page-sprint {
+/* Compact sprint banner inside the page head */
+.board-page-banner {
   display: flex;
   align-items: center;
-  gap: var(--s-6);
-  flex-wrap: wrap;
+  gap: var(--s-4);
+  padding: var(--s-3) var(--s-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
 }
-
-.board-page-sprint-meta {
-  flex: 1 1 240px;
-  min-width: 0;
+.board-page-banner-label {
+  font-size: var(--fs-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  font-weight: var(--fw-semibold);
+  color: var(--text-muted);
 }
-
-.board-page-sprint-goal {
-  margin-top: 4px;
-  font-size: var(--fs-md);
-  color: var(--text-secondary);
-  line-height: var(--lh-snug);
-  max-width: 640px;
-}
-
-.board-page-kpi {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  white-space: nowrap;
-}
-.board-page-kpi-bordered {
-  padding-left: var(--s-6);
-  margin-left: var(--s-4);
-  border-left: 1px solid var(--divider);
-}
-.board-page-kpi-value {
-  font-size: var(--fs-xl);
+.board-page-banner-days { gap: 2px; }
+.board-page-banner-days-num {
+  font-size: var(--fs-lg);
   font-weight: var(--fw-bold);
-  color: var(--text);
-  font-family: var(--font-display);
   letter-spacing: -0.02em;
   line-height: 1;
 }
-.board-page-kpi-suffix {
-  font-size: var(--fs-md);
-  font-weight: var(--fw-regular);
+.board-page-banner-days-label {
+  font-size: var(--fs-2xs);
 }
 
 .board-page-filter-dot {
@@ -89,9 +73,5 @@
 }
 
 @media (max-width: 1100px) {
-  .board-page-kpi-bordered {
-    border-left: 0;
-    padding-left: 0;
-    margin-left: 0;
-  }
+  .board-page-banner { display: none; }
 }

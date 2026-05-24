@@ -1,0 +1,18 @@
+/* Segmented relies on .seg / .seg button.is-active from stratos.css.
+   Only additions here are component-specific extensions. */
+
+.seg-sm button { height: 22px; padding: 0 var(--s-4); font-size: var(--fs-xs); }
+
+.seg-count {
+  margin-left: var(--s-3);
+  padding: 0 var(--s-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border-radius: var(--r-pill);
+}
+.seg button.is-active .seg-count {
+  background: var(--accent-soft);
+  color: var(--accent);
+}

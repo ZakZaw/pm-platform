@@ -1,21 +1,88 @@
-/* Engineering epics page — grid of EpicCard tiles with the standard
-   page-head + main-inner wrapper from stratos.css. */
+/* Epics — collapsible card rows + linked tasks table.
+   See screens/epics.jsx for the source layout. */
 
-.epics-page-toggle {
-  display: inline-flex;
+.epics-page-card {
+  overflow: hidden;
+}
+
+.epics-page-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 220px 100px 64px 24px;
+  gap: var(--s-6);
   align-items: center;
-  gap: var(--s-3);
-  color: var(--text-secondary);
-  font-size: var(--fs-md);
+  padding: var(--s-6) var(--s-7);
+  width: 100%;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  transition: background var(--dur-fast);
+}
+.epics-page-row:hover { background: var(--surface-2); }
+.epics-page-row:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: -2px; }
+
+.epics-page-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+}
+
+.epics-page-title { min-width: 0; }
+.epics-page-title h3 { margin: 0; font-size: var(--fs-lg); }
+.epics-page-desc {
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+}
+
+.epics-page-counts {
+  font-size: var(--fs-2xs);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.epics-page-count-done    { font-weight: 600; color: var(--success); }
+.epics-page-count-active  { font-weight: 600; color: var(--accent); }
+.epics-page-count-blocked { font-weight: 600; color: var(--danger); }
+
+.epics-page-target-label {
+  font-size: var(--fs-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  font-weight: var(--fw-semibold);
+}
+
+.epics-page-open {
+  font-size: var(--fs-xs);
+  text-decoration: none;
+}
+.epics-page-open:hover { color: var(--text); }
+
+.epics-page-chev {
+  color: var(--text-muted);
+  transition: transform var(--dur-fast);
+}
+.epics-page-chev.is-open { transform: rotate(90deg); }
+
+.epics-page-tasks {
+  border-top: 1px solid var(--divider);
 }
 
 .epics-page-form-card {
-  padding: var(--s-6);
   margin-bottom: var(--s-6);
 }
 
-.epics-page-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--s-5);
+@media (max-width: 1100px) {
+  .epics-page-row {
+    grid-template-columns: 36px 1fr 32px 24px;
+    row-gap: var(--s-4);
+  }
+  .epics-page-row > :nth-child(3),
+  .epics-page-row > :nth-child(4) { grid-column: 1 / -1; }
 }

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
-import { AISuggestionCard, Badge, Button, useToast } from '@/components/ui';
+import { AISuggestionCard, Badge, Button, Segmented, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { aiApi } from '@/api/ai.api';
 import { describeAiError } from '@/components/ai/aiErrors';
@@ -198,15 +198,35 @@ export function AIInboxPage() {
         </div>
       </div>
 
-      {!loading && suggestions.length > 0 && (typesPresent.length > 1 || categoriesPresent.length > 1) && (
-        <FilterRow
-          types={typesPresent}
-          categories={categoriesPresent}
-          activeType={activeTypeFilter}
-          activeCategory={activeCategoryFilter}
-          onTypeChange={setActiveTypeFilter}
-          onCategoryChange={setActiveCategoryFilter}
-        />
+      {!loading && suggestions.length > 0 && categoriesPresent.length > 1 && (
+        <div className="row gap-3" style={{ marginBottom: 'var(--s-6)' }}>
+          <Segmented
+            value={activeCategoryFilter}
+            onChange={setActiveCategoryFilter}
+            options={[
+              { value: 'All', label: 'All', count: suggestions.length },
+              ...categoriesPresent.map((c) => ({
+                value: c,
+                label: c,
+                count: suggestions.filter((s) => categoryForKind(s.kind) === c).length,
+              })),
+            ]}
+            ariaLabel="Filter by suggestion category"
+          />
+          <div style={{ flex: 1 }} />
+          {typesPresent.length > 1 && (
+            <Segmented
+              value={activeTypeFilter}
+              onChange={setActiveTypeFilter}
+              options={[
+                { value: 'All', label: 'All types' },
+                ...typesPresent.map((t) => ({ value: t, label: findProjectType(t)?.short ?? t })),
+              ]}
+              size="sm"
+              ariaLabel="Filter by project type"
+            />
+          )}
+        </div>
       )}
 
       {loading ? (
@@ -258,38 +278,6 @@ export function AIInboxPage() {
           })}
         </ul>
       )}
-    </div>
-  );
-}
-
-function FilterRow({
-  types, categories, activeType, activeCategory, onTypeChange, onCategoryChange,
-}) {
-  function ChipRow({ label, values, active, onChange }) {
-    if (values.length === 0) return null;
-    return (
-      <div className="ai-inbox-filter-row">
-        <span className="muted ai-inbox-filter-label">{label}</span>
-        <button
-          type="button"
-          onClick={() => onChange('All')}
-          className={['ai-inbox-chip', active === 'All' ? 'is-active' : ''].filter(Boolean).join(' ')}
-        >All</button>
-        {values.map((v) => (
-          <button
-            key={v}
-            type="button"
-            onClick={() => onChange(v)}
-            className={['ai-inbox-chip', active === v ? 'is-active' : ''].filter(Boolean).join(' ')}
-          >{v}</button>
-        ))}
-      </div>
-    );
-  }
-  return (
-    <div className="ai-inbox-filters">
-      <ChipRow label="Project type" values={types} active={activeType} onChange={onTypeChange} />
-      <ChipRow label="Category" values={categories} active={activeCategory} onChange={onCategoryChange} />
     </div>
   );
 }

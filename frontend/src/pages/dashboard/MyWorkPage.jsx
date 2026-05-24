@@ -1,54 +1,79 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
-  DndContext,
-  DragOverlay,
-  PointerSensor,
-  useDraggable,
-  useDroppable,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
-import { MoreHorizontal } from 'lucide-react';
-import {
-  Avatar,
   Badge,
   Priority,
+  Segmented,
   Select,
   Skeleton,
   StatusBadge,
-  useToast,
 } from '@/components/ui';
-import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useOrgStore } from '@/store/orgStore';
 import { useProjectStore } from '@/store/projectStore';
 import { usersApi } from '@/api/users.api';
 import { sprintsApi } from '@/api/sprints.api';
 import { myWorkApi } from '@/api/myWork.api';
-import { tasksApi } from '@/api/tasks.api';
 import { operationsApi } from '@/api/operations.api';
 import { TaskDetailDrawer } from '@/components/tasks/TaskDetailDrawer';
+import { findProjectType } from '@/constants/projectTypes';
 import './MyWorkPage.css';
-
-const COLUMN_ORDER = ['Backlog', 'ToDo', 'InProgress', 'InReview', 'Blocked'];
 
 const ALL = '__all__';
 
 function shortKey(item) {
-  // item.key is "AT-247" style, composed server-side from
-  // project.Key + task.KeyNum.
   if (item.key) return item.key;
   const id = String(item.id ?? '');
   return id ? id.slice(0, 4).toUpperCase() : '—';
 }
+
+const MS_PER_DAY = 86400000;
+
+function dueBucket(item, now) {
+  if (!item.dueDate) {
+    // Bucket overdue blocked/in-progress as "Later" so the page isn't empty
+    return 'later';
+  }
+  const due = new Date(item.dueDate).getTime();
+  if (!Number.isFinite(due)) return 'later';
+  const dayDiff = Math.floor((due - now) / MS_PER_DAY);
+  if (dayDiff < 0) return 'overdue';
+  if (dayDiff === 0) return 'today';
+  if (dayDiff <= 7) return 'week';
+  return 'later';
+}
+
+function formatDue(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  const today = new Date();
+  const days = Math.floor((d.getTime() - today.getTime()) / MS_PER_DAY);
+  if (days < 0) return `Overdue ${-days}d`;
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Tomorrow';
+  if (days <= 6) return d.toLocaleDateString(undefined, { weekday: 'short' });
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+const SECTIONS = [
+  { id: 'overdue', label: 'Overdue', tone: 'danger' },
+  { id: 'today', label: 'Today', tone: 'accent' },
+  { id: 'week', label: 'This week', tone: 'neutral' },
+  { id: 'later', label: 'Later', tone: 'neutral' },
+];
+
+const KIND_FILTERS = [
+  { value: 'all', label: 'All' },
+  { value: 'task', label: 'Tasks' },
+  { value: 'deal', label: 'Deals', disabled: true },
+  { value: 'ticket', label: 'Tickets', disabled: true },
+];
 
 export function MyWorkPage() {
   const user = useAuthStore((s) => s.user);
   const orgs = useOrgStore((s) => s.orgs);
   const projectsByOrg = useProjectStore((s) => s.byOrg);
   const refreshProjectsForOrg = useProjectStore((s) => s.refreshForOrg);
-  const toast = useToast();
 
   const [personalProject, setPersonalProject] = useState(null);
   const [items, setItems] = useState([]);
@@ -59,6 +84,7 @@ export function MyWorkPage() {
 
   const [projectFilter, setProjectFilter] = useState(ALL);
   const [sprintFilter, setSprintFilter] = useState(ALL);
+  const [kindFilter, setKindFilter] = useState('all');
   const [opened, setOpened] = useState(null);
 
   useEffect(() => {
@@ -139,62 +165,46 @@ export function MyWorkPage() {
     return opts;
   }, [activeSprints]);
 
-  const columns = useMemo(() => groupByStatus(items), [items]);
-  const totalOpen = items.length;
-  const [activeItem, setActiveItem] = useState(null);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-  );
-
-  function handleDragStart(e) {
-    const taskId = parseCardId(String(e.active.id));
-    setActiveItem(items.find((it) => it.id === taskId) ?? null);
-  }
-
-  async function handleDragEnd(e) {
-    setActiveItem(null);
-    const { active, over } = e;
-    if (!over) return;
-    const taskId = parseCardId(String(active.id));
-    const targetStatus = parseColumnId(String(over.id));
-    if (!taskId || !targetStatus) return;
-
-    const current = items.find((it) => it.id === taskId);
-    if (!current || current.status === targetStatus) return;
-
-    const before = items;
-    setItems((cur) =>
-      cur.map((it) => (it.id === taskId ? { ...it, status: targetStatus } : it)),
-    );
-
-    try {
-      await tasksApi.changeStatus(taskId, { to: targetStatus });
-    } catch (err) {
-      setItems(before);
-      toast.show({
-        tone: 'danger',
-        title: 'Could not move task',
-        message: err.response?.data?.detail ?? 'Server rejected the transition.',
+  // Bucket items by due date, oldest first within each section.
+  const sectioned = useMemo(() => {
+    const buckets = { overdue: [], today: [], week: [], later: [] };
+    const now = Date.now();
+    for (const item of items) {
+      buckets[dueBucket(item, now)].push(item);
+    }
+    for (const k of Object.keys(buckets)) {
+      buckets[k].sort((a, b) => {
+        const da = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+        const db = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+        return da - db;
       });
     }
-  }
+    return buckets;
+  }, [items]);
+
+  const projectCount = useMemo(
+    () => new Set(items.map((i) => i.projectId).filter(Boolean)).size,
+    [items],
+  );
 
   return (
     <div className="main-inner mywork">
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>Personal</div>
-            <h1 className="page-title row gap-3">
-              My work
-              <Badge tone="neutral">{totalOpen} open</Badge>
-            </h1>
-            <div className="page-subtitle">
-              {user?.fullName ? `${user.fullName}'s tasks across every project.` : 'Tasks assigned to you across every project.'}
-            </div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>{user?.fullName ?? 'You'}</div>
+            <h1 className="page-title">My Work</h1>
+            <p className="page-subtitle" style={{ marginTop: 8 }}>
+              {items.length} {items.length === 1 ? 'item' : 'items'} across {projectCount} project{projectCount === 1 ? '' : 's'}
+            </p>
           </div>
-          <div className="row mywork-filters">
+          <div className="row gap-3 mywork-filters">
+            <Segmented
+              value={kindFilter}
+              onChange={setKindFilter}
+              options={KIND_FILTERS}
+              ariaLabel="Filter by item kind"
+            />
             <Select
               value={projectFilter}
               onChange={(e) => setProjectFilter(e.target.value)}
@@ -212,20 +222,10 @@ export function MyWorkPage() {
       </div>
 
       {loading && (
-        <div aria-busy="true">
-          <Skeleton width="30%" height={14} />
-          <div style={{ height: 12 }} />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i}>
-                <Skeleton width="40%" height={12} />
-                <div style={{ height: 8 }} />
-                <Skeleton height={70} radius="md" />
-                <div style={{ height: 8 }} />
-                <Skeleton height={70} radius="md" />
-              </div>
-            ))}
-          </div>
+        <div aria-busy="true" className="col gap-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} height={88} radius="lg" />
+          ))}
         </div>
       )}
       {error && <p className="muted">{error}</p>}
@@ -235,26 +235,34 @@ export function MyWorkPage() {
       )}
 
       {!loading && !error && (
-        <div className="mywork-board-wrap">
-          <DndContext
-            sensors={sensors}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-          >
-            <div className="kanban mywork-columns">
-              {COLUMN_ORDER.map((status) => (
-                <MyWorkColumn
-                  key={status}
-                  status={status}
-                  items={columns[status] ?? []}
-                  onOpen={(item) => setOpened({ taskId: item.id, projectId: item.projectId })}
-                />
-              ))}
+        <div className="col gap-7 mywork-sections">
+          {SECTIONS.map((sec) => {
+            const list = sectioned[sec.id];
+            if (!list || list.length === 0) return null;
+            return (
+              <div key={sec.id}>
+                <div className="row gap-3" style={{ marginBottom: 'var(--s-4)' }}>
+                  <h3 className="h-card" style={{ fontSize: 'var(--fs-md)' }}>{sec.label}</h3>
+                  <Badge tone={sec.tone}>{list.length}</Badge>
+                </div>
+                <div className="card">
+                  {list.map((item, i) => (
+                    <MyWorkRow
+                      key={item.id}
+                      item={item}
+                      isLast={i === list.length - 1}
+                      onOpen={() => setOpened({ taskId: item.id, projectId: item.projectId })}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+          {items.length === 0 && (
+            <div className="card mywork-empty-card">
+              <p className="muted">Nothing assigned to you right now.</p>
             </div>
-            <DragOverlay dropAnimation={null} zIndex={2000}>
-              {activeItem ? <ItemCard item={activeItem} isOverlay /> : null}
-            </DragOverlay>
-          </DndContext>
+          )}
         </div>
       )}
 
@@ -265,6 +273,43 @@ export function MyWorkPage() {
         onChanged={() => refresh().catch(() => {})}
       />
     </div>
+  );
+}
+
+function MyWorkRow({ item, isLast, onOpen }) {
+  const meta = findProjectType(item.projectType);
+  const iconClass = `proj-icon proj-icon-${(meta?.id ?? 'generic').toLowerCase()}`;
+  const due = formatDue(item.dueDate);
+  const isUrgent = item.priority === 'Urgent';
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="mywork-row"
+      style={{ borderBottom: isLast ? 0 : '1px solid var(--divider)' }}
+      aria-label={`${item.title} — ${item.status}`}
+    >
+      <span className="mono muted mywork-row-key">{shortKey(item)}</span>
+      <div className="mywork-row-body">
+        <div className="row gap-3">
+          <span className="mywork-row-title truncate">{item.title}</span>
+          {isUrgent && <Badge tone="danger" dot>Urgent</Badge>}
+        </div>
+        <div className="row gap-3 mywork-row-meta">
+          <span className={iconClass} style={{ width: 14, height: 14, fontSize: 7, borderRadius: 3 }}>
+            {meta?.short?.[0] ?? '·'}
+          </span>
+          <span>{item.projectIsPersonal ? 'Personal' : item.projectName}</span>
+          {meta && <><span>·</span><span>{meta.label}</span></>}
+        </div>
+      </div>
+      <div className="mywork-row-priority">
+        <Priority level={item.priority} />
+      </div>
+      <StatusBadge status={item.status} />
+      <span className="muted mono mywork-row-due">{due ?? '—'}</span>
+    </button>
   );
 }
 
@@ -307,131 +352,4 @@ function OperationsRunsBanner({ runs }) {
       </ul>
     </section>
   );
-}
-
-function groupByStatus(items) {
-  const map = {};
-  for (const status of COLUMN_ORDER) map[status] = [];
-  for (const item of items) {
-    if (!map[item.status]) map[item.status] = [];
-    map[item.status].push(item);
-  }
-  return map;
-}
-
-function MyWorkColumn({ status, items, onOpen }) {
-  const { isOver, setNodeRef } = useDroppable({ id: `mw-col:${status}` });
-  const pts = items.reduce((s, t) => s + (t.storyPoints ?? 0), 0);
-  return (
-    <div
-      ref={setNodeRef}
-      className={['kanban-col', isOver ? 'is-over' : ''].filter(Boolean).join(' ')}
-    >
-      <header className="kanban-col-head">
-        <div className="kanban-col-title">
-          <StatusBadge status={status} />
-          <span className="kanban-col-count">
-            {items.length}
-            {pts > 0 && ` · ${pts}pt`}
-          </span>
-        </div>
-        <span className="btn btn-ghost btn-icon-sm" aria-hidden="true">
-          <MoreHorizontal size={12} />
-        </span>
-      </header>
-      <div className="kanban-col-body">
-        {items.length === 0 ? (
-          <p className="mywork-empty">No tasks here.</p>
-        ) : (
-          items.map((item) => <ItemCard key={item.id} item={item} onOpen={onOpen} />)
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ItemCard({ item, onOpen, isOverlay = false }) {
-  const draggable = useDraggable({
-    id: `mw-card:${item.id}`,
-    disabled: isOverlay,
-  });
-  const { attributes, listeners, setNodeRef, transform, isDragging } = draggable;
-  const style = isOverlay
-    ? { boxShadow: 'var(--shadow-lg)' }
-    : {
-        transform: CSS.Translate.toString(transform),
-        opacity: isDragging ? 0 : 1,
-        pointerEvents: isDragging ? 'none' : undefined,
-      };
-
-  function handleClick() {
-    if (isDragging) return;
-    onOpen?.(item);
-  }
-  function handleKey(e) {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      onOpen?.(item);
-    }
-  }
-
-  const assigneeName =
-    item.assigneeName ?? (item.assigneeId ? '—' : null);
-
-  return (
-    <div
-      ref={isOverlay ? undefined : setNodeRef}
-      style={style}
-      {...(isOverlay ? {} : listeners)}
-      {...(isOverlay ? {} : attributes)}
-      onClick={isOverlay ? undefined : handleClick}
-      onKeyDown={isOverlay ? undefined : handleKey}
-      className="card-task mywork-card"
-      role={isOverlay ? undefined : 'button'}
-      tabIndex={isOverlay ? undefined : 0}
-      aria-label={`${item.title} — ${item.priority} priority`}
-    >
-      <div className="card-task-head">
-        <span className="card-task-id">{shortKey(item)}</span>
-        <Priority level={item.priority} />
-      </div>
-
-      <div className="card-task-title">{item.title}</div>
-
-      <div className="row mywork-project-row">
-        <span className="truncate">
-          {item.projectIsPersonal ? 'Personal' : item.projectName}
-        </span>
-        {item.dueDate && (
-          <span className="mono muted mywork-due">{formatDue(item.dueDate)}</span>
-        )}
-      </div>
-
-      <div className="card-task-foot row">
-        {assigneeName ? (
-          <Avatar name={assigneeName} size="xs" />
-        ) : (
-          <span className="card-task-unassigned" title="Unassigned" />
-        )}
-        {item.storyPoints != null && (
-          <span className="mono card-task-pts" title="Story points">
-            {item.storyPoints}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function parseCardId(id) {
-  const parts = id.split(':');
-  return parts[0] === 'mw-card' ? parts[1] : null;
-}
-function parseColumnId(id) {
-  const parts = id.split(':');
-  return parts[0] === 'mw-col' ? parts[1] : null;
-}
-function formatDue(iso) {
-  const d = new Date(iso);
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }

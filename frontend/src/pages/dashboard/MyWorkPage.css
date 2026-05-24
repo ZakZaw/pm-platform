@@ -1,5 +1,5 @@
-/* My work — personal cross-project kanban + operations-runs banner.
-   Wraps stratos kanban primitives; only personal bits live here. */
+/* My work — sectioned cross-project list + operations-runs banner.
+   See screens/my-work.jsx for the source layout. */
 
 .mywork {
   display: flex;
@@ -15,45 +15,65 @@
   min-width: 180px;
 }
 
-.mywork-board-wrap {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden;
-  display: flex;
-}
-
-.mywork-columns {
+.mywork-sections {
   flex: 1 1 auto;
   min-width: 0;
 }
 
-.mywork-card {
-  cursor: grab;
+/* Sectioned-list row */
+.mywork-row {
+  display: grid;
+  grid-template-columns: 64px 1fr auto auto 100px;
+  align-items: center;
+  gap: var(--s-5);
+  width: 100%;
+  padding: var(--s-5) var(--s-7);
+  background: transparent;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  transition: background var(--dur-fast);
 }
-.mywork-card:active {
-  cursor: grabbing;
+.mywork-row:hover { background: var(--surface-2); }
+.mywork-row:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: -2px; }
+
+.mywork-row-key {
+  font-size: var(--fs-xs);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.mywork-project-row {
-  justify-content: space-between;
-  gap: var(--s-4);
+.mywork-row-body { min-width: 0; }
+
+.mywork-row-title {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
+}
+
+.mywork-row-meta {
   font-size: var(--fs-xs);
   color: var(--text-muted);
-  margin: var(--s-2) 0;
-}
-.mywork-project-row .truncate {
-  max-width: 100%;
+  margin-top: 2px;
 }
 
-.mywork-due {
-  font-size: var(--fs-xs);
+.mywork-row-priority {
+  display: flex;
+  align-items: center;
 }
 
-.mywork-empty {
-  color: var(--text-muted);
+.mywork-row-due {
   font-size: var(--fs-xs);
-  padding: var(--s-4);
-  margin: 0;
+  text-align: right;
+  min-width: 100px;
+}
+
+.mywork-empty-card {
+  padding: var(--s-7);
+  text-align: center;
 }
 
 @media (max-width: 900px) {
@@ -64,8 +84,15 @@
     min-width: 0;
     flex: 1 1 140px;
   }
+  .mywork-row {
+    grid-template-columns: 56px 1fr auto;
+    row-gap: var(--s-3);
+  }
+  .mywork-row-priority,
+  .mywork-row-due { grid-column: 1 / -1; justify-self: flex-end; }
 }
 
+/* Operations runs banner — same as before */
 .mywork-ops {
   margin-bottom: var(--s-6);
   padding: var(--s-5) var(--s-6);
@@ -73,55 +100,27 @@
   border: 1px solid var(--border-subtle);
   border-radius: var(--r-md);
 }
-
 .mywork-ops-head {
   display: flex;
   align-items: center;
   gap: var(--s-5);
   margin-bottom: var(--s-4);
 }
-
 .mywork-ops-list {
   list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 2px;
 }
-
 .mywork-ops-row {
-  display: flex;
-  align-items: center;
-  gap: var(--s-5);
+  display: flex; align-items: center; gap: var(--s-5);
   padding: var(--s-4) 0;
   border-bottom: 1px dashed var(--border-subtle);
 }
-
-.mywork-ops-row:last-child {
-  border-bottom: none;
-}
-
-.mywork-ops-row.is-overdue .mywork-ops-title {
-  color: var(--danger);
-}
-
+.mywork-ops-row:last-child { border-bottom: none; }
+.mywork-ops-row.is-overdue .mywork-ops-title { color: var(--danger); }
 .mywork-ops-link {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  text-decoration: none;
-  color: inherit;
-  min-width: 0;
+  flex: 1; display: flex; flex-direction: column; gap: 2px;
+  text-decoration: none; color: inherit; min-width: 0;
 }
-
-.mywork-ops-title {
-  color: var(--text);
-  font-size: var(--fs-md);
-  font-weight: var(--fw-medium);
-}
-
-.mywork-ops-meta {
-  font-size: var(--fs-xs);
-}
+.mywork-ops-title { color: var(--text); font-size: var(--fs-md); font-weight: var(--fw-medium); }
+.mywork-ops-meta { font-size: var(--fs-xs); }

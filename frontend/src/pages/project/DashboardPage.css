@@ -1,5 +1,5 @@
-/* Project dashboard — widget grid (12-col) sitting under the main-inner shell.
-   The KPI/widget tiles use the Stratos `.card` primitive and stack via grid spans. */
+/* Project dashboard — grid-12 widget layout built on .stat + .card.
+   Chart components live in components/charts/. */
 
 .dashboard {
   display: flex;
@@ -7,220 +7,88 @@
   min-height: 100%;
 }
 
-.dashboard-note {
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
-  padding: var(--s-3) var(--s-5);
-  font-size: var(--fs-xs);
-  color: var(--text-muted);
-  background: var(--surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-md);
-  margin-bottom: var(--s-6);
-}
-.dashboard-note em {
-  color: var(--text-secondary);
-  font-style: normal;
-}
-
-.dashboard-grid,
 .dashboard-typed-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  gap: var(--s-5);
+  gap: var(--s-6);
   align-content: start;
 }
 
-.dashboard-kpi {
-  grid-column: span 3;
-  padding: var(--s-5);
-}
-.dashboard-wide {
-  grid-column: span 6;
-  padding: var(--s-6);
-}
-.dashboard-col-4 {
-  grid-column: span 4;
-  padding: var(--s-6);
-}
-.dashboard-col-8 {
-  grid-column: span 8;
-  padding: var(--s-6);
-}
-
-@media (max-width: 1100px) {
-  .dashboard-kpi { grid-column: span 6; }
-  .dashboard-wide { grid-column: span 12; }
-  .dashboard-col-4 { grid-column: span 6; }
-  .dashboard-col-8 { grid-column: span 12; }
-}
-@media (max-width: 640px) {
-  .dashboard-kpi,
-  .dashboard-col-4,
-  .dashboard-col-8 { grid-column: span 12; }
-}
-
-/* KPI tile */
-.dashboard-kpi-head {
-  gap: var(--s-3);
-  margin-bottom: var(--s-2);
-}
-.dashboard-kpi-icon {
-  width: 22px;
-  height: 22px;
-  border-radius: var(--r-sm);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.dashboard-kpi-label {
-  font-size: var(--fs-xs);
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-weight: var(--fw-semibold);
-}
-.dashboard-kpi-body {
-  justify-content: space-between;
-  align-items: baseline;
-}
-.dashboard-kpi-value {
-  font-size: var(--fs-2xl);
-  font-weight: var(--fw-semibold);
-  letter-spacing: -0.01em;
-}
-.dashboard-kpi-delta {
-  font-size: var(--fs-xs);
-}
-
-/* Widget head shared between cards */
-.dashboard-widget-head {
-  justify-content: space-between;
-  margin-bottom: var(--s-3);
-  gap: var(--s-4);
-}
-.dashboard-widget-title {
-  font-size: var(--fs-md);
-  font-weight: var(--fw-semibold);
-  color: var(--text);
-}
-.dashboard-widget-sub {
-  font-size: var(--fs-xs);
-}
 .dashboard-sample {
-  font-size: 10px;
-  color: var(--text-muted);
-  font-weight: var(--fw-regular);
   text-transform: none;
-  letter-spacing: 0;
-  font-style: italic;
-}
-.dashboard-legend {
-  gap: var(--s-4);
-  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-2xs);
   color: var(--text-muted);
-}
-.dashboard-legend > span {
-  gap: 4px;
-}
-.dashboard-legend-swatch {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  display: inline-block;
+  padding: 1px var(--s-3);
+  background: var(--surface-2);
+  border-radius: var(--r-pill);
+  letter-spacing: 0;
+  margin-left: var(--s-3);
 }
 
-.dashboard-chart-wrap {
-  overflow-x: auto;
-}
-
-/* Health card */
-.dashboard-health {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.dashboard-signals {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--s-2);
-  width: 100%;
-  margin-top: var(--s-3);
+.dashboard-sub {
   font-size: var(--fs-xs);
+  margin-bottom: var(--s-5);
 }
-.dashboard-signal {
-  justify-content: space-between;
-  padding: 3px 6px;
+
+/* Health gauge group */
+.dashboard-signals {
+  width: 100%;
+  margin-top: var(--s-5);
 }
 .dashboard-signal-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
+  width: 8px; height: 8px; border-radius: 50%;
   display: inline-block;
 }
 
 /* Epic progress */
-.dashboard-epic-head {
-  justify-content: space-between;
-  margin-bottom: 4px;
-  font-size: var(--fs-xs);
-  gap: var(--s-4);
-}
-.dashboard-epic-head .truncate {
-  max-width: 180px;
-}
 .dashboard-epic-swatch {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
 }
 .dashboard-epic-track {
   height: 6px;
-  background: var(--surface-hover);
-  border-radius: 3px;
+  background: var(--surface-2);
+  border-radius: var(--r-pill);
   overflow: hidden;
 }
 .dashboard-epic-fill {
   height: 100%;
-  border-radius: 3px;
-  transition: width var(--dur-base) var(--ease-out);
+  border-radius: inherit;
+  transition: width var(--dur-slow) var(--ease-out);
 }
 
-/* AI insight card */
+/* Velocity legend */
+.dashboard-legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+/* Weekly insight */
 .dashboard-insight-title {
-  font-size: var(--fs-base);
+  font-size: var(--fs-md);
   font-weight: var(--fw-semibold);
-  line-height: 1.35;
-  margin-bottom: 6px;
+  margin-bottom: var(--s-3);
+  line-height: var(--lh-snug);
 }
 .dashboard-insight-body {
-  font-size: var(--fs-xs);
-  line-height: 1.55;
-  margin-bottom: var(--s-3);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
+  margin: 0 0 var(--s-5);
 }
 
-/* Activity */
+/* Activity feed inside col-12 card */
 .dashboard-activity {
-  gap: var(--s-3);
-  font-size: var(--fs-xs);
+  padding: var(--s-4) var(--s-7);
+  font-size: var(--fs-sm);
 }
 .dashboard-activity-text {
   flex: 1;
-  line-height: 1.5;
   min-width: 0;
 }
 .dashboard-activity-time {
   font-size: var(--fs-xs);
-}
-.dashboard-ai-mark {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--ai-violet), var(--accent));
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
 }

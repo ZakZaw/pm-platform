@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Plus, Repeat, Workflow as WorkflowIcon } from 'lucide-react';
+import { Plus, Sparkles, Workflow as WorkflowIcon } from 'lucide-react';
 import {
   Badge,
   Button,
-  Card,
   EmptyState,
   Skeleton,
   useToast,
@@ -14,17 +13,42 @@ import { operationsApi, describeRecurrence } from '@/api/operations.api';
 import { WorkflowEditorModal } from '@/components/operations/WorkflowEditorModal';
 import './RunbooksPage.css';
 
-// Generic project's runbooks index. Lists every workflow in the project
-// with its next-scheduled run and a colored status pip for last result.
-// The materialiser runs server-side when this query fires, so just
-// loading the page advances the schedule.
+const STATUS_TONE = {
+  Active: 'success',
+  Paused: 'warning',
+  Archived: 'neutral',
+};
+
+function fmtRel(iso) {
+  if (!iso) return '—';
+  const t = new Date(iso).getTime();
+  if (!Number.isFinite(t)) return '—';
+  const diff = Date.now() - t;
+  const abs = Math.abs(diff);
+  const future = diff < 0;
+  const days = Math.floor(abs / 86_400_000);
+  if (days < 1) {
+    const hours = Math.floor(abs / 3_600_000);
+    return future ? `in ${hours}h` : `${hours}h ago`;
+  }
+  if (days < 14) return future ? `in ${days}d` : `${days}d ago`;
+  return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+function fmtAbs(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
 export function RunbooksPage() {
   const { slug: orgSlug, projectSlug } = useParams();
   const toast = useToast();
   const [project, setProject] = useState(null);
   const [workflows, setWorkflows] = useState(null);
   const [error, setError] = useState(null);
-  const [editing, setEditing] = useState(null); // null | 'new' | workflowId
+  const [editing, setEditing] = useState(null);
 
   async function refresh(projectId) {
     const data = await operationsApi.listWorkflows(projectId);
@@ -46,29 +70,42 @@ export function RunbooksPage() {
     return () => { cancelled = true; };
   }, [orgSlug, projectSlug]);
 
-  if (error) return <div className="page"><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
+  if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
   if (!project || !workflows) {
     return (
-      <div className="page runbooks-page" aria-busy="true">
-        <header className="page-header"><h1 className="page-title">Runbooks</h1></header>
-        <div className="vstack" style={{ gap: 12 }}>
-          {[0, 1].map((i) => <Skeleton key={i} height={80} />)}
+      <div className="main-inner runbooks-page" aria-busy="true">
+        <div className="page-head">
+          <Skeleton width="30%" height={28} />
         </div>
+        <Skeleton height={240} radius="lg" />
       </div>
     );
   }
 
+  const overdueTotal = workflows.reduce((s, w) => s + (w.overdueRunCount ?? 0), 0);
+
   return (
-    <div className="page runbooks-page">
-      <header className="page-header">
-        <div className="hstack" style={{ gap: 12, alignItems: 'baseline' }}>
-          <h1 className="page-title">Runbooks</h1>
-          <span className="muted">· {workflows.length} workflow{workflows.length === 1 ? '' : 's'}</span>
+    <div className="main-inner runbooks-page">
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>{project.name} · Runbooks</div>
+            <h1 className="page-title" style={{ fontSize: 'var(--fs-2xl)' }}>Workflows</h1>
+            <p className="page-subtitle" style={{ marginTop: 6 }}>
+              {workflows.length} workflow{workflows.length === 1 ? '' : 's'}
+              {overdueTotal > 0 && <> · <span style={{ color: 'var(--danger)' }}>{overdueTotal} overdue</span></>}
+            </p>
+          </div>
+          <div className="row gap-3">
+            <Button variant="ai" size="sm" disabled title="Coming in Phase 2">
+              <Sparkles size={13} aria-hidden="true" /> Author from template
+            </Button>
+            <Button variant="primary" size="sm" onClick={() => setEditing('new')}>
+              <Plus size={14} aria-hidden="true" /> New workflow
+            </Button>
+          </div>
         </div>
-        <Button size="sm" onClick={() => setEditing('new')}>
-          <Plus size={13} aria-hidden="true" /> New workflow
-        </Button>
-      </header>
+      </div>
 
       {workflows.length === 0 ? (
         <EmptyState
@@ -79,16 +116,49 @@ export function RunbooksPage() {
           <Button onClick={() => setEditing('new')}>Create your first workflow</Button>
         </EmptyState>
       ) : (
-        <div className="runbooks-page__list">
-          {workflows.map((w) => (
-            <WorkflowRow
-              key={w.id}
-              workflow={w}
-              orgSlug={orgSlug}
-              projectSlug={projectSlug}
-              onEdit={() => setEditing(w.id)}
-            />
-          ))}
+        <div className="card runbooks-card">
+          <table className="tbl">
+            <thead>
+              <tr>
+                <th style={{ width: 70 }}>ID</th>
+                <th>Workflow</th>
+                <th style={{ width: 140 }}>Recurrence</th>
+                <th style={{ width: 110 }}>Last run</th>
+                <th style={{ width: 90 }}>Steps</th>
+                <th style={{ width: 110 }}>Next</th>
+                <th style={{ width: 120 }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {workflows.map((w, i) => {
+                const overdue = (w.overdueRunCount ?? 0) > 0;
+                return (
+                  <tr key={w.id} onClick={() => setEditing(w.id)} style={{ cursor: 'pointer' }}>
+                    <td className="mono muted" style={{ fontSize: 'var(--fs-xs)' }}>WF-{String(i + 1).padStart(2, '0')}</td>
+                    <td>
+                      <div className="col" style={{ gap: 2 }}>
+                        <span style={{ fontWeight: 500 }}>{w.name}</span>
+                        {w.description && (
+                          <span className="muted truncate" style={{ fontSize: 'var(--fs-xs)', maxWidth: 360 }}>{w.description}</span>
+                        )}
+                      </div>
+                    </td>
+                    <td>{describeRecurrence(w.recurrenceRule)}</td>
+                    <td className="muted" style={{ fontSize: 'var(--fs-xs)' }}>{fmtRel(w.lastCompletedAt)}</td>
+                    <td className="mono" style={{ fontSize: 'var(--fs-xs)', fontWeight: 600 }}>{w.template?.length ?? 0}</td>
+                    <td className="muted" style={{ fontSize: 'var(--fs-xs)' }}>{fmtAbs(w.nextRunAt)}</td>
+                    <td>
+                      {overdue ? (
+                        <Badge tone="danger">{w.overdueRunCount} overdue</Badge>
+                      ) : (
+                        <Badge tone={STATUS_TONE[w.status] ?? 'success'}>{w.status ?? 'Active'}</Badge>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -105,88 +175,5 @@ export function RunbooksPage() {
         />
       )}
     </div>
-  );
-}
-
-function WorkflowRow({ workflow, orgSlug, projectSlug, onEdit }) {
-  const next = workflow.nextRunAt ? new Date(workflow.nextRunAt) : null;
-  const last = workflow.lastCompletedAt ? new Date(workflow.lastCompletedAt) : null;
-
-  return (
-    <Card className="runbook-card">
-      <div className="runbook-card__main">
-        <div className="hstack" style={{ gap: 12, alignItems: 'baseline' }}>
-          <h2 className="runbook-card__title">{workflow.name}</h2>
-          <Badge tone="neutral">
-            <Repeat size={11} aria-hidden="true" /> {describeRecurrence(workflow.recurrenceRule)}
-          </Badge>
-          {workflow.overdueRunCount > 0 && (
-            <Badge tone="danger">{workflow.overdueRunCount} overdue</Badge>
-          )}
-        </div>
-        {workflow.description && (
-          <p className="runbook-card__desc">{workflow.description}</p>
-        )}
-        <div className="runbook-card__meta">
-          <span>
-            <strong>Next:</strong>{' '}
-            {next
-              ? next.toLocaleString(undefined, {
-                  month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
-                })
-              : '—'}
-          </span>
-          <span>
-            <strong>Last completed:</strong>{' '}
-            {last
-              ? last.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-              : 'Never'}
-          </span>
-          <span>
-            <strong>Checklist:</strong> {workflow.template.length} item{workflow.template.length === 1 ? '' : 's'}
-          </span>
-        </div>
-      </div>
-      <div className="runbook-card__actions">
-        <Button variant="ghost" size="sm" onClick={onEdit}>Edit</Button>
-        {workflow.nextRunAt && next && (
-          <NextRunButton workflowId={workflow.id} orgSlug={orgSlug} projectSlug={projectSlug} />
-        )}
-      </div>
-    </Card>
-  );
-}
-
-function NextRunButton({ workflowId, orgSlug, projectSlug }) {
-  // Resolve the next pending run id via the workflow detail endpoint
-  // when the user clicks. Avoids loading run details upfront for every
-  // workflow on the index page.
-  const [resolving, setResolving] = useState(false);
-  const toast = useToast();
-
-  async function go() {
-    setResolving(true);
-    try {
-      const detail = await operationsApi.getWorkflow(workflowId);
-      const next = detail.runs.find((r) => r.status === 'Pending' || r.status === 'InProgress');
-      if (!next) {
-        toast.show({ tone: 'info', message: 'No upcoming runs scheduled.' });
-        return;
-      }
-      // Navigate via window.location to keep this component dumb — the
-      // page-level <Link> already imports react-router so this only fires
-      // when there's actually a run to open.
-      window.location.assign(`/${orgSlug}/projects/${projectSlug}/runs/${next.id}`);
-    } catch (err) {
-      toast.show({ tone: 'danger', message: err.response?.data?.detail ?? 'Could not open run.' });
-    } finally {
-      setResolving(false);
-    }
-  }
-
-  return (
-    <Button size="sm" onClick={go} disabled={resolving}>
-      {resolving ? 'Opening…' : 'Open next run'}
-    </Button>
   );
 }

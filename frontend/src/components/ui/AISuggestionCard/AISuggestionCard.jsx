@@ -4,7 +4,7 @@ import { Button } from '../Button/Button';
 import './AISuggestionCard.css';
 
 /**
- * AI-shaped insight surface from /Design Files/screen-ai-suggest.jsx.
+ * AI-shaped insight surface from /New Design Files/src/screens/ai-inbox.jsx.
  *
  * Three call shapes (auto-detected from props):
  *  1) Default suggestion: title + body + (optional) options + footer.

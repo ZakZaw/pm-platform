@@ -3,9 +3,8 @@
    Single source of truth. Theme-aware via [data-theme].
 
    Light is the default (`:root`). Dark overrides via
-   [data-theme="dark"]. New-design vocabulary; old token names
-   are aliased at the bottom for backwards compatibility until
-   the Phase 2 sweep replaces them at every call site.
+   [data-theme="dark"]. Mirrors /New Design Files/styles/tokens.css
+   1:1.
    ============================================================ */
 
 :root,
@@ -319,139 +318,6 @@
   }
 }
 
-/* ============================================================
-   COMPATIBILITY ALIASES
-   These map old token names to the new tokens so existing
-   page-level CSS keeps working until the Phase 2 sweep
-   replaces every reference. Delete after the sweep.
-   ============================================================ */
-:root,
-[data-theme="light"],
-[data-theme="dark"] {
-  /* Surfaces */
-  --bg-app: var(--bg);
-  --bg-base: var(--surface);
-  --bg-surface-1: var(--surface);
-  --bg-surface-2: var(--surface-2);
-  --bg-surface-3: var(--surface-hover);
-  --bg-overlay: var(--overlay);
-  --bg-hover: var(--surface-hover);
-  --bg-active: var(--surface-active);
-  --bg-selected: var(--accent-soft);
-
-  /* Borders */
-  --border-default: var(--border);
-  --border-focus: var(--accent-bright);
-
-  /* Text */
-  --text-primary: var(--text);
-  --text-tertiary: var(--text-muted);
-  --text-disabled: var(--text-subtle);
-  --text-inverse: var(--text-on-accent);
-
-  /* Accent */
-  --accent-primary: var(--accent);
-  --accent-primary-hover: var(--accent-hover);
-  --accent-primary-active: var(--accent-active);
-  --accent-primary-muted: var(--accent-soft-2);
-  --accent-primary-soft: var(--accent-soft);
-
-  /* Status */
-  --status-success: var(--success);
-  --status-success-bg: var(--success-soft);
-  --status-success-border: var(--success-border);
-  --status-warning: var(--warning);
-  --status-warning-bg: var(--warning-soft);
-  --status-warning-border: var(--warning-border);
-  --status-danger: var(--danger);
-  --status-danger-bg: var(--danger-soft);
-  --status-danger-border: var(--danger-border);
-  --status-info: var(--info);
-  --status-info-bg: var(--info-soft);
-  --status-info-border: var(--info-border);
-  --status-neutral: var(--text-muted);
-  --status-neutral-bg: var(--surface-2);
-  --status-neutral-border: var(--border);
-  --status-purple: var(--violet);
-  --status-purple-bg: var(--violet-soft);
-  --status-purple-border: var(--violet-border);
-
-  /* Priority */
-  --prio-urgent: var(--pri-urgent);
-  --prio-high: var(--pri-high);
-  --prio-med: var(--pri-medium);
-  --prio-low: var(--pri-low);
-
-  /* AI */
-  --ai-violet: var(--ai-2);
-  --ai-cyan: var(--ai-3);
-  --ai-pink: var(--rose);
-  --ai-bg: var(--ai-gradient-soft);
-
-  /* Radius */
-  --radius-xs: var(--r-xs);
-  --radius-sm: var(--r-sm);
-  --radius-md: var(--r-md);
-  --radius-lg: var(--r-lg);
-  --radius-xl: var(--r-xl);
-  --radius-2xl: var(--r-2xl);
-  --radius-pill: var(--r-pill);
-
-  /* Spacing — old --space-N → new --s-N (size-preserving mapping) */
-  --space-1: var(--s-2);   /* 4px */
-  --space-2: var(--s-4);   /* 8px */
-  --space-3: var(--s-5);   /* 12px */
-  --space-4: var(--s-6);   /* 16px */
-  --space-5: var(--s-7);   /* 20px */
-  --space-6: var(--s-8);   /* 24px */
-  --space-8: var(--s-9);   /* 32px */
-  --space-10: var(--s-10); /* 40px */
-  --space-12: var(--s-11); /* 48px */
-  --space-16: var(--s-12); /* 64px */
-
-  /* Typography */
-  --font-ui: var(--font-sans);
-  --font-size-display: var(--fs-3xl);  /* 28px (was 30px) */
-  --font-size-h1: var(--fs-2xl);       /* 22px (was 24px) */
-  --font-size-h2: var(--fs-xl);        /* 18px (was 20px) */
-  --font-size-h3: var(--fs-lg);        /* 16px (was 17px) */
-  --font-size-h4: var(--fs-base);      /* 14px (was 15px) */
-  --font-size-body: var(--fs-base);    /* 14px */
-  --font-size-dense: var(--fs-md);     /* 13px */
-  --font-size-meta: var(--fs-xs);      /* 11px */
-
-  --leading-tight: var(--lh-tight);
-  --leading-snug: var(--lh-snug);
-  --leading-norm: var(--lh-normal);
-
-  --weight-regular: var(--fw-regular);
-  --weight-medium: var(--fw-medium);
-  --weight-semibold: var(--fw-semibold);
-  --weight-bold: var(--fw-bold);
-
-  /* Motion */
-  --dur-med: var(--dur-base);
-
-  /* Legacy color scales — kept literal for components that
-     reference specific steps (indigo-500 etc.). These do NOT
-     follow theme. Phase 2 sweep replaces with semantic tokens. */
-  --indigo-50:  #ECEEFF;  --indigo-100: #D9DDFF;  --indigo-200: #B6BCFF;
-  --indigo-300: #8E97FB;  --indigo-400: #6E7BF3;  --indigo-500: #5B6AF0;
-  --indigo-600: #4A57D6;  --indigo-700: #3C46AE;  --indigo-800: #2F3789;
-  --indigo-900: #232966;  --indigo-950: #161A42;
-
-  --blue-50:  #EAF2FF;  --blue-100: #D2E2FF;  --blue-200: #A8C7FF;
-  --blue-300: #7BA8FF;  --blue-400: #4F8BFF;  --blue-500: #2A6FDB;
-  --blue-600: #1F5BC0;  --blue-700: #1A4A9E;  --blue-800: #173E80;
-  --blue-900: #122F62;  --blue-950: #0C1F40;
-
-  --sky-50:  #E6FAFE;  --sky-100: #C2F1FA;  --sky-200: #8FE5F3;
-  --sky-300: #4FD1E0;  --sky-400: #2EB8C9;  --sky-500: #1E96A6;
-  --sky-600: #176E7E;  --sky-700: #114F5C;  --sky-800: #0B3540;
-  --sky-900: #061F25;
-
-  --slate-50:  #F4F6FA;  --slate-100: #E8EAF2;  --slate-200: #C2C9D6;
-  --slate-300: #A4ABC4;  --slate-400: #8B91A8;  --slate-500: #5E647A;
-  --slate-600: #424658;  --slate-700: #2A2F45;  --slate-800: #1E2235;
-  --slate-900: #181C27;  --slate-950: #0F1117;
-}
+/* Compatibility aliases removed — entire codebase swept onto the new
+   vocabulary. If a legacy token reappears, add the alias back here
+   first and then migrate the callsite. */

@@ -66,11 +66,11 @@ import {
 } from 'lucide-react';
 
 /**
- * Stratos Icon — kebab-case wrapper over `lucide-react` so screens can
- * use the same `<Icon name="message-square" />` API as the design-file
- * mockups in `/Design Files/`. The registry below is explicit so the
- * bundler tree-shakes (a `import * as Lucide` namespace import pulls
- * every icon into the bundle).
+ * Icon — kebab-case wrapper over `lucide-react` so screens can use the
+ * same `<Icon name="message-square" />` API as the mockups in
+ * `/New Design Files/`. The registry below is explicit so the bundler
+ * tree-shakes (a `import * as Lucide` namespace import pulls every
+ * icon into the bundle).
  *
  * Adding a new icon: import it from lucide-react at the top, then add
  * the kebab-case key here.

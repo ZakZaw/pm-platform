@@ -370,7 +370,7 @@ export function AIGenerationWizard() {
             {/* Generated plan */}
             <div className="card-ai ai-wizard-plan">
               <div className="row ai-wizard-plan-head">
-                <Sparkles size={14} color="var(--ai-violet)" aria-hidden="true" />
+                <Sparkles size={14} color="var(--ai-2)" aria-hidden="true" />
                 <span style={{ fontSize: 13, fontWeight: 600 }}>
                   {isTypedPreview ? `${preview.type} project` : 'Generated plan'}
                 </span>

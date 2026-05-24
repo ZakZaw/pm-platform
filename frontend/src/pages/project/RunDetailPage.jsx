@@ -82,10 +82,10 @@ export function RunDetailPage() {
     }
   }
 
-  if (error) return <div className="page"><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
+  if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
   if (!data) {
     return (
-      <div className="page" aria-busy="true">
+      <div className="main-inner" aria-busy="true">
         <Skeleton width="50%" height={20} />
         <div style={{ height: 12 }} />
         <Skeleton rows={5} />
@@ -98,42 +98,38 @@ export function RunDetailPage() {
   const allDone = items.length > 0 && items.every((i) => i.completed);
 
   return (
-    <div className="page run-detail-page">
-      <div className="run-detail-page__back">
-        <Link to={`/${orgSlug}/projects/${projectSlug}/runbooks`} className="muted">
-          <ArrowLeft size={13} aria-hidden="true" /> Runbooks
-        </Link>
-      </div>
-
-      <header className="page-header">
-        <div>
-          <h1 className="page-title">{run.workflowName}</h1>
-          <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>
-            Scheduled for{' '}
-            {new Date(run.scheduledFor).toLocaleString(undefined, {
-              dateStyle: 'medium', timeStyle: 'short',
-            })}
-            {run.isOverdue && (
-              <Badge tone="danger" style={{ marginLeft: 8 }}>Overdue</Badge>
+    <div className="main-inner run-detail-page">
+      <div className="page-head">
+        <div className="row gap-3" style={{ marginBottom: 'var(--s-3)' }}>
+          <Link to={`/${orgSlug}/projects/${projectSlug}/runbooks`} className="muted run-detail-page__back-link">
+            <ArrowLeft size={13} aria-hidden="true" /> Runbooks
+          </Link>
+        </div>
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>Workflow run</div>
+            <h1 className="page-title" style={{ fontSize: 'var(--fs-2xl)' }}>{run.workflowName}</h1>
+            <p className="page-subtitle" style={{ marginTop: 6 }}>
+              Scheduled for{' '}
+              {new Date(run.scheduledFor).toLocaleString(undefined, {
+                dateStyle: 'medium', timeStyle: 'short',
+              })}
+              {run.isOverdue && <> · <span style={{ color: 'var(--danger)' }}>Overdue</span></>}
+            </p>
+          </div>
+          <div className="row gap-3">
+            <Badge tone={statusTone(run.status)}>{run.status}</Badge>
+            {!terminal && (
+              <Button variant="ghost" size="sm" onClick={() => setSkipping(true)}>
+                <SkipForward size={13} aria-hidden="true" /> Skip
+              </Button>
+            )}
+            {!terminal && run.status === 'Pending' && (
+              <Button variant="primary" size="sm" onClick={startRun}>Start</Button>
             )}
           </div>
         </div>
-        <div className="hstack" style={{ gap: 8 }}>
-          <Badge tone={statusTone(run.status)}>{run.status}</Badge>
-          {!terminal && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSkipping(true)}
-            >
-              <SkipForward size={13} aria-hidden="true" /> Skip
-            </Button>
-          )}
-          {!terminal && run.status === 'Pending' && (
-            <Button size="sm" onClick={startRun}>Start</Button>
-          )}
-        </div>
-      </header>
+      </div>
 
       {run.status === 'Skipped' && run.skippedReason && (
         <Card className="run-detail-page__skipped">
@@ -145,7 +141,7 @@ export function RunDetailPage() {
         {items.length === 0 ? (
           <p className="muted">This run has no checklist items.</p>
         ) : (
-          <ul className="vstack" style={{ listStyle: 'none', padding: 0, margin: 0, gap: 4 }}>
+          <ul className="col" style={{ listStyle: 'none', padding: 0, margin: 0, gap: 4 }}>
             {items.map((item) => {
               const earlierIncomplete = item.sequential && items.some(
                 (i) => i.order < item.order && !i.completed,

@@ -144,7 +144,7 @@ export function AIEpicWizardModal({ open, projectId, onClose, onCreated }) {
         {preview && (
           <div className="ai-draft__plan">
             <div className="ai-draft__plan-head hstack">
-              <Sparkles size={14} color="var(--ai-violet)" aria-hidden="true" />
+              <Sparkles size={14} color="var(--ai-2)" aria-hidden="true" />
               <span style={{ fontSize: 13, fontWeight: 600 }}>Generated epic</span>
               {totals && (
                 <span className="mono dim" style={{ fontSize: 11 }}>

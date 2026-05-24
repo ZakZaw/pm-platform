@@ -174,7 +174,7 @@ export function AIInboxPage() {
           <div>
             <div className="eyebrow" style={{ marginBottom: 6 }}>{project?.name ?? 'Project'}</div>
             <h1 className="page-title row gap-3">
-              <Sparkles size={18} color="var(--ai-violet)" aria-hidden="true" />
+              <Sparkles size={18} color="var(--ai-2)" aria-hidden="true" />
               AI Inbox
             </h1>
             <div className="page-subtitle">
@@ -233,7 +233,7 @@ export function AIInboxPage() {
         <p className="muted">Loading…</p>
       ) : suggestions.length === 0 ? (
         <div className="ai-inbox-empty">
-          <Sparkles size={20} color="var(--ai-violet)" aria-hidden="true" />
+          <Sparkles size={20} color="var(--ai-2)" aria-hidden="true" />
           <p className="ai-inbox-empty-title">No open insights</p>
           <p className="ai-inbox-empty-sub">
             Try diagnosing the active sprint to see what AI surfaces.

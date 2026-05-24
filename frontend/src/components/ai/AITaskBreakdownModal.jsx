@@ -82,7 +82,7 @@ export function AITaskBreakdownModal({ open, taskId, currentTitle, onClose, onAp
 
         {loading && (
           <p className="ai-draft__empty">
-            <Sparkles size={14} color="var(--ai-violet)" aria-hidden="true" />{' '}
+            <Sparkles size={14} color="var(--ai-2)" aria-hidden="true" />{' '}
             Asking the AI…
           </p>
         )}

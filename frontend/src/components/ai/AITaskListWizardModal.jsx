@@ -179,7 +179,7 @@ export function AITaskListWizardModal({
         {preview && (
           <div className="ai-draft__plan">
             <div className="ai-draft__list-meta">
-              <Sparkles size={13} color="var(--ai-violet)" aria-hidden="true" />
+              <Sparkles size={13} color="var(--ai-2)" aria-hidden="true" />
               <span style={{ fontWeight: 600, color: 'var(--text)' }}>
                 {preview.tasks.length} tasks · {totalPts} points
               </span>

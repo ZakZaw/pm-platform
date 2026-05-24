@@ -48,7 +48,10 @@ Read this before writing any code, creating any file, or making any architectura
 │   │   └── Integration/
 │   └── backend.sln
 │
-├── Design Files/                   # ← STRATOS design system reference (mockups + canonical CSS)
+├── New Design Files/               # ← Design system source of truth (mockups + canonical CSS/tokens)
+│   ├── src/screens/                # one .jsx mockup per screen
+│   ├── styles/                     # tokens.css · components.css · base.css · app.css
+│   └── scrap/                      # in-progress sketches (not consumed by app)
 │
 ├── frontend/
 │   ├── src/
@@ -136,36 +139,40 @@ Read this before writing any code, creating any file, or making any architectura
 
 ---
 
-## Design System — Stratos (No Tailwind)
+## Design System (No Tailwind)
 
-The UI is built on **Stratos**, a token-based design system. Design-time reference artifacts (canonical tokens, every component variant, every screen mockup) live in `/Design Files/` at the repo root — that folder is the source of truth when you have any visual question. The working code in `frontend/src/` mirrors it.
+The UI is token-based. Design-time reference artifacts (canonical tokens, every component variant, every screen mockup) live in **`/New Design Files/`** at the repo root — that folder is the source of truth when you have any visual question. The working code in `frontend/src/` mirrors it.
 
 **Hard rules:**
 
 - All styling uses **CSS custom properties (tokens) + scoped component CSS**. Never hardcode a color, spacing value, font size, radius, shadow, or duration anywhere in component CSS.
-- Class naming is **flat** (`btn-primary`, `card-elevated`, `badge-info`, `is-error`) — not BEM (`btn--primary`). State is expressed via separate state classes (`is-active`, `is-error`, `is-disabled`).
-- Stratos supports both dark (default) and light themes via `[data-theme="light"]`. New component CSS must not assume dark — always reference theme-aware tokens like `--bg-base`, `--text-primary`, `--border-default`.
+- Class naming is **flat** (`btn-primary`, `card-hover`, `badge-info`, `is-error`) — not BEM (`btn--primary`). State is expressed via separate state classes (`is-active`, `is-error`, `is-disabled`).
+- The design supports both light (default) and dark themes via `[data-theme="dark"]`. New component CSS must always reference theme-aware tokens like `--bg`, `--surface`, `--text`, `--border`.
 
 ### Tokens (`frontend/src/styles/tokens.css`)
 
-The single source of truth for visual values. Token families:
+The single source of truth for visual values. Token families (matches `/New Design Files/styles/tokens.css` 1:1):
 
-| Family       | Examples                                                                                                                         |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| Surfaces     | `--bg-app`, `--bg-base`, `--bg-surface-1/2/3`, `--bg-hover`, `--bg-selected`, `--bg-overlay`                                     |
-| Borders      | `--border-subtle`, `--border-default`, `--border-strong`, `--border-focus`                                                       |
-| Text         | `--text-primary`, `--text-secondary`, `--text-tertiary`, `--text-muted`, `--text-disabled`, `--text-on-accent`, `--text-inverse` |
-| Accent       | `--accent-primary`, `--accent-primary-hover`, `--accent-primary-active`, `--accent-primary-muted`, `--accent-primary-soft`       |
-| Color scales | `--indigo-50..950`, `--blue-50..950`, `--sky-50..900`, `--slate-50..950`                                                         |
-| Status       | `--status-{success,warning,danger,info,neutral,purple}` + `-bg` + `-border`                                                      |
-| Priority     | `--prio-urgent`, `--prio-high`, `--prio-med`, `--prio-low`                                                                       |
-| AI surface   | `--ai-violet`, `--ai-cyan`, `--ai-pink`, `--ai-bg`, `--ai-border`, `--ai-glow`                                                   |
-| Spacing      | `--space-1..16` (4/8/12/16/20/24/32/40/48/64 px)                                                                                 |
-| Radius       | `--radius-xs/sm/md/lg/xl/2xl`, `--radius-pill`                                                                                   |
-| Shadows      | `--shadow-xs/sm/md/lg/xl`, `--shadow-focus`, `--shadow-focus-danger`                                                             |
-| Type sizes   | `--font-size-display/h1/h2/h3/h4/body/dense/meta` (30/24/20/17/15/14/13/11)                                                      |
-| Type         | `--font-ui`, `--font-mono`, `--weight-{regular,medium,semibold,bold}`, `--leading-{tight,snug,norm}`                             |
-| Motion       | `--dur-fast` (120 ms), `--dur-med` (220 ms), `--ease-out`                                                                        |
+| Family       | Tokens                                                                                                                                  |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Surfaces     | `--bg`, `--bg-subtle`, `--surface`, `--surface-2`, `--surface-hover`, `--surface-active`, `--overlay`, `--scrim`                        |
+| Borders      | `--border`, `--border-strong`, `--border-subtle`, `--ring`, `--divider`                                                                 |
+| Text         | `--text`, `--text-secondary`, `--text-muted`, `--text-subtle`, `--text-on-accent`, `--text-link`                                        |
+| Accent       | `--accent`, `--accent-hover`, `--accent-active`, `--accent-bright`, `--accent-soft`, `--accent-soft-2`, `--accent-border`               |
+| Status       | `--success` / `--warning` / `--danger` / `--info` / `--violet` / `--teal` / `--rose` / `--amber` (each with `-soft` and `-border`)      |
+| Priority     | `--pri-urgent`, `--pri-high`, `--pri-medium`, `--pri-low`                                                                               |
+| AI surface   | `--ai-1/2/3`, `--ai-gradient`, `--ai-gradient-soft`, `--ai-gradient-mid`, `--ai-text`, `--ai-border`, `--ai-glow`                       |
+| Spacing      | `--s-0..13` (0/2/4/6/8/12/16/20/24/32/40/48/64/80 px)                                                                                   |
+| Radius       | `--r-xs/sm/md/lg/xl/2xl`, `--r-pill`                                                                                                    |
+| Shadows      | `--shadow-xs/sm/md/lg/xl`, `--shadow-pop`, `--shadow-inset`, `--shadow-accent`, `--shadow-focus`, `--shadow-focus-danger`               |
+| Type sizes   | `--fs-2xs/xs/sm/md/base/lg/xl/2xl/3xl/4xl/5xl` (10..48 px)                                                                              |
+| Type         | `--font-sans` (Plus Jakarta Sans), `--font-mono`, `--font-display` · `--fw-{regular,medium,semibold,bold}` · `--lh-{tight,snug,normal,relaxed}` · `--tracking-{tight,snug,normal,wide,mono}` |
+| Motion       | `--ease-out`, `--ease-in-out`, `--ease-spring` · `--dur-{instant,fast,base,slow,slower}` (80/140/200/320/520 ms)                        |
+| Layout       | `--sidebar-w` (248), `--sidebar-w-collapsed` (60), `--topbar-h` (56), `--drawer-w` (520), `--row-h` (40), `--content-max` (1440)        |
+| Density      | `[data-density="compact"]` / `[data-density="spacious"]` override `--row-h` + `--s-6..10`                                               |
+| Marketing    | `--mkt-channel-{email,social,blog,paid,event,other}` + `-bg` (per-channel chip colors)                                                  |
+
+> **Legacy aliases:** the bottom of `tokens.css` still maps old token names (`--bg-app`, `--space-N`, `--font-size-h1`, `--radius-N`, `--text-primary`, etc.) to the new ones for any un-swept code paths. **Don't reference these in new code** — use the new vocabulary above. The aliases get removed once every callsite is on the new vocabulary.
 
 ### Component CSS Pattern
 
@@ -175,33 +182,18 @@ Each component lives in its own folder under `frontend/src/components/ui/<Name>/
 .btn {
   /* base */
 }
-.btn-sm {
-  height: 24px;
-  padding: 0 8px;
-  font-size: var(--font-size-meta);
-}
-.btn-md {
-  height: 30px;
-  padding: 0 12px;
-}
-.btn-lg {
-  height: 36px;
-  padding: 0 16px;
-}
+.btn-sm { height: 28px; padding: 0 var(--s-4); font-size: var(--fs-sm); }
+.btn-md { height: 34px; padding: 0 var(--s-5); font-size: var(--fs-md); }
+.btn-lg { height: 42px; padding: 0 var(--s-7); font-size: var(--fs-base); }
 
 .btn-primary {
-  background: var(--accent-primary);
+  background: var(--accent);
   color: var(--text-on-accent);
-  box-shadow:
-    var(--shadow-xs),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  border-color: transparent;
+  box-shadow: var(--shadow-sm), var(--shadow-inset);
 }
-.btn-primary:hover:not(:disabled) {
-  background: var(--accent-primary-hover);
-}
-.btn-primary:active:not(:disabled) {
-  background: var(--accent-primary-active);
-}
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:active { background: var(--accent-active); }
 ```
 
 ### Primitives & component API
@@ -230,6 +222,7 @@ These are the canonical primitives. Build new ones in `frontend/src/components/u
 | `AssigneePicker`                                                                                                    | searchable picker bound to org membership                                                                                                           | ✅     |
 | `Spinner`                                                                                                           | inline loading indicator                                                                                                                            | ✅     |
 | `Table`                                                                                                             | header + rows wrapper                                                                                                                               | ✅     |
+| `Segmented`                                                                                                         | `value`, `onChange`, `options` (each `{ value, label, count?, disabled? }`), `size` (sm/md), `ariaLabel` — segmented control                        | ✅     |
 | `Tabs` / `Tab`                                                                                                      | flat-class `.tabs > .tab.is-active` lives in `stratos.css`; wrap in a primitive when reused                                                         | ⏳     |
 | `Icon`                                                                                                              | `name` (kebab-case), `size`, `color`, `strokeWidth` — explicit lucide-react REGISTRY for tree-shaking. Add to the registry when you use a new icon. | ✅     |
 | **Chart widgets** (under `components/charts/`) — `BurndownChart`, `VelocityChart`, `HealthGauge`, `WorkloadHeatmap` | All accept token-styled props and render token-colored SVG; reused by the project Dashboard                                                         | ✅     |
@@ -249,18 +242,20 @@ import { Button, Card, Avatar } from "@/components/ui";
 
 ### App frame & shared layout classes
 
-The app shell uses Stratos layout classes directly (no component wrapper required). All of them live in `frontend/src/styles/stratos.css` — **reuse, don't recreate.** When you need a new pattern, search `/Design Files/components.css` first; only invent a class when nothing matches.
+The app shell uses flat layout classes directly (no component wrapper required). All of them live in `frontend/src/styles/stratos.css` — **reuse, don't recreate.** When you need a new pattern, search `/New Design Files/styles/components.css` first; only invent a class when nothing matches.
 
-| Family      | Classes                                                                                                                                                                                                                                                      | Notes                                                                                                                                                                               |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Shell grid  | `.app` (`grid-template-rows: 44px 1fr` × `grid-template-columns: 220px 1fr`) · `.app.is-collapsed` (56px sidebar) · `.app-sidebar` (spans both rows) · `.app-topbar` · `.app-main` + `.app-main__scroll`                                                     | The shell is grid-based; sidebar spans both rows.                                                                                                                                   |
-| Sidebar     | `.org` + `.org-mark` / `.org-name` / `.org-plan` · `.side-section` · `.side-item` / `.side-item.is-active` · `.side-item__label` / `.side-item__swatch` / `.count` / `.pip` · `.side-footer` + `.side-footer__name` / `.side-footer__email`                  | Sidebar collapses to a 56px icon rail via `.app.is-collapsed`.                                                                                                                      |
-| Topbar      | `.crumb` + `.crumb-link` / `.sep` / `.here` · `.search-mini` / `.input-search` · `.icon-btn` / `.icon-btn-sm` + `.indicator` · `.topbar-spacer` / `.topbar-actions` · `.divider-y` · `.kbd`                                                                  | Breadcrumb is derived from the URL; `Topbar.jsx` owns the mapping.                                                                                                                  |
-| Page chrome | `.page-header` + `.page-title` / `.page-meta` · `.page` (orphan-page outer wrapper) · `.page-narrow` / `.page-wide` (centered fixed-width body) · `.subsection` · `.subsection-eyebrow` (uppercase 12px tertiary label, used above each task-drawer section) | KPI tiles use `.kpi-label` + a large numeric span; see `BoardPage.css`. Orphan pages (no `/Design Files/` mockup) use `.page` on their root to inherit the standard padding rhythm. |
-| Overlays    | `.menu` + `.menu-section` / `.menu-item` / `.menu-item.is-selected` / `.menu-item.is-danger` / `.menu-divider` · `.tabs` + `.tab` / `.tab.is-active` / `.tab .count` · `.card-ai` (gradient-border AI surface)                                               | The Dropdown primitive renders `.menu`; build a `Tabs` primitive when reused.                                                                                                       |
-| Utility     | `.hstack` / `.vstack` / `.grow` / `.mono` / `.truncate` / `.muted` / `.dim` · `.grid-2` / `.grid-3` / `.grid-4` · `.spark` · `.prio` (+ `.prio-urgent/high/med/low`) · `.avatar-stack`                                                                       | Inline flex helpers — prefer these over per-component layout CSS for one-off rows/stacks.                                                                                           |
+| Family      | Classes                                                                                                                                                                                                       | Notes                                                                                                                       |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Shell grid  | `.app` (`grid-template-rows: var(--topbar-h) 1fr` × `grid-template-columns: var(--sidebar-w) 1fr`) · `.app.is-collapsed` collapses to `--sidebar-w-collapsed` · `.sidebar` (spans both rows) · `.topbar` · `.main` | The shell is grid-based; sidebar spans both rows.                                                                          |
+| Sidebar     | `.sidebar-org` + `.sidebar-logo` / `.sidebar-org-name` / `.sidebar-org-slug` · `.sidebar-scroll` · `.sidebar-section` + `.sidebar-label` · `.nav-item` / `.nav-item.is-active` + `.nav-icon` / `.nav-count` / `.ai-pulse` · `.sidebar-foot` + `.sidebar-foot-name` / `.sidebar-foot-mail` · `.proj-card` (project switcher card) | Sidebar collapses to icons via `.app.is-collapsed`.                                                                         |
+| Topbar      | `.crumbs` + `.crumbs strong` / `.crumbs-sep` · `.search` (Cmd-K trigger) · `.kbd`                                                                                                                              | Breadcrumb is derived from the URL; `Topbar.jsx` owns the mapping.                                                          |
+| Page chrome | `.main-inner` (page padding) · `.page-head` + `.page-title-row` / `.page-title` / `.page-subtitle` · `.eyebrow` (uppercase tertiary label above titles) · `.h-card` (card header text)                         | **Every page** uses `.main-inner` + `.page-head` + `.page-title-row` with `.eyebrow` / `.page-title` / `.page-subtitle`.    |
+| Overlays    | `.menu` + `.menu-label` / `.menu-item` / `.menu-item.is-selected` / `.menu-item.is-danger` / `.menu-sep` · `.tabs` + `button.is-active` + `.tab-count` · `.ai-card` + `.ai-card-head` / `.ai-card-body` / `.ai-mark` (iridescent AI surface) · `.modal-scrim` + `.modal` + `.modal-header/body/footer` · `.drawer` + `.drawer-head` / `.drawer-body` / `.drawer-prop` + `.label-key` (work-item drawer pattern) | `Dropdown` renders `.menu`; `Modal` renders `.modal-scrim` + `.modal`; AI breakdowns use `.ai-card` + `.ai-mark`.            |
+| Grid        | `.grid-12` (12-col) + `.col-3/4/6/8/12` (collapses at 1120 / 760 px breakpoints) · `.grid-4` (4-col responsive cards) · `.stat` + `.stat-label` / `.stat-value` / `.stat-row` / `.stat-delta-up` / `.stat-delta-down` (KPI tile) · `.proj-icon` + `.proj-icon-{engineering,sales,support,marketing,operations,generic}` (project-type tinted square) · `.seg` (segmented control — wrap with the `Segmented` primitive when reused) | Use the 12-col grid for dashboards and home pages; `.stat` for KPI strips; `.proj-icon` everywhere a project is identified. |
+| Domain      | `.kanban` + `.kanban-col` + `.kanban-col-head/body` + `.card-task` (engineering board) · `.pipeline` + `.pipe-col` + `.deal-card` (sales) · `.queue` + `.queue-row` + `.sla` (support) · `.cal` + `.cal-cell` + `.cal-event.evt-{blog,email,social,event,ad}` (marketing) · `.tbl` (operations runbook table) · `.gantt` + `.gantt-head/row/bar/milestone` (roadmap) · `.type-pick` + `.type-pick-card` (project-type chooser) | One domain pattern per project type — they're already wired in `PipelinePage`, `QueuePage`, `ContentCalendarPage`, `RunbooksPage`. |
+| Utility     | `.row` / `.col` / `.fill` / `.center` / `.between` · `.gap-1..8` (alias for `--s-2..9` gap) · `.muted` / `.mono` / `.truncate` · `.divider` / `.divider-v` · `.bar` + `.bar-fill` / `.bar-fill-{success,warning,danger,ai}` (progress bar) · `.cb` (styled checkbox) · `.spark` · `.priority` + `.priority-flag` | Inline flex helpers — prefer these over per-component layout CSS for one-off rows/stacks.                                   |
 
-The four built-out Phase 1 screens use these classes throughout — when in doubt, open `AppShell.jsx`, `BoardPage.jsx`, `TaskDetail.jsx`, or `AIGenerationWizard.jsx` and copy the structure.
+Open any **structurally rewritten** page for a live reference: `ProjectHomePage.jsx`, `OrgHomePage.jsx`, `DashboardPage.jsx`, `MyWorkPage.jsx`, `EpicsPage.jsx`, `BoardPage.jsx`, `PipelinePage.jsx`, `QueuePage.jsx`, `ContentCalendarPage.jsx`, `RunbooksPage.jsx`, `TaskDetail.jsx` — they all use the conventions above.
 
 ---
 
@@ -402,10 +397,11 @@ Key variables:
 ## What NOT to Do
 
 - Do not call the Anthropic API from the frontend. Backend only.
-- Do not write inline styles. All styles go through Stratos tokens + component CSS in `/components/ui/` or `stratos.css`.
-- Do not duplicate UI primitives. If it doesn't exist in `ui/`, create it there first — and match the Stratos vocabulary in `/Design Files/` (flat class names, theme-aware tokens).
-- Do not recreate shell/layout classes (`.app-sidebar`, `.app-topbar`, `.icon-btn`, `.menu`, `.tabs`, `.hstack`, `.crumb`, etc.) inside page CSS. They live in `stratos.css` — import + use them.
-- Do not hardcode colors, font sizes, spacing values, radii, shadows, or durations. Use the token (`var(--accent-primary)`, `var(--space-4)`, etc.). Hex codes in a component CSS file = bug.
+- Do not write inline styles. All styles go through design tokens + component CSS in `/components/ui/` or `stratos.css`.
+- Do not duplicate UI primitives. If it doesn't exist in `ui/`, create it there first — and match the mockup vocabulary in `/New Design Files/` (flat class names, theme-aware tokens).
+- Do not recreate shell/layout classes (`.sidebar`, `.topbar`, `.main-inner`, `.page-head`, `.menu`, `.tabs`, `.row`, `.col`, `.crumbs`, etc.) inside page CSS. They live in `stratos.css` — import + use them.
+- Do not hardcode colors, font sizes, spacing values, radii, shadows, or durations. Use the token (`var(--accent)`, `var(--s-6)`, `var(--fs-md)`, `var(--r-md)`, etc.). Hex codes in a component CSS file = bug.
+- Do not use the **legacy** token aliases (`--bg-app`, `--text-primary`, `--space-N`, `--font-size-N`, `--radius-N`, `--weight-N`, `--leading-N`, `--prio-med`) in new code. They live at the bottom of `tokens.css` only for un-swept callsites and will be removed.
 - Do not introduce a `Story` entity, table, or endpoint. Story was removed in the Phase 1 rework — tasks attach directly to epics, and `StoryPoints` stays as a unit field on `Task`.
 - Do not put business logic in controllers. It goes in Application layer.
 - Do not skip domain validation. Invalid task state transitions must be caught in Domain.
@@ -440,12 +436,11 @@ npm run test
 
 ## Current Phase
 
-**Phase 1 — Core PM Loop** (in progress, late stage)
+**Phase 1 + Phase 1.5 complete. Moving into Phase 2.**
 
-F0 (Foundation) is complete. F1-01 → F1-23 are implemented and shipped — see recent commits for the exact batches. The **Story entity was dropped** during the Phase 1 rework; tasks now sit directly under epics, and the AC list on a task is rendered from subtasks. The AI generation wizard is wired end-to-end (Gemini in dev). All four built-out screens (App Shell, Kanban Board with sprint banner, Task Detail drawer, AI Generation Wizard) match the `/Design Files/` Stratos mockups — see [Visual polish baseline](ROADMAP.md#visual-polish-baseline-2026-05) in ROADMAP.md for the conventions every new screen must follow.
+- **F0** Foundation, **F1-01..F1-23** Core PM loop, and **F1.5-01..F1.5-08** Multi-Type Projects are shipped. The **Story entity was dropped** during the Phase 1 rework; tasks sit directly under epics, and the AC list on a task is rendered from subtasks. The AI generation wizard is wired end-to-end (Gemini in dev, Anthropic in prod).
+- **Design refresh:** every page and primitive has been migrated to the new token vocabulary and mockup layouts under `/New Design Files/`. Token aliases at the bottom of `tokens.css` keep any un-swept callsites compiling but are scheduled for removal.
+- **Phase 1.5 type-specific pages** (`PipelinePage`, `QueuePage`, `ContentCalendarPage`, `RunbooksPage`, `ListsPage`) all use the new shell and the per-type domain layouts (`.pipeline`, `.queue`, `.cal`, `.tbl`, `.kanban`).
+- **Phase 2 entry points (`ROADMAP.md`)**: F2-01 (Roadmap timeline), F2-02 (List view), F2-03 (Calendar view), F2-04 (Dashboard customization), F2-07 (task enhancements). The visual scaffolding is ready — `.gantt`, `.tbl`, `.cal`, `.grid-12` cards, AI suggestion patterns. Backend gaps (activity-log feed, per-user notification queue, real-time hub for the new event types) are the gating work.
 
-The project-scoped **Dashboard** page (matching `screen-dashboard.jsx`) is live at `/:slug/projects/:projectSlug/dashboard` with the four chart widgets. Open-tasks count and epic progress use live data; velocity, workload, health gauge, AI insight, and activity feed render sample data with a banner flag until the analytics backend lands.
-
-**Still missing in Phase 1:** AI suggestion cards (`screen-ai-suggest.jsx`). Roadmap, chat, and meeting screens belong to Phase 2 (require backend infra not yet built).
-
-Check `ROADMAP.md` for the full ordered task list and `/Design Files/` for the visual reference. Open `AppShell.jsx`, `BoardPage.jsx`, `TaskDetail.jsx`, or `AIGenerationWizard.jsx` for live examples of the conventions.
+Open any of these for the canonical pattern when you build a new page: `ProjectHomePage.jsx`, `OrgHomePage.jsx`, `DashboardPage.jsx`, `MyWorkPage.jsx`, `BoardPage.jsx`, `EpicsPage.jsx`, `PipelinePage.jsx`, `QueuePage.jsx`, `ContentCalendarPage.jsx`, `RunbooksPage.jsx`, `TaskDetail.jsx`.

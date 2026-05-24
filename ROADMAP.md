@@ -2,7 +2,7 @@
 
 > Stack: .NET 10 · React + Vite · PostgreSQL · Docker
 > Based on Design Document v1.0
-> Design system: **Stratos** — tokens in `frontend/src/styles/tokens.css`; reference mockups, every component variant, every screen in `/Design Files/`. CLAUDE.md → "Design System — Stratos" has the canonical token/primitive reference.
+> Design system: **Stratos** — tokens in `frontend/src/styles/tokens.css`; reference mockups, every component variant, every screen in `/New Design Files/`. CLAUDE.md → "Design System — Stratos" has the canonical token/primitive reference.
 
 Each task includes:
 
@@ -10,9 +10,9 @@ Each task includes:
 - **Frontend:** components, pages, state (always built on Stratos primitives from `components/ui/`)
 - **AC:** acceptance criteria (done when…)
 
-**Stratos primitive checklist.** When a task says "build a new UI primitive," it means adding it to `frontend/src/components/ui/<Name>/` matching the Stratos style (flat class names, theme-aware tokens), then exporting from `index.js`. Existing primitives: Button, Input, Select, Card, Avatar, Badge, StatusBadge, Priority, AIChip, AvatarStack, Sparkline, Chip, Modal, Dropdown, Toast, Tooltip, Table, AssigneePicker, Spinner. Still to build as features need them: Tabs (the `.tabs/.tab` classes already live in `stratos.css` — wrap them in a primitive when reused), Icon (a thin lucide-react wrapper).
+**Primitive checklist.** When a task says "build a new UI primitive," it means adding it to `frontend/src/components/ui/<Name>/` matching the new-design style (flat class names, theme-aware tokens), then exporting from `index.js`. Existing primitives: Button, Input, Select, Card, Avatar, Badge, StatusBadge, Priority, AIChip, AvatarStack, Sparkline, Chip, Segmented, Modal, Dropdown, ConfirmDialog, AISuggestionCard, Toast, Tooltip, Table, AssigneePicker, EmptyState, Skeleton, Spinner, Icon. Still to build as features need them: Tabs (the `.tabs/button.is-active` classes already live in `stratos.css` — wrap them in a primitive when reused).
 
-**Stratos shell + layout classes.** The application chrome is built on the Stratos layout primitives in `frontend/src/styles/stratos.css`. **Reuse them — never invent new shell classes.** Key patterns: `.app` (grid 220px 1fr × 44px 1fr, `.is-collapsed` flips to 56px), `.app-sidebar` + `.org` / `.org-mark` / `.side-section` / `.side-item.is-active` / `.side-footer`, `.app-topbar` + `.crumb` / `.search-mini` / `.icon-btn` / `.divider-y`, `.app-main` + `.page-header` / `.page-title` / `.subsection`, `.menu` / `.menu-item` / `.menu-section` / `.menu-divider`, `.tabs` / `.tab.is-active`, `.hstack` / `.vstack` / `.grow` / `.mono` / `.truncate` / `.muted` / `.dim`, `.grid-2/3/4`, `.kbd`, `.card-ai`. Refer to `/Design Files/components.css` for the canonical CSS and `/Design Files/screen-*.jsx` for usage examples.
+**Shell + layout classes.** The application chrome is built on the layout primitives in `frontend/src/styles/stratos.css`. **Reuse them — never invent new shell classes.** Key patterns: `.app` (grid `var(--sidebar-w) 1fr × var(--topbar-h) 1fr`, `.is-collapsed` collapses to `var(--sidebar-w-collapsed)`), `.sidebar` + `.sidebar-org` / `.sidebar-logo` / `.sidebar-section` / `.nav-item.is-active` / `.sidebar-foot`, `.topbar` + `.crumbs` / `.search` / `.kbd`, `.main` + `.main-inner` + `.page-head` + `.page-title-row` + `.eyebrow` / `.page-title` / `.page-subtitle`, `.menu` / `.menu-item` / `.menu-sep`, `.tabs` + `button.is-active` / `.tab-count`, `.row` / `.col` / `.fill` / `.center` / `.between` / `.gap-1..8` / `.mono` / `.truncate` / `.muted`, `.grid-12` + `.col-3/4/6/8/12`, `.grid-4` (KPI strip), `.stat` + `.stat-label/.stat-value/.stat-delta-up/.stat-delta-down`, `.ai-card` + `.ai-card-head/.ai-card-body/.ai-mark`, `.drawer-head/.drawer-body/.drawer-prop/.label-key`, `.proj-icon` + `.proj-icon-{engineering,sales,support,marketing,operations,generic}`, domain layouts (`.kanban`, `.pipeline`, `.queue`, `.cal`, `.tbl`, `.gantt`, `.type-pick`). Refer to `/New Design Files/styles/components.css` for the canonical CSS and `/New Design Files/src/screens/*.jsx` for usage examples.
 
 ---
 
@@ -61,7 +61,7 @@ Each task includes:
 
 ### F0-04 — React + Vite scaffold + Stratos foundation
 
-**Frontend:** Vite scaffold + the project folder structure. `tokens.css` holds the full Stratos token set (surfaces, borders, text, accents, status, priority, AI surface, spacing, radius, shadow, type, motion) with `[data-theme="light"]` overrides; `reset.css`, `global.css` in place. `main.jsx` imports `global.css`. The Stratos reference artifacts live in `/Design Files/` at the repo root and are the source of truth for any visual decision.
+**Frontend:** Vite scaffold + the project folder structure. `tokens.css` holds the full Stratos token set (surfaces, borders, text, accents, status, priority, AI surface, spacing, radius, shadow, type, motion) with `[data-theme="light"]` overrides; `reset.css`, `global.css` in place. `main.jsx` imports `global.css`. The Stratos reference artifacts live in `/New Design Files/` at the repo root and are the source of truth for any visual decision.
 **AC:**
 
 - `npm run dev` starts the dev server on port 5173
@@ -302,7 +302,7 @@ Each task includes:
 **Frontend:**
 
 - `components/tasks/TaskCard.jsx` (compact, used everywhere)
-- `components/tasks/TaskDetail.jsx` (drawer with all fields; two-column layout per `/Design Files/screen-task.jsx`)
+- `components/tasks/TaskDetail.jsx` (drawer with all fields; two-column layout per `/New Design Files/src/screens/work-item-drawer.jsx`)
 - `components/tasks/TaskForm.jsx` (create/edit)
 - `store/taskStore.js`
 
@@ -326,7 +326,7 @@ Each task includes:
 
 **Frontend:**
 
-- Build the `StatusBadge` Stratos primitive in `components/ui/StatusBadge/`. Status→tone mapping (per `/Design Files/shared.jsx`): backlog→neutral·circle-dashed, todo→neutral·circle, in_progress→info·circle-dot, in_review→purple·git-pull-request, blocked→danger·octagon-x, done→success·circle-check. Wraps the planned `Badge` primitive.
+- Build the `StatusBadge` Stratos primitive in `components/ui/StatusBadge/`. Status→tone mapping (per `/New Design Files/src/data.jsx`): backlog→neutral·circle-dashed, todo→neutral·circle, in_progress→info·circle-dot, in_review→purple·git-pull-request, blocked→danger·octagon-x, done→success·circle-check. Wraps the planned `Badge` primitive.
 - `components/tasks/StatusDropdown.jsx` — uses the planned `Dropdown/Menu` primitive; only shows valid next states based on current state
 - API errors on bad transition surface as Stratos toasts (`Toast` primitive, `toast-danger` variant)
 
@@ -401,7 +401,7 @@ Each task includes:
 ### F1-13 (PM-08) — Sprint board view
 
 **Backend:** Filter the existing board endpoint by active sprint.
-**Frontend:** `pages/project/SprintBoardPage.jsx` — reuses `KanbanBoard` with a sprint header. The header is the Stratos **sprint banner** from `/Design Files/screen-kanban.jsx`: name + date range badge, goal text, `Sparkline` burndown, `points X / Y` and `days left` KPIs, Filter + Add task buttons. `BoardPage` shares the same banner when an active sprint exists, falling back to the standard `.page-header` otherwise.
+**Frontend:** `pages/project/SprintBoardPage.jsx` — reuses `KanbanBoard` with a sprint header. The header is the Stratos **sprint banner** from `/New Design Files/src/screens/sprint-kanban.jsx`: name + date range badge, goal text, `Sparkline` burndown, `points X / Y` and `days left` KPIs, Filter + Add task buttons. `BoardPage` shares the same banner when an active sprint exists, falling back to the standard `.page-header` otherwise.
 **AC:**
 
 - Sprint goal banner shown at top with the four-KPI layout
@@ -509,7 +509,7 @@ Each task includes:
 
 **Frontend:**
 
-- `pages/project/AIGenerationWizard.jsx` — three-step wizard (Describe → Clarify → Review & confirm) matching `/Design Files/screen-ai-wizard.jsx`: centered radial-gradient canvas, pill stepper with done/active dots and connector lines, prompt-recap card, `card-ai` generated-plan box with `TreeRow` rows (Badge + key + title + points + edit/remove icon-btns), ghosted previous-steps `grid-2` recap. Confirm button uses the Stratos `btn-ai` variant.
+- `pages/project/AIGenerationWizard.jsx` — three-step wizard (Describe → Clarify → Review & confirm) matching `/New Design Files/src/screens/ai-wizard.jsx`: centered radial-gradient canvas, pill stepper with done/active dots and connector lines, prompt-recap card, `card-ai` generated-plan box with `TreeRow` rows (Badge + key + title + points + edit/remove icon-btns), ghosted previous-steps `grid-2` recap. Confirm button uses the Stratos `btn-ai` variant.
 - Component: `components/ai/AISuggestionCard.jsx` — built on the Stratos `Card` primitive with `variant="ai"` (violet/cyan gradient border + glow + `--ai-bg` wash). The `AIChip` primitive already lives in `components/ui/AIChip/` and supports `variant="gradient"` and `variant="soft"`.
 
 **AC:**
@@ -1611,14 +1611,14 @@ Out of scope for v1. Captured here for continuity.
 
 # Visual polish baseline (2026-05)
 
-The Phase 1 screens that exist today (App Shell, Kanban Board, Task Detail drawer, AI Generation Wizard) have been brought in line with the `/Design Files/` Stratos mockups. Any new screen must follow these conventions out of the box — don't ship a new page that "looks Phase 1" and queue polish as a follow-up.
+The Phase 1 screens that exist today (App Shell, Kanban Board, Task Detail drawer, AI Generation Wizard) have been brought in line with the `/New Design Files/` Stratos mockups. Any new screen must follow these conventions out of the box — don't ship a new page that "looks Phase 1" and queue polish as a follow-up.
 
 **Always do:**
 
 - Use the Stratos shell classes from `frontend/src/styles/stratos.css` — never recreate `.app-sidebar`, `.app-topbar`, `.icon-btn`, `.side-item`, `.crumb`, `.menu`, `.tabs`, etc. with new BEM names.
 - Use the Stratos primitives from `frontend/src/components/ui/` — `Button`, `Badge`, `StatusBadge`, `Priority`, `Avatar`, `AvatarStack`, `AIChip`, `Sparkline`, `Card`, etc. If a primitive is missing, build it under `components/ui/<Name>/` (flat class names, theme-aware tokens, exported from `index.js`).
 - Mirror the design's structure: page headers use `.page-header`, sub-headings use `.subsection-eyebrow`, AI surfaces use `.card-ai`, KPI tiles stack `kpi-label` over a large numeric value.
-- Reference `/Design Files/screen-*.jsx` for any new screen you're building. Even when the data wiring differs, the visual shape (header, columns, tile, drawer split) should match.
+- Reference `/New Design Files/src/screens/*.jsx` for any new screen you're building. Even when the data wiring differs, the visual shape (header, columns, tile, drawer split) should match.
 
 **Never do:**
 

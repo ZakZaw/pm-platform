@@ -489,7 +489,7 @@ export function SprintDetailPage() {
               <div className="row sprint-detail-card-head">
                 <div>
                   <div className="sprint-detail-card-title">
-                    <Sparkles size={12} color="var(--ai-violet)" aria-hidden="true" /> AI fill
+                    <Sparkles size={12} color="var(--ai-2)" aria-hidden="true" /> AI fill
                   </div>
                   <div className="muted sprint-detail-card-sub">
                     Let AI propose which backlog tasks fit a target capacity.

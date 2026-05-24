@@ -207,13 +207,15 @@ export function ListsPage() {
     }
   }
 
-  if (error) return <div className="page"><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
+  if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
   if (!project || !view) {
     return (
-      <div className="page lists-page" aria-busy="true">
-        <header className="page-header"><h1 className="page-title">Lists</h1></header>
-        <div className="vstack" style={{ gap: 16 }}>
-          {[0, 1].map((i) => <Card key={i}><Skeleton rows={4} /></Card>)}
+      <div className="main-inner lists-page" aria-busy="true">
+        <div className="page-head">
+          <Skeleton width="30%" height={28} />
+        </div>
+        <div className="col gap-4">
+          {[0, 1].map((i) => <Skeleton key={i} height={120} radius="lg" />)}
         </div>
       </div>
     );
@@ -223,14 +225,21 @@ export function ListsPage() {
     view.unsorted.length + view.lists.reduce((acc, l) => acc + l.tasks.length, 0);
 
   return (
-    <div className="page lists-page">
-      <header className="page-header">
-        <div className="hstack" style={{ gap: 12, alignItems: 'baseline' }}>
-          <h1 className="page-title">Lists</h1>
-          <span className="muted">· {totalTasks} task{totalTasks === 1 ? '' : 's'}</span>
+    <div className="main-inner lists-page">
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>{project.name} · Lists</div>
+            <h1 className="page-title" style={{ fontSize: 'var(--fs-2xl)' }}>Lists</h1>
+            <p className="page-subtitle" style={{ marginTop: 6 }}>
+              {totalTasks} task{totalTasks === 1 ? '' : 's'} across {view.lists.length} list{view.lists.length === 1 ? '' : 's'}
+            </p>
+          </div>
+          <div className="row gap-3">
+            <NewListButton creating={creatingList} setCreating={setCreatingList} onSubmit={createList} />
+          </div>
         </div>
-        <NewListButton creating={creatingList} setCreating={setCreatingList} onSubmit={createList} />
-      </header>
+      </div>
 
       {view.lists.length === 0 && view.unsorted.length === 0 ? (
         <EmptyState

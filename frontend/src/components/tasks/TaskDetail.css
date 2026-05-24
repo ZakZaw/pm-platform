@@ -247,6 +247,11 @@
   font-size: var(--fs-md);
 }
 
+/* Section header (replaces legacy .subsection-eyebrow with page-scoped spacing) */
+.task-detail__section-eyebrow {
+  margin: var(--s-7) 0 var(--s-4);
+}
+
 /* Activity tabs */
 .task-detail__tabs { margin-bottom: 14px; }
 .task-detail__activity {

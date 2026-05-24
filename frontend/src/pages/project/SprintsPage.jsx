@@ -91,13 +91,15 @@ export function SprintsPage() {
     }
   }
 
-  if (error) return <p className="sprints-page__placeholder">{error}</p>;
+  if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
   if (!project) {
     return (
-      <div className="page sprints-page" aria-busy="true">
-        <header className="sprints-page__header">
-          <h1 className="sprints-page__title">Sprint planning</h1>
-        </header>
+      <div className="main-inner sprints-page" aria-busy="true">
+        <div className="page-head">
+          <div className="page-title-row">
+            <h1 className="page-title">Sprint planning</h1>
+          </div>
+        </div>
         <Card>
           <Skeleton rows={4} />
         </Card>
@@ -106,14 +108,22 @@ export function SprintsPage() {
   }
 
   return (
-    <div className="page sprints-page">
+    <div className="main-inner sprints-page">
       {dialog}
-      <header className="sprints-page__header">
-        <h1 className="sprints-page__title">Sprint planning</h1>
-      </header>
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>{project.name}</div>
+            <h1 className="page-title">Sprint planning</h1>
+            <div className="page-subtitle">
+              Time-box scope into sprints, then add work from the backlog. Sprints record velocity on close.
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <Card className="sprints-page__create" title="New sprint">
-        <form className="sprints-page__form" onSubmit={createSprint}>
+      <Card className="sprints-page-create" title="New sprint">
+        <form className="sprints-page-form" onSubmit={createSprint}>
           <Input
             label="Name"
             value={name}
@@ -135,7 +145,7 @@ export function SprintsPage() {
             onChange={(e) => setEndDate(e.target.value)}
             required
           />
-          <div className="sprints-page__form-submit">
+          <div className="sprints-page-form-submit">
             <Button type="submit" disabled={creating || name.trim().length < 2}>
               {creating ? 'Creating…' : 'Create sprint'}
             </Button>
@@ -151,14 +161,14 @@ export function SprintsPage() {
         />
       ) : (
         <Card>
-          <ul className="sprints-page__list">
+          <ul className="sprints-page-list">
             {sprints.map((s) => {
               const detailHref = `/${orgSlug}/projects/${projectSlug}/sprints/${s.id}`;
               const open = () => navigate(detailHref);
               return (
                 <li
                   key={s.id}
-                  className="sprints-page__row is-interactive"
+                  className="sprints-page-row is-interactive"
                   role="button"
                   tabIndex={0}
                   onClick={open}
@@ -169,21 +179,21 @@ export function SprintsPage() {
                     }
                   }}
                 >
-                  <div className="sprints-page__cell sprints-page__cell-main">
-                    <div className="sprints-page__name">{s.name}</div>
+                  <div className="sprints-page-cell">
+                    <div className="sprints-page-name">{s.name}</div>
                   </div>
-                  <div className="sprints-page__cell">
+                  <div className="sprints-page-cell">
                     <Badge tone={STATUS_TONE[s.status]}>{s.status}</Badge>
                   </div>
-                  <div className="sprints-page__cell sprints-page__cell-meta">
+                  <div className="sprints-page-cell sprints-page-cell-meta">
                     {new Date(s.startDate).toLocaleDateString()} →{' '}
                     {new Date(s.endDate).toLocaleDateString()}
                   </div>
-                  <div className="sprints-page__cell sprints-page__cell-meta">
+                  <div className="sprints-page-cell sprints-page-cell-meta">
                     {s.taskCount} tasks · {s.donePoints}/{s.totalPoints} pts
                   </div>
                   <div
-                    className="sprints-page__cell sprints-page__actions"
+                    className="sprints-page-cell sprints-page-actions"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {s.status === 'Planning' && (

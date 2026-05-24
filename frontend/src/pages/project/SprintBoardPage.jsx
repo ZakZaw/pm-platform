@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { RefreshCw } from 'lucide-react';
-import { Badge, Button } from '@/components/ui';
+import { RefreshCw, Zap } from 'lucide-react';
+import { Badge, Button, Sparkline } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { sprintsApi } from '@/api/sprints.api';
 import { boardApi } from '@/api/board.api';
@@ -14,6 +14,20 @@ import { TaskDetailDrawer } from '@/components/tasks/TaskDetailDrawer';
 import { useProjectHub } from '@/hooks/useProjectHub';
 import { useColumnVisibility } from '@/hooks/useColumnVisibility';
 import './SprintBoardPage.css';
+
+function fmtRange(start, end) {
+  if (!start || !end) return null;
+  const s = new Date(start);
+  const e = new Date(end);
+  const opts = { month: 'short', day: '2-digit' };
+  return `${s.toLocaleDateString(undefined, opts)} → ${e.toLocaleDateString(undefined, opts)}`;
+}
+
+function sprintLength(start, end) {
+  if (!start || !end) return null;
+  const ms = new Date(end).getTime() - new Date(start).getTime();
+  return Math.max(1, Math.round(ms / 86_400_000));
+}
 
 export function SprintBoardPage() {
   const { slug: orgSlug, projectSlug, sprintId } = useParams();
@@ -63,8 +77,6 @@ export function SprintBoardPage() {
     }
   });
 
-  // Sprint board has its own visibility scope so hiding a column on the
-  // project board doesn't ghost it in the sprint view (and vice versa).
   const allStatuses = useMemo(
     () => (statusConfigs ?? []).map((c) => c.status),
     [statusConfigs],
@@ -72,39 +84,88 @@ export function SprintBoardPage() {
   const { visible: visibleStatuses, toggle: toggleStatus, isVisible: isStatusVisible } =
     useColumnVisibility(sprintId ? `sprint:${sprintId}` : null, allStatuses);
 
-  if (error) return <p className="sprint-board__placeholder">{error}</p>;
-  if (!project || !board) return <p className="sprint-board__placeholder">Loading…</p>;
+  if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
+  if (!project || !board) return <div className="main-inner"><p className="muted">Loading…</p></div>;
 
-  const daysLeft = sprint ? Math.max(0, Math.ceil((new Date(sprint.endDate) - new Date()) / 86400000)) : null;
-  const pct = sprint && sprint.totalPoints > 0
-    ? Math.round((sprint.donePoints / sprint.totalPoints) * 100)
-    : 0;
+  const daysLeft = sprint
+    ? Math.max(0, Math.ceil((new Date(sprint.endDate) - new Date()) / 86_400_000))
+    : null;
+  const length = sprintLength(sprint?.startDate, sprint?.endDate);
+  const range = fmtRange(sprint?.startDate, sprint?.endDate);
+  const totalPts = sprint?.totalPoints ?? 0;
+  const donePts = sprint?.donePoints ?? 0;
+  const remaining = Math.max(0, totalPts - donePts);
+  const pct = totalPts > 0 ? Math.round((donePts / totalPts) * 100) : 0;
+
+  const burnPoints = length && totalPts > 0
+    ? Array.from({ length: 8 }, (_, i) => {
+        const ratio = i / 7;
+        return totalPts - (totalPts - remaining) * ratio;
+      })
+    : null;
+
+  const closed = sprint?.status === 'Closed';
 
   return (
-    <div className="page sprint-board">
-      <header className="sprint-board__header">
-        <div>
-          <h1 className="sprint-board__title">{sprint?.name ?? 'Sprint board'}</h1>
+    <div className="board-page sprint-board">
+      <header className="board-page-head board-page-sprint">
+        <div className="board-page-sprint-meta">
+          <div className="row gap-3" style={{ marginBottom: 4 }}>
+            <Badge tone={closed ? 'neutral' : 'info'}>
+              <Zap size={11} aria-hidden="true" /> {sprint?.name ?? 'Sprint'}
+            </Badge>
+            {range && <span className="mono muted" style={{ fontSize: 'var(--fs-xs)' }}>{range}</span>}
+            {closed && <Badge tone="neutral">Closed</Badge>}
+            <LiveIndicator status={hubStatus} />
+          </div>
+          {sprint?.goal && (
+            <div className="board-page-sprint-goal">
+              <span className="muted">Goal · </span>
+              {sprint.goal}
+            </div>
+          )}
         </div>
-        <div className="sprint-board__stats">
-          <LiveIndicator status={hubStatus} />
+
+        {burnPoints && (
+          <div className="board-page-kpi">
+            <span className="eyebrow">Burndown</span>
+            <Sparkline points={burnPoints} ideal />
+          </div>
+        )}
+
+        {totalPts > 0 && (
+          <div className="board-page-kpi board-page-kpi-bordered">
+            <span className="eyebrow">Points</span>
+            <span className="board-page-kpi-value">
+              {donePts}
+              <span className="muted board-page-kpi-suffix"> / {totalPts}</span>
+            </span>
+          </div>
+        )}
+
+        {length != null && !closed && (
+          <div className="board-page-kpi board-page-kpi-bordered">
+            <span className="eyebrow">Days left</span>
+            <span
+              className="board-page-kpi-value"
+              style={{ color: daysLeft <= 3 ? 'var(--warning)' : undefined }}
+            >
+              {daysLeft}
+              <span className="muted board-page-kpi-suffix"> of {length}</span>
+            </span>
+          </div>
+        )}
+
+        <div className="row gap-2">
           <Button
             variant="ghost"
-            size="sm"
+            size="md"
             onClick={() => load(project.id).catch(() => {})}
-            aria-label="Refresh sprint board"
+            aria-label="Refresh"
             title="Refresh"
           >
             <RefreshCw size={14} aria-hidden="true" />
           </Button>
-          <Badge tone={daysLeft <= 2 ? 'warning' : 'info'}>
-            {daysLeft != null ? `${daysLeft} days left` : '—'}
-          </Badge>
-          {sprint && (
-            <Badge tone="purple">
-              {sprint.donePoints}/{sprint.totalPoints} pts ({pct}%)
-            </Badge>
-          )}
           <ColumnsButton
             statuses={statusConfigs ?? []}
             isVisible={isStatusVisible}
@@ -113,21 +174,24 @@ export function SprintBoardPage() {
         </div>
       </header>
 
-      {/* Burndown placeholder — real chart lands in Phase 2 (F2-26). */}
-      <div className="sprint-board__burndown" aria-label={`Sprint progress ${pct}%`}>
-        <div className="sprint-board__burndown-fill" style={{ width: `${pct}%` }} />
-      </div>
+      {totalPts > 0 && (
+        <div className="sprint-board-progress" aria-label={`Sprint progress ${pct}%`}>
+          <div className="sprint-board-progress-fill" style={{ width: `${pct}%` }} />
+        </div>
+      )}
 
-      <KanbanBoard
-        board={board}
-        statusConfigs={statusConfigs}
-        projectId={project.id}
-        epics={epics}
-        defaultSprintId={sprintId}
-        visibleStatuses={visibleStatuses}
-        onChanged={() => load(project.id)}
-        onOpenTask={setOpenedTaskId}
-      />
+      <div className="board-page-board">
+        <KanbanBoard
+          board={board}
+          statusConfigs={statusConfigs}
+          projectId={project.id}
+          epics={epics}
+          defaultSprintId={sprintId}
+          visibleStatuses={visibleStatuses}
+          onChanged={() => load(project.id)}
+          onOpenTask={setOpenedTaskId}
+        />
+      </div>
 
       <TaskDetailDrawer
         taskId={openedTaskId}

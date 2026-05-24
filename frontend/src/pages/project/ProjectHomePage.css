@@ -1,43 +1,49 @@
-.project-home__header {
+/* Project home page — sprint + jump-in cards, epic grid, recent tasks list.
+   The page header is the stratos page-head; only domain bits live here. */
+
+.project-home-icon {
+  width: 36px;
+  height: 36px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.project-home-meta {
   display: flex;
   align-items: center;
-  gap: var(--s-6);
-  margin-bottom: var(--s-7);
-}
-
-.project-home__heading { flex: 1; min-width: 0; }
-
-.project-home__cta {
-  display: flex;
   gap: var(--s-4);
+  margin-top: var(--s-3);
 }
 
-.project-home__grid {
+.project-home-slug {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+}
+
+.project-home-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: var(--s-5);
   margin-bottom: var(--s-8);
 }
 @media (max-width: 900px) {
-  .project-home__grid { grid-template-columns: 1fr; }
+  .project-home-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.project-home__sprint-card,
-.project-home__quick {
+.project-home-sprint-card,
+.project-home-quick {
   padding: var(--s-6);
 }
 
-.project-home__sprint-name {
+.project-home-sprint-name {
   font-size: var(--fs-base);
   font-weight: var(--fw-semibold);
   color: var(--text);
 }
-.project-home__sprint-goal {
-  margin: var(--s-2) 0;
-  color: var(--text-secondary);
-  font-size: var(--fs-md);
-}
-.project-home__sprint-meta {
+.project-home-sprint-meta {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
@@ -45,18 +51,18 @@
   font-size: var(--fs-xs);
   margin-top: var(--s-2);
 }
-.project-home__sprint-actions {
+.project-home-sprint-actions {
   display: flex;
   gap: var(--s-2);
   margin-top: var(--s-5);
 }
 
-.project-home__quick-list {
+.project-home-quick-list {
   display: flex;
   flex-direction: column;
   gap: var(--s-2);
 }
-.project-home__quick-link {
+.project-home-quick-link {
   display: flex;
   align-items: center;
   gap: var(--s-4);
@@ -66,50 +72,28 @@
   text-decoration: none;
   font-size: var(--fs-md);
 }
-.project-home__quick-link:hover { background: var(--surface-hover); }
-.project-home__quick-count {
+.project-home-quick-link:hover {
+  background: var(--surface-hover);
+}
+.project-home-quick-count {
   margin-left: auto;
   color: var(--text-muted);
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
 }
 
-.project-home__icon {
-  width: 40px;
-  height: 40px;
-  color: var(--accent);
-  flex-shrink: 0;
+.project-home-section {
+  margin-bottom: var(--s-8);
 }
 
-.project-home__title {
-  font-size: var(--fs-2xl);
-  font-weight: var(--fw-semibold);
-  color: var(--text);
-}
-
-.project-home__meta {
-  display: flex;
-  align-items: center;
-  gap: var(--s-4);
-  margin-top: var(--s-4);
-}
-
-.project-home__slug {
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-}
-
-.project-home__section { margin-bottom: var(--s-8); }
-
-.project-home__section-header {
+.project-home-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--s-5);
 }
 
-.project-home__section-title {
+.project-home-section-title {
   display: flex;
   align-items: center;
   gap: var(--s-4);
@@ -119,13 +103,13 @@
   margin: 0;
 }
 
-.project-home__epic-grid {
+.project-home-epic-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: var(--s-5);
 }
 
-.project-home__empty {
+.project-home-empty {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -133,12 +117,7 @@
   color: var(--text-muted);
 }
 
-.project-home__placeholder {
-  color: var(--text-muted);
-  font-size: var(--fs-md);
-}
-
-.project-home__story-list {
+.project-home-story-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -147,7 +126,7 @@
   gap: 1px;
 }
 
-.project-home__story-link {
+.project-home-story-link {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -157,9 +136,11 @@
   text-decoration: none;
   gap: var(--s-5);
 }
-.project-home__story-link:hover { background: var(--surface-hover); }
+.project-home-story-link:hover {
+  background: var(--surface-hover);
+}
 
-.project-home__story-title {
+.project-home-story-title {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;

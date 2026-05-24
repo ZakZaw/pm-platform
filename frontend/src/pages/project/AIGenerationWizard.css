@@ -7,7 +7,7 @@
     var(--bg);
 }
 
-.ai-wizard__inner {
+.ai-wizard-inner {
   max-width: 760px;
   margin: 0 auto;
   padding: 0 32px;
@@ -16,24 +16,24 @@
   gap: var(--s-5);
 }
 
-.ai-wizard__header {
+.ai-wizard-header {
   text-align: center;
   margin-bottom: 8px;
 }
-.ai-wizard__title {
+.ai-wizard-title {
   font-size: 28px;
   font-weight: var(--fw-semibold);
   letter-spacing: -0.02em;
   margin: 0 0 8px;
 }
-.ai-wizard__subtitle {
+.ai-wizard-subtitle {
   color: var(--text-muted);
   font-size: 14px;
   max-width: 480px;
   margin: 0 auto;
 }
 
-.ai-wizard__stepper {
+.ai-wizard-stepper {
   display: inline-flex;
   align-items: center;
   gap: 24px;
@@ -44,7 +44,7 @@
   align-self: center;
   margin: 0 auto 16px;
 }
-.ai-wizard__step-connector {
+.ai-wizard-step-connector {
   display: inline-block;
   width: 24px;
   height: 1px;
@@ -83,19 +83,19 @@
   font-weight: var(--fw-medium);
 }
 
-.ai-wizard__card {
+.ai-wizard-card {
   display: grid;
   gap: var(--s-6);
   padding: var(--s-6);
 }
 
-.ai-wizard__heading {
+.ai-wizard-heading {
   margin: 0 0 var(--s-4);
   font-size: var(--fs-lg);
   font-weight: var(--fw-semibold);
 }
 
-.ai-wizard__label {
+.ai-wizard-label {
   display: block;
   font-size: var(--fs-xs);
   font-weight: var(--fw-medium);
@@ -103,7 +103,7 @@
   margin-bottom: 4px;
 }
 
-.ai-wizard__textarea {
+.ai-wizard-textarea {
   width: 100%;
   min-height: 140px;
   padding: var(--s-5);
@@ -116,28 +116,28 @@
   line-height: var(--lh-normal);
   resize: vertical;
 }
-.ai-wizard__textarea:focus {
+.ai-wizard-textarea:focus {
   outline: none;
   border-color: var(--accent-bright);
   box-shadow: var(--shadow-focus);
 }
 
-.ai-wizard__questions { display: grid; gap: var(--s-5); }
-.ai-wizard__question {
+.ai-wizard-questions { display: grid; gap: var(--s-5); }
+.ai-wizard-question {
   display: grid;
   gap: var(--s-4);
   color: var(--text-secondary);
   font-size: var(--fs-md);
 }
 
-.ai-wizard__actions {
+.ai-wizard-actions {
   display: flex;
   gap: var(--s-4);
   justify-content: flex-end;
   flex-wrap: wrap;
 }
 
-.ai-wizard__error {
+.ai-wizard-error {
   background: var(--danger-soft);
   border: 1px solid var(--danger-border);
   color: var(--danger);
@@ -147,27 +147,27 @@
   margin: 0;
 }
 
-.ai-wizard__placeholder {
+.ai-wizard-placeholder {
   color: var(--text-muted);
   font-size: var(--fs-md);
   margin: 0;
 }
 
 /* Prompt recap */
-.ai-wizard__prompt {
+.ai-wizard-prompt {
   background: var(--surface);
   padding: 14px;
 }
 
 /* Generated plan card */
-.ai-wizard__plan { padding: 0; overflow: hidden; }
-.ai-wizard__plan-head {
+.ai-wizard-plan { padding: 0; overflow: hidden; }
+.ai-wizard-plan-head {
   padding: 12px 16px;
   border-bottom: 1px solid var(--border-subtle);
   gap: 10px;
 }
-.ai-wizard__plan-body { padding: 8px 8px 12px; }
-.ai-wizard__plan-foot {
+.ai-wizard-plan-body { padding: 8px 8px 12px; }
+.ai-wizard-plan-foot {
   padding: 10px 16px;
   border-top: 1px solid var(--border-subtle);
   background: var(--surface);
@@ -175,13 +175,13 @@
 }
 
 /* Tree rows */
-.ai-wizard__tree-row {
+.ai-wizard-tree-row {
   gap: 8px;
   padding: 7px 10px;
   border-radius: var(--r-sm);
 }
-.ai-wizard__tree-row:hover { background: var(--surface-hover); }
-.ai-wizard__chevron {
+.ai-wizard-tree-row:hover { background: var(--surface-hover); }
+.ai-wizard-chevron {
   background: transparent;
   border: 0;
   color: var(--text-muted);
@@ -194,19 +194,19 @@
   height: 12px;
   flex-shrink: 0;
 }
-.ai-wizard__tree-title {
+.ai-wizard-tree-title {
   font-size: 13px;
   color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.ai-wizard__tree-input {
+.ai-wizard-tree-input {
   height: auto;
   padding: 4px 6px;
   font-size: 13px;
 }
-.ai-wizard__tree-pts {
+.ai-wizard-tree-pts {
   font-size: 11px;
   padding: 1px 6px;
   background: var(--surface);
@@ -214,25 +214,25 @@
   flex-shrink: 0;
 }
 
-.ai-wizard__epic-desc {
+.ai-wizard-epic-desc {
   color: var(--text-muted);
   font-size: 12px;
   margin: 0 0 8px;
 }
 
 /* Previous-steps recap */
-.ai-wizard__recap {
+.ai-wizard-recap {
   opacity: 0.7;
   padding: var(--s-5);
 }
-.ai-wizard__recap-text {
+.ai-wizard-recap-text {
   font-size: 12px;
   color: var(--text-secondary);
   margin: 0;
   font-family: var(--font-sans);
   line-height: 1.5;
 }
-.ai-wizard__recap-list {
+.ai-wizard-recap-list {
   list-style: none;
   margin: 0;
   padding: 0;

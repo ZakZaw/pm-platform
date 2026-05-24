@@ -41,14 +41,16 @@ export function EpicsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgSlug, projectSlug, includeArchived, refreshKey]);
 
-  if (error) return <p className="epics-page__placeholder">{error}</p>;
+  if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
   if (!project) {
     return (
-      <div className="page epics-page">
-        <header className="epics-page__header">
-          <h1 className="epics-page__title">Epics</h1>
-        </header>
-        <div className="epics-page__grid" aria-busy="true">
+      <div className="main-inner epics-page">
+        <div className="page-head">
+          <div className="page-title-row">
+            <h1 className="page-title">Epics</h1>
+          </div>
+        </div>
+        <div className="epics-page-grid" aria-busy="true">
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i}>
               <Skeleton width="60%" height={16} />
@@ -64,24 +66,32 @@ export function EpicsPage() {
   }
 
   return (
-    <div className="page epics-page">
-      <header className="epics-page__header">
-        <h1 className="epics-page__title">Epics</h1>
-        <div className="epics-page__actions">
-          <label className="epics-page__toggle">
-            <input
-              type="checkbox"
-              checked={includeArchived}
-              onChange={(e) => setIncludeArchived(e.target.checked)}
-            />
-            <span>Show archived</span>
-          </label>
-          <Button variant="ai" onClick={() => setAiOpen(true)}>
-            <Sparkles size={13} aria-hidden="true" /> AI epic
-          </Button>
-          <Button onClick={() => setCreating(true)}>New epic</Button>
+    <div className="main-inner epics-page">
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>{project.name}</div>
+            <h1 className="page-title">Epics</h1>
+            <div className="page-subtitle">
+              Group related tasks into deliverables you can track as a single unit.
+            </div>
+          </div>
+          <div className="row gap-3">
+            <label className="epics-page-toggle">
+              <input
+                type="checkbox"
+                checked={includeArchived}
+                onChange={(e) => setIncludeArchived(e.target.checked)}
+              />
+              <span>Show archived</span>
+            </label>
+            <Button variant="ai" onClick={() => setAiOpen(true)}>
+              <Sparkles size={13} aria-hidden="true" /> AI epic
+            </Button>
+            <Button onClick={() => setCreating(true)}>New epic</Button>
+          </div>
         </div>
-      </header>
+      </div>
 
       {project && (
         <AIEpicWizardModal
@@ -96,7 +106,7 @@ export function EpicsPage() {
       )}
 
       {creating && (
-        <Card className="epics-page__form-card" title="New epic">
+        <Card className="epics-page-form-card" title="New epic">
           <EpicForm
             onSubmit={async (body) => {
               await epicsApi.create(project.id, body);
@@ -124,7 +134,7 @@ export function EpicsPage() {
           </Button>
         </EmptyState>
       ) : (
-        <div className="epics-page__grid">
+        <div className="epics-page-grid">
           {epics.map((e) => (
             <EpicCard
               key={e.id}

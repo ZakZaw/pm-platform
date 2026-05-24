@@ -1,40 +1,20 @@
-.sprint-board__header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--s-5);
-  margin-bottom: var(--s-5);
-}
+/* Sprint board overlays the engineering board layout with a thin
+   progress bar under the banner. All other styles inherit from
+   board-page in BoardPage.css and the kanban primitives in stratos.css. */
 
-.sprint-board__title {
-  font-size: var(--fs-2xl);
-  font-weight: var(--fw-semibold);
-  margin: 0;
-}
-
-.sprint-board__goal {
-  color: var(--text-secondary);
-  margin: var(--s-2) 0 0;
-  font-size: var(--fs-md);
-}
-
-.sprint-board__stats {
-  display: flex;
-  gap: var(--s-4);
-}
-
-.sprint-board__burndown {
-  height: 6px;
-  background: var(--surface-hover);
+.sprint-board-progress {
+  height: 4px;
+  background: var(--surface-2);
   border-radius: var(--r-pill);
-  margin-bottom: var(--s-6);
+  margin: 0 0 var(--s-5);
   overflow: hidden;
+  flex-shrink: 0;
 }
 
-.sprint-board__burndown-fill {
+.sprint-board-progress-fill {
   height: 100%;
   background: var(--ai-gradient);
+  background-size: 220% 220%;
+  animation: ai-shimmer 8s ease-in-out infinite;
   transition: width var(--dur-base) var(--ease-out);
 }
-
-.sprint-board__placeholder { color: var(--text-muted); }

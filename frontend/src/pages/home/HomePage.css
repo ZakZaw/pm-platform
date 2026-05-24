@@ -1,29 +1,35 @@
+/* Personal home dashboard — KPI strip, throughput chart, AI insight, per-project list.
+   Header is the stratos page-head; only domain bits live here. */
+
 .home {
+  display: flex;
+  flex-direction: column;
   gap: var(--s-5);
 }
 
-.home__header { padding-bottom: var(--s-5); }
-
-.home__grid {
+.home-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  gap: 14px;
+  gap: var(--s-5);
 }
 
-.home__kpi { grid-column: span 3; padding: 14px; }
-.home__chart-card { grid-column: span 8; padding: 16px; }
-.home__insight { grid-column: span 4; padding: 16px; }
-.home__projects { grid-column: span 12; padding: 16px; }
+.home-kpi { grid-column: span 3; padding: var(--s-5); }
+.home-chart-card { grid-column: span 8; padding: var(--s-6); }
+.home-insight { grid-column: span 4; padding: var(--s-6); }
+.home-projects { grid-column: span 12; padding: var(--s-6); }
 
 @media (max-width: 1100px) {
-  .home__kpi { grid-column: span 6; }
-  .home__chart-card,
-  .home__insight,
-  .home__projects { grid-column: span 12; }
+  .home-kpi { grid-column: span 6; }
+  .home-chart-card,
+  .home-insight,
+  .home-projects { grid-column: span 12; }
 }
 
-.home__kpi-head { gap: 8px; margin-bottom: 6px; }
-.home__kpi-icon {
+.home-kpi-head {
+  gap: var(--s-3);
+  margin-bottom: var(--s-2);
+}
+.home-kpi-icon {
   width: 22px;
   height: 22px;
   border-radius: var(--r-sm);
@@ -31,36 +37,41 @@
   align-items: center;
   justify-content: center;
 }
-.home__kpi-label {
-  font-size: 11px;
+.home-kpi-label {
+  font-size: var(--fs-xs);
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
 }
-.home__kpi-body {
+.home-kpi-body {
   justify-content: space-between;
   align-items: baseline;
 }
-.home__kpi-value {
-  font-size: 24px;
-  font-weight: 600;
+.home-kpi-value {
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-semibold);
   letter-spacing: -0.01em;
 }
-.home__kpi-delta { font-size: 11px; }
+.home-kpi-delta {
+  font-size: var(--fs-xs);
+}
 
-.home__widget-head {
+.home-widget-head {
   justify-content: space-between;
-  margin-bottom: 8px;
-  gap: 12px;
+  margin-bottom: var(--s-3);
+  gap: var(--s-4);
 }
-.home__widget-title {
-  font-size: 13px;
-  font-weight: 600;
+.home-widget-title {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
 }
-.home__widget-sub { font-size: 11px; color: var(--text-muted); }
+.home-widget-sub {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
 
-.home__sample {
+.home-sample {
   font-size: 10px;
   color: var(--text-muted);
   font-weight: var(--fw-regular);
@@ -69,19 +80,19 @@
   font-style: italic;
 }
 
-.home__insight-title {
-  font-size: 14px;
-  font-weight: 600;
+.home-insight-title {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
   line-height: 1.4;
-  margin-bottom: 8px;
+  margin-bottom: var(--s-3);
 }
-.home__insight-body {
-  font-size: 12px;
+.home-insight-body {
+  font-size: var(--fs-xs);
   line-height: 1.55;
-  margin-bottom: 12px;
+  margin-bottom: var(--s-3);
 }
 
-.home__project-list {
+.home-project-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -89,7 +100,7 @@
   flex-direction: column;
   gap: 1px;
 }
-.home__project-row {
+.home-project-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -98,29 +109,31 @@
   border-radius: var(--r-sm);
   text-decoration: none;
   color: var(--text);
-  font-size: 13px;
+  font-size: var(--fs-xs);
 }
-.home__project-row:hover { background: var(--surface-hover); }
-.home__project-meta {
+.home-project-row:hover {
+  background: var(--surface-hover);
+}
+.home-project-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--s-3);
   min-width: 0;
 }
-.home__project-key {
+.home-project-key {
   background: var(--surface-2);
   padding: 1px 6px;
   border-radius: var(--r-xs);
-  font-size: 11px;
+  font-size: var(--fs-xs);
 }
-.home__project-stats {
+.home-project-stats {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--s-3);
 }
 
-.home__placeholder {
+.home-placeholder {
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: var(--fs-xs);
   margin: 0;
 }

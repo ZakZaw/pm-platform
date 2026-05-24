@@ -440,18 +440,18 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
         <div className="task-detail__color-bar" aria-hidden="true" />
 
         {/* Drawer header */}
-        <div className="hstack task-detail__topbar">
-          <span className="mono dim task-detail__key">{shortKey(task)}</span>
+        <div className="row task-detail__topbar">
+          <span className="mono muted task-detail__key">{shortKey(task)}</span>
           <span
             className="task-detail__color-chip"
             style={{ background: epicColor }}
             title={currentEpic ? `Epic: ${currentEpic.title}` : 'No epic — default color'}
             aria-hidden="true"
           />
-          <div className="grow" />
+          <div className="fill" />
           <button
             type="button"
-            className="icon-btn icon-btn-sm"
+            className="btn btn-ghost btn-icon-sm"
             onClick={copyKey}
             title="Copy task key"
             aria-label="Copy task key"
@@ -460,7 +460,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
           </button>
           <button
             type="button"
-            className="icon-btn icon-btn-sm"
+            className="btn btn-ghost btn-icon-sm"
             title="Open full page"
             aria-label="Open full page"
             disabled
@@ -469,7 +469,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
           </button>
           <button
             type="button"
-            className="icon-btn icon-btn-sm"
+            className="btn btn-ghost btn-icon-sm"
             title="More"
             aria-label="More"
           >
@@ -477,7 +477,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
           </button>
           <button
             type="button"
-            className="icon-btn icon-btn-sm"
+            className="btn btn-ghost btn-icon-sm"
             onClick={onClose}
             title="Close"
             aria-label="Close"
@@ -529,19 +529,19 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
               </button>
             )}
 
-            <div className="hstack task-detail__byline">
+            <div className="row task-detail__byline">
               {reporter && (
-                <span className="hstack" style={{ gap: 4 }}>
+                <span className="row gap-2">
                   <User size={12} aria-hidden="true" /> {reporter.fullName} reported
                 </span>
               )}
               <span>·</span>
-              <span className="hstack" style={{ gap: 4 }}>
+              <span className="row gap-2">
                 <Eye size={12} aria-hidden="true" /> {task.watcherCount ?? 0} watchers
               </span>
             </div>
 
-            <div className="subsection-eyebrow">Description</div>
+            <div className="eyebrow task-detail__section-eyebrow">Description</div>
             {editingDesc ? (
               <textarea
                 className="task-detail__desc-input"
@@ -593,7 +593,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
             )}
 
             <div className="task-detail__ac-head">
-              <span className="subsection-eyebrow">Acceptance criteria</span>
+              <span className="eyebrow task-detail__section-eyebrow">Acceptance criteria</span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -622,7 +622,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                   </label>
                   <button
                     type="button"
-                    className="icon-btn icon-btn-sm task-detail__ac-remove"
+                    className="btn btn-ghost btn-icon-sm task-detail__ac-remove"
                     onClick={() => removeSubtask(s)}
                     aria-label="Remove criterion"
                   >
@@ -645,26 +645,26 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
             </form>
 
             {/* Activity */}
-            <div className="subsection-eyebrow">Activity</div>
+            <div className="eyebrow task-detail__section-eyebrow">Activity</div>
             <div className="tabs task-detail__tabs">
               <button
                 type="button"
-                className={['tab', activeTab === 'comments' ? 'is-active' : ''].filter(Boolean).join(' ')}
+                className={activeTab === 'comments' ? 'is-active' : ''}
                 onClick={() => setActiveTab('comments')}
               >
                 <MessageSquare size={12} aria-hidden="true" /> Comments
-                <span className="count">{comments.length}</span>
+                <span className="tab-count">{comments.length}</span>
               </button>
               <button
                 type="button"
-                className={['tab', activeTab === 'history' ? 'is-active' : ''].filter(Boolean).join(' ')}
+                className={activeTab === 'history' ? 'is-active' : ''}
                 onClick={() => setActiveTab('history')}
               >
                 <History size={12} aria-hidden="true" /> History
               </button>
               <button
                 type="button"
-                className={['tab', activeTab === 'commits' ? 'is-active' : ''].filter(Boolean).join(' ')}
+                className={activeTab === 'commits' ? 'is-active' : ''}
                 onClick={() => setActiveTab('commits')}
               >
                 <GitPullRequest size={12} aria-hidden="true" /> Commits
@@ -780,13 +780,13 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
             </MetaRow>
 
             <MetaRow label="Color">
-              <div className="hstack task-detail__color-row">
+              <div className="row task-detail__color-row">
                 <span
                   className="task-detail__color-swatch"
                   style={{ background: epicColor }}
                   aria-hidden="true"
                 />
-                <span className="dim" style={{ fontSize: 11 }}>
+                <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>
                   {currentEpic ? `From epic "${currentEpic.title}"` : 'Default'}
                 </span>
               </div>
@@ -813,7 +813,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                   }}
                 />
               ) : task.prUrl ? (
-                <span className="hstack task-detail__pr-link">
+                <span className="row task-detail__pr-link">
                   <a href={task.prUrl} target="_blank" rel="noreferrer noopener" title={task.prUrl}>
                     <ExternalLink size={11} aria-hidden="true" /> Open PR
                   </a>
@@ -838,7 +838,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
 
             {currentEpic && (
               <MetaRow label="Epic name">
-                <span className="hstack" style={{ gap: 6, fontSize: 12, color: 'var(--accent)' }}>
+                <span className="row gap-2" style={{ fontSize: 'var(--fs-xs)', color: 'var(--accent)' }}>
                   <Layers size={11} aria-hidden="true" /> {currentEpic.title}
                 </span>
               </MetaRow>

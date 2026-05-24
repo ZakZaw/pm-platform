@@ -41,27 +41,35 @@ export function CustomersPage() {
   }, [orgSlug, projectSlug, search]);
 
   return (
-    <div className="page customers-page">
-      <header className="page-header">
-        <h1 className="page-title">Customers</h1>
-        <div className="hstack" style={{ gap: 8 }}>
-          <div className="customers-page__search">
-            <Search size={13} aria-hidden="true" />
-            <input
-              className="input"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name, email, company…"
-            />
+    <div className="main-inner customers-page">
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>{project?.name ?? 'Support'}</div>
+            <h1 className="page-title">Customers</h1>
+            <div className="page-subtitle">
+              People and companies who file tickets. Open counts surface who's escalating.
+            </div>
           </div>
-          <Button size="sm" onClick={() => setCreating(true)}>
-            <Plus size={13} aria-hidden="true" /> New customer
-          </Button>
+          <div className="row gap-2">
+            <div className="customers-page-search">
+              <Search size={13} aria-hidden="true" />
+              <input
+                className="input"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by name, email, company…"
+              />
+            </div>
+            <Button size="sm" onClick={() => setCreating(true)}>
+              <Plus size={13} aria-hidden="true" /> New customer
+            </Button>
+          </div>
         </div>
-      </header>
+      </div>
 
       {!customers ? (
-        <div className="vstack" style={{ gap: 8 }}>
+        <div className="col" style={{ gap: 8 }}>
           {[0, 1, 2, 3].map((i) => <Skeleton key={i} height={48} />)}
         </div>
       ) : customers.length === 0 ? (
@@ -69,8 +77,8 @@ export function CustomersPage() {
           {search ? `No customers match "${search}".` : 'No customers yet.'}
         </div>
       ) : (
-        <div className="customers-page__table" role="table">
-          <div className="customers-page__row customers-page__row--head" role="row">
+        <div className="customers-page-table" role="table">
+          <div className="customers-page-row customers-page-row-head" role="row">
             <span>Name</span>
             <span>Email</span>
             <span>Company</span>
@@ -78,8 +86,8 @@ export function CustomersPage() {
             <span>Open / Total</span>
           </div>
           {customers.map((c) => (
-            <div key={c.id} className="customers-page__row" role="row">
-              <span className="customers-page__name">{c.name}</span>
+            <div key={c.id} className="customers-page-row" role="row">
+              <span className="customers-page-name">{c.name}</span>
               <span className="muted">{c.email ?? '—'}</span>
               <span className="muted">{c.company ?? '—'}</span>
               <span>{c.tier ? <Badge tone="purple">{c.tier}</Badge> : <span className="muted">—</span>}</span>
@@ -141,7 +149,7 @@ function CreateCustomerModal({ projectId, onClose, onCreated }) {
           <h2 id="create-customer-title" style={{ margin: 0, fontSize: 16 }}>New customer</h2>
         </ModalHeader>
         <ModalBody>
-          <div className="vstack" style={{ gap: 12 }}>
+          <div className="col" style={{ gap: 12 }}>
             <Input label="Name" autoFocus value={name} onChange={(e) => setName(e.target.value)} required />
             <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             <Input label="Company" value={company} onChange={(e) => setCompany(e.target.value)} />

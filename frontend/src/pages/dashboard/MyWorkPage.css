@@ -1,3 +1,6 @@
+/* My work — personal cross-project kanban + operations-runs banner.
+   Wraps stratos kanban primitives; only personal bits live here. */
+
 .mywork {
   display: flex;
   flex-direction: column;
@@ -5,61 +8,65 @@
   min-height: 0;
 }
 
-.mywork__header { flex-shrink: 0; }
-
-.mywork__filters {
+.mywork-filters {
   gap: var(--s-4);
 }
-.mywork__filters .select { min-width: 180px; }
+.mywork-filters .select {
+  min-width: 180px;
+}
 
-.mywork__board-wrap {
+.mywork-board-wrap {
   flex: 1 1 auto;
   min-height: 0;
-  padding: 16px;
   overflow: hidden;
   display: flex;
 }
 
-.mywork__columns {
+.mywork-columns {
   flex: 1 1 auto;
   min-width: 0;
 }
 
-.mywork__card {
+.mywork-card {
   cursor: grab;
 }
-.mywork__card:active { cursor: grabbing; }
+.mywork-card:active {
+  cursor: grabbing;
+}
 
-.mywork__project-row {
+.mywork-project-row {
   justify-content: space-between;
   gap: var(--s-4);
-  font-size: 11px;
+  font-size: var(--fs-xs);
   color: var(--text-muted);
+  margin: var(--s-2) 0;
 }
-.mywork__project-row .truncate { max-width: 100%; }
-
-.mywork__due {
-  font-size: 11px;
+.mywork-project-row .truncate {
+  max-width: 100%;
 }
 
-.mywork__empty {
+.mywork-due {
+  font-size: var(--fs-xs);
+}
+
+.mywork-empty {
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: var(--fs-xs);
   padding: var(--s-4);
   margin: 0;
 }
 
-.mywork__placeholder {
-  color: var(--text-muted);
-  padding: var(--s-8);
-}
-
 @media (max-width: 900px) {
-  .mywork__filters { flex-wrap: wrap; }
-  .mywork__filters .select { min-width: 0; flex: 1 1 140px; }
+  .mywork-filters {
+    flex-wrap: wrap;
+  }
+  .mywork-filters .select {
+    min-width: 0;
+    flex: 1 1 140px;
+  }
 }
 
-.mywork__ops {
+.mywork-ops {
   margin-bottom: var(--s-6);
   padding: var(--s-5) var(--s-6);
   background: var(--surface);
@@ -67,13 +74,14 @@
   border-radius: var(--r-md);
 }
 
-.mywork__ops-head {
-  gap: var(--s-5);
+.mywork-ops-head {
+  display: flex;
   align-items: center;
+  gap: var(--s-5);
   margin-bottom: var(--s-4);
 }
 
-.mywork__ops-list {
+.mywork-ops-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -82,7 +90,7 @@
   gap: 2px;
 }
 
-.mywork__ops-row {
+.mywork-ops-row {
   display: flex;
   align-items: center;
   gap: var(--s-5);
@@ -90,13 +98,15 @@
   border-bottom: 1px dashed var(--border-subtle);
 }
 
-.mywork__ops-row:last-child { border-bottom: none; }
+.mywork-ops-row:last-child {
+  border-bottom: none;
+}
 
-.mywork__ops-row.is-overdue .mywork__ops-title {
+.mywork-ops-row.is-overdue .mywork-ops-title {
   color: var(--danger);
 }
 
-.mywork__ops-link {
+.mywork-ops-link {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -106,12 +116,12 @@
   min-width: 0;
 }
 
-.mywork__ops-title {
+.mywork-ops-title {
   color: var(--text);
   font-size: var(--fs-md);
   font-weight: var(--fw-medium);
 }
 
-.mywork__ops-meta {
+.mywork-ops-meta {
   font-size: var(--fs-xs);
 }

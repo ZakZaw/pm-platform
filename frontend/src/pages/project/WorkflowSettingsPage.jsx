@@ -140,26 +140,31 @@ export function WorkflowSettingsPage() {
     }
   }
 
-  if (loading) return <p className="workflow__placeholder">Loading…</p>;
-  if (error) return <p className="workflow__placeholder">{error}</p>;
+  if (loading) return <div className="main-inner"><p className="muted">Loading…</p></div>;
+  if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
 
   return (
-    <div className="page workflow">
+    <div className="main-inner workflow">
       {dialog}
-      <header className="workflow__header">
-        <h1 className="workflow__title">Workflow statuses</h1>
-        <p className="workflow__sub">
-          Rename, recolor, reorder, and hide the columns that appear on this project's board.
-        </p>
-      </header>
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>{project?.name ?? 'Project'} · Settings</div>
+            <h1 className="page-title">Workflow statuses</h1>
+            <div className="page-subtitle">
+              Rename, recolor, reorder, and hide the columns that appear on this project's board.
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <Card className="workflow__card">
+      <Card className="workflow-card">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleReorder}>
           <SortableContext
             items={configs.map((c) => c.id)}
             strategy={verticalListSortingStrategy}
           >
-            <ul className="workflow__list">
+            <ul className="workflow-list">
               {configs.map((cfg) => (
                 <Row
                   key={cfg.id}
@@ -197,8 +202,8 @@ function AddStatusCard({ onAdd }) {
   }
 
   return (
-    <Card className="workflow__card" title="Add a status">
-      <form className="workflow__add" onSubmit={submit}>
+    <Card className="workflow-card" title="Add a status">
+      <form className="workflow-add" onSubmit={submit}>
         <Input
           label="Display name"
           value={name}
@@ -256,10 +261,10 @@ function RowInner({ cfg, onPatch, onDelete }) {
   };
 
   return (
-    <li ref={setNodeRef} style={style} className="workflow__row">
+    <li ref={setNodeRef} style={style} className="workflow-row">
       <button
         type="button"
-        className="workflow__handle"
+        className="workflow-handle"
         {...listeners}
         {...attributes}
         aria-label="Drag to reorder"
@@ -289,7 +294,7 @@ function RowInner({ cfg, onPatch, onDelete }) {
         aria-label={`Color for ${cfg.displayName}`}
       />
 
-      <label className="workflow__toggle">
+      <label className="workflow-toggle">
         <input
           type="checkbox"
           checked={cfg.isVisible}
@@ -298,7 +303,7 @@ function RowInner({ cfg, onPatch, onDelete }) {
         <span>Show on board</span>
       </label>
 
-      <label className="workflow__toggle">
+      <label className="workflow-toggle">
         <input
           type="checkbox"
           checked={cfg.isDoneState}
@@ -307,11 +312,11 @@ function RowInner({ cfg, onPatch, onDelete }) {
         <span>Done state</span>
       </label>
 
-      <span className="workflow__system">{cfg.status}</span>
+      <span className="workflow-system">{cfg.status}</span>
 
       <button
         type="button"
-        className="workflow__delete"
+        className="workflow-delete"
         onClick={onDelete}
         aria-label={`Delete ${cfg.displayName}`}
         title="Delete this column"

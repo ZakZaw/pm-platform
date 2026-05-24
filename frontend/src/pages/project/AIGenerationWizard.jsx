@@ -51,7 +51,7 @@ function StepDot({ n, label, state }) {
   const isDone = state === 'done';
   const isActive = state === 'active';
   return (
-    <div className="hstack" style={{ gap: 8 }}>
+    <div className="row" style={{ gap: 8 }}>
       <div
         className={[
           'wizard-step',
@@ -220,16 +220,16 @@ export function AIGenerationWizard() {
 
   return (
     <div className="ai-wizard">
-      <div className="ai-wizard__inner">
+      <div className="ai-wizard-inner">
         {/* Header */}
-        <div className="ai-wizard__header">
-          <div className="hstack" style={{ justifyContent: 'center', marginBottom: 14 }}>
+        <div className="ai-wizard-header">
+          <div className="row" style={{ justifyContent: 'center', marginBottom: 14 }}>
             <AIChip label={preview?.provider ?? 'Plan with AI'} variant="soft" />
           </div>
-          <h1 className="ai-wizard__title">
+          <h1 className="ai-wizard-title">
             {step === 'preview' ? 'Review your generated plan' : 'Plan a project with AI'}
           </h1>
-          <p className="ai-wizard__subtitle">
+          <p className="ai-wizard-subtitle">
             {step === 'preview'
               ? 'Edit any title, regenerate a node, or remove what you don’t want. Nothing is saved until you confirm.'
               : 'Describe the project in plain English. AI proposes epics and tasks; you edit before committing.'}
@@ -237,25 +237,25 @@ export function AIGenerationWizard() {
         </div>
 
         {/* Stepper */}
-        <div className="ai-wizard__stepper">
+        <div className="ai-wizard-stepper">
           {STEPS.map((s, i) => (
-            <span key={s.key} className="hstack" style={{ gap: 24 }}>
+            <span key={s.key} className="row" style={{ gap: 24 }}>
               <StepDot n={i + 1} label={s.label} state={stepState(s.key, step)} />
-              {i < STEPS.length - 1 && <span className="ai-wizard__step-connector" />}
+              {i < STEPS.length - 1 && <span className="ai-wizard-step-connector" />}
             </span>
           ))}
         </div>
 
-        {error && <p className="ai-wizard__error">{error}</p>}
+        {error && <p className="ai-wizard-error">{error}</p>}
 
         {step === 'describe' && (
-          <Card variant="ai" className="ai-wizard__card">
-            <label className="ai-wizard__label" htmlFor="ai-desc">
+          <Card variant="ai" className="ai-wizard-card">
+            <label className="ai-wizard-label" htmlFor="ai-desc">
               What are you building?
             </label>
             <textarea
               id="ai-desc"
-              className="ai-wizard__textarea"
+              className="ai-wizard-textarea"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="e.g. A booking platform for music tutors — students can search by instrument, book lessons, and pay with cards. Tutors manage availability and payouts."
@@ -268,7 +268,7 @@ export function AIGenerationWizard() {
               onChange={(e) => setProjectType(e.target.value)}
               help="Shapes the AI plan — engineering gets epics+sprints, sales gets pipeline stages, etc."
             />
-            <div className="ai-wizard__actions">
+            <div className="ai-wizard-actions">
               <Button variant="ghost" onClick={() => navigate(`/${orgSlug}/projects/new`)}>
                 Back
               </Button>
@@ -284,14 +284,14 @@ export function AIGenerationWizard() {
         )}
 
         {step === 'clarify' && (
-          <Card variant="ai" className="ai-wizard__card">
-            <h2 className="ai-wizard__heading">A few clarifying questions</h2>
+          <Card variant="ai" className="ai-wizard-card">
+            <h2 className="ai-wizard-heading">A few clarifying questions</h2>
             {questions.length === 0 ? (
-              <p className="ai-wizard__placeholder">AI had no follow-up questions.</p>
+              <p className="ai-wizard-placeholder">AI had no follow-up questions.</p>
             ) : (
-              <div className="ai-wizard__questions">
+              <div className="ai-wizard-questions">
                 {questions.map((q) => (
-                  <label key={q} className="ai-wizard__question">
+                  <label key={q} className="ai-wizard-question">
                     <span>{q}</span>
                     <Input
                       value={answers[q] ?? ''}
@@ -302,7 +302,7 @@ export function AIGenerationWizard() {
                 ))}
               </div>
             )}
-            <div className="ai-wizard__actions">
+            <div className="ai-wizard-actions">
               <Button variant="ghost" onClick={() => setStep('describe')}>
                 Back
               </Button>
@@ -319,8 +319,8 @@ export function AIGenerationWizard() {
         {step === 'preview' && preview && (
           <>
             {/* Prompt recap */}
-            <div className="card ai-wizard__prompt">
-              <div className="hstack" style={{ gap: 6, marginBottom: 6 }}>
+            <div className="card ai-wizard-prompt">
+              <div className="row" style={{ gap: 6, marginBottom: 6 }}>
                 <Quote size={12} color="var(--text-muted)" aria-hidden="true" />
                 <span
                   className="muted"
@@ -333,7 +333,7 @@ export function AIGenerationWizard() {
                 >
                   Your prompt
                 </span>
-                <span className="grow" />
+                <span className="fill" />
                 <Button variant="ghost" size="sm" onClick={() => setStep('describe')}>
                   <Edit3 size={11} aria-hidden="true" /> Edit
                 </Button>
@@ -348,7 +348,7 @@ export function AIGenerationWizard() {
                 “{description}”
               </div>
               {questions.length > 0 && (
-                <div className="hstack" style={{ gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                <div className="row" style={{ gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
                   {questions.map((q) => (
                     <Badge key={q} tone="purple">{q}</Badge>
                   ))}
@@ -357,7 +357,7 @@ export function AIGenerationWizard() {
             </div>
 
             {/* Project name */}
-            <Card variant="ai" className="ai-wizard__card">
+            <Card variant="ai" className="ai-wizard-card">
               <Input
                 label="Project name"
                 value={projectName}
@@ -367,26 +367,26 @@ export function AIGenerationWizard() {
             </Card>
 
             {/* Generated plan */}
-            <div className="card-ai ai-wizard__plan">
-              <div className="hstack ai-wizard__plan-head">
+            <div className="card-ai ai-wizard-plan">
+              <div className="row ai-wizard-plan-head">
                 <Sparkles size={14} color="var(--ai-violet)" aria-hidden="true" />
                 <span style={{ fontSize: 13, fontWeight: 600 }}>
                   {isTypedPreview ? `${preview.type} project` : 'Generated plan'}
                 </span>
                 {totals && (
-                  <span className="mono dim" style={{ fontSize: 11 }}>
+                  <span className="mono muted" style={{ fontSize: 11 }}>
                     · {totals.epics} epics · {totals.tasks} tasks · {totals.points} points
                   </span>
                 )}
                 {isTypedPreview && typedTotalsLabel && (
-                  <span className="mono dim" style={{ fontSize: 11 }}>· {typedTotalsLabel}</span>
+                  <span className="mono muted" style={{ fontSize: 11 }}>· {typedTotalsLabel}</span>
                 )}
-                <span className="grow" />
+                <span className="fill" />
                 <span className="muted" style={{ fontSize: 11 }}>
                   Powered by {preview.provider}
                 </span>
               </div>
-              <div className="ai-wizard__plan-body">
+              <div className="ai-wizard-plan-body">
                 {isTypedPreview ? (
                   <TypedGenerationPreview preview={preview} />
                 ) : (
@@ -402,14 +402,14 @@ export function AIGenerationWizard() {
                       />
                     ))}
                     {preview.epics.length === 0 && (
-                      <p className="ai-wizard__placeholder" style={{ padding: 16 }}>
+                      <p className="ai-wizard-placeholder" style={{ padding: 16 }}>
                         All epics removed. Regenerate to start over.
                       </p>
                     )}
                   </>
                 )}
               </div>
-              <div className="hstack ai-wizard__plan-foot">
+              <div className="row ai-wizard-plan-foot">
                 <Button variant="ghost" size="md" onClick={regenerate} disabled={loading}>
                   <RefreshCw size={13} aria-hidden="true" /> Regenerate
                 </Button>
@@ -418,7 +418,7 @@ export function AIGenerationWizard() {
                     <Plus size={13} aria-hidden="true" /> Add epic
                   </Button>
                 )}
-                <span className="grow" />
+                <span className="fill" />
                 <Button variant="secondary" size="md" disabled>
                   Save as draft
                 </Button>
@@ -452,20 +452,20 @@ export function AIGenerationWizard() {
               Previous steps
             </div>
             <div className="grid-2" style={{ marginTop: 8 }}>
-              <div className="card ai-wizard__recap">
-                <div className="hstack" style={{ gap: 6, marginBottom: 8 }}>
+              <div className="card ai-wizard-recap">
+                <div className="row" style={{ gap: 6, marginBottom: 8 }}>
                   <MessageSquareText size={12} aria-hidden="true" />
                   <span style={{ fontSize: 12, fontWeight: 600 }}>Step 1 — Describe</span>
                   <Badge tone="success">
                     <Check size={11} aria-hidden="true" /> Done
                   </Badge>
                 </div>
-                <p className="ai-wizard__recap-text">
+                <p className="ai-wizard-recap-text">
                   {description.length > 160 ? `${description.slice(0, 157)}…` : description}
                 </p>
               </div>
-              <div className="card ai-wizard__recap">
-                <div className="hstack" style={{ gap: 6, marginBottom: 8 }}>
+              <div className="card ai-wizard-recap">
+                <div className="row" style={{ gap: 6, marginBottom: 8 }}>
                   <ListChecks size={12} aria-hidden="true" />
                   <span style={{ fontSize: 12, fontWeight: 600 }}>Step 2 — Clarify</span>
                   <Badge tone="success">
@@ -474,7 +474,7 @@ export function AIGenerationWizard() {
                     {questions.filter((q) => (answers[q] ?? '').trim().length > 0).length} of {questions.length}
                   </Badge>
                 </div>
-                <ul className="ai-wizard__recap-list">
+                <ul className="ai-wizard-recap-list">
                   {questions.length === 0 && <li>· No clarifying questions</li>}
                   {questions.map((q) => (
                     <li key={q}>
@@ -536,7 +536,7 @@ function EpicNode({ epic, onChange, onRemove, onChangeTask, onRemoveTask }) {
             />
           ))}
           {epic.description && (
-            <p className="ai-wizard__epic-desc" style={{ marginLeft: 36 }}>
+            <p className="ai-wizard-epic-desc" style={{ marginLeft: 36 }}>
               {epic.description}
             </p>
           )}
@@ -584,13 +584,13 @@ function TreeRow({
   const [editing, setEditing] = useState(false);
   return (
     <div
-      className="ai-wizard__tree-row hstack"
+      className="ai-wizard-tree-row row"
       style={{ marginLeft: depth * 18 }}
     >
       {hasChildren ? (
         <button
           type="button"
-          className="ai-wizard__chevron"
+          className="ai-wizard-chevron"
           onClick={onToggle}
           aria-label={open ? 'Collapse' : 'Expand'}
         >
@@ -604,7 +604,7 @@ function TreeRow({
       </Badge>
       {editing ? (
         <input
-          className="input ai-wizard__tree-input grow"
+          className="input ai-wizard-tree-input grow"
           value={title}
           autoFocus
           onChange={(e) => onTitleChange(e.target.value)}
@@ -615,7 +615,7 @@ function TreeRow({
         />
       ) : (
         <span
-          className="grow ai-wizard__tree-title"
+          className="fill ai-wizard-tree-title"
           style={{ fontWeight: kind === 'epic' ? 500 : 400 }}
         >
           {title}
@@ -625,11 +625,11 @@ function TreeRow({
         <span key={i}>{b}</span>
       ))}
       {points != null && (
-        <span className="mono dim ai-wizard__tree-pts">{points}pt</span>
+        <span className="mono muted ai-wizard-tree-pts">{points}pt</span>
       )}
       <button
         type="button"
-        className="icon-btn icon-btn-sm"
+        className="btn btn-ghost btn-icon-sm"
         onClick={() => setEditing((v) => !v)}
         aria-label="Edit"
         title="Edit"
@@ -638,7 +638,7 @@ function TreeRow({
       </button>
       <button
         type="button"
-        className="icon-btn icon-btn-sm"
+        className="btn btn-ghost btn-icon-sm"
         onClick={onRemove}
         aria-label="Remove"
         title="Remove"

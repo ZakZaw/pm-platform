@@ -1,47 +1,21 @@
+/* AI Inbox — header is the stratos page-head; below are filter chips and
+   a list of AISuggestionCard items. */
+
 .ai-inbox {
   display: flex;
   flex-direction: column;
-  gap: var(--s-7);
-}
-
-.ai-inbox__header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
   gap: var(--s-6);
 }
 
-.ai-inbox__title {
+.ai-inbox-toggle {
   display: inline-flex;
   align-items: center;
-  gap: var(--s-4);
-  margin: 0 0 var(--s-2);
-  font-size: var(--fs-xl);
-  font-weight: var(--fw-semibold);
-  color: var(--text);
-  letter-spacing: -0.01em;
-}
-
-.ai-inbox__subtitle {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: var(--fs-md);
-}
-
-.ai-inbox__toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-4);
+  gap: var(--s-3);
   font-size: var(--fs-md);
   color: var(--text-secondary);
 }
 
-.ai-inbox__placeholder {
-  color: var(--text-muted);
-  font-size: var(--fs-md);
-}
-
-.ai-inbox__empty {
+.ai-inbox-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -53,20 +27,20 @@
   text-align: center;
 }
 
-.ai-inbox__empty-title {
+.ai-inbox-empty-title {
   margin: 0;
   color: var(--text);
   font-size: var(--fs-base);
   font-weight: var(--fw-semibold);
 }
 
-.ai-inbox__empty-sub {
+.ai-inbox-empty-sub {
   margin: 0;
   color: var(--text-muted);
   font-size: var(--fs-md);
 }
 
-.ai-inbox__list {
+.ai-inbox-list {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -75,6 +49,50 @@
   gap: var(--s-5);
 }
 
-.ai-inbox__row {
+.ai-inbox-row {
   display: flex;
+}
+
+/* Filter chip rows */
+.ai-inbox-filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.ai-inbox-filter-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+
+.ai-inbox-filter-label {
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: var(--fw-medium);
+  min-width: 96px;
+}
+
+.ai-inbox-chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  color: var(--text-secondary);
+  font-size: var(--fs-xs);
+  padding: 4px var(--s-4);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+.ai-inbox-chip:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+.ai-inbox-chip.is-active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--text);
 }

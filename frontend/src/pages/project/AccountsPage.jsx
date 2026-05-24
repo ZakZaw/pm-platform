@@ -42,16 +42,24 @@ export function AccountsPage() {
   }, [orgSlug, projectSlug]);
 
   return (
-    <div className="page accounts">
-      <header className="page-header">
-        <h1 className="page-title">Accounts</h1>
-        <Button size="sm" onClick={() => setCreating(true)}>
-          <Plus size={13} aria-hidden="true" /> New account
-        </Button>
-      </header>
+    <div className="main-inner accounts">
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>{project?.name ?? 'Sales'}</div>
+            <h1 className="page-title">Accounts</h1>
+            <div className="page-subtitle">
+              Companies you're working with. Track open deals and aggregate value at a glance.
+            </div>
+          </div>
+          <Button size="sm" onClick={() => setCreating(true)}>
+            <Plus size={13} aria-hidden="true" /> New account
+          </Button>
+        </div>
+      </div>
 
       {!accounts ? (
-        <div className="vstack" style={{ gap: 8 }}>
+        <div className="col" style={{ gap: 8 }}>
           {[0, 1, 2, 3].map((i) => (
             <Skeleton key={i} height={48} />
           ))}
@@ -61,8 +69,8 @@ export function AccountsPage() {
           No accounts yet. Create one to start building a pipeline.
         </div>
       ) : (
-        <div className="accounts__table" role="table">
-          <div className="accounts__row accounts__row--head" role="row">
+        <div className="accounts-table" role="table">
+          <div className="accounts-row accounts-row-head" role="row">
             <span role="columnheader">Name</span>
             <span role="columnheader">Domain</span>
             <span role="columnheader">Industry</span>
@@ -70,8 +78,8 @@ export function AccountsPage() {
             <span role="columnheader">Value</span>
           </div>
           {accounts.map((a) => (
-            <div key={a.id} className="accounts__row" role="row">
-              <span role="cell" className="accounts__name">{a.name}</span>
+            <div key={a.id} className="accounts-row" role="row">
+              <span role="cell" className="accounts-name">{a.name}</span>
               <span role="cell" className="muted">{a.domain ?? '—'}</span>
               <span role="cell" className="muted">{a.industry ?? '—'}</span>
               <span role="cell">
@@ -130,7 +138,7 @@ function CreateAccountModal({ projectId, onClose, onCreated }) {
           <h2 id="create-account-title" style={{ margin: 0, fontSize: 16 }}>New account</h2>
         </ModalHeader>
         <ModalBody>
-          <div className="vstack" style={{ gap: 12 }}>
+          <div className="col" style={{ gap: 12 }}>
             <Input label="Name" autoFocus value={name} onChange={(e) => setName(e.target.value)} required />
             <Input label="Domain" value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="acme.com" />
             <Input label="Industry" value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder="SaaS" />

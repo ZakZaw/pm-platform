@@ -128,10 +128,10 @@ export function OrgHomePage() {
     }
   }
 
-  if (error) return <p className="org-home__placeholder">{error}</p>;
+  if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
   if (!org) {
     return (
-      <div className="page org-home" aria-busy="true">
+      <div className="main-inner org-home" aria-busy="true">
         <Skeleton width={220} height={24} />
         <div style={{ height: 16 }} />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
@@ -187,11 +187,11 @@ export function OrgHomePage() {
   ];
 
   return (
-    <div className="page org-home">
-      <header className="org-home__header">
+    <div className="main-inner org-home">
+      <header className="org-home-header">
         <label
           className={[
-            'org-home__logo',
+            'org-home-logo',
             isAdminOrAbove ? 'is-editable' : '',
             uploadingLogo ? 'is-busy' : '',
           ].filter(Boolean).join(' ')}
@@ -200,25 +200,25 @@ export function OrgHomePage() {
           <Avatar src={org.logoUrl} name={org.name} size="xl" />
           {isAdminOrAbove && (
             <>
-              <span className="org-home__logo-overlay" aria-hidden="true">
+              <span className="org-home-logo-overlay" aria-hidden="true">
                 <Camera size={16} />
               </span>
               <input
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
                 onChange={onLogoChange}
-                className="org-home__logo-input"
+                className="org-home-logo-input"
                 aria-label="Upload organization logo"
                 disabled={uploadingLogo}
               />
             </>
           )}
         </label>
-        <div className="grow">
-          <div className="hstack" style={{ gap: 8, alignItems: 'center' }}>
+        <div className="fill">
+          <div className="row" style={{ gap: 8, alignItems: 'center' }}>
             {editingName ? (
               <input
-                className="org-home__title-input"
+                className="org-home-title-input"
                 value={nameDraft}
                 autoFocus
                 maxLength={80}
@@ -238,7 +238,7 @@ export function OrgHomePage() {
               <button
                 type="button"
                 className={[
-                  'org-home__title',
+                  'org-home-title',
                   isAdminOrAbove ? 'is-editable' : '',
                 ].filter(Boolean).join(' ')}
                 onClick={() => {
@@ -249,12 +249,12 @@ export function OrgHomePage() {
                 title={isAdminOrAbove ? 'Click to rename' : undefined}
               >
                 {org.name}
-                {isAdminOrAbove && <Pencil size={12} className="org-home__title-icon" aria-hidden="true" />}
+                {isAdminOrAbove && <Pencil size={12} className="org-home-title-icon" aria-hidden="true" />}
               </button>
             )}
             <Badge tone={ROLE_TONE[org.role] ?? 'neutral'}>{org.role}</Badge>
           </div>
-          <div className="org-home__slug">/{org.slug}</div>
+          <div className="org-home-slug">/{org.slug}</div>
         </div>
         <Link to={`/${slug}/projects/new`}>
           <Button size="sm">
@@ -263,21 +263,21 @@ export function OrgHomePage() {
         </Link>
       </header>
 
-      <div className="org-home__note">
+      <div className="org-home-note">
         <Info size={12} aria-hidden="true" />
         <span>
           Sprint counts, velocity, and activity feed use sample data until org-level analytics ship (Phase 2).
         </span>
       </div>
 
-      <div className="org-home__kpis">
+      <div className="org-home-kpis">
         {kpis.map((k) => {
           const Icon = k.icon;
           return (
-            <Card key={k.label} className="org-home__kpi">
-              <div className="hstack org-home__kpi-head">
+            <Card key={k.label} className="org-home-kpi">
+              <div className="row org-home-kpi-head">
                 <span
-                  className="org-home__kpi-icon"
+                  className="org-home-kpi-icon"
                   style={{
                     background: `var(--status-${k.tone}-bg)`,
                     color: `var(--status-${k.tone})`,
@@ -286,29 +286,29 @@ export function OrgHomePage() {
                 >
                   <Icon size={14} />
                 </span>
-                <span className="org-home__kpi-label">
+                <span className="org-home-kpi-label">
                   {k.label}
-                  {k.placeholder && <span className="org-home__sample"> · sample</span>}
+                  {k.placeholder && <span className="org-home-sample"> · sample</span>}
                 </span>
               </div>
-              <div className="org-home__kpi-value">{k.value}</div>
-              <div className="org-home__kpi-sub">{k.sub}</div>
+              <div className="org-home-kpi-value">{k.value}</div>
+              <div className="org-home-kpi-sub">{k.sub}</div>
             </Card>
           );
         })}
       </div>
 
-      <div className="org-home__grid">
-        <section className="org-home__col-wide">
-          <div className="org-home__section-head">
-            <h2 className="org-home__section-title">
+      <div className="org-home-grid">
+        <section className="org-home-col-wide">
+          <div className="org-home-section-head">
+            <h2 className="org-home-section-title">
               <Briefcase size={14} aria-hidden="true" /> Projects
             </h2>
-            <span className="org-home__count">{projects.length}</span>
+            <span className="org-home-count">{projects.length}</span>
           </div>
 
           {projects.length === 0 ? (
-            <Card className="org-home__empty">
+            <Card className="org-home-empty">
               <Briefcase size={32} aria-hidden="true" />
               <p>No projects yet. Create your first one to start planning work.</p>
               <Link to={`/${slug}/projects/new`}>
@@ -316,15 +316,15 @@ export function OrgHomePage() {
               </Link>
             </Card>
           ) : (
-            <div className="org-home__project-grid">
+            <div className="org-home-project-grid">
               {projects.map((p) => (
                 <Link
                   key={p.id}
                   to={`/${slug}/projects/${p.slug}`}
-                  className="org-home__project-card"
+                  className="org-home-project-card"
                 >
-                  <div className="org-home__project-name">{p.name}</div>
-                  <div className="org-home__project-meta">
+                  <div className="org-home-project-name">{p.name}</div>
+                  <div className="org-home-project-meta">
                     <Badge tone="neutral">{p.type}</Badge>
                     <Badge tone={p.status === 'Active' ? 'success' : 'neutral'}>{p.status}</Badge>
                   </div>
@@ -333,43 +333,43 @@ export function OrgHomePage() {
             </div>
           )}
 
-          <div className="org-home__section-head" style={{ marginTop: 24 }}>
-            <h2 className="org-home__section-title">
+          <div className="org-home-section-head" style={{ marginTop: 24 }}>
+            <h2 className="org-home-section-title">
               <Activity size={14} aria-hidden="true" /> Recent activity
-              <span className="org-home__sample"> · sample</span>
+              <span className="org-home-sample"> · sample</span>
             </h2>
           </div>
           <Card>
-            <ul className="org-home__activity">
+            <ul className="org-home-activity">
               {PLACEHOLDER_ACTIVITY.map((a, i) => (
-                <li key={i} className="org-home__activity-row">
+                <li key={i} className="org-home-activity-row">
                   {a.ai ? (
-                    <span className="org-home__ai-mark" aria-hidden="true">
+                    <span className="org-home-ai-mark" aria-hidden="true">
                       <Sparkles size={12} color="#fff" />
                     </span>
                   ) : (
                     <Avatar name={a.who} color={a.color} size="xs" />
                   )}
-                  <span className="org-home__activity-text">
-                    <span className="org-home__activity-who">{a.who}</span>{' '}
+                  <span className="org-home-activity-text">
+                    <span className="org-home-activity-who">{a.who}</span>{' '}
                     <span className="muted">{a.action}</span>{' '}
-                    <span className="mono org-home__activity-target">{a.target}</span>
+                    <span className="mono org-home-activity-target">{a.target}</span>
                   </span>
-                  <span className="mono dim org-home__activity-time">{a.time}</span>
+                  <span className="mono muted org-home-activity-time">{a.time}</span>
                 </li>
               ))}
             </ul>
           </Card>
         </section>
 
-        <section className="org-home__col-narrow">
-          <div className="org-home__section-head">
-            <h2 className="org-home__section-title">
+        <section className="org-home-col-narrow">
+          <div className="org-home-section-head">
+            <h2 className="org-home-section-title">
               <Users size={14} aria-hidden="true" /> Members
             </h2>
             <Link
               to={`/${slug}/settings/members`}
-              className="org-home__section-link"
+              className="org-home-section-link"
             >
               Manage
             </Link>
@@ -377,7 +377,7 @@ export function OrgHomePage() {
 
           <Card>
             {memberSummary.items.length === 0 ? (
-              <p className="org-home__placeholder" style={{ padding: 0 }}>
+              <p className="muted" style={{ padding: 0 }}>
                 No members loaded.
               </p>
             ) : (
@@ -390,9 +390,9 @@ export function OrgHomePage() {
                   max={6}
                   size="sm"
                 />
-                <ul className="org-home__member-list">
+                <ul className="org-home-member-list">
                   {memberSummary.items.slice(0, 5).map((m) => (
-                    <li key={m.userId} className="org-home__member-row">
+                    <li key={m.userId} className="org-home-member-row">
                       <Avatar name={m.fullName} src={m.avatarUrl} size="xs" />
                       <span className="truncate">{m.fullName}</span>
                       <Badge tone={ROLE_TONE[m.role] ?? 'neutral'}>{m.role}</Badge>
@@ -403,14 +403,14 @@ export function OrgHomePage() {
             )}
           </Card>
 
-          <div className="org-home__section-head" style={{ marginTop: 16 }}>
-            <h2 className="org-home__section-title">
+          <div className="org-home-section-head" style={{ marginTop: 16 }}>
+            <h2 className="org-home-section-title">
               <TrendingUp size={14} aria-hidden="true" /> Velocity
-              <span className="org-home__sample"> · sample</span>
+              <span className="org-home-sample"> · sample</span>
             </h2>
           </div>
           <Card>
-            <div className="org-home__sparkwrap">
+            <div className="org-home-sparkwrap">
               <Sparkline
                 points={PLACEHOLDER_VELOCITY}
                 width={260}
@@ -418,7 +418,7 @@ export function OrgHomePage() {
                 stroke="var(--accent)"
               />
             </div>
-            <div className="org-home__spark-meta">
+            <div className="org-home-spark-meta">
               <span className="mono">{PLACEHOLDER_VELOCITY.at(-1)}</span>
               <span className="muted"> pts last sprint · trend up</span>
             </div>

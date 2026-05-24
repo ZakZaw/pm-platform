@@ -120,10 +120,10 @@ export function DashboardPage() {
     return () => { cancelled = true; };
   }, [orgSlug, projectSlug]);
 
-  if (error) return <p className="dashboard__placeholder">{error}</p>;
+  if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
   if (!project) {
     return (
-      <div className="dashboard" aria-busy="true" style={{ padding: 20 }}>
+      <div className="main-inner dashboard" aria-busy="true">
         <Skeleton width={200} height={20} />
         <div style={{ height: 16 }} />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
@@ -143,15 +143,19 @@ export function DashboardPage() {
 function TypedDashboard({ project, widgets }) {
   const meta = findProjectType(project.type);
   return (
-    <div className="dashboard">
-      <header className="page-header">
-        <div className="hstack" style={{ gap: 8 }}>
-          <Icon name="bar-chart-3" size={14} />
-          <div className="page-title">Dashboard</div>
-          <Badge tone="neutral">{meta?.label ?? project.type}</Badge>
+    <div className="main-inner dashboard">
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>{project.name}</div>
+            <h1 className="page-title row gap-3">
+              <Icon name="bar-chart-3" size={18} /> Dashboard
+              <Badge tone="neutral">{meta?.label ?? project.type}</Badge>
+            </h1>
+          </div>
         </div>
-      </header>
-      <div className="dashboard__typed-grid">
+      </div>
+      <div className="dashboard-typed-grid">
         {widgets.map((Widget, i) => (
           <Widget key={i} project={project} />
         ))}
@@ -260,31 +264,34 @@ function EngineeringDashboard({ project }) {
     { label: 'Avg cycle time', value: '3.2d', delta: '+0.4d', tone: 'warning', icon: 'clock', placeholder: true },
   ];
 
-  if (error) return <p className="dashboard__placeholder">{error}</p>;
+  if (error) return <p className="muted">{error}</p>;
 
   return (
-    <div className="dashboard">
-      <header className="page-header">
-        <div className="hstack" style={{ gap: 8 }}>
-          <Icon name="bar-chart-3" size={14} />
-          <div className="page-title">Dashboard</div>
-          <Badge tone="neutral">Last 30d</Badge>
+    <div className="main-inner dashboard">
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>{project.name}</div>
+            <h1 className="page-title row gap-3">
+              <Icon name="bar-chart-3" size={18} /> Dashboard
+              <Badge tone="neutral">Last 30d</Badge>
+            </h1>
+          </div>
+          <div className="row gap-2">
+            <Button variant="secondary" size="md" disabled>
+              <Icon name="calendar" size={13} /> Last 30 days
+            </Button>
+            <Button variant="secondary" size="md" disabled>
+              <Icon name="share-2" size={13} /> Share
+            </Button>
+            <Button variant="primary" size="md" disabled title="Coming in Phase 2">
+              <Icon name="plus" size={13} /> Add widget
+            </Button>
+          </div>
         </div>
-        <div className="grow" />
-        <div className="hstack" style={{ gap: 6 }}>
-          <Button variant="secondary" size="md" disabled>
-            <Icon name="calendar" size={13} /> Last 30 days
-          </Button>
-          <Button variant="secondary" size="md" disabled>
-            <Icon name="share-2" size={13} /> Share
-          </Button>
-          <Button variant="primary" size="md" disabled title="Coming in Phase 2">
-            <Icon name="plus" size={13} /> Add widget
-          </Button>
-        </div>
-      </header>
+      </div>
 
-      <div className="dashboard__note">
+      <div className="dashboard-note">
         <Icon name="info" size={12} />
         <span>
           Velocity, workload, health signals, and activity feed use sample data until the
@@ -292,13 +299,13 @@ function EngineeringDashboard({ project }) {
         </span>
       </div>
 
-      <div className="dashboard__grid">
+      <div className="dashboard-grid">
         {/* KPI strip */}
         {kpis.map((k) => (
-          <div key={k.label} className="card dashboard__kpi">
-            <div className="hstack dashboard__kpi-head">
+          <div key={k.label} className="card dashboard-kpi">
+            <div className="row dashboard-kpi-head">
               <span
-                className="dashboard__kpi-icon"
+                className="dashboard-kpi-icon"
                 style={{
                   background: `var(--status-${k.tone}-bg)`,
                   color: `var(--status-${k.tone})`,
@@ -306,15 +313,15 @@ function EngineeringDashboard({ project }) {
               >
                 <Icon name={k.icon} size={12} />
               </span>
-              <span className="dashboard__kpi-label">
+              <span className="dashboard-kpi-label">
                 {k.label}
-                {k.placeholder && <span className="dashboard__sample"> · sample</span>}
+                {k.placeholder && <span className="dashboard-sample"> · sample</span>}
               </span>
             </div>
-            <div className="hstack dashboard__kpi-body">
-              <div className="dashboard__kpi-value">{k.value}</div>
+            <div className="row dashboard-kpi-body">
+              <div className="dashboard-kpi-value">{k.value}</div>
               {k.delta && (
-                <div className="mono dashboard__kpi-delta" style={{ color: `var(--status-${k.tone})` }}>
+                <div className="mono dashboard-kpi-delta" style={{ color: `var(--status-${k.tone})` }}>
                   {k.delta}
                 </div>
               )}
@@ -323,11 +330,11 @@ function EngineeringDashboard({ project }) {
         ))}
 
         {/* Burndown */}
-        <div className="card dashboard__wide">
-          <div className="hstack dashboard__widget-head">
+        <div className="card dashboard-wide">
+          <div className="row dashboard-widget-head">
             <div>
-              <div className="dashboard__widget-title">Sprint burndown</div>
-              <div className="muted dashboard__widget-sub">
+              <div className="dashboard-widget-title">Sprint burndown</div>
+              <div className="muted dashboard-widget-sub">
                 {sprint
                   ? `${sprint.name} · ${sprintDone} / ${sprintTotal} pt · ${daysLeft} day${daysLeft === 1 ? '' : 's'} left`
                   : 'No active sprint'}
@@ -339,7 +346,7 @@ function EngineeringDashboard({ project }) {
               </Badge>
             )}
           </div>
-          <div className="dashboard__chart-wrap">
+          <div className="dashboard-chart-wrap">
             <BurndownChart
               total={sprintTotal || 41}
               actual={sprint ? burnPoints : [41, 39, 36, 34, 33, 31, 28, 28, 26, 24, 22]}
@@ -352,29 +359,29 @@ function EngineeringDashboard({ project }) {
         </div>
 
         {/* Velocity */}
-        <div className="card dashboard__wide">
-          <div className="hstack dashboard__widget-head">
+        <div className="card dashboard-wide">
+          <div className="row dashboard-widget-head">
             <div>
-              <div className="dashboard__widget-title">
-                Velocity <span className="dashboard__sample">· sample</span>
+              <div className="dashboard-widget-title">
+                Velocity <span className="dashboard-sample">· sample</span>
               </div>
-              <div className="muted dashboard__widget-sub">Last 7 sprints · committed vs. completed</div>
+              <div className="muted dashboard-widget-sub">Last 7 sprints · committed vs. completed</div>
             </div>
-            <div className="hstack dashboard__legend">
-              <span className="hstack">
-                <span className="dashboard__legend-swatch" style={{ background: 'var(--surface-hover)' }} />
+            <div className="row dashboard-legend">
+              <span className="row">
+                <span className="dashboard-legend-swatch" style={{ background: 'var(--surface-hover)' }} />
                 Committed
               </span>
-              <span className="hstack">
+              <span className="row">
                 <span
-                  className="dashboard__legend-swatch"
+                  className="dashboard-legend-swatch"
                   style={{ background: 'var(--accent)' }}
                 />
                 Completed
               </span>
             </div>
           </div>
-          <div className="dashboard__chart-wrap">
+          <div className="dashboard-chart-wrap">
             <VelocityChart
               sprints={[
                 ...PLACEHOLDER_VELOCITY,
@@ -392,57 +399,57 @@ function EngineeringDashboard({ project }) {
         </div>
 
         {/* Health gauge */}
-        <div className="card dashboard__col-4 dashboard__health">
-          <div className="hstack dashboard__widget-head" style={{ width: '100%' }}>
+        <div className="card dashboard-col-4 dashboard-health">
+          <div className="row dashboard-widget-head" style={{ width: '100%' }}>
             <div>
-              <div className="dashboard__widget-title">
-                Project health <span className="dashboard__sample">· sample</span>
+              <div className="dashboard-widget-title">
+                Project health <span className="dashboard-sample">· sample</span>
               </div>
-              <div className="muted dashboard__widget-sub">composite — 6 signals</div>
+              <div className="muted dashboard-widget-sub">composite — 6 signals</div>
             </div>
             <Badge tone="success">Healthy</Badge>
           </div>
           <HealthGauge score={78} />
-          <div className="dashboard__signals">
+          <div className="dashboard-signals">
             {HEALTH_SIGNALS.map(([label, color, value]) => (
-              <div key={label} className="hstack dashboard__signal">
-                <span className="hstack" style={{ gap: 6 }}>
-                  <span className="dashboard__signal-dot" style={{ background: color }} />
+              <div key={label} className="row dashboard-signal">
+                <span className="row" style={{ gap: 6 }}>
+                  <span className="dashboard-signal-dot" style={{ background: color }} />
                   {label}
                 </span>
-                <span className="mono dim">{value}</span>
+                <span className="mono muted">{value}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Epic progress (live) */}
-        <div className="card dashboard__col-4">
-          <div className="dashboard__widget-title" style={{ marginBottom: 10 }}>
+        <div className="card dashboard-col-4">
+          <div className="dashboard-widget-title" style={{ marginBottom: 10 }}>
             Epic progress
           </div>
           {epicProgress.length === 0 && (
-            <p className="dashboard__placeholder" style={{ padding: 0, fontSize: 12 }}>
+            <p className="muted" style={{ padding: 0, fontSize: 12 }}>
               No epics with tasks yet.
             </p>
           )}
-          <div className="vstack" style={{ gap: 10 }}>
+          <div className="col" style={{ gap: 10 }}>
             {epicProgress.map((e) => {
               const pct = e.total > 0 ? e.done / e.total : 0;
               return (
                 <div key={e.id}>
-                  <div className="hstack dashboard__epic-head">
-                    <span className="hstack" style={{ gap: 6 }}>
-                      <span className="dashboard__epic-swatch" style={{ background: e.color }} />
+                  <div className="row dashboard-epic-head">
+                    <span className="row" style={{ gap: 6 }}>
+                      <span className="dashboard-epic-swatch" style={{ background: e.color }} />
                       <span className="truncate">{e.name}</span>
                     </span>
-                    <span className="mono dim" style={{ fontSize: 11 }}>
+                    <span className="mono muted" style={{ fontSize: 11 }}>
                       {e.done}/{e.total}
                     </span>
                   </div>
-                  <div className="dashboard__epic-track">
+                  <div className="dashboard-epic-track">
                     <div
-                      className="dashboard__epic-fill"
+                      className="dashboard-epic-fill"
                       style={{ width: `${pct * 100}%`, background: e.color }}
                     />
                   </div>
@@ -453,27 +460,27 @@ function EngineeringDashboard({ project }) {
         </div>
 
         {/* AI weekly insight */}
-        <div className="card-ai dashboard__col-4">
-          <div className="hstack" style={{ gap: 8, marginBottom: 8 }}>
+        <div className="card-ai dashboard-col-4">
+          <div className="row" style={{ gap: 8, marginBottom: 8 }}>
             <AIChip label="Weekly insight" variant="soft" />
             <span className="muted" style={{ fontSize: 11 }}>
               · Sample insight
             </span>
           </div>
-          <div className="dashboard__insight-title">You'll likely miss this sprint by ~12 pt</div>
-          <div className="muted dashboard__insight-body">
+          <div className="dashboard-insight-title">You'll likely miss this sprint by ~12 pt</div>
+          <div className="muted dashboard-insight-body">
             Two blockers are accruing time on Auth hardening. Marcus is at 95% capacity. Moving 12 pt to the next sprint keeps velocity within trend.
           </div>
-          <div className="vstack" style={{ gap: 5, marginBottom: 12, fontSize: 12 }}>
-            <div className="hstack" style={{ gap: 6 }}>
+          <div className="col" style={{ gap: 5, marginBottom: 12, fontSize: 12 }}>
+            <div className="row" style={{ gap: 6 }}>
               <Icon name="dot" size={14} color="var(--ai-violet)" />
               Coverage drift detected on /payments
             </div>
-            <div className="hstack" style={{ gap: 6 }}>
+            <div className="row" style={{ gap: 6 }}>
               <Icon name="dot" size={14} color="var(--ai-violet)" />
               Sasha's review queue grew 3× this week
             </div>
-            <div className="hstack" style={{ gap: 6 }}>
+            <div className="row" style={{ gap: 6 }}>
               <Icon name="dot" size={14} color="var(--ai-violet)" />
               Cycle time creeping past 3d threshold
             </div>
@@ -484,32 +491,32 @@ function EngineeringDashboard({ project }) {
         </div>
 
         {/* Workload heatmap */}
-        <div className="card dashboard__col-8">
-          <div className="hstack dashboard__widget-head">
+        <div className="card dashboard-col-8">
+          <div className="row dashboard-widget-head">
             <div>
-              <div className="dashboard__widget-title">
-                Team workload <span className="dashboard__sample">· sample</span>
+              <div className="dashboard-widget-title">
+                Team workload <span className="dashboard-sample">· sample</span>
               </div>
-              <div className="muted dashboard__widget-sub">Daily story-points assigned · last 2 weeks</div>
+              <div className="muted dashboard-widget-sub">Daily story-points assigned · last 2 weeks</div>
             </div>
-            <div className="hstack dashboard__legend">
-              <span className="hstack">
+            <div className="row dashboard-legend">
+              <span className="row">
                 <span
-                  className="dashboard__legend-swatch"
+                  className="dashboard-legend-swatch"
                   style={{ background: 'rgba(91,106,240,0.45)' }}
                 />
                 Healthy
               </span>
-              <span className="hstack">
+              <span className="row">
                 <span
-                  className="dashboard__legend-swatch"
+                  className="dashboard-legend-swatch"
                   style={{ background: 'rgba(224,162,58,0.45)' }}
                 />
                 Stretched
               </span>
-              <span className="hstack">
+              <span className="row">
                 <span
-                  className="dashboard__legend-swatch"
+                  className="dashboard-legend-swatch"
                   style={{ background: 'rgba(229,72,77,0.5)' }}
                 />
                 Overloaded
@@ -520,28 +527,28 @@ function EngineeringDashboard({ project }) {
         </div>
 
         {/* Recent activity */}
-        <div className="card dashboard__col-4">
-          <div className="dashboard__widget-title" style={{ marginBottom: 10 }}>
-            Recent activity <span className="dashboard__sample">· sample</span>
+        <div className="card dashboard-col-4">
+          <div className="dashboard-widget-title" style={{ marginBottom: 10 }}>
+            Recent activity <span className="dashboard-sample">· sample</span>
           </div>
-          <div className="vstack" style={{ gap: 10 }}>
+          <div className="col" style={{ gap: 10 }}>
             {PLACEHOLDER_ACTIVITY.map((a, i) => (
-              <div key={i} className="hstack dashboard__activity">
+              <div key={i} className="row dashboard-activity">
                 {a.ai ? (
-                  <span className="dashboard__ai-mark">
+                  <span className="dashboard-ai-mark">
                     <Icon name="sparkles" size={10} color="#fff" />
                   </span>
                 ) : (
                   <Avatar name={a.who} color={a.color} size="xs" />
                 )}
-                <span className="dashboard__activity-text">
+                <span className="dashboard-activity-text">
                   <span style={{ fontWeight: 500 }}>{a.who}</span>{' '}
                   <span className="muted">{a.action}</span>{' '}
                   <span className="mono" style={{ color: 'var(--accent)' }}>
                     {a.target}
                   </span>
                 </span>
-                <span className="mono dim dashboard__activity-time">{a.time}</span>
+                <span className="mono muted dashboard-activity-time">{a.time}</span>
               </div>
             ))}
           </div>

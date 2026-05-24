@@ -178,14 +178,16 @@ export function BacklogPage() {
     }
   }
 
-  if (error) return <p className="backlog-page__placeholder">{error}</p>;
+  if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
   if (!project) {
     return (
-      <div className="page backlog-page" aria-busy="true">
-        <header className="backlog-page__header">
-          <h1 className="backlog-page__title">Backlog</h1>
-        </header>
-        <div className="backlog-page__sections">
+      <div className="main-inner backlog-page" aria-busy="true">
+        <div className="page-head">
+          <div className="page-title-row">
+            <h1 className="page-title">Backlog</h1>
+          </div>
+        </div>
+        <div className="backlog-page-sections">
           <Card>
             <Skeleton width="40%" height={16} />
             <div style={{ height: 12 }} />
@@ -199,20 +201,23 @@ export function BacklogPage() {
   const totalBacklog = backlog.unassigned?.length ?? 0;
 
   return (
-    <div className="page backlog-page">
-      <header className="backlog-page__header">
-        <div>
-          <h1 className="backlog-page__title">Backlog</h1>
-          <p className="backlog-page__subtitle">
-            Drag a task into a sprint when it's ready, or back to the backlog to unschedule it.
-          </p>
+    <div className="main-inner backlog-page">
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>{project.name}</div>
+            <h1 className="page-title">Backlog</h1>
+            <div className="page-subtitle">
+              Drag a task into a sprint when it's ready, or back to the backlog to unschedule it.
+            </div>
+          </div>
+          <div className="row gap-2">
+            <Button variant="ai" onClick={() => setAiOpen(true)}>
+              <Sparkles size={13} aria-hidden="true" /> AI tasks
+            </Button>
+          </div>
         </div>
-        <div className="hstack" style={{ gap: 8 }}>
-          <Button variant="ai" onClick={() => setAiOpen(true)}>
-            <Sparkles size={13} aria-hidden="true" /> AI tasks
-          </Button>
-        </div>
-      </header>
+      </div>
 
       <AITaskListWizardModal
         open={aiOpen}
@@ -228,7 +233,7 @@ export function BacklogPage() {
       />
 
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        <div className="backlog-page__sections">
+        <div className="backlog-page-sections">
           <BacklogSection
             tasks={backlog.unassigned}
             memberById={memberById}
@@ -285,20 +290,20 @@ function BacklogSection({ tasks, memberById, epicById, onOpen, onCreate, creatin
   return (
     <Card
       className={[
-        'backlog-page__section',
-        'backlog-page__section--primary',
+        'backlog-page-section',
+        'is-primary',
         isOver ? 'is-over' : '',
       ].filter(Boolean).join(' ')}
     >
-      <header className="backlog-page__section-head">
-        <h2 className="backlog-page__section-title">Backlog</h2>
-        <span className="backlog-page__count">{count} tasks</span>
+      <header className="backlog-page-section-head">
+        <h2 className="backlog-page-section-title">Backlog</h2>
+        <span className="backlog-page-count">{count} tasks</span>
       </header>
 
-      <form className="backlog-page__create" onSubmit={submit}>
+      <form className="backlog-page-create" onSubmit={submit}>
         <input
           type="text"
-          className="backlog-page__create-input"
+          className="backlog-page-create-input"
           placeholder="Add a task to the backlog…"
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
@@ -313,13 +318,13 @@ function BacklogSection({ tasks, memberById, epicById, onOpen, onCreate, creatin
         </Button>
       </form>
 
-      <div ref={setNodeRef} className="backlog-page__droparea">
+      <div ref={setNodeRef} className="backlog-page-droparea">
         {tasks.length === 0 ? (
-          <p className="backlog-page__placeholder">
+          <p className="backlog-page-placeholder">
             {isOver ? 'Drop here to unschedule.' : 'Backlog is empty.'}
           </p>
         ) : (
-          <ul className="backlog-page__items">
+          <ul className="backlog-page-items">
             {tasks.map((t) => (
               <DraggableRow
                 key={t.id}
@@ -348,21 +353,21 @@ function SprintSection({ section, memberById, epicById, onOpen, onCreate, creati
 
   return (
     <Card
-      className={['backlog-page__section', isOver ? 'is-over' : ''].filter(Boolean).join(' ')}
+      className={['backlog-page-section', isOver ? 'is-over' : ''].filter(Boolean).join(' ')}
     >
-      <header className="backlog-page__section-head">
-        <h2 className="backlog-page__section-title">{section.name}</h2>
+      <header className="backlog-page-section-head">
+        <h2 className="backlog-page-section-title">{section.name}</h2>
         <Badge tone={section.status === 'Active' ? 'success' : 'neutral'}>{section.status}</Badge>
-        <span className="backlog-page__count">
+        <span className="backlog-page-count">
           {section.tasks.length} · {section.donePoints}/{section.totalPoints} pts
         </span>
       </header>
 
       {section.status !== 'Closed' && (
-        <form className="backlog-page__create" onSubmit={submit}>
+        <form className="backlog-page-create" onSubmit={submit}>
           <input
             type="text"
-            className="backlog-page__create-input"
+            className="backlog-page-create-input"
             placeholder={`Add a task to ${section.name}…`}
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
@@ -378,13 +383,13 @@ function SprintSection({ section, memberById, epicById, onOpen, onCreate, creati
         </form>
       )}
 
-      <div ref={setNodeRef} className="backlog-page__droparea">
+      <div ref={setNodeRef} className="backlog-page-droparea">
         {section.tasks.length === 0 ? (
-          <p className="backlog-page__placeholder">
+          <p className="backlog-page-placeholder">
             {isOver ? 'Drop here to add to this sprint.' : 'No tasks in this sprint.'}
           </p>
         ) : (
-          <ul className="backlog-page__items">
+          <ul className="backlog-page-items">
             {section.tasks.map((t) => (
               <DraggableRow
                 key={t.id}
@@ -419,7 +424,7 @@ function DraggableRow({ task, assignee, epic, onOpen }) {
     <li
       ref={setNodeRef}
       style={style}
-      className="backlog-page__item is-interactive"
+      className="backlog-page-item is-interactive"
       role="button"
       tabIndex={0}
       onClick={(e) => {
@@ -441,7 +446,7 @@ function DraggableRow({ task, assignee, epic, onOpen }) {
 function DragRow({ task, assignee, epic }) {
   return (
     <li
-      className="backlog-page__item is-overlay"
+      className="backlog-page-item is-overlay"
       style={{ listStyle: 'none', boxShadow: 'var(--shadow-lg)' }}
     >
       <Row task={task} assignee={assignee} epic={epic} />
@@ -453,25 +458,25 @@ function Row({ task, assignee, epic }) {
   return (
     <>
       <span
-        className="backlog-page__epic-color"
+        className="backlog-page-epic-color"
         style={{ background: epic?.color || 'var(--accent)' }}
         title={epic ? `Epic: ${epic.title}` : 'No epic'}
         aria-hidden="true"
       />
-      <span className="backlog-page__item-title">{task.title}</span>
-      <div className="backlog-page__item-meta">
+      <span className="backlog-page-item-title">{task.title}</span>
+      <div className="backlog-page-item-meta">
         {epic && <Badge tone="neutral">{epic.title}</Badge>}
         <Badge tone="info">{task.priority}</Badge>
         {task.storyPoints != null && <Badge tone="purple">{task.storyPoints} pts</Badge>}
         {task.subtaskCount > 0 && (
-          <span className="backlog-page__subtasks">
+          <span className="backlog-page-subtasks">
             {task.completedSubtaskCount}/{task.subtaskCount}
           </span>
         )}
         {assignee ? (
           <Avatar src={assignee.avatarUrl} name={assignee.fullName} size="xs" />
         ) : (
-          <span className="backlog-page__unassigned" title="Unassigned" />
+          <span className="backlog-page-unassigned" title="Unassigned" />
         )}
       </div>
     </>

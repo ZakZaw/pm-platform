@@ -1,41 +1,21 @@
-.epics-page__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--s-7);
-}
+/* Engineering epics page — grid of EpicCard tiles with the standard
+   page-head + main-inner wrapper from stratos.css. */
 
-.epics-page__title {
-  font-size: var(--fs-2xl);
-  font-weight: var(--fw-semibold);
-  margin: 0;
-}
-
-.epics-page__actions {
-  display: flex;
-  align-items: center;
-  gap: var(--s-5);
-}
-
-.epics-page__toggle {
+.epics-page-toggle {
   display: inline-flex;
   align-items: center;
-  gap: var(--s-4);
+  gap: var(--s-3);
   color: var(--text-secondary);
   font-size: var(--fs-md);
 }
 
-.epics-page__form-card {
+.epics-page-form-card {
   padding: var(--s-6);
   margin-bottom: var(--s-6);
 }
 
-.epics-page__grid {
+.epics-page-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--s-5);
-}
-
-.epics-page__placeholder {
-  color: var(--text-muted);
 }

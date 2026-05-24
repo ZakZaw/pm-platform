@@ -1,29 +1,16 @@
+/* Workflow settings — drag-sortable status rows + add form.
+   Header is the stratos page-head; only domain bits live here. */
+
 .workflow {
   max-width: 1100px;
 }
 
-.workflow__header {
-  margin-bottom: var(--s-8);
-}
-
-.workflow__title {
-  font-size: var(--fs-2xl);
-  font-weight: var(--fw-semibold);
-  letter-spacing: -0.01em;
-  margin: 0 0 var(--s-4);
-}
-
-.workflow__sub {
-  color: var(--text-muted);
-  font-size: var(--fs-md);
-  margin: 0;
-}
-
-.workflow__card {
+.workflow-card {
   padding: var(--s-6);
+  margin-bottom: var(--s-6);
 }
 
-.workflow__list {
+.workflow-list {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -31,7 +18,7 @@
   gap: var(--s-4);
 }
 
-.workflow__row {
+.workflow-row {
   display: grid;
   grid-template-columns: auto auto minmax(160px, 1fr) 180px auto auto auto auto;
   align-items: center;
@@ -42,7 +29,7 @@
   border-radius: var(--r-md);
 }
 
-.workflow__delete {
+.workflow-delete {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -55,13 +42,13 @@
   border-radius: var(--r-sm);
 }
 
-.workflow__delete:hover {
+.workflow-delete:hover {
   background: var(--danger-soft);
   color: var(--danger);
   border-color: var(--danger-border);
 }
 
-.workflow__add {
+.workflow-add {
   display: grid;
   grid-template-columns: minmax(160px, 1fr) minmax(180px, 1fr) minmax(120px, 200px) auto;
   align-items: end;
@@ -69,12 +56,12 @@
 }
 
 @media (max-width: 900px) {
-  .workflow__add {
+  .workflow-add {
     grid-template-columns: 1fr;
   }
 }
 
-.workflow__handle {
+.workflow-handle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -87,35 +74,30 @@
   border-radius: var(--r-sm);
 }
 
-.workflow__handle:hover {
+.workflow-handle:hover {
   background: var(--surface-hover);
   color: var(--text-secondary);
 }
 
-.workflow__toggle {
+.workflow-toggle {
   display: inline-flex;
   align-items: center;
-  gap: var(--s-4);
+  gap: var(--s-3);
   font-size: var(--fs-xs);
   color: var(--text-secondary);
   user-select: none;
   cursor: pointer;
 }
 
-.workflow__system {
+.workflow-system {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   color: var(--text-muted);
   white-space: nowrap;
 }
 
-.workflow__placeholder {
-  color: var(--text-muted);
-  font-size: var(--fs-md);
-}
-
 @media (max-width: 900px) {
-  .workflow__row {
+  .workflow-row {
     grid-template-columns: 1fr;
     align-items: stretch;
   }

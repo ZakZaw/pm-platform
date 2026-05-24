@@ -75,25 +75,31 @@ export function CampaignsPage() {
   }, [orgSlug, projectSlug]);
 
   if (error) {
-    return <div className="page"><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
+    return <div className="main-inner"><p className="muted">{error}</p></div>;
   }
 
   return (
-    <div className="page campaigns-page">
-      <header className="page-header">
-        <div className="hstack" style={{ gap: 12, alignItems: 'baseline' }}>
-          <h1 className="page-title">Campaigns</h1>
-          {campaigns && (
-            <span className="muted">· {campaigns.length} total</span>
-          )}
+    <div className="main-inner campaigns-page">
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>{project?.name ?? 'Marketing'}</div>
+            <h1 className="page-title row gap-3">
+              Campaigns
+              {campaigns && <Badge tone="neutral">{campaigns.length}</Badge>}
+            </h1>
+            <div className="page-subtitle">
+              Group assets, tasks, and budget under a campaign. Track progress per channel.
+            </div>
+          </div>
+          <Button size="sm" onClick={() => setCreating(true)}>
+            <Plus size={13} aria-hidden="true" /> New campaign
+          </Button>
         </div>
-        <Button size="sm" onClick={() => setCreating(true)}>
-          <Plus size={13} aria-hidden="true" /> New campaign
-        </Button>
-      </header>
+      </div>
 
       {!campaigns ? (
-        <div className="vstack" style={{ gap: 8 }}>
+        <div className="col" style={{ gap: 8 }}>
           {[0, 1, 2].map((i) => <Skeleton key={i} height={72} />)}
         </div>
       ) : campaigns.length === 0 ? (
@@ -105,7 +111,7 @@ export function CampaignsPage() {
           <Button onClick={() => setCreating(true)}>Create a campaign</Button>
         </EmptyState>
       ) : (
-        <div className="campaigns-page__list">
+        <div className="campaigns-page-list">
           {campaigns.map((c) => {
             const tokens = channelTokens(c.channel);
             const pct = c.assetCount === 0 ? 0
@@ -125,10 +131,10 @@ export function CampaignsPage() {
                   }
                 }}
               >
-                <div className="campaign-card__channel-bar" style={{ background: tokens.fg }} aria-hidden="true" />
-                <div className="campaign-card__head">
-                  <span className="campaign-card__title">{c.name}</span>
-                  <div className="campaign-card__meta">
+                <div className="campaign-card-channel-bar" style={{ background: tokens.fg }} aria-hidden="true" />
+                <div className="campaign-card-head">
+                  <span className="campaign-card-title">{c.name}</span>
+                  <div className="campaign-card-meta">
                     <Badge
                       style={{ background: tokens.bg, color: tokens.fg, borderColor: 'transparent' }}
                     >
@@ -141,12 +147,12 @@ export function CampaignsPage() {
                     {budget && <span className="mono">{budget}</span>}
                   </div>
                 </div>
-                <div className="campaign-card__progress">
+                <div className="campaign-card-progress">
                   <span className="muted" style={{ fontSize: 11 }}>
                     {c.publishedAssetCount}/{c.assetCount} assets · {c.doneTaskCount}/{c.taskCount} tasks
                   </span>
-                  <div className="campaign-card__bar">
-                    <div className="campaign-card__bar-fill" style={{ width: `${pct}%` }} />
+                  <div className="campaign-card-bar">
+                    <div className="campaign-card-bar-fill" style={{ width: `${pct}%` }} />
                   </div>
                 </div>
               </div>
@@ -215,7 +221,7 @@ function CreateCampaignModal({ projectId, onClose, onCreated }) {
           <h2 id="create-campaign-title" style={{ margin: 0, fontSize: 16 }}>New campaign</h2>
         </ModalHeader>
         <ModalBody>
-          <div className="vstack" style={{ gap: 12 }}>
+          <div className="col" style={{ gap: 12 }}>
             <Input
               label="Name"
               autoFocus

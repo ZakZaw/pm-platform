@@ -49,23 +49,31 @@ export function LeadsPage() {
   }, [orgSlug, projectSlug, filter]);
 
   return (
-    <div className="page leads">
-      <header className="page-header">
-        <h1 className="page-title">Leads</h1>
-        <div className="hstack" style={{ gap: 8 }}>
-          <Select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            options={STATUS_FILTERS}
-          />
-          <Button size="sm" onClick={() => setCreating(true)}>
-            <Plus size={13} aria-hidden="true" /> New lead
-          </Button>
+    <div className="main-inner leads">
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>{project?.name ?? 'Sales'}</div>
+            <h1 className="page-title">Leads</h1>
+            <div className="page-subtitle">
+              Inbound and outbound prospects. Convert qualified leads into deals on your pipeline.
+            </div>
+          </div>
+          <div className="row gap-2">
+            <Select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              options={STATUS_FILTERS}
+            />
+            <Button size="sm" onClick={() => setCreating(true)}>
+              <Plus size={13} aria-hidden="true" /> New lead
+            </Button>
+          </div>
         </div>
-      </header>
+      </div>
 
       {!leads ? (
-        <div className="vstack" style={{ gap: 8 }}>
+        <div className="col" style={{ gap: 8 }}>
           {[0, 1, 2, 3].map((i) => <Skeleton key={i} height={48} />)}
         </div>
       ) : leads.length === 0 ? (
@@ -73,11 +81,11 @@ export function LeadsPage() {
           {filter ? `No ${filter} leads.` : 'No leads yet.'}
         </div>
       ) : (
-        <div className="leads__list">
+        <div className="leads-list">
           {leads.map((l) => (
-            <div key={l.id} className="leads__row">
-              <div className="grow">
-                <div className="leads__name">{l.name}</div>
+            <div key={l.id} className="leads-row">
+              <div className="fill">
+                <div className="leads-name">{l.name}</div>
                 <div className="muted" style={{ fontSize: 12 }}>
                   {[l.email, l.phone, l.source].filter(Boolean).join(' · ') || '—'}
                 </div>
@@ -157,7 +165,7 @@ function CreateLeadModal({ projectId, onClose, onCreated }) {
       <form onSubmit={submit}>
         <ModalHeader><h2 id="create-lead-title" style={{ margin: 0, fontSize: 16 }}>New lead</h2></ModalHeader>
         <ModalBody>
-          <div className="vstack" style={{ gap: 12 }}>
+          <div className="col" style={{ gap: 12 }}>
             <Input label="Name" autoFocus value={name} onChange={(e) => setName(e.target.value)} required />
             <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             <Input label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
@@ -216,7 +224,7 @@ function ConvertLeadModal({ projectId, lead, onClose, onConverted }) {
           <h2 id="convert-lead-title" style={{ margin: 0, fontSize: 16 }}>Convert lead</h2>
         </ModalHeader>
         <ModalBody>
-          <div className="vstack" style={{ gap: 12 }}>
+          <div className="col" style={{ gap: 12 }}>
             {!lead.accountId && (
               <Input
                 label="Account name"

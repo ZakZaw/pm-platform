@@ -42,12 +42,14 @@ export function ProjectHomePage() {
     };
   }, [orgSlug, projectSlug]);
 
-  if (error) return <p className="project-home__placeholder">{error}</p>;
+  if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
   if (!project) {
     return (
-      <div className="page project-home" aria-busy="true">
-        <div className="project-home__header">
-          <Skeleton width="40%" height={22} />
+      <div className="main-inner project-home" aria-busy="true">
+        <div className="page-head">
+          <div className="page-title-row">
+            <Skeleton width="40%" height={22} />
+          </div>
         </div>
         <Card>
           <Skeleton rows={3} />
@@ -61,45 +63,50 @@ export function ProjectHomePage() {
   }
 
   return (
-    <div className="page project-home">
-      <div className="project-home__header">
-        <Briefcase className="project-home__icon" aria-hidden="true" />
-        <div className="project-home__heading">
-          <div className="project-home__title">{project.name}</div>
-          <div className="project-home__meta">
-            <Badge tone="neutral">{project.type}</Badge>
-            <Badge tone={project.status === 'Active' ? 'success' : 'neutral'}>
-              {project.status}
-            </Badge>
-            <span className="project-home__slug">/{project.slug}</span>
+    <div className="main-inner project-home">
+      <div className="page-head">
+        <div className="page-title-row">
+          <div className="row gap-4 fill">
+            <Briefcase className="project-home-icon" aria-hidden="true" />
+            <div className="fill">
+              <div className="eyebrow" style={{ marginBottom: 6 }}>Project home</div>
+              <h1 className="page-title">{project.name}</h1>
+              <div className="project-home-meta">
+                <Badge tone="neutral">{project.type}</Badge>
+                <Badge tone={project.status === 'Active' ? 'success' : 'neutral'}>
+                  {project.status}
+                </Badge>
+                <span className="project-home-slug">/{project.slug}</span>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="project-home__cta">
-          <Link to={`/${orgSlug}/projects/${projectSlug}/board`}>
-            <Button variant="secondary" size="sm">
-              <KanbanSquare size={14} aria-hidden="true" /> Open board
-            </Button>
-          </Link>
-          <Link to={`/${orgSlug}/projects/${projectSlug}/backlog`}>
-            <Button size="sm">
-              <Plus size={14} aria-hidden="true" /> Plan backlog
-            </Button>
-          </Link>
+          <div className="row gap-2">
+            <Link to={`/${orgSlug}/projects/${projectSlug}/board`}>
+              <Button variant="secondary" size="sm">
+                <KanbanSquare size={14} aria-hidden="true" /> Open board
+              </Button>
+            </Link>
+            <Link to={`/${orgSlug}/projects/${projectSlug}/backlog`}>
+              <Button size="sm">
+                <Plus size={14} aria-hidden="true" /> Plan backlog
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
-      <div className="project-home__grid">
-        <Card className="project-home__sprint-card" title="Active sprint">
+      <div className="project-home-grid">
+        <Card className="project-home-sprint-card" title="Active sprint">
           {activeSprint ? (
             <>
-              <div className="project-home__sprint-name">{activeSprint.name}</div>
-              <div className="project-home__sprint-meta">
+              <div className="project-home-sprint-name">{activeSprint.name}</div>
+              <div className="project-home-sprint-meta">
                 <Calendar size={14} aria-hidden="true" />
                 <span>
                   {fmt(activeSprint.startDate)} → {fmt(activeSprint.endDate)}
                 </span>
               </div>
-              <div className="project-home__sprint-actions">
+              <div className="project-home-sprint-actions">
                 <Link to={`/${orgSlug}/projects/${projectSlug}/board`}>
                   <Button variant="ghost" size="sm">View board</Button>
                 </Link>
@@ -110,7 +117,7 @@ export function ProjectHomePage() {
             </>
           ) : (
             <>
-              <p className="project-home__placeholder">No active sprint right now.</p>
+              <p className="muted">No active sprint right now.</p>
               <Link to={`/${orgSlug}/projects/${projectSlug}/sprints`}>
                 <Button size="sm">Create a sprint</Button>
               </Link>
@@ -118,18 +125,18 @@ export function ProjectHomePage() {
           )}
         </Card>
 
-        <Card className="project-home__quick" title="Jump in">
-          <div className="project-home__quick-list">
-            <Link to={`/${orgSlug}/projects/${projectSlug}/epics`} className="project-home__quick-link">
+        <Card className="project-home-quick" title="Jump in">
+          <div className="project-home-quick-list">
+            <Link to={`/${orgSlug}/projects/${projectSlug}/epics`} className="project-home-quick-link">
               <Layers size={16} aria-hidden="true" />
               <span>Epics</span>
-              <span className="project-home__quick-count">{epics.length}</span>
+              <span className="project-home-quick-count">{epics.length}</span>
             </Link>
-            <Link to={`/${orgSlug}/projects/${projectSlug}/backlog`} className="project-home__quick-link">
+            <Link to={`/${orgSlug}/projects/${projectSlug}/backlog`} className="project-home-quick-link">
               <ListTodo size={16} aria-hidden="true" />
               <span>Backlog</span>
             </Link>
-            <Link to={`/${orgSlug}/projects/${projectSlug}/board`} className="project-home__quick-link">
+            <Link to={`/${orgSlug}/projects/${projectSlug}/board`} className="project-home-quick-link">
               <KanbanSquare size={16} aria-hidden="true" />
               <span>Board</span>
             </Link>
@@ -137,9 +144,9 @@ export function ProjectHomePage() {
         </Card>
       </div>
 
-      <section className="project-home__section">
-        <header className="project-home__section-header">
-          <h2 className="project-home__section-title">
+      <section className="project-home-section">
+        <header className="project-home-section-header">
+          <h2 className="project-home-section-title">
             <Layers size={16} aria-hidden="true" /> Epics
           </h2>
           <Link to={`/${orgSlug}/projects/${projectSlug}/epics`}>
@@ -148,14 +155,14 @@ export function ProjectHomePage() {
         </header>
 
         {epics.length === 0 ? (
-          <Card className="project-home__empty">
+          <Card className="project-home-empty">
             <p>No epics yet. Group related work under an epic to track progress at a glance.</p>
             <Link to={`/${orgSlug}/projects/${projectSlug}/epics`}>
               <Button size="sm">Create your first epic</Button>
             </Link>
           </Card>
         ) : (
-          <div className="project-home__epic-grid">
+          <div className="project-home-epic-grid">
             {epics.slice(0, 3).map((e) => (
               <EpicCard key={e.id} epic={e} orgSlug={orgSlug} projectSlug={projectSlug} />
             ))}
@@ -163,18 +170,18 @@ export function ProjectHomePage() {
         )}
       </section>
 
-      <section className="project-home__section">
-        <header className="project-home__section-header">
-          <h2 className="project-home__section-title">Recent tasks</h2>
+      <section className="project-home-section">
+        <header className="project-home-section-header">
+          <h2 className="project-home-section-title">Recent tasks</h2>
         </header>
         {recentTasks.length === 0 ? (
-          <p className="project-home__placeholder">No tasks yet.</p>
+          <p className="muted">No tasks yet.</p>
         ) : (
           <Card>
-            <ul className="project-home__story-list">
+            <ul className="project-home-story-list">
               {recentTasks.map((t) => (
-                <li key={t.id} className="project-home__story-link">
-                  <span className="project-home__story-title">{t.title}</span>
+                <li key={t.id} className="project-home-story-link">
+                  <span className="project-home-story-title">{t.title}</span>
                   <Badge tone="neutral">{t.status}</Badge>
                 </li>
               ))}

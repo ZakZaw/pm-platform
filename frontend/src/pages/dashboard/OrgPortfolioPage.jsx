@@ -42,28 +42,33 @@ export function OrgPortfolioPage() {
     ? projects
     : projects.filter((p) => p.type === activeFilter);
 
-  if (error) return <p className="portfolio-page__error">{error}</p>;
+  if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
 
   return (
-    <div className="page portfolio-page">
-      <header className="page-header">
-        <div className="hstack" style={{ gap: 8 }}>
-          <Icon name="briefcase" size={14} />
-          <div className="page-title">Portfolio</div>
-          <Badge tone="neutral">{projects.length}</Badge>
+    <div className="main-inner portfolio-page">
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>Organisation</div>
+            <h1 className="page-title row gap-3">
+              <Icon name="briefcase" size={18} />
+              Portfolio
+              <Badge tone="neutral">{projects.length}</Badge>
+            </h1>
+            <div className="page-subtitle">
+              Every project in this organisation, summarised by its type.
+            </div>
+          </div>
         </div>
-        <p className="portfolio-page__sub">
-          Every project in this organisation, summarised by its type.
-        </p>
-      </header>
+      </div>
 
       {typesPresent.length > 1 && (
-        <div className="portfolio-page__filters">
-          <span className="muted portfolio-page__filter-label">Project type</span>
+        <div className="portfolio-page-filters">
+          <span className="muted portfolio-page-filter-label">Project type</span>
           <button
             type="button"
             onClick={() => setActiveFilter('All')}
-            className={['portfolio-page__chip', activeFilter === 'All' ? 'is-active' : ''].filter(Boolean).join(' ')}
+            className={['portfolio-page-chip', activeFilter === 'All' ? 'is-active' : ''].filter(Boolean).join(' ')}
           >All</button>
           {typesPresent.map((t) => {
             const TypeIcon = t.icon;
@@ -72,7 +77,7 @@ export function OrgPortfolioPage() {
                 key={t.id}
                 type="button"
                 onClick={() => setActiveFilter(t.id)}
-                className={['portfolio-page__chip', activeFilter === t.id ? 'is-active' : ''].filter(Boolean).join(' ')}
+                className={['portfolio-page-chip', activeFilter === t.id ? 'is-active' : ''].filter(Boolean).join(' ')}
               >
                 <TypeIcon size={11} aria-hidden="true" />
                 {t.label}
@@ -83,36 +88,36 @@ export function OrgPortfolioPage() {
       )}
 
       {loading ? (
-        <p className="portfolio-page__placeholder">Loading…</p>
+        <p className="muted">Loading…</p>
       ) : projects.length === 0 ? (
-        <p className="portfolio-page__placeholder">No projects in this organisation yet.</p>
+        <p className="muted">No projects in this organisation yet.</p>
       ) : filtered.length === 0 ? (
-        <p className="portfolio-page__placeholder">No projects match this filter.</p>
+        <p className="muted">No projects match this filter.</p>
       ) : (
-        <ul className="portfolio-page__grid">
+        <ul className="portfolio-page-grid">
           {filtered.map((p) => {
             const Summary = summaryForType(p.type);
             const meta = findProjectType(p.type);
             const TypeIcon = meta?.icon;
             return (
-              <li key={p.id} className="portfolio-page__item">
+              <li key={p.id} className="portfolio-page-item">
                 <Link
                   to={`/${slug}/projects/${p.slug}/dashboard`}
-                  className="portfolio-page__item-head"
+                  className="portfolio-page-item-head"
                 >
-                  <span className="hstack" style={{ gap: 6 }}>
+                  <span className="row" style={{ gap: 6 }}>
                     {TypeIcon && <TypeIcon size={12} aria-hidden="true" />}
-                    <span className="portfolio-page__item-title">{p.name}</span>
+                    <span className="portfolio-page-item-title">{p.name}</span>
                   </span>
-                  <span className="hstack" style={{ gap: 6 }}>
+                  <span className="row" style={{ gap: 6 }}>
                     <Badge tone="neutral">{meta?.label ?? p.type}</Badge>
-                    <span className="mono dim portfolio-page__item-key">{p.key}</span>
+                    <span className="mono muted portfolio-page-item-key">{p.key}</span>
                   </span>
                 </Link>
                 {Summary ? (
                   <Summary project={p} />
                 ) : (
-                  <p className="muted portfolio-page__no-summary">
+                  <p className="muted portfolio-page-no-summary">
                     No summary registered for {p.type}.
                   </p>
                 )}

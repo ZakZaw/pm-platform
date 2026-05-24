@@ -116,21 +116,26 @@ export function ProjectMembersPage() {
     }
   }
 
-  if (loading) return <p className="pmembers__placeholder">Loading…</p>;
-  if (error) return <p className="pmembers__placeholder">{error}</p>;
+  if (loading) return <div className="main-inner"><p className="muted">Loading…</p></div>;
+  if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
 
   return (
-    <div className="page pmembers">
+    <div className="main-inner pmembers">
       {dialog}
-      <header className="pmembers__header">
-        <h1 className="pmembers__title">Project members</h1>
-        <p className="pmembers__sub">
-          Only members of {project?.orgSlug ? `the "${project.orgSlug}" org` : 'this organisation'} can be added.
-        </p>
-      </header>
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>{project?.name ?? 'Project'}</div>
+            <h1 className="page-title">Members</h1>
+            <div className="page-subtitle">
+              Only members of {project?.orgSlug ? `the "${project.orgSlug}" org` : 'this organisation'} can be added.
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <Card className="pmembers__card" title="Add a member">
-        <div className="pmembers__add">
+      <Card className="pmembers-card" title="Add a member">
+        <div className="pmembers-add">
           <Select
             label="Org member"
             value={pickUserId}
@@ -155,17 +160,17 @@ export function ProjectMembersPage() {
         </div>
       </Card>
 
-      <Card className="pmembers__card" title={`Members (${members.length})`}>
+      <Card className="pmembers-card" title={`Members (${members.length})`}>
         {members.length === 0 ? (
-          <p className="pmembers__placeholder">No members yet.</p>
+          <p className="muted">No members yet.</p>
         ) : (
-          <ul className="pmembers__list">
+          <ul className="pmembers-list">
             {members.map((m) => (
-              <li key={m.userId} className="pmembers__row">
+              <li key={m.userId} className="pmembers-row">
                 <Avatar src={m.avatarUrl} name={m.fullName} size="sm" />
-                <div className="pmembers__row-name">
+                <div className="pmembers-row-name">
                   <div>{m.fullName}</div>
-                  <div className="pmembers__row-email">{m.email}</div>
+                  <div className="pmembers-row-email">{m.email}</div>
                 </div>
                 <Badge tone={ROLE_TONE[m.role] ?? 'neutral'}>{m.role}</Badge>
                 <Select
@@ -176,7 +181,7 @@ export function ProjectMembersPage() {
                 />
                 <button
                   type="button"
-                  className="pmembers__delete"
+                  className="pmembers-delete"
                   onClick={() => removeMember(m.userId)}
                   aria-label={`Remove ${m.fullName}`}
                 >

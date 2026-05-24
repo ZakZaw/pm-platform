@@ -164,36 +164,36 @@ export function EpicDetailPage() {
     }
   }
 
-  if (error) return <p className="epic-detail__placeholder">{error}</p>;
-  if (!epic || !project) return <p className="epic-detail__placeholder">Loading…</p>;
+  if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
+  if (!epic || !project) return <div className="main-inner"><p className="muted">Loading…</p></div>;
 
   const pct = epic.totalStoryPoints > 0
     ? Math.round((epic.doneStoryPoints / epic.totalStoryPoints) * 100)
     : 0;
 
   return (
-    <div className="page epic-detail">
+    <div className="main-inner epic-detail">
       <Link
         to={`/${orgSlug}/projects/${projectSlug}/epics`}
-        className="epic-detail__back"
+        className="epic-detail-back"
       >
         <ChevronLeft size={14} aria-hidden="true" /> Epics
       </Link>
 
       <header
-        className="epic-detail__header"
+        className="epic-detail-header"
         style={{ '--epic-color': epic.color || 'var(--accent)' }}
       >
         <span
-          className="epic-detail__color"
+          className="epic-detail-color"
           style={{ background: epic.color || 'var(--accent)' }}
         />
-        <div className="epic-detail__head-text">
-          <div className="epic-detail__head-row">
+        <div className="epic-detail-head-text">
+          <div className="epic-detail-head-row">
             <Layers size={18} aria-hidden="true" style={{ color: epic.color || 'var(--accent)' }} />
             {editingTitle ? (
               <input
-                className="epic-detail__title-input"
+                className="epic-detail-title-input"
                 value={titleDraft}
                 autoFocus
                 maxLength={200}
@@ -212,7 +212,7 @@ export function EpicDetailPage() {
             ) : (
               <button
                 type="button"
-                className="epic-detail__title epic-detail__title--edit"
+                className="epic-detail-title epic-detail-title-edit"
                 onClick={() => setEditingTitle(true)}
                 title="Click to rename"
               >
@@ -220,7 +220,7 @@ export function EpicDetailPage() {
               </button>
             )}
             <select
-              className="epic-detail__status"
+              className="epic-detail-status"
               value={epic.status}
               onChange={(e) => patch({ status: e.target.value }, 'Could not change status.')}
               aria-label="Epic status"
@@ -229,7 +229,7 @@ export function EpicDetailPage() {
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
-            <label className="epic-detail__risk">
+            <label className="epic-detail-risk">
               <input
                 type="checkbox"
                 checked={epic.riskFlag}
@@ -238,7 +238,7 @@ export function EpicDetailPage() {
               <span>At risk</span>
             </label>
           </div>
-          <div className="epic-detail__meta">
+          <div className="epic-detail-meta">
             <span>{epic.taskCount} {epic.taskCount === 1 ? 'task' : 'tasks'}</span>
             <span>·</span>
             <span>{epic.doneStoryPoints}/{epic.totalStoryPoints} pts</span>
@@ -246,18 +246,18 @@ export function EpicDetailPage() {
             <span>{pct}% complete</span>
             <Badge tone={STATUS_TONE[epic.status] ?? 'neutral'}>{epic.status}</Badge>
           </div>
-          <div className="epic-detail__bar" aria-label={`Progress ${pct}%`}>
-            <div className="epic-detail__bar-fill" style={{ width: `${pct}%`, background: epic.color || 'var(--accent)' }} />
+          <div className="epic-detail-bar" aria-label={`Progress ${pct}%`}>
+            <div className="epic-detail-bar-fill" style={{ width: `${pct}%`, background: epic.color || 'var(--accent)' }} />
           </div>
         </div>
       </header>
 
-      <div className="epic-detail__row">
-        <Card className="epic-detail__section">
-          <h2 className="epic-detail__heading">Description</h2>
+      <div className="epic-detail-row">
+        <Card className="epic-detail-section">
+          <h2 className="epic-detail-heading">Description</h2>
           {editingDesc ? (
             <textarea
-              className="epic-detail__desc-input"
+              className="epic-detail-desc-input"
               value={descDraft}
               autoFocus
               rows={4}
@@ -275,7 +275,7 @@ export function EpicDetailPage() {
             />
           ) : epic.description ? (
             <p
-              className="epic-detail__desc epic-detail__desc--edit"
+              className="epic-detail-desc epic-detail-desc-edit"
               onClick={() => setEditingDesc(true)}
               title="Click to edit"
             >
@@ -284,7 +284,7 @@ export function EpicDetailPage() {
           ) : (
             <button
               type="button"
-              className="epic-detail__desc-empty"
+              className="epic-detail-desc-empty"
               onClick={() => setEditingDesc(true)}
             >
               Add a description…
@@ -292,18 +292,18 @@ export function EpicDetailPage() {
           )}
         </Card>
 
-        <Card className="epic-detail__section epic-detail__section--meta">
-          <h2 className="epic-detail__heading">Settings</h2>
+        <Card className="epic-detail-section epic-detail-section-meta">
+          <h2 className="epic-detail-heading">Settings</h2>
 
-          <div className="epic-detail__field">
-            <span className="epic-detail__field-label">Color</span>
-            <div className="epic-detail__color-grid">
+          <div className="epic-detail-field">
+            <span className="epic-detail-field-label">Color</span>
+            <div className="epic-detail-color-grid">
               {COLOR_OPTIONS.map((c) => (
                 <button
                   key={c}
                   type="button"
                   className={[
-                    'epic-detail__color-swatch',
+                    'epic-detail-color-swatch',
                     epic.color === c ? 'is-active' : '',
                   ].filter(Boolean).join(' ')}
                   style={{ background: c }}
@@ -314,8 +314,8 @@ export function EpicDetailPage() {
             </div>
           </div>
 
-          <div className="epic-detail__field">
-            <span className="epic-detail__field-label">Owner</span>
+          <div className="epic-detail-field">
+            <span className="epic-detail-field-label">Owner</span>
             <AssigneePicker
               orgSlug={orgSlug}
               value={epic.ownerId ?? null}
@@ -330,9 +330,9 @@ export function EpicDetailPage() {
         </Card>
       </div>
 
-      <Card className="epic-detail__section">
-        <header className="epic-detail__tasks-head">
-          <h2 className="epic-detail__heading">Tasks ({tasks.length})</h2>
+      <Card className="epic-detail-section">
+        <header className="epic-detail-tasks-head">
+          <h2 className="epic-detail-heading">Tasks ({tasks.length})</h2>
           <Button variant="ai" size="sm" onClick={() => setAiOpen(true)}>
             <Sparkles size={12} aria-hidden="true" /> AI tasks
           </Button>
@@ -350,10 +350,10 @@ export function EpicDetailPage() {
           }}
         />
 
-        <form className="epic-detail__create" onSubmit={addTaskToEpic}>
+        <form className="epic-detail-create" onSubmit={addTaskToEpic}>
           <input
             type="text"
-            className="epic-detail__create-input"
+            className="epic-detail-create-input"
             placeholder="Add a task to this epic…"
             value={newTaskTitle}
             onChange={(e) => setNewTaskTitle(e.target.value)}
@@ -369,9 +369,9 @@ export function EpicDetailPage() {
         </form>
 
         {tasks.length === 0 ? (
-          <p className="epic-detail__placeholder">No tasks in this epic yet.</p>
+          <p className="epic-detail-placeholder">No tasks in this epic yet.</p>
         ) : (
-          <ul className="epic-detail__tasks">
+          <ul className="epic-detail-tasks">
             {tasks.map((t) => (
               <TaskRow
                 key={t.id}
@@ -397,7 +397,7 @@ export function EpicDetailPage() {
 function TaskRow({ task, assignee, onOpen }) {
   return (
     <li
-      className="epic-detail__task is-interactive"
+      className="epic-detail-task is-interactive"
       role="button"
       tabIndex={0}
       onClick={() => onOpen?.(task.id)}
@@ -408,8 +408,8 @@ function TaskRow({ task, assignee, onOpen }) {
         }
       }}
     >
-      <span className="epic-detail__task-title">{task.title}</span>
-      <div className="epic-detail__task-meta">
+      <span className="epic-detail-task-title">{task.title}</span>
+      <div className="epic-detail-task-meta">
         <Badge tone="neutral">{task.status}</Badge>
         <Badge tone={PRIORITY_TONE[task.priority] ?? 'neutral'}>{task.priority}</Badge>
         {task.storyPoints != null && <Badge tone="purple">{task.storyPoints} pts</Badge>}

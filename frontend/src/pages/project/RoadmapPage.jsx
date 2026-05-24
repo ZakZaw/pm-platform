@@ -56,7 +56,7 @@ export function RoadmapPage() {
         </div>
       </div>
 
-      <div className="roadmap-page__body">
+      <div className="roadmap-page-body">
         {!project ? (
           <Skeleton height={220} radius="md" />
         ) : (

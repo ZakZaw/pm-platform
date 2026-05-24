@@ -1,28 +1,23 @@
-.sprints-page__header {
-  margin-bottom: var(--s-6);
-}
+/* Engineering sprint planning — create form on top, sprint rows below.
+   Uses the Phase 2 page-head + main-inner shell. */
 
-.sprints-page__title {
-  font-size: var(--fs-2xl);
-  font-weight: var(--fw-semibold);
-  margin: 0;
-}
-
-.sprints-page__create {
+.sprints-page-create {
   padding: var(--s-6);
   margin-bottom: var(--s-6);
 }
 
-.sprints-page__form {
+.sprints-page-form {
   display: grid;
   grid-template-columns: 2fr 3fr 1fr 1fr;
   gap: var(--s-5);
   align-items: end;
 }
 
-.sprints-page__form-submit { grid-column: 1 / -1; }
+.sprints-page-form-submit {
+  grid-column: 1 / -1;
+}
 
-.sprints-page__list {
+.sprints-page-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -31,7 +26,7 @@
   gap: 1px;
 }
 
-.sprints-page__row {
+.sprints-page-row {
   display: grid;
   grid-template-columns: 1.5fr auto 1fr 1fr auto;
   gap: var(--s-5);
@@ -39,39 +34,45 @@
   padding: var(--s-5);
   border-bottom: 1px solid var(--border-subtle);
 }
-.sprints-page__row:last-child { border-bottom: 0; }
+.sprints-page-row:last-child {
+  border-bottom: 0;
+}
 
-.sprints-page__row.is-interactive {
+.sprints-page-row.is-interactive {
   cursor: pointer;
   transition: background var(--dur-fast) var(--ease-out);
 }
-.sprints-page__row.is-interactive:hover {
+.sprints-page-row.is-interactive:hover {
   background: var(--surface-hover);
 }
-.sprints-page__row.is-interactive:focus-visible {
+.sprints-page-row.is-interactive:focus-visible {
   outline: none;
   background: var(--surface-hover);
   box-shadow: inset 0 0 0 1px var(--accent-bright);
 }
 
-.sprints-page__name { font-weight: var(--fw-medium); color: var(--text); }
-.sprints-page__goal { font-size: var(--fs-xs); color: var(--text-muted); }
+.sprints-page-name {
+  font-weight: var(--fw-medium);
+  color: var(--text);
+}
 
-.sprints-page__cell-meta {
+.sprints-page-cell-meta {
   color: var(--text-secondary);
   font-size: var(--fs-xs);
   font-family: var(--font-mono);
 }
 
-.sprints-page__actions {
+.sprints-page-actions {
   display: flex;
   gap: var(--s-4);
   justify-content: flex-end;
 }
 
-.sprints-page__placeholder { color: var(--text-muted); font-size: var(--fs-md); }
-
 @media (max-width: 900px) {
-  .sprints-page__form { grid-template-columns: 1fr 1fr; }
-  .sprints-page__row { grid-template-columns: 1fr; }
+  .sprints-page-form {
+    grid-template-columns: 1fr 1fr;
+  }
+  .sprints-page-row {
+    grid-template-columns: 1fr;
+  }
 }

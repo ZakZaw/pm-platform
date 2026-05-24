@@ -1,52 +1,67 @@
+/* Engineering board page — sprint banner + kanban columns. Uses the new
+   Stratos vocabulary; the kanban primitives themselves live in stratos.css. */
+
 .board-page {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  padding: var(--s-7) var(--s-9);
+  padding: var(--s-7) var(--s-9) 0;
 }
 
-.board-page__sprint {
+.board-page-head {
+  flex-shrink: 0;
+  padding-bottom: var(--s-5);
+  margin-bottom: var(--s-5);
+  border-bottom: 1px solid var(--divider);
+}
+
+.board-page-sprint {
   display: flex;
   align-items: center;
   gap: var(--s-6);
-  padding: var(--s-5) 0;
-  margin-bottom: var(--s-6);
-  border-bottom: 1px solid var(--divider);
-  flex-shrink: 0;
   flex-wrap: wrap;
 }
 
-.board-page__kpi {
+.board-page-sprint-meta {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.board-page-sprint-goal {
+  margin-top: 4px;
+  font-size: var(--fs-md);
+  color: var(--text-secondary);
+  line-height: var(--lh-snug);
+  max-width: 640px;
+}
+
+.board-page-kpi {
+  display: flex;
+  flex-direction: column;
   align-items: flex-end;
   gap: 2px;
   white-space: nowrap;
 }
-.board-page__kpi--bordered {
+.board-page-kpi-bordered {
   padding-left: var(--s-6);
   margin-left: var(--s-4);
   border-left: 1px solid var(--divider);
 }
-.kpi-label {
-  font-size: var(--fs-2xs);
-  color: var(--text-muted);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-  font-weight: var(--fw-semibold);
-}
-.board-page__kpi-value {
+.board-page-kpi-value {
   font-size: var(--fs-xl);
   font-weight: var(--fw-bold);
   color: var(--text);
   font-family: var(--font-display);
   letter-spacing: -0.02em;
+  line-height: 1;
 }
-.board-page__kpi-suffix {
+.board-page-kpi-suffix {
   font-size: var(--fs-md);
   font-weight: var(--fw-regular);
 }
 
-.board-page__filter-dot {
+.board-page-filter-dot {
   display: inline-block;
   width: 6px;
   height: 6px;
@@ -55,29 +70,28 @@
   margin-left: var(--s-2);
 }
 
-.board-page__filters {
+.board-page-filters {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
   gap: var(--s-5);
-  padding: var(--s-5) 0;
+  padding-bottom: var(--s-5);
   margin-bottom: var(--s-5);
   border-bottom: 1px solid var(--divider);
   flex-shrink: 0;
 }
 
-.board-page__board {
+.board-page-board {
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
   display: flex;
 }
 
-.board-page__placeholder {
-  color: var(--text-muted);
-  padding: var(--s-9);
-}
-
 @media (max-width: 1100px) {
-  .board-page__kpi--bordered { border-left: 0; padding-left: 0; margin-left: 0; }
+  .board-page-kpi-bordered {
+    border-left: 0;
+    padding-left: 0;
+    margin-left: 0;
+  }
 }

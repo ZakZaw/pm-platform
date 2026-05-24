@@ -29,8 +29,6 @@ import { myWorkApi } from '@/api/myWork.api';
 import { tasksApi } from '@/api/tasks.api';
 import { operationsApi } from '@/api/operations.api';
 import { TaskDetailDrawer } from '@/components/tasks/TaskDetailDrawer';
-import '@/components/kanban/KanbanCard.css';
-import '@/components/kanban/KanbanColumn.css';
 import './MyWorkPage.css';
 
 const COLUMN_ORDER = ['Backlog', 'ToDo', 'InProgress', 'InReview', 'Blocked'];
@@ -183,32 +181,35 @@ export function MyWorkPage() {
   }
 
   return (
-    <div className="mywork">
-      <header className="page-header mywork__header">
-        <div className="grow">
-          <div className="hstack" style={{ gap: 8 }}>
-            <div className="page-title">My work</div>
-            <Badge tone="neutral">{totalOpen} open</Badge>
+    <div className="main-inner mywork">
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>Personal</div>
+            <h1 className="page-title row gap-3">
+              My work
+              <Badge tone="neutral">{totalOpen} open</Badge>
+            </h1>
+            <div className="page-subtitle">
+              {user?.fullName ? `${user.fullName}'s tasks across every project.` : 'Tasks assigned to you across every project.'}
+            </div>
           </div>
-          <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>
-            {user?.fullName ? `${user.fullName}'s tasks across every project.` : 'Tasks assigned to you across every project.'}
+          <div className="row mywork-filters">
+            <Select
+              value={projectFilter}
+              onChange={(e) => setProjectFilter(e.target.value)}
+              options={projectOptions}
+              aria-label="Filter by project"
+            />
+            <Select
+              value={sprintFilter}
+              onChange={(e) => setSprintFilter(e.target.value)}
+              options={sprintOptions}
+              aria-label="Filter by sprint"
+            />
           </div>
         </div>
-        <div className="hstack mywork__filters">
-          <Select
-            value={projectFilter}
-            onChange={(e) => setProjectFilter(e.target.value)}
-            options={projectOptions}
-            aria-label="Filter by project"
-          />
-          <Select
-            value={sprintFilter}
-            onChange={(e) => setSprintFilter(e.target.value)}
-            options={sprintOptions}
-            aria-label="Filter by sprint"
-          />
-        </div>
-      </header>
+      </div>
 
       {loading && (
         <div aria-busy="true">
@@ -227,20 +228,20 @@ export function MyWorkPage() {
           </div>
         </div>
       )}
-      {error && <p className="mywork__placeholder">{error}</p>}
+      {error && <p className="muted">{error}</p>}
 
       {!loading && !error && operationsRuns.length > 0 && (
         <OperationsRunsBanner runs={operationsRuns} />
       )}
 
       {!loading && !error && (
-        <div className="mywork__board-wrap">
+        <div className="mywork-board-wrap">
           <DndContext
             sensors={sensors}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
-            <div className="kanban__columns mywork__columns">
+            <div className="kanban mywork-columns">
               {COLUMN_ORDER.map((status) => (
                 <MyWorkColumn
                   key={status}
@@ -273,16 +274,16 @@ export function MyWorkPage() {
 function OperationsRunsBanner({ runs }) {
   const overdue = runs.filter((r) => r.isOverdue).length;
   return (
-    <section className="mywork__ops">
-      <header className="hstack mywork__ops-head">
-        <span className="subsection-eyebrow">Runbooks</span>
+    <section className="mywork-ops">
+      <header className="row mywork-ops-head">
+        <span className="eyebrow">Runbooks</span>
         {overdue > 0 ? (
           <Badge tone="danger">{overdue} overdue</Badge>
         ) : (
           <Badge tone="neutral">{runs.length} due this week</Badge>
         )}
       </header>
-      <ul className="mywork__ops-list">
+      <ul className="mywork-ops-list">
         {runs.map((r) => {
           const orgSegment = r.orgSlug ?? 'personal';
           const to = `/${orgSegment}/projects/${r.projectSlug}/runs/${r.id}`;
@@ -290,14 +291,14 @@ function OperationsRunsBanner({ runs }) {
             month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
           });
           return (
-            <li key={r.id} className={['mywork__ops-row', r.isOverdue ? 'is-overdue' : ''].filter(Boolean).join(' ')}>
-              <Link to={to} className="mywork__ops-link">
-                <span className="mywork__ops-title">{r.workflowName}</span>
-                <span className="muted mywork__ops-meta">
+            <li key={r.id} className={['mywork-ops-row', r.isOverdue ? 'is-overdue' : ''].filter(Boolean).join(' ')}>
+              <Link to={to} className="mywork-ops-link">
+                <span className="mywork-ops-title">{r.workflowName}</span>
+                <span className="muted mywork-ops-meta">
                   {r.projectName} · scheduled {when}
                 </span>
               </Link>
-              <span className="mono dim">
+              <span className="mono muted">
                 {r.completedItemCount}/{r.itemCount}
               </span>
             </li>
@@ -326,21 +327,21 @@ function MyWorkColumn({ status, items, onOpen }) {
       ref={setNodeRef}
       className={['kanban-col', isOver ? 'is-over' : ''].filter(Boolean).join(' ')}
     >
-      <header className="hstack kanban-col__head">
-        <div className="hstack" style={{ gap: 8 }}>
+      <header className="kanban-col-head">
+        <div className="kanban-col-title">
           <StatusBadge status={status} />
-          <span className="mono dim kanban-col__count">
+          <span className="kanban-col-count">
             {items.length}
             {pts > 0 && ` · ${pts}pt`}
           </span>
         </div>
-        <span className="icon-btn icon-btn-sm" aria-hidden="true">
+        <span className="btn btn-ghost btn-icon-sm" aria-hidden="true">
           <MoreHorizontal size={12} />
         </span>
       </header>
-      <div className="kanban-col__body">
+      <div className="kanban-col-body">
         {items.length === 0 ? (
-          <p className="mywork__empty">No tasks here.</p>
+          <p className="mywork-empty">No tasks here.</p>
         ) : (
           items.map((item) => <ItemCard key={item.id} item={item} onOpen={onOpen} />)
         )}
@@ -385,35 +386,35 @@ function ItemCard({ item, onOpen, isOverlay = false }) {
       {...(isOverlay ? {} : attributes)}
       onClick={isOverlay ? undefined : handleClick}
       onKeyDown={isOverlay ? undefined : handleKey}
-      className="card kanban-card mywork__card"
+      className="card-task mywork-card"
       role={isOverlay ? undefined : 'button'}
       tabIndex={isOverlay ? undefined : 0}
       aria-label={`${item.title} — ${item.priority} priority`}
     >
-      <div className="hstack kanban-card__top">
-        <span className="mono dim kanban-card__key">{shortKey(item)}</span>
+      <div className="card-task-head">
+        <span className="card-task-id">{shortKey(item)}</span>
         <Priority level={item.priority} />
       </div>
 
-      <div className="kanban-card__title">{item.title}</div>
+      <div className="card-task-title">{item.title}</div>
 
-      <div className="hstack mywork__project-row">
+      <div className="row mywork-project-row">
         <span className="truncate">
           {item.projectIsPersonal ? 'Personal' : item.projectName}
         </span>
         {item.dueDate && (
-          <span className="mono dim mywork__due">{formatDue(item.dueDate)}</span>
+          <span className="mono muted mywork-due">{formatDue(item.dueDate)}</span>
         )}
       </div>
 
-      <div className="hstack kanban-card__foot">
+      <div className="card-task-foot row">
         {assigneeName ? (
           <Avatar name={assigneeName} size="xs" />
         ) : (
-          <span className="kanban-card__unassigned" title="Unassigned" />
+          <span className="card-task-unassigned" title="Unassigned" />
         )}
         {item.storyPoints != null && (
-          <span className="mono kanban-card__pts" title="Story points">
+          <span className="mono card-task-pts" title="Story points">
             {item.storyPoints}
           </span>
         )}

@@ -307,8 +307,8 @@ export function SprintDetailPage() {
     }
   }
 
-  if (error) return <p className="sprint-detail__placeholder">{error}</p>;
-  if (!project || !sprint) return <p className="sprint-detail__placeholder">Loading…</p>;
+  if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
+  if (!project || !sprint) return <div className="main-inner"><p className="muted">Loading…</p></div>;
 
   const sprintLen = daysBetween(sprint.startDate, sprint.endDate);
   const today =
@@ -328,57 +328,59 @@ export function SprintDetailPage() {
   const canEditDates = sprint.status !== 'Closed';
 
   return (
-    <div className="page sprint-detail">
+    <div className="main-inner sprint-detail">
       {dialog}
 
       <Link
         to={`/${orgSlug}/projects/${projectSlug}/sprints`}
-        className="sprint-detail__back"
+        className="sprint-detail-back"
       >
         <ChevronLeft size={14} aria-hidden="true" /> Sprints
       </Link>
 
-      <header className="sprint-detail__header">
-        <div className="sprint-detail__head-text">
-          <div className="sprint-detail__head-row">
-            <Rocket size={18} aria-hidden="true" className="sprint-detail__head-icon" />
-            {editingName ? (
-              <input
-                className="sprint-detail__title-input"
-                value={nameDraft}
-                autoFocus
-                maxLength={120}
-                onChange={(e) => setNameDraft(e.target.value)}
-                onBlur={commitName}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    commitName();
-                  } else if (e.key === 'Escape') {
-                    setNameDraft(sprint.name);
-                    setEditingName(false);
-                  }
-                }}
-              />
-            ) : (
-              <button
-                type="button"
-                className="sprint-detail__title sprint-detail__title--edit"
-                onClick={() => setEditingName(true)}
-                title="Click to rename"
-              >
-                {sprint.name}
-              </button>
-            )}
-            <Badge tone={STATUS_TONE[sprint.status] ?? 'neutral'}>{sprint.status}</Badge>
-            {sprint.status === 'Active' && (
-              <Badge tone={daysLeft <= 2 ? 'warning' : 'info'}>
-                {daysLeft} day{daysLeft === 1 ? '' : 's'} left
-              </Badge>
-            )}
+      <div className="page-head">
+        <div className="page-title-row">
+          <div className="fill">
+            <div className="eyebrow" style={{ marginBottom: 6 }}>{project.name} · Sprint</div>
+            <div className="row gap-3" style={{ flexWrap: 'wrap' }}>
+              <Rocket size={20} aria-hidden="true" className="sprint-detail-head-icon" />
+              {editingName ? (
+                <input
+                  className="sprint-detail-title-input"
+                  value={nameDraft}
+                  autoFocus
+                  maxLength={120}
+                  onChange={(e) => setNameDraft(e.target.value)}
+                  onBlur={commitName}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      commitName();
+                    } else if (e.key === 'Escape') {
+                      setNameDraft(sprint.name);
+                      setEditingName(false);
+                    }
+                  }}
+                />
+              ) : (
+                <button
+                  type="button"
+                  className="sprint-detail-title sprint-detail-title-edit"
+                  onClick={() => setEditingName(true)}
+                  title="Click to rename"
+                >
+                  {sprint.name}
+                </button>
+              )}
+              <Badge tone={STATUS_TONE[sprint.status] ?? 'neutral'}>{sprint.status}</Badge>
+              {sprint.status === 'Active' && (
+                <Badge tone={daysLeft <= 2 ? 'warning' : 'info'}>
+                  {daysLeft} day{daysLeft === 1 ? '' : 's'} left
+                </Badge>
+              )}
+            </div>
           </div>
-        </div>
-        <div className="sprint-detail__actions">
+          <div className="sprint-detail-actions">
           {sprint.status === 'Planning' && (
             <Button onClick={startSprint}>
               <Play size={13} aria-hidden="true" /> Start sprint
@@ -399,28 +401,29 @@ export function SprintDetailPage() {
               <Button variant="secondary">View board</Button>
             </Link>
           )}
+          </div>
         </div>
-      </header>
+      </div>
 
       {/* KPI strip */}
-      <div className="sprint-detail__kpis">
-        <Card className="sprint-detail__kpi">
-          <div className="sprint-detail__kpi-label">
+      <div className="sprint-detail-kpis">
+        <Card className="sprint-detail-kpi">
+          <div className="sprint-detail-kpi-label">
             <ListChecks size={12} aria-hidden="true" /> Tasks
           </div>
-          <div className="sprint-detail__kpi-value">{sprint.taskCount}</div>
+          <div className="sprint-detail-kpi-value">{sprint.taskCount}</div>
         </Card>
-        <Card className="sprint-detail__kpi">
-          <div className="sprint-detail__kpi-label">
+        <Card className="sprint-detail-kpi">
+          <div className="sprint-detail-kpi-label">
             <Target size={12} aria-hidden="true" /> Points
           </div>
-          <div className="sprint-detail__kpi-value">
+          <div className="sprint-detail-kpi-value">
             {sprint.donePoints}<span className="muted"> / {sprint.totalPoints}</span>
           </div>
-          <div className="sprint-detail__kpi-sub">{pct}% complete</div>
+          <div className="sprint-detail-kpi-sub">{pct}% complete</div>
         </Card>
-        <Card className="sprint-detail__kpi">
-          <div className="sprint-detail__kpi-label">
+        <Card className="sprint-detail-kpi">
+          <div className="sprint-detail-kpi-label">
             <TrendingUp size={12} aria-hidden="true" /> Velocity target
           </div>
           <input
@@ -430,7 +433,7 @@ export function SprintDetailPage() {
             defaultValue={sprint.velocityTarget ?? ''}
             key={sprint.velocityTarget ?? 'empty'}
             placeholder="—"
-            className="sprint-detail__kpi-input"
+            className="sprint-detail-kpi-input"
             onBlur={(e) => commitVelocityTarget(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
@@ -441,26 +444,26 @@ export function SprintDetailPage() {
             aria-label="Velocity target"
           />
         </Card>
-        <Card className="sprint-detail__kpi">
-          <div className="sprint-detail__kpi-label">
+        <Card className="sprint-detail-kpi">
+          <div className="sprint-detail-kpi-label">
             <Flag size={12} aria-hidden="true" /> Final velocity
           </div>
-          <div className="sprint-detail__kpi-value">
+          <div className="sprint-detail-kpi-value">
             {sprint.finalVelocity ?? <span className="muted">—</span>}
           </div>
-          <div className="sprint-detail__kpi-sub">
+          <div className="sprint-detail-kpi-sub">
             {sprint.status === 'Closed' ? 'Recorded on close' : 'Locks at close'}
           </div>
         </Card>
       </div>
 
-      <div className="sprint-detail__grid">
-        <section className="sprint-detail__col-wide">
-          <Card className="sprint-detail__card">
-            <div className="hstack sprint-detail__card-head">
+      <div className="sprint-detail-grid">
+        <section className="sprint-detail-col-wide">
+          <Card className="sprint-detail-card">
+            <div className="row sprint-detail-card-head">
               <div>
-                <div className="sprint-detail__card-title">Progress</div>
-                <div className="muted sprint-detail__card-sub">
+                <div className="sprint-detail-card-title">Progress</div>
+                <div className="muted sprint-detail-card-sub">
                   {sprint.status === 'Active'
                     ? `Day ${today} of ${sprintLen} · ${daysLeft} left`
                     : sprint.status === 'Closed'
@@ -469,7 +472,7 @@ export function SprintDetailPage() {
                 </div>
               </div>
             </div>
-            <div className="sprint-detail__chart-wrap">
+            <div className="sprint-detail-chart-wrap">
               <BurndownChart
                 total={sprint.totalPoints || 1}
                 actual={burnPoints}
@@ -482,17 +485,17 @@ export function SprintDetailPage() {
           </Card>
 
           {sprint.status === 'Planning' && (
-            <Card className="sprint-detail__card">
-              <div className="hstack sprint-detail__card-head">
+            <Card className="sprint-detail-card">
+              <div className="row sprint-detail-card-head">
                 <div>
-                  <div className="sprint-detail__card-title">
+                  <div className="sprint-detail-card-title">
                     <Sparkles size={12} color="var(--ai-violet)" aria-hidden="true" /> AI fill
                   </div>
-                  <div className="muted sprint-detail__card-sub">
+                  <div className="muted sprint-detail-card-sub">
                     Let AI propose which backlog tasks fit a target capacity.
                   </div>
                 </div>
-                <span className="grow" />
+                <span className="fill" />
                 <input
                   type="number"
                   min={20}
@@ -500,7 +503,7 @@ export function SprintDetailPage() {
                   step={5}
                   value={aiFillTarget}
                   onChange={(e) => setAiFillTarget(parseInt(e.target.value, 10) || 80)}
-                  className="sprint-detail__kpi-input"
+                  className="sprint-detail-kpi-input"
                   aria-label="Target capacity percent"
                   style={{ width: 60 }}
                 />
@@ -534,14 +537,14 @@ export function SprintDetailPage() {
             </Card>
           )}
 
-          <Card className="sprint-detail__card">
-            <div className="sprint-detail__card-title">Tasks ({sprint.taskCount})</div>
+          <Card className="sprint-detail-card">
+            <div className="sprint-detail-card-title">Tasks ({sprint.taskCount})</div>
 
             {sprint.status !== 'Closed' && (
-              <form className="sprint-detail__create" onSubmit={addTaskToSprint}>
+              <form className="sprint-detail-create" onSubmit={addTaskToSprint}>
                 <input
                   type="text"
-                  className="sprint-detail__create-input"
+                  className="sprint-detail-create-input"
                   placeholder="Add a task to this sprint…"
                   value={newTaskTitle}
                   onChange={(e) => setNewTaskTitle(e.target.value)}
@@ -558,22 +561,22 @@ export function SprintDetailPage() {
             )}
 
             {taskGroups.length === 0 ? (
-              <p className="sprint-detail__placeholder">No tasks in this sprint yet.</p>
+              <p className="sprint-detail-placeholder">No tasks in this sprint yet.</p>
             ) : (
-              <div className="sprint-detail__task-groups">
+              <div className="sprint-detail-task-groups">
                 {taskGroups.map((g) => (
-                  <div key={g.status} className="sprint-detail__task-group">
-                    <div className="sprint-detail__group-head">
+                  <div key={g.status} className="sprint-detail-task-group">
+                    <div className="sprint-detail-group-head">
                       <span>{g.displayName}</span>
-                      <span className="mono dim">{g.cards.length}</span>
+                      <span className="mono muted">{g.cards.length}</span>
                     </div>
-                    <ul className="sprint-detail__task-list">
+                    <ul className="sprint-detail-task-list">
                       {g.cards.map((card) => {
                         const a = card.assigneeId ? memberById[card.assigneeId] : null;
                         return (
                           <li
                             key={card.taskId}
-                            className="sprint-detail__task-row is-interactive"
+                            className="sprint-detail-task-row is-interactive"
                             role="button"
                             tabIndex={0}
                             onClick={() => setOpenedTaskId(card.taskId)}
@@ -584,10 +587,10 @@ export function SprintDetailPage() {
                               }
                             }}
                           >
-                            <span className="mono dim sprint-detail__task-key">
+                            <span className="mono muted sprint-detail-task-key">
                               {card.key ?? card.taskId.slice(0, 4).toUpperCase()}
                             </span>
-                            <span className="sprint-detail__task-title">{card.title}</span>
+                            <span className="sprint-detail-task-title">{card.title}</span>
                             <Badge tone="info">{card.priority}</Badge>
                             {card.storyPoints != null && (
                               <Badge tone="purple">{card.storyPoints} pts</Badge>
@@ -595,7 +598,7 @@ export function SprintDetailPage() {
                             {a ? (
                               <Avatar src={a.avatarUrl} name={a.fullName} size="xs" />
                             ) : (
-                              <span className="sprint-detail__unassigned" title="Unassigned" />
+                              <span className="sprint-detail-unassigned" title="Unassigned" />
                             )}
                           </li>
                         );
@@ -608,19 +611,19 @@ export function SprintDetailPage() {
           </Card>
         </section>
 
-        <section className="sprint-detail__col-narrow">
-          <Card className="sprint-detail__card">
-            <div className="sprint-detail__card-title">
+        <section className="sprint-detail-col-narrow">
+          <Card className="sprint-detail-card">
+            <div className="sprint-detail-card-title">
               <Calendar size={12} aria-hidden="true" /> Dates
             </div>
-            <ul className="sprint-detail__facts">
+            <ul className="sprint-detail-facts">
               <li>
                 <span>Start (planned)</span>
-                <span className="sprint-detail__date-cell">
+                <span className="sprint-detail-date-cell">
                   {canEditDates ? (
                     <input
                       type="date"
-                      className="sprint-detail__date-input"
+                      className="sprint-detail-date-input"
                       defaultValue={toDateInput(sprint.startDate)}
                       key={`start-${sprint.startDate}`}
                       onChange={(e) => commitStartDate(e.target.value)}
@@ -633,11 +636,11 @@ export function SprintDetailPage() {
               </li>
               <li>
                 <span>End</span>
-                <span className="sprint-detail__date-cell">
+                <span className="sprint-detail-date-cell">
                   {canEditDates ? (
                     <input
                       type="date"
-                      className="sprint-detail__date-input"
+                      className="sprint-detail-date-input"
                       defaultValue={toDateInput(sprint.endDate)}
                       key={`end-${sprint.endDate}`}
                       onChange={(e) => commitEndDate(e.target.value)}
@@ -658,25 +661,25 @@ export function SprintDetailPage() {
             </ul>
           </Card>
 
-          <Card className="sprint-detail__card">
-            <div className="sprint-detail__card-title">Members</div>
+          <Card className="sprint-detail-card">
+            <div className="sprint-detail-card-title">Members</div>
             {assigneeBreakdown.length === 0 ? (
-              <p className="sprint-detail__placeholder">No assignees yet.</p>
+              <p className="sprint-detail-placeholder">No assignees yet.</p>
             ) : (
-              <ul className="sprint-detail__members">
+              <ul className="sprint-detail-members">
                 {assigneeBreakdown.map((a, i) => {
                   const m = a.id ? memberById[a.id] : null;
                   return (
-                    <li key={a.id ?? `_none_${i}`} className="sprint-detail__member-row">
+                    <li key={a.id ?? `_none_${i}`} className="sprint-detail-member-row">
                       {m ? (
                         <Avatar src={m.avatarUrl} name={m.fullName} size="xs" />
                       ) : (
-                        <span className="sprint-detail__unassigned" title="Unassigned" />
+                        <span className="sprint-detail-unassigned" title="Unassigned" />
                       )}
                       <span className="truncate">
                         {m ? m.fullName : 'Unassigned'}
                       </span>
-                      <span className="mono dim sprint-detail__member-stats">
+                      <span className="mono muted sprint-detail-member-stats">
                         {a.tasks} · {a.points} pts
                       </span>
                     </li>
@@ -686,9 +689,9 @@ export function SprintDetailPage() {
             )}
           </Card>
 
-          <Card className="sprint-detail__card">
-            <div className="sprint-detail__card-title">Scope baseline</div>
-            <p className="sprint-detail__placeholder">
+          <Card className="sprint-detail-card">
+            <div className="sprint-detail-card-title">Scope baseline</div>
+            <p className="sprint-detail-placeholder">
               {sprint.status === 'Planning'
                 ? 'Baseline locks when the sprint starts.'
                 : 'Baseline captured at start. Scope-delta breakdown lands in Phase 2.'}

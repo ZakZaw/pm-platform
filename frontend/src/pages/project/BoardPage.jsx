@@ -110,10 +110,6 @@ export function BoardPage() {
     }
   });
 
-  // Column visibility (per-user, per-project). Default to every status the
-  // project has configured so first-render shows everything until the user
-  // hides something. Called above the early returns so hooks order stays
-  // stable.
   const allStatuses = useMemo(
     () => (statusConfigs ?? []).map((c) => c.status),
     [statusConfigs],
@@ -155,22 +151,27 @@ export function BoardPage() {
     setSearchParams(next, { replace: true });
   }
 
-  if (error) return <p className="board-page__placeholder">{error}</p>;
+  if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
   if (!project || !filteredBoard) {
     return (
-      <div className="page board-page" aria-busy="true" style={{ padding: 20 }}>
-        <Skeleton width="35%" height={20} />
-        <div style={{ height: 16 }} />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i}>
-              <Skeleton width="60%" height={12} />
-              <div style={{ height: 8 }} />
-              <Skeleton height={80} radius="md" />
-              <div style={{ height: 8 }} />
-              <Skeleton height={80} radius="md" />
-            </div>
-          ))}
+      <div className="board-page" aria-busy="true">
+        <div className="board-page-head">
+          <Skeleton width="35%" height={20} />
+        </div>
+        <div className="board-page-board">
+          <div className="kanban">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="kanban-col">
+                <div className="kanban-col-head">
+                  <Skeleton width="50%" height={14} />
+                </div>
+                <div className="kanban-col-body">
+                  <Skeleton height={72} />
+                  <Skeleton height={72} />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -208,9 +209,7 @@ export function BoardPage() {
   const left = daysLeft(sprint?.endDate);
   const range = fmtRange(sprint?.startDate, sprint?.endDate);
 
-  // Mock burndown: linear from total to remaining across length days.
-  // Backend doesn't track daily snapshots yet (Phase 1), so a two-point
-  // line is honest while still giving the banner shape.
+  // Burndown stays a two-point projection until daily snapshots land (F2-26).
   const burnPoints = length
     ? Array.from({ length: 8 }, (_, i) => {
         const ratio = i / 7;
@@ -221,55 +220,61 @@ export function BoardPage() {
   return (
     <div className="board-page">
       {sprint ? (
-        <header className="board-page__sprint hstack">
-          <div className="vstack" style={{ gap: 2, minWidth: 0 }}>
-            <div className="hstack" style={{ gap: 8, marginBottom: 2 }}>
+        <header className="board-page-head board-page-sprint">
+          <div className="board-page-sprint-meta">
+            <div className="row gap-3" style={{ marginBottom: 4 }}>
               <Badge tone="info">
                 <Zap size={11} aria-hidden="true" /> {sprint.name}
               </Badge>
-              {range && <span className="mono dim" style={{ fontSize: 11 }}>{range}</span>}
+              {range && <span className="mono muted" style={{ fontSize: 'var(--fs-xs)' }}>{range}</span>}
               <LiveIndicator status={hubStatus} />
             </div>
+            {sprint.goal && (
+              <div className="board-page-sprint-goal">
+                <span className="muted">Goal · </span>
+                {sprint.goal}
+              </div>
+            )}
           </div>
 
           {burnPoints && (
-            <div className="vstack board-page__kpi">
-              <span className="mono kpi-label">BURNDOWN</span>
+            <div className="board-page-kpi">
+              <span className="eyebrow">Burndown</span>
               <Sparkline points={burnPoints} ideal />
             </div>
           )}
 
           {totalPts > 0 && (
-            <div className="vstack board-page__kpi board-page__kpi--bordered">
-              <span className="mono kpi-label">POINTS</span>
-              <span className="board-page__kpi-value">
+            <div className="board-page-kpi board-page-kpi-bordered">
+              <span className="eyebrow">Points</span>
+              <span className="board-page-kpi-value">
                 {donePts}
-                <span className="muted board-page__kpi-suffix"> / {totalPts}</span>
+                <span className="muted board-page-kpi-suffix"> / {totalPts}</span>
               </span>
             </div>
           )}
 
           {length && (
-            <div className="vstack board-page__kpi board-page__kpi--bordered">
-              <span className="mono kpi-label">DAYS LEFT</span>
+            <div className="board-page-kpi board-page-kpi-bordered">
+              <span className="eyebrow">Days left</span>
               <span
-                className="board-page__kpi-value"
+                className="board-page-kpi-value"
                 style={{ color: left <= 3 ? 'var(--warning)' : undefined }}
               >
                 {left}
-                <span className="muted board-page__kpi-suffix"> of {length}</span>
+                <span className="muted board-page-kpi-suffix"> of {length}</span>
               </span>
             </div>
           )}
 
-          <div className="hstack" style={{ gap: 6 }}>
+          <div className="row gap-2">
             <Button
               variant="secondary"
               size="md"
               onClick={() => setFiltersOpen((v) => !v)}
             >
               <Filter size={14} aria-hidden="true" /> Filter
-              {anyFilter && <span className="board-page__filter-dot" aria-hidden="true" />}
+              {anyFilter && <span className="board-page-filter-dot" aria-hidden="true" />}
             </Button>
             <ColumnsButton
               statuses={statusConfigs ?? []}
@@ -282,49 +287,50 @@ export function BoardPage() {
           </div>
         </header>
       ) : (
-        <header className="page-header">
-          <div className="grow">
-            <div className="hstack" style={{ gap: 8 }}>
-              <div className="page-title">Board</div>
-              <Badge tone="neutral">No active sprint</Badge>
+        <header className="board-page-head">
+          <div className="page-title-row">
+            <div>
+              <div className="eyebrow" style={{ marginBottom: 6 }}>{project.name}</div>
+              <h1 className="page-title">Board</h1>
+              <div className="page-subtitle">
+                Drag tasks across status columns; updates push to teammates live.
+              </div>
             </div>
-            <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>
-              Drag tasks across status columns; updates push to teammates live.
+            <div className="row gap-2">
+              <LiveIndicator status={hubStatus} />
+              <Button
+                variant="ghost"
+                size="md"
+                onClick={() => load(project.id, swimlane).catch(() => {})}
+                aria-label="Refresh"
+                title="Refresh"
+              >
+                <RefreshCw size={14} aria-hidden="true" />
+              </Button>
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={() => setFiltersOpen((v) => !v)}
+              >
+                <Filter size={14} aria-hidden="true" /> Filter
+                {anyFilter && <span className="board-page-filter-dot" aria-hidden="true" />}
+              </Button>
+              <ColumnsButton
+                statuses={statusConfigs ?? []}
+                isVisible={isStatusVisible}
+                toggle={toggleStatus}
+              />
+              <Button variant="primary" size="md" onClick={() => openQuickCreate?.()}>
+                <Plus size={14} aria-hidden="true" /> Add task
+              </Button>
             </div>
           </div>
-          <div className="hstack" style={{ gap: 6 }}>
-            <LiveIndicator status={hubStatus} />
-            <Button
-              variant="ghost"
-              size="md"
-              onClick={() => load(project.id, swimlane).catch(() => {})}
-              aria-label="Refresh"
-              title="Refresh"
-            >
-              <RefreshCw size={14} aria-hidden="true" />
-            </Button>
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={() => setFiltersOpen((v) => !v)}
-            >
-              <Filter size={14} aria-hidden="true" /> Filter
-              {anyFilter && <span className="board-page__filter-dot" aria-hidden="true" />}
-            </Button>
-            <ColumnsButton
-              statuses={statusConfigs ?? []}
-              isVisible={isStatusVisible}
-              toggle={toggleStatus}
-            />
-            <Button variant="primary" size="md" onClick={() => openQuickCreate?.()}>
-              <Plus size={14} aria-hidden="true" /> Add task
-            </Button>
-          </div>
+          <Badge tone="neutral" style={{ marginTop: 8 }}>No active sprint</Badge>
         </header>
       )}
 
       {filtersOpen && (
-        <div className="board-page__filters">
+        <div className="board-page-filters">
           <Select
             label="Epic"
             options={epicOptions}
@@ -357,7 +363,7 @@ export function BoardPage() {
         </div>
       )}
 
-      <div className="board-page__board">
+      <div className="board-page-board">
         <KanbanBoard
           board={filteredBoard}
           statusConfigs={statusConfigs}

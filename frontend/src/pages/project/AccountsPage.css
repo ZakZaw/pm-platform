@@ -1,11 +1,11 @@
-.accounts__table {
+.accounts-table {
   border: 1px solid var(--border-subtle);
   border-radius: var(--r-md);
   background: var(--surface);
   overflow: hidden;
 }
 
-.accounts__row {
+.accounts-row {
   display: grid;
   grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1fr;
   gap: var(--s-5);
@@ -15,9 +15,9 @@
   align-items: center;
 }
 
-.accounts__row:last-child { border-bottom: none; }
+.accounts-row:last-child { border-bottom: none; }
 
-.accounts__row--head {
+.accounts-row-head {
   font-size: var(--fs-xs);
   color: var(--text-muted);
   text-transform: uppercase;
@@ -25,7 +25,7 @@
   background: var(--surface-2);
 }
 
-.accounts__name {
+.accounts-name {
   font-weight: var(--fw-semibold);
   color: var(--text);
 }

@@ -4,19 +4,19 @@
   min-height: 100%;
 }
 
-.portfolio-page__sub {
+.portfolio-page-sub {
   font-size: var(--fs-xs);
   color: var(--text-muted);
   margin: var(--s-2) 0 0;
 }
 
-.portfolio-page__placeholder,
-.portfolio-page__error {
+.portfolio-page-placeholder,
+.portfolio-page-error {
   color: var(--text-muted);
   padding: var(--s-8);
 }
 
-.portfolio-page__filters {
+.portfolio-page-filters {
   display: flex;
   flex-wrap: wrap;
   gap: var(--s-4);
@@ -24,12 +24,12 @@
   padding: 0 var(--s-7) var(--s-5);
 }
 
-.portfolio-page__filter-label {
+.portfolio-page-filter-label {
   font-size: var(--fs-xs);
   margin-right: var(--s-2);
 }
 
-.portfolio-page__chip {
+.portfolio-page-chip {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -43,18 +43,18 @@
   transition: background var(--dur-fast) var(--ease-out);
 }
 
-.portfolio-page__chip:hover {
+.portfolio-page-chip:hover {
   background: var(--surface-hover);
   color: var(--text);
 }
 
-.portfolio-page__chip.is-active {
+.portfolio-page-chip.is-active {
   background: var(--accent-soft);
   border-color: var(--accent);
   color: var(--accent);
 }
 
-.portfolio-page__grid {
+.portfolio-page-grid {
   list-style: none;
   margin: 0;
   padding: 0 var(--s-7) var(--s-7);
@@ -63,14 +63,14 @@
   gap: var(--s-5);
 }
 
-.portfolio-page__item {
+.portfolio-page-item {
   display: flex;
   flex-direction: column;
   gap: var(--s-4);
   min-width: 0;
 }
 
-.portfolio-page__item-head {
+.portfolio-page-item-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -81,11 +81,11 @@
   border-radius: var(--r-sm);
 }
 
-.portfolio-page__item-head:hover {
+.portfolio-page-item-head:hover {
   background: var(--surface-hover);
 }
 
-.portfolio-page__item-title {
+.portfolio-page-item-title {
   font-size: var(--fs-base);
   font-weight: var(--fw-medium);
   color: var(--text);
@@ -94,11 +94,11 @@
   white-space: nowrap;
 }
 
-.portfolio-page__item-key {
+.portfolio-page-item-key {
   font-size: var(--fs-xs);
 }
 
-.portfolio-page__no-summary {
+.portfolio-page-no-summary {
   margin: 0;
   font-size: var(--fs-xs);
   padding: var(--s-4);

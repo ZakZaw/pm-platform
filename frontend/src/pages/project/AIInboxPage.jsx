@@ -165,35 +165,38 @@ export function AIInboxPage() {
     return true;
   }), [suggestions, activeTypeFilter, activeCategoryFilter]);
 
-  if (error) return <p className="ai-inbox__placeholder">{error}</p>;
+  if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
 
   return (
-    <div className="page ai-inbox">
-      <header className="ai-inbox__header">
-        <div>
-          <h1 className="ai-inbox__title">
-            <Sparkles size={16} color="var(--ai-violet)" aria-hidden="true" />
-            AI Inbox
-          </h1>
-          <p className="ai-inbox__subtitle">
-            Durable AI insights for {project?.name ?? 'this project'}. Accept what's useful, dismiss the rest.
-          </p>
+    <div className="main-inner ai-inbox">
+      <div className="page-head">
+        <div className="page-title-row">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>{project?.name ?? 'Project'}</div>
+            <h1 className="page-title row gap-3">
+              <Sparkles size={18} color="var(--ai-violet)" aria-hidden="true" />
+              AI Inbox
+            </h1>
+            <div className="page-subtitle">
+              Durable AI insights for {project?.name ?? 'this project'}. Accept what's useful, dismiss the rest.
+            </div>
+          </div>
+          <div className="row gap-3">
+            <label className="ai-inbox-toggle">
+              <input
+                type="checkbox"
+                checked={includeActed}
+                onChange={(e) => setIncludeActed(e.target.checked)}
+              />
+              Show acted-on
+            </label>
+            <Button variant="ai" onClick={generateSprintHealth} disabled={generating}>
+              <Sparkles size={13} aria-hidden="true" />
+              {generating ? ' Asking…' : ' Diagnose active sprint'}
+            </Button>
+          </div>
         </div>
-        <div className="hstack" style={{ gap: 8 }}>
-          <label className="ai-inbox__toggle">
-            <input
-              type="checkbox"
-              checked={includeActed}
-              onChange={(e) => setIncludeActed(e.target.checked)}
-            />
-            Show acted-on
-          </label>
-          <Button variant="ai" onClick={generateSprintHealth} disabled={generating}>
-            <Sparkles size={13} aria-hidden="true" />
-            {generating ? ' Asking…' : ' Diagnose active sprint'}
-          </Button>
-        </div>
-      </header>
+      </div>
 
       {!loading && suggestions.length > 0 && (typesPresent.length > 1 || categoriesPresent.length > 1) && (
         <FilterRow
@@ -207,35 +210,35 @@ export function AIInboxPage() {
       )}
 
       {loading ? (
-        <p className="ai-inbox__placeholder">Loading…</p>
+        <p className="muted">Loading…</p>
       ) : suggestions.length === 0 ? (
-        <div className="ai-inbox__empty">
+        <div className="ai-inbox-empty">
           <Sparkles size={20} color="var(--ai-violet)" aria-hidden="true" />
-          <p className="ai-inbox__empty-title">No open insights</p>
-          <p className="ai-inbox__empty-sub">
+          <p className="ai-inbox-empty-title">No open insights</p>
+          <p className="ai-inbox-empty-sub">
             Try diagnosing the active sprint to see what AI surfaces.
           </p>
         </div>
       ) : filtered.length === 0 ? (
-        <p className="ai-inbox__placeholder">No insights match these filters.</p>
+        <p className="muted">No insights match these filters.</p>
       ) : (
-        <ul className="ai-inbox__list">
+        <ul className="ai-inbox-list">
           {filtered.map((s) => {
             const opts = parseOptions(s.payloadJson);
             const acted = s.status !== 'Open';
             const typeMeta = findProjectType(s.projectType);
             const TypeIcon = typeMeta?.icon;
             return (
-              <li key={s.id} className="ai-inbox__row">
+              <li key={s.id} className="ai-inbox-row">
                 <AISuggestionCard
                   chipLabel={
-                    <span className="hstack" style={{ gap: 4 }}>
+                    <span className="row" style={{ gap: 4 }}>
                       {TypeIcon && <TypeIcon size={11} aria-hidden="true" />}
                       <span>{typeMeta?.label ?? 'AI insight'}</span>
                     </span>
                   }
                   scope={
-                    <span className="hstack" style={{ gap: 6 }}>
+                    <span className="row" style={{ gap: 6 }}>
                       <Badge tone={TYPE_TONE[s.projectType] ?? 'neutral'}>
                         {categoryForKind(s.kind)}
                       </Badge>
@@ -265,26 +268,26 @@ function FilterRow({
   function ChipRow({ label, values, active, onChange }) {
     if (values.length === 0) return null;
     return (
-      <div className="ai-inbox__filter-row">
-        <span className="muted ai-inbox__filter-label">{label}</span>
+      <div className="ai-inbox-filter-row">
+        <span className="muted ai-inbox-filter-label">{label}</span>
         <button
           type="button"
           onClick={() => onChange('All')}
-          className={['ai-inbox__chip', active === 'All' ? 'is-active' : ''].filter(Boolean).join(' ')}
+          className={['ai-inbox-chip', active === 'All' ? 'is-active' : ''].filter(Boolean).join(' ')}
         >All</button>
         {values.map((v) => (
           <button
             key={v}
             type="button"
             onClick={() => onChange(v)}
-            className={['ai-inbox__chip', active === v ? 'is-active' : ''].filter(Boolean).join(' ')}
+            className={['ai-inbox-chip', active === v ? 'is-active' : ''].filter(Boolean).join(' ')}
           >{v}</button>
         ))}
       </div>
     );
   }
   return (
-    <div className="ai-inbox__filters">
+    <div className="ai-inbox-filters">
       <ChipRow label="Project type" values={types} active={activeType} onChange={onTypeChange} />
       <ChipRow label="Category" values={categories} active={activeCategory} onChange={onCategoryChange} />
     </div>

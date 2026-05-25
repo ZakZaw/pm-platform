@@ -22,7 +22,14 @@ public class EpicConfiguration : IEntityTypeConfiguration<Epic>
         builder.Property(e => e.CreatedAt).IsRequired();
         builder.Property(e => e.ArchivedAt);
 
+        // F2-01 roadmap timeline fields. Nullable — pre-existing epics have
+        // no roadmap placement yet.
+        builder.Property(e => e.StartDate);
+        builder.Property(e => e.EndDate);
+        builder.Property(e => e.Order);
+
         builder.HasIndex(e => e.ProjectId);
+        builder.HasIndex(e => new { e.ProjectId, e.StartDate });
 
         builder.HasOne(e => e.Project)
             .WithMany(p => p.Epics)

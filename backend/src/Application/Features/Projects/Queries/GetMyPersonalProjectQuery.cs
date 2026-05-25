@@ -32,7 +32,8 @@ public class GetMyPersonalProjectQueryHandler(IAppDbContext db, ICurrentUser cur
                 p.TargetDate,
                 p.AIControlMode.ToString(),
                 p.CreatedBy, p.CreatedAt,
-                p.IsPersonal))
+                p.IsPersonal,
+                "PM"))
             .FirstOrDefaultAsync(ct);
         if (existing is not null) return Result.Success(existing);
 
@@ -60,6 +61,7 @@ public class GetMyPersonalProjectQueryHandler(IAppDbContext db, ICurrentUser cur
             project.TargetDate,
             project.AIControlMode.ToString(),
             project.CreatedBy, project.CreatedAt,
-            project.IsPersonal));
+            project.IsPersonal,
+            "PM"));
     }
 }

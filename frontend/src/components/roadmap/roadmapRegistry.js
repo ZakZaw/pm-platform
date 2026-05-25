@@ -5,10 +5,14 @@
 //
 // Adapter shape:
 //   loadRoadmap(projectId): Promise<{
-//     bars:   [{ id, label, start, end, color, sublabel? }]
-//     points: [{ id, label, at, color, kind? }]   // 'milestone' | 'run' | 'target'
+//     bars:   [{ id, label, start, end, color, sublabel?, ownerId?, ownerName?, riskFlag? }]
+//     points: [{ id, label, at, color, kind?, editable?, epicId? }]
+//                                                 // 'milestone' | 'run' | 'target' | 'sprint'
 //     range:  { from, to }                        // ISO date strings (date-only)
-//     emptyHint?: string                          // shown when bars+points are empty
+//     dependencies?: [{ from, to }]               // edge ids — render arrow from bar→bar
+//     undated?:      [{ id, title }]              // epics that have no dates yet
+//     emptyHint?:    string                       // shown when bars+points are empty
+//     editable?:     boolean                      // gates drag-resize handles in the view
 //   }>
 //
 // All dates returned must be ISO strings — the view doesn't try to be

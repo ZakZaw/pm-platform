@@ -1,0 +1,390 @@
+// F2-04: engineering dashboard widget registry. Each entry knows its own
+// id, default grid size, and how to render itself given the shared `ctx`
+// that DashboardPage builds once per data fetch. Widgets stay declarative —
+// no data-fetching here, EXCEPT for the activity feed widget which fetches
+// its own paged history (see ActivityFeedWidget below).
+
+import { useEffect, useState } from 'react';
+import { Avatar, Badge, Button, Icon, Skeleton } from '@/components/ui';
+import {
+  BurndownChart,
+  HealthGauge,
+  VelocityChart,
+  WorkloadHeatmap,
+} from '@/components/charts';
+import { activityApi } from '@/api/activity.api';
+
+const PLACEHOLDER_VELOCITY = [
+  { name: 'S18', committed: 35, completed: 32 },
+  { name: 'S19', committed: 38, completed: 38 },
+  { name: 'S20', committed: 36, completed: 30 },
+  { name: 'S21', committed: 40, completed: 42 },
+  { name: 'S22', committed: 39, completed: 36 },
+  { name: 'S23', committed: 42, completed: 41 },
+];
+
+const PLACEHOLDER_HEAT_DAYS = ['M', 'T', 'W', 'T', 'F', 'M', 'T', 'W', 'T', 'F'];
+
+const PLACEHOLDER_HEAT_DATA = [
+  { name: 'Priya', load: [3, 4, 5, 5, 4, 4, 3, 5, 5, 3] },
+  { name: 'Marcus', load: [4, 5, 5, 4, 4, 5, 5, 5, 4, 4] },
+  { name: 'Sasha', load: [2, 3, 3, 3, 2, 3, 3, 4, 3, 2] },
+  { name: 'Diego', load: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5] },
+  { name: 'Hana', load: [3, 4, 4, 4, 3, 3, 4, 4, 3, 3] },
+  { name: 'Aria', load: [1, 2, 3, 2, 2, 2, 3, 3, 2, 1] },
+];
+
+const HEALTH_SIGNALS = [
+  ['Burn rate', 'var(--warning)', '+0.4d'],
+  ['Blockers', 'var(--success)', '1'],
+  ['Coverage', 'var(--success)', '94%'],
+  ['WIP', 'var(--warning)', 'high'],
+];
+
+function KpiCard({ label, value, delta, tone = 'info', placeholder }) {
+  return (
+    <div className="dash-kpi">
+      <div className="dash-kpi__label">
+        {label}
+        {placeholder && <span className="dashboard-sample">sample</span>}
+      </div>
+      <div className="dash-kpi__row">
+        <div className="dash-kpi__value">{value}</div>
+        {delta && (
+          <span className={`stat-delta stat-delta-${tone === 'success' ? 'up' : tone === 'warning' || tone === 'danger' ? 'down' : 'up'}`}>
+            {delta}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Widget registry. Order here drives the default layout. Adding a new
+// widget = new entry; the canvas + add-widget picker pick it up automatically.
+export const ENGINEERING_WIDGETS = [
+  {
+    id: 'kpi-on-track',
+    title: 'On track',
+    defaults: { w: 3, h: 2, minW: 2, minH: 2, maxH: 3 },
+    render: () => <KpiCard label="On track" value="82%" delta="+4%" tone="success" placeholder />,
+  },
+  {
+    id: 'kpi-open-tasks',
+    title: 'Open tasks',
+    defaults: { w: 3, h: 2, minW: 2, minH: 2, maxH: 3 },
+    render: ({ openTasks }) => <KpiCard label="Open tasks" value={openTasks} tone="info" />,
+  },
+  {
+    id: 'kpi-bug-ratio',
+    title: 'Bug ratio',
+    defaults: { w: 3, h: 2, minW: 2, minH: 2, maxH: 3 },
+    render: () => <KpiCard label="Bug ratio" value="11%" delta="−2%" tone="success" placeholder />,
+  },
+  {
+    id: 'kpi-cycle-time',
+    title: 'Avg cycle time',
+    defaults: { w: 3, h: 2, minW: 2, minH: 2, maxH: 3 },
+    render: () => <KpiCard label="Avg cycle time" value="3.2d" delta="+0.4d" tone="warning" placeholder />,
+  },
+  {
+    id: 'burndown',
+    title: 'Sprint burndown',
+    defaults: { w: 8, h: 5, minW: 4, minH: 4 },
+    render: ({ sprint, sprintDone, sprintTotal, daysLeft, isBehind, burnPoints, today, sprintLen }) => (
+      <div className="dash-card">
+        <header className="dash-card__head">
+          <strong>Sprint burndown</strong>
+          {sprint && (
+            <Badge tone={isBehind ? 'warning' : 'success'} dot>
+              {isBehind ? 'Behind ideal' : 'On track'}
+            </Badge>
+          )}
+        </header>
+        <div className="dash-card__body">
+          <div className="muted dashboard-sub">
+            {sprint
+              ? `${sprint.name} · ${sprintDone} / ${sprintTotal} pt · ${daysLeft} day${daysLeft === 1 ? '' : 's'} left`
+              : 'No active sprint'}
+          </div>
+          <BurndownChart
+            total={sprintTotal || 41}
+            actual={sprint ? burnPoints : [41, 39, 36, 34, 33, 31, 28, 28, 26, 24, 22]}
+            today={sprint ? today : 10}
+            days={sprintLen || 14}
+            width={520}
+            height={150}
+          />
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'project-health',
+    title: 'Project health',
+    defaults: { w: 4, h: 5, minW: 3, minH: 4 },
+    render: () => (
+      <div className="dash-card">
+        <header className="dash-card__head">
+          <strong>Project health <span className="dashboard-sample">sample</span></strong>
+          <Badge tone="success">Healthy</Badge>
+        </header>
+        <div className="dash-card__body center">
+          <HealthGauge score={78} />
+          <div className="col gap-3 dashboard-signals">
+            {HEALTH_SIGNALS.map(([label, color, value]) => (
+              <div key={label} className="row between" style={{ fontSize: 'var(--fs-sm)' }}>
+                <span className="row gap-3">
+                  <span className="dashboard-signal-dot" style={{ background: color }} />
+                  {label}
+                </span>
+                <span className="mono muted">{value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'velocity',
+    title: 'Velocity',
+    defaults: { w: 8, h: 5, minW: 4, minH: 4 },
+    render: ({ sprint, sprintTotal, sprintDone }) => (
+      <div className="dash-card">
+        <header className="dash-card__head">
+          <strong>Velocity <span className="dashboard-sample">sample</span></strong>
+          <div className="row gap-4" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)' }}>
+            <span className="row gap-2">
+              <span className="dashboard-legend-swatch" style={{ background: 'var(--surface-hover)' }} />
+              Committed
+            </span>
+            <span className="row gap-2">
+              <span className="dashboard-legend-swatch" style={{ background: 'var(--accent)' }} />
+              Completed
+            </span>
+          </div>
+        </header>
+        <div className="dash-card__body">
+          <VelocityChart
+            sprints={[
+              ...PLACEHOLDER_VELOCITY,
+              {
+                name: sprint?.name ?? 'S24',
+                committed: sprintTotal || 41,
+                completed: sprintDone || 26,
+                current: true,
+              },
+            ]}
+            width={520}
+            height={150}
+          />
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'epic-progress',
+    title: 'Epic progress',
+    defaults: { w: 4, h: 5, minW: 3, minH: 3 },
+    render: ({ epicProgress }) => (
+      <div className="dash-card">
+        <header className="dash-card__head"><strong>Epic progress</strong></header>
+        <div className="dash-card__body">
+          {epicProgress.length === 0 ? (
+            <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-sm)' }}>No epics with tasks yet.</p>
+          ) : (
+            <div className="col gap-4">
+              {epicProgress.map((e) => {
+                const pct = e.total > 0 ? e.done / e.total : 0;
+                return (
+                  <div key={e.id}>
+                    <div className="row between" style={{ marginBottom: 4 }}>
+                      <span className="row gap-3">
+                        <span className="dashboard-epic-swatch" style={{ background: e.color }} />
+                        <span className="truncate" style={{ fontSize: 'var(--fs-sm)' }}>{e.name}</span>
+                      </span>
+                      <span className="mono muted" style={{ fontSize: 'var(--fs-xs)' }}>
+                        {e.done}/{e.total}
+                      </span>
+                    </div>
+                    <div className="dashboard-epic-track">
+                      <div className="dashboard-epic-fill" style={{ width: `${pct * 100}%`, background: e.color }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'workload',
+    title: 'Team workload',
+    defaults: { w: 8, h: 5, minW: 4, minH: 4 },
+    render: () => (
+      <div className="dash-card">
+        <header className="dash-card__head">
+          <strong>Team workload <span className="dashboard-sample">sample</span></strong>
+          <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>last 2 weeks · daily pts</span>
+        </header>
+        <div className="dash-card__body">
+          <WorkloadHeatmap days={PLACEHOLDER_HEAT_DAYS} data={PLACEHOLDER_HEAT_DATA} />
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'ai-insight',
+    title: 'Weekly AI insight',
+    defaults: { w: 4, h: 5, minW: 3, minH: 4 },
+    render: () => (
+      <div className="ai-card" style={{ height: '100%' }}>
+        <div className="ai-card-body">
+          <div className="row gap-4" style={{ marginBottom: 'var(--s-4)' }}>
+            <div className="ai-mark"><Icon name="sparkles" size={14} /></div>
+            <strong>Weekly insight</strong>
+            <span className="dashboard-sample" style={{ marginLeft: 'auto' }}>sample</span>
+          </div>
+          <div className="dashboard-insight-title">You'll likely miss this sprint by ~12 pt</div>
+          <p className="muted dashboard-insight-body">
+            Two blockers are accruing time on Auth hardening. Marcus is at 95% capacity. Moving 12 pt to the next sprint keeps velocity within trend.
+          </p>
+          <Button variant="ai" size="sm" disabled title="Phase 2">
+            See full report <Icon name="arrow-right" size={12} />
+          </Button>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'activity',
+    title: 'Recent activity',
+    defaults: { w: 12, h: 4, minW: 6, minH: 3 },
+    render: ({ project, activityVersion }) => (
+      <ActivityFeedWidget project={project} refreshKey={activityVersion} />
+    ),
+  },
+];
+
+// ---------- Activity feed (F2-04 wire-up) ----------
+
+// Human-facing verb phrase. The backend produces a Summary string for some
+// verbs (e.g. "moved Auth epic to next quarter"); when present we prefer it
+// over our default phrase so the feed reads naturally.
+const VERB_PHRASE = {
+  TaskCreated: 'created',
+  TaskStatusChanged: 'changed the status of',
+  TaskAssigned: 'assigned',
+  TaskDeleted: 'deleted',
+  EpicCreated: 'created the epic',
+  EpicUpdated: 'updated the epic',
+  EpicDatesChanged: 'rescheduled the epic',
+  EpicArchived: 'archived the epic',
+  MilestoneCreated: 'added the milestone',
+  MilestoneUpdated: 'updated the milestone',
+  MilestoneDeleted: 'removed the milestone',
+  SprintStarted: 'started the sprint',
+  SprintClosed: 'closed the sprint',
+  CommentAdded: 'commented on',
+  EpicDependencyAdded: 'linked an epic dependency',
+  EpicDependencyRemoved: 'removed an epic dependency',
+};
+
+const TARGET_LABEL = {
+  Task: 'task',
+  Epic: 'epic',
+  Sprint: 'sprint',
+  Milestone: 'milestone',
+  EpicDependency: 'dependency',
+};
+
+function relativeTime(iso) {
+  if (!iso) return '';
+  const diff = Date.now() - new Date(iso).getTime();
+  if (diff < 60_000) return 'now';
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m`;
+  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h`;
+  if (diff < 604_800_000) return `${Math.floor(diff / 86_400_000)}d`;
+  return new Date(iso).toLocaleDateString();
+}
+
+function ActivityFeedWidget({ project, refreshKey }) {
+  const [entries, setEntries] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!project?.id) return undefined;
+    let cancelled = false;
+    setError(null);
+    activityApi
+      .listForProject(project.id, { limit: 12 })
+      .then((r) => { if (!cancelled) setEntries(r.entries ?? []); })
+      .catch((err) => { if (!cancelled) setError(err.response?.data?.detail ?? 'Could not load activity.'); });
+    return () => { cancelled = true; };
+  }, [project?.id, refreshKey]);
+
+  return (
+    <div className="dash-card">
+      <header className="dash-card__head"><strong>Recent activity</strong></header>
+      <div className="col" style={{ overflowY: 'auto' }}>
+        {entries === null && !error && (
+          <div style={{ padding: 'var(--s-5) var(--s-7)' }}>
+            <Skeleton height={14} width="60%" />
+          </div>
+        )}
+        {error && (
+          <p className="muted" style={{ padding: 'var(--s-5) var(--s-7)', fontSize: 'var(--fs-sm)' }}>
+            {error}
+          </p>
+        )}
+        {entries && entries.length === 0 && !error && (
+          <p className="muted" style={{ padding: 'var(--s-5) var(--s-7)', margin: 0, fontSize: 'var(--fs-sm)' }}>
+            No activity in this project yet.
+          </p>
+        )}
+        {entries && entries.map((entry, i, list) => (
+          <ActivityRow key={entry.id} entry={entry} isLast={i === list.length - 1} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ActivityRow({ entry, isLast }) {
+  const actorName = entry.actor?.fullName ?? 'Someone';
+  const phrase = VERB_PHRASE[entry.verb] ?? entry.verb;
+  const targetLabel = TARGET_LABEL[entry.targetType] ?? entry.targetType.toLowerCase();
+  // Summary, when present, is the rich phrase produced by the recorder
+  // ("moved Auth epic to next quarter"). Otherwise we fall back to a
+  // generic "{verb} the {targetType}" line.
+  const summary = entry.summary?.trim();
+  return (
+    <div
+      className="row gap-4 dashboard-activity"
+      style={{ borderBottom: isLast ? 0 : '1px solid var(--divider)' }}
+    >
+      <Avatar
+        name={actorName}
+        src={entry.actor?.avatarUrl}
+        size="xs"
+      />
+      <span className="dashboard-activity-text">
+        <span style={{ fontWeight: 500 }}>{actorName}</span>{' '}
+        {summary ? (
+          <span className="muted">{summary}</span>
+        ) : (
+          <>
+            <span className="muted">{phrase} the </span>
+            <span className="mono" style={{ color: 'var(--accent)' }}>{targetLabel}</span>
+          </>
+        )}
+      </span>
+      <span className="mono muted dashboard-activity-time" title={new Date(entry.createdAt).toLocaleString()}>
+        {relativeTime(entry.createdAt)}
+      </span>
+    </div>
+  );
+}

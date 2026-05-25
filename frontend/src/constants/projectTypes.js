@@ -90,18 +90,21 @@ export function findProjectType(id) {
 export function navItemsForType(typeId) {
   const universal = [
     { key: 'roadmap', label: 'Roadmap', icon: MapIcon, path: 'roadmap' },
+    { key: 'calendar', label: 'Calendar', icon: CalendarDays, path: 'calendar' },
     { key: 'dashboard', label: 'Dashboard', icon: BarChart3, path: 'dashboard' },
     { key: 'ai', label: 'AI Inbox', icon: Sparkles, path: 'ai' },
   ];
   const settings = [
     { key: 'members', label: 'Members', icon: Users, path: 'settings/members' },
     { key: 'workflow', label: 'Workflow', icon: Settings, path: 'settings/workflow' },
+    { key: 'fields', label: 'Fields', icon: ListTodo, path: 'settings/fields' },
   ];
 
   if (typeId === 'Engineering') {
     return [
       { key: 'epics', label: 'Epics', icon: Layers, path: 'epics' },
       { key: 'board', label: 'Board', icon: FolderKanban, path: 'board' },
+      { key: 'list', label: 'List', icon: ListTodo, path: 'list' },
       ...universal,
       { key: 'backlog', label: 'Backlog', icon: ClipboardList, path: 'backlog' },
       { key: 'sprints', label: 'Sprints', icon: Rocket, path: 'sprints' },
@@ -129,9 +132,11 @@ export function navItemsForType(typeId) {
   }
 
   if (typeId === 'Marketing') {
+    // Marketing's "Calendar" comes from the universal nav now (it points
+    // to /calendar, which CalendarPage dispatches to ContentCalendarPage
+    // for marketing projects). The explicit entry would be a duplicate.
     return [
       { key: 'campaigns', label: 'Campaigns', icon: Megaphone, path: 'campaigns' },
-      { key: 'calendar', label: 'Calendar', icon: CalendarDays, path: 'calendar' },
       ...universal,
       ...settings,
     ];

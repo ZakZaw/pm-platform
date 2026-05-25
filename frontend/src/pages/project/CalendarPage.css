@@ -1,0 +1,78 @@
+/* F2-03 Calendar page (universal task calendar — Marketing keeps its
+   own ContentCalendarPage). Reuses .cal / .cal-grid / .cal-cell /
+   .cal-event from stratos.css. */
+
+.calendar-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+.calendar-page__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-5) var(--s-6);
+  font-size: var(--fs-xs);
+}
+
+.calendar-page__swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--r-xs);
+  border: 1px solid var(--border-subtle);
+}
+
+.calendar-page__grid {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+/* Week view: 7 columns × 1 tall row. */
+.calendar-page__grid.is-week .cal-grid {
+  grid-template-rows: minmax(360px, 1fr);
+}
+
+.calendar-page__cell--week {
+  min-height: 360px;
+}
+
+/* Sprint band tinting. Four light backgrounds rotate so adjacent sprints
+   are visually distinct. Combined with .cal-cell.is-today the today
+   highlight still wins (more specific) for the day-of cell. */
+.sprint-tint-a { background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
+.sprint-tint-b { background: color-mix(in srgb, var(--violet) 7%, var(--surface)); }
+.sprint-tint-c { background: color-mix(in srgb, var(--info) 7%, var(--surface)); }
+.sprint-tint-d { background: color-mix(in srgb, var(--success) 7%, var(--surface)); }
+
+.calendar-page__sprint-label {
+  font-size: var(--fs-2xs);
+  max-width: 60%;
+}
+
+.cal-cell.is-over { background: var(--accent-soft); }
+
+.calendar-page__task {
+  cursor: grab;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.calendar-page__task.is-dragging { opacity: 0.4; cursor: grabbing; }
+.calendar-page__task.is-dragging-overlay {
+  cursor: grabbing;
+  box-shadow: var(--shadow-md);
+}
+
+/* Status colors mirror the .status-{key} chips so a quick scan of the
+   calendar grid reads the same as the board. */
+.task-status-Backlog,
+.task-status-ToDo    { border-color: var(--text-muted);  background: var(--surface-2);    color: var(--text-secondary); }
+.task-status-InProgress { border-color: var(--info);    background: var(--info-soft);    color: var(--info); }
+.task-status-InReview   { border-color: var(--violet);  background: var(--violet-soft);  color: var(--violet); }
+.task-status-Blocked    { border-color: var(--danger);  background: var(--danger-soft);  color: var(--danger); }
+.task-status-Done       { border-color: var(--success); background: var(--success-soft); color: var(--success); text-decoration: line-through; opacity: 0.85; }
+.task-status-WontDo     { border-color: var(--text-muted); background: var(--surface-2);  color: var(--text-muted); text-decoration: line-through; opacity: 0.7; }

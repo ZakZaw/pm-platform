@@ -29,6 +29,19 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<AIAuditLog> AIAuditLogs => Set<AIAuditLog>();
     public DbSet<AIGenerationRequest> AIGenerationRequests => Set<AIGenerationRequest>();
     public DbSet<AISuggestion> AISuggestions => Set<AISuggestion>();
+    public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
+    public DbSet<Notification> Notifications => Set<Notification>();
+
+    // F2-01 roadmap
+    public DbSet<EpicDependency> EpicDependencies => Set<EpicDependency>();
+    public DbSet<Milestone> Milestones => Set<Milestone>();
+
+    // F2-04 dashboard customisation
+    public DbSet<UserDashboardLayout> UserDashboardLayouts => Set<UserDashboardLayout>();
+
+    // F2-05 custom fields
+    public DbSet<CustomFieldDefinition> CustomFieldDefinitions => Set<CustomFieldDefinition>();
+    public DbSet<CustomFieldValue> CustomFieldValues => Set<CustomFieldValue>();
 
     // Phase 1.5 Sales (F1.5-02)
     public DbSet<DealStage> DealStages => Set<DealStage>();

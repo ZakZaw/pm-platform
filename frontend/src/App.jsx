@@ -29,11 +29,13 @@ import { LeadsPage } from '@/pages/project/LeadsPage';
 import { QueuePage } from '@/pages/project/QueuePage';
 import { CustomersPage } from '@/pages/project/CustomersPage';
 import { CampaignsPage } from '@/pages/project/CampaignsPage';
-import { ContentCalendarPage } from '@/pages/project/ContentCalendarPage';
+import { CalendarPage } from '@/pages/project/CalendarPage';
 import { ListsPage } from '@/pages/project/ListsPage';
 import { RunbooksPage } from '@/pages/project/RunbooksPage';
 import { RunDetailPage } from '@/pages/project/RunDetailPage';
 import { RoadmapPage } from '@/pages/project/RoadmapPage';
+import { ProjectListPage } from '@/pages/project/ProjectListPage';
+import { CustomFieldsPage } from '@/pages/project/CustomFieldsPage';
 import { OrgPortfolioPage } from '@/pages/dashboard/OrgPortfolioPage';
 import { AppShell } from '@/components/layout/AppShell';
 import { ToastProvider } from '@/components/ui';
@@ -105,6 +107,10 @@ function App() {
               element={<Keyed paramKey="projectSlug"><RoadmapPage /></Keyed>}
             />
             <Route
+              path="/:slug/projects/:projectSlug/list"
+              element={<Keyed paramKey="projectSlug"><ProjectListPage /></Keyed>}
+            />
+            <Route
               path="/:slug/portfolio"
               element={<Keyed paramKey="slug"><OrgPortfolioPage /></Keyed>}
             />
@@ -154,7 +160,7 @@ function App() {
             />
             <Route
               path="/:slug/projects/:projectSlug/calendar"
-              element={<Keyed paramKey="projectSlug"><ContentCalendarPage /></Keyed>}
+              element={<Keyed paramKey="projectSlug"><CalendarPage /></Keyed>}
             />
             <Route
               path="/:slug/projects/:projectSlug/lists"
@@ -175,6 +181,10 @@ function App() {
             <Route
               path="/:slug/projects/:projectSlug/settings/members"
               element={<Keyed paramKey="projectSlug"><ProjectMembersPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/settings/fields"
+              element={<Keyed paramKey="projectSlug"><CustomFieldsPage /></Keyed>}
             />
             <Route path="/settings/profile" element={<ProfilePage />} />
           </Route>

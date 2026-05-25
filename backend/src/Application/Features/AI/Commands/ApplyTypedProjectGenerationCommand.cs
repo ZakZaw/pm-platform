@@ -141,7 +141,8 @@ public class ApplyTypedProjectGenerationCommandHandler(
             project.TargetDate,
             project.AIControlMode.ToString(),
             project.CreatedBy, project.CreatedAt,
-            project.IsPersonal));
+            project.IsPersonal,
+            "PM"));
     }
 
     // ---------- Per-type materialisers ----------

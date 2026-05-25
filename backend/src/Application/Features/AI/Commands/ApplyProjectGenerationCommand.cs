@@ -153,7 +153,8 @@ public class ApplyProjectGenerationCommandHandler(
             project.TargetDate,
             project.AIControlMode.ToString(),
             project.CreatedBy, project.CreatedAt,
-            project.IsPersonal));
+            project.IsPersonal,
+            "PM"));
     }
 
     private static string TrimOrDefault(string? s, string fallback)

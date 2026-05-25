@@ -23,6 +23,19 @@ public interface IAppDbContext
     DbSet<AIAuditLog> AIAuditLogs { get; }
     DbSet<AIGenerationRequest> AIGenerationRequests { get; }
     DbSet<AISuggestion> AISuggestions { get; }
+    DbSet<ActivityLog> ActivityLogs { get; }
+    DbSet<Notification> Notifications { get; }
+
+    // F2-01 roadmap
+    DbSet<EpicDependency> EpicDependencies { get; }
+    DbSet<Milestone> Milestones { get; }
+
+    // F2-04 dashboard customisation
+    DbSet<UserDashboardLayout> UserDashboardLayouts { get; }
+
+    // F2-05 custom fields
+    DbSet<CustomFieldDefinition> CustomFieldDefinitions { get; }
+    DbSet<CustomFieldValue> CustomFieldValues { get; }
 
     // Phase 1.5 Sales (F1.5-02)
     DbSet<DealStage> DealStages { get; }

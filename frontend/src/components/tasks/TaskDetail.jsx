@@ -38,6 +38,7 @@ import { EpicPicker } from './EpicPicker';
 import { SprintPicker } from './SprintPicker';
 import { CommentList } from './CommentList';
 import { CommentInput } from './CommentInput';
+import { CustomFieldsSection } from './CustomFieldsSection';
 import './TaskDetail.css';
 
 const DEFAULT_TASK_COLOR = 'var(--accent)';
@@ -662,6 +663,8 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                   </button>
                 )}
               </div>
+
+              <CustomFieldsSection taskId={task.id} projectId={projectId} />
             </div>
 
             {aiEstimate && (

@@ -1,0 +1,205 @@
+/* F2-02 List view — spreadsheet-style table built on Stratos .tbl. */
+
+.list-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+.list-page__columns-wrap {
+  position: relative;
+}
+
+.list-page__menu {
+  position: absolute;
+  top: calc(100% + var(--s-2));
+  right: 0;
+  z-index: 30;
+  min-width: 220px;
+}
+
+.list-page__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-4) var(--s-5);
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+}
+
+.list-page__search {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex: 1;
+  min-width: 200px;
+}
+
+.list-page__search input {
+  width: 100%;
+}
+
+/* Filter chips are <button>s so they need button reset, and toggle into
+   an accent-tinted state when selected. */
+.list-page__filters button.chip {
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--fs-xs);
+}
+
+.list-page__filters button.chip.is-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent-border);
+}
+
+.list-page__bulkbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-3) var(--s-5);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--r-md);
+  font-size: var(--fs-sm);
+}
+
+.list-page__table-wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+}
+
+.list-page__table {
+  min-width: 1100px;
+}
+
+.list-page__table thead th {
+  background: var(--surface-2);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.list-page__th.is-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.list-page__th.is-sortable:hover {
+  color: var(--text);
+}
+
+.list-page__check-col {
+  width: 36px;
+  text-align: center;
+}
+
+.list-page__td-mono {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+
+.list-page__cell-input,
+.list-page__cell-select {
+  width: 100%;
+  padding: var(--s-2) var(--s-3);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-sm);
+  cursor: text;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+
+.list-page__cell-input:hover,
+.list-page__cell-select:hover {
+  border-color: var(--border-subtle);
+}
+
+.list-page__cell-input:focus,
+.list-page__cell-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: var(--shadow-focus);
+}
+
+.list-page__cell-input--num {
+  text-align: right;
+  width: 64px;
+}
+
+.list-page__cell-select {
+  cursor: pointer;
+  appearance: none;
+}
+
+/* Status select cells get their status color baked in. */
+.list-page__status {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  padding: var(--s-1) var(--s-3);
+}
+
+.list-page__status--Backlog,
+.list-page__status--ToDo { color: var(--text-secondary); }
+.list-page__status--InProgress { color: var(--info); }
+.list-page__status--InReview { color: var(--violet); }
+.list-page__status--Blocked { color: var(--danger); }
+.list-page__status--Done { color: var(--success); }
+.list-page__status--WontDo { color: var(--text-muted); }
+
+.list-page__pri {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  padding: var(--s-1) var(--s-3);
+}
+
+.list-page__pri--Urgent { color: var(--pri-urgent); }
+.list-page__pri--High { color: var(--pri-high); }
+.list-page__pri--Medium { color: var(--pri-medium); }
+.list-page__pri--Low { color: var(--pri-low); }
+
+.list-page__table tr.is-selected td {
+  background: var(--accent-soft-2, var(--surface-2));
+}
+
+.list-page__empty {
+  text-align: center;
+  padding: var(--s-9) var(--s-5);
+  color: var(--text-muted);
+}
+
+.list-page__failure-list {
+  list-style: none;
+  margin: var(--s-4) 0 0;
+  padding: 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.list-page__failure-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  background: var(--surface-2);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-sm);
+  margin-bottom: var(--s-2);
+}
+
+.list-page__failure-list .mono {
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}

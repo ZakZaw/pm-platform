@@ -1,7 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Bell,
   ChevronDown,
   HelpCircle,
   LogOut,
@@ -19,6 +18,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useOrgStore } from '@/store/orgStore';
 import { useProjectStore } from '@/store/projectStore';
 import { useUiStore } from '@/store/uiStore';
+import { NotificationsPanel } from './NotificationsPanel';
 import './Topbar.css';
 
 const SECTION_LABEL = {
@@ -26,9 +26,13 @@ const SECTION_LABEL = {
   backlog: 'Backlog',
   sprints: 'Sprints',
   epics: 'Epics',
+  list: 'List',
+  roadmap: 'Roadmap',
+  calendar: 'Calendar',
   settings: 'Settings',
   members: 'Members',
   workflow: 'Workflow',
+  fields: 'Fields',
   new: 'New project',
   home: 'Home',
   dashboard: 'My work',
@@ -169,14 +173,7 @@ export function Topbar() {
         <span>Ask AI</span>
       </button>
 
-      <button
-        type="button"
-        className="btn btn-ghost btn-icon-sm"
-        title="Notifications"
-        aria-label="Notifications"
-      >
-        <Bell size={14} aria-hidden="true" />
-      </button>
+      <NotificationsPanel />
 
       <button
         type="button"

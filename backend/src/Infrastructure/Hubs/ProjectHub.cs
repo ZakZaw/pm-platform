@@ -8,6 +8,12 @@ namespace Infrastructure.Hubs;
 /// connecting; everyone in that group gets server-pushed events when a
 /// command handler calls IProjectEventBus.PublishAsync. The group name is
 /// "project:{guid}" -- emitted from the Infrastructure event bus.
+///
+/// Per-user pushes (notifications) don't need a join call — SignalR auto-
+/// tracks each connection's UserIdentifier from the JWT's Sub claim. Server
+/// code calls IProjectEventBus.PublishToUserAsync, which maps to
+/// Clients.User(userId). Event names live in
+/// Application.Interfaces.ProjectEvents / UserEvents.
 /// </summary>
 [Authorize]
 public class ProjectHub : Hub

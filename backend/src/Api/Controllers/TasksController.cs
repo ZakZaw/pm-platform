@@ -1,16 +1,20 @@
+using Api.Authorization;
 using Application.Common;
 using Application.Features.Tasks;
 using Application.Features.Tasks.Commands;
 using Application.Features.Tasks.Queries;
+using Domain.Enums;
+using Infrastructure.Services;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Api.Controllers;
 
 [ApiController]
 [Authorize]
-public class TasksController(ISender mediator) : ControllerBase
+public class TasksController(ISender mediator, IOptions<FrontendSettings> frontend) : ControllerBase
 {
     [HttpGet("api/v1/projects/{projectId:guid}/tasks")]
     public async Task<ActionResult<IReadOnlyList<TaskDto>>> ListForProject(
@@ -19,10 +23,23 @@ public class TasksController(ISender mediator) : ControllerBase
         [FromQuery(Name = "sprint_id")] Guid? sprintId = null,
         [FromQuery(Name = "assignee_id")] Guid? assigneeId = null,
         [FromQuery(Name = "include_done")] bool includeDone = false,
+        [FromQuery] string[]? status = null,
+        [FromQuery] string[]? priority = null,
+        [FromQuery] string? search = null,
+        [FromQuery(Name = "no_epic")] bool? noEpic = null,
+        [FromQuery(Name = "no_sprint")] bool? noSprint = null,
+        [FromQuery(Name = "no_assignee")] bool? noAssignee = null,
+        [FromQuery(Name = "due_after")] DateTime? dueAfter = null,
+        [FromQuery(Name = "due_before")] DateTime? dueBefore = null,
+        [FromQuery] string? sort = null,
         CancellationToken ct = default)
     {
         var result = await mediator.Send(
-            new ListProjectTasksQuery(projectId, epicId, sprintId, assigneeId, includeDone), ct);
+            new ListProjectTasksQuery(
+                projectId, epicId, sprintId, assigneeId, includeDone,
+                status, priority, search,
+                noEpic, noSprint, noAssignee,
+                dueAfter, dueBefore, sort), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
@@ -82,6 +99,32 @@ public class TasksController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    [HttpGet("api/v1/projects/{projectId:guid}/calendar.ics")]
+    [RequireProjectRole(ProjectRole.Viewer)]
+    public async Task<IActionResult> Calendar(Guid projectId, CancellationToken ct)
+    {
+        var result = await mediator.Send(
+            new GetProjectIcalQuery(projectId, frontend.Value.BaseUrl), ct);
+        if (!result.IsSuccess) return ToProblem(result.Error!);
+        var bytes = System.Text.Encoding.UTF8.GetBytes(result.Value!);
+        return File(bytes, "text/calendar; charset=utf-8", "project-calendar.ics");
+    }
+
+    [HttpPost("api/v1/projects/{projectId:guid}/tasks/bulk")]
+    public async Task<ActionResult<BulkUpdateTasksResult>> Bulk(
+        Guid projectId,
+        [FromBody] BulkUpdateTasksBodyDto body,
+        CancellationToken ct)
+    {
+        var payload = body.Payload is null ? null : new BulkOperationPayload(
+            body.Payload.Status, body.Payload.Reason,
+            body.Payload.AssigneeId, body.Payload.ClearAssignee ?? false);
+
+        var result = await mediator.Send(
+            new BulkUpdateTasksCommand(projectId, body.TaskIds, body.Operation, payload), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     private ObjectResult ToProblem(Error error)
     {
         var status = error.Code switch
@@ -131,3 +174,14 @@ public record UpdateTaskBodyDto(
     string[]? AcceptanceCriteria);
 
 public record ChangeTaskStatusBodyDto(string To, string? Reason);
+
+public record BulkUpdateTasksBodyDto(
+    IReadOnlyList<Guid> TaskIds,
+    string Operation,
+    BulkOperationPayloadDto? Payload);
+
+public record BulkOperationPayloadDto(
+    string? Status,
+    string? Reason,
+    Guid? AssigneeId,
+    bool? ClearAssignee);

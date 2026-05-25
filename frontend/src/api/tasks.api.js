@@ -16,4 +16,10 @@ export const tasksApi = {
 
   changeStatus: (taskId, { to, reason }) =>
     apiClient.patch(`/tasks/${taskId}/status`, { to, reason }).then((r) => r.data),
+
+  // F2-02 — body: { taskIds, operation: 'status'|'assignee'|'delete', payload }
+  // Returns { succeeded: [taskIds], failed: [{ taskId, code, message }] } so the
+  // spreadsheet can flag failed rows inline.
+  bulk: (projectId, body) =>
+    apiClient.post(`/projects/${projectId}/tasks/bulk`, body).then((r) => r.data),
 };

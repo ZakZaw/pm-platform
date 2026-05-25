@@ -154,6 +154,30 @@ public static class EpicErrors
 
     public static readonly Error InvalidStatus =
         new("Epic.InvalidStatus", "Epic status must be Planning, InProgress, Done, or Archived.");
+
+    public static readonly Error InvalidDateRange =
+        new("Epic.InvalidDateRange", "End date must be on or after start date.");
+
+    public static readonly Error DependencyCycle =
+        new("Epic.DependencyCycle", "Adding this dependency would create a cycle.");
+
+    public static readonly Error DependencyNotInProject =
+        new("Epic.DependencyNotInProject", "Both epics must belong to the same project.");
+
+    public static readonly Error DependencyNotFound =
+        new("Epic.DependencyNotFound", "Dependency not found.");
+}
+
+public static class MilestoneErrors
+{
+    public static readonly Error NotFound =
+        new("Milestone.NotFound", "Milestone not found.");
+
+    public static readonly Error InvalidTitle =
+        new("Milestone.InvalidTitle", "Milestone title must be 2-200 characters.");
+
+    public static readonly Error EpicNotInProject =
+        new("Milestone.EpicNotInProject", "The pinned epic does not belong to this project.");
 }
 
 public static class TaskErrors
@@ -517,4 +541,37 @@ public static class InvitationErrors
 
     public static readonly Error EmailMismatch =
         new("Invitation.EmailMismatch", "This invitation was sent to a different email address.");
+}
+
+public static class CustomFieldErrors
+{
+    public static readonly Error NotFound =
+        new("CustomField.NotFound", "Custom field not found.");
+
+    public static readonly Error InvalidName =
+        new("CustomField.InvalidName", "Field name must be 1-120 characters.");
+
+    public static readonly Error InvalidType =
+        new("CustomField.InvalidType", "Field type must be Text, Number, Date, SingleSelect, or MultiSelect.");
+
+    public static readonly Error DuplicateName =
+        new("CustomField.DuplicateName", "A field with this name already exists on this project.");
+
+    public static readonly Error OptionsRequired =
+        new("CustomField.OptionsRequired", "Single-select and multi-select fields require at least one option.");
+
+    public static readonly Error OptionsNotAllowed =
+        new("CustomField.OptionsNotAllowed", "Options are only allowed on single-select and multi-select fields.");
+
+    public static readonly Error InvalidOption =
+        new("CustomField.InvalidOption", "Each option must be 1-120 characters.");
+
+    public static readonly Error InvalidValue =
+        new("CustomField.InvalidValue", "The provided value does not match the field type.");
+
+    public static readonly Error RequiredMissing =
+        new("CustomField.RequiredMissing", "One or more required custom fields are missing a value.");
+
+    public static readonly Error TaskNotInProject =
+        new("CustomField.TaskNotInProject", "The task does not belong to this field's project.");
 }

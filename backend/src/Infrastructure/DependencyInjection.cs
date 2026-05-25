@@ -33,6 +33,8 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, ConsoleEmailService>();
 
         services.AddSingleton<IProjectEventBus, SignalRProjectEventBus>();
+        services.AddScoped<IActivityRecorder, EfActivityRecorder>();
+        services.AddScoped<INotificationService, EfNotificationService>();
 
         // Real Gemini is the only AI provider. The constructor doesn't throw
         // when the key is missing — every call surfaces AINotConfiguredException,

@@ -1,5 +1,4 @@
-import { epicsApi } from '@/api/epics.api';
-import { boardApi } from '@/api/board.api';
+import { roadmapApi } from '@/api/roadmap.api';
 import { sprintsApi } from '@/api/sprints.api';
 
 const EPIC_PALETTE = [
@@ -7,91 +6,86 @@ const EPIC_PALETTE = [
   '#3FB984', '#E0A23A', '#E5484D', '#4F9EFF',
 ];
 
-// Engineering roadmap: one bar per epic, spanning the sprints that
-// contain its tasks. Sprint dates are the source of truth — Epic itself
-// doesn't carry start/end, but its work lives inside sprints. Fallback
-// to the project window when an epic has no sprint coverage yet.
+// Engineering roadmap (F2-01). Source of truth: each epic carries its own
+// startDate/endDate, plus a dependency graph and standalone milestones,
+// all returned from GET /projects/{id}/roadmap. Active-sprint marker is
+// derived on the side and merged with backend milestones for the points
+// row.
+//
+// Epics without dates are kept in the response payload but excluded from
+// the bar lanes — they show in the empty-state hint until a PM places them.
 export async function engineeringRoadmap(projectId) {
-  const [epics, board, sprints] = await Promise.all([
-    epicsApi.listForProject(projectId).catch(() => []),
-    boardApi.get(projectId).catch(() => null),
+  const [roadmap, sprints] = await Promise.all([
+    roadmapApi.get(projectId).catch(() => null),
     sprintsApi.listForProject(projectId).catch(() => []),
   ]);
 
-  const sprintById = new Map(sprints.map((s) => [s.id, s]));
-  const epicSprints = new Map(); // epicId → Set<sprintId>
-  if (board) {
-    for (const lane of board.swimlanes) {
-      for (const col of lane.columns) {
-        for (const card of col.cards) {
-          if (!card.epicId || !card.sprintId) continue;
-          if (!epicSprints.has(card.epicId)) epicSprints.set(card.epicId, new Set());
-          epicSprints.get(card.epicId).add(card.sprintId);
-        }
-      }
-    }
+  if (!roadmap) {
+    return {
+      bars: [],
+      points: [],
+      range: defaultRange(),
+      dependencies: [],
+      undated: [],
+      emptyHint: "Couldn't load the roadmap. Check that the project still exists.",
+      editable: true,
+    };
   }
 
-  const projectStart = sprints.length > 0
-    ? sprints.reduce((m, s) => s.startDate && (!m || s.startDate < m) ? s.startDate : m, null)
-    : null;
-  const projectEnd = sprints.length > 0
-    ? sprints.reduce((m, s) => s.endDate && (!m || s.endDate > m) ? s.endDate : m, null)
-    : null;
-
-  const bars = epics.map((e, i) => {
-    const sprintIds = epicSprints.get(e.id);
-    let start = projectStart;
-    let end = projectEnd;
-    if (sprintIds && sprintIds.size > 0) {
-      const epicSprintRows = Array.from(sprintIds)
-        .map((id) => sprintById.get(id))
-        .filter(Boolean);
-      const earliest = epicSprintRows.reduce(
-        (m, s) => s.startDate && (!m || s.startDate < m) ? s.startDate : m, null);
-      const latest = epicSprintRows.reduce(
-        (m, s) => s.endDate && (!m || s.endDate > m) ? s.endDate : m, null);
-      if (earliest) start = earliest;
-      if (latest) end = latest;
-    }
-    return {
+  const bars = roadmap.epics
+    .filter((e) => e.startDate && e.endDate)
+    .map((e, i) => ({
       id: e.id,
       label: e.title,
-      start,
-      end,
+      start: e.startDate,
+      end: e.endDate,
       color: e.color ?? EPIC_PALETTE[i % EPIC_PALETTE.length],
       sublabel: e.status ?? null,
-    };
-  }).filter((b) => b.start && b.end);
+      ownerId: e.ownerId,
+      ownerName: e.ownerName,
+      riskFlag: e.riskFlag,
+    }));
 
-  // Active sprint marker
-  const points = [];
-  const active = sprints.find((s) => s.status === 'Active');
-  if (active && active.endDate) {
-    points.push({
-      id: `sprint-${active.id}`,
-      label: `${active.name} ends`,
-      at: active.endDate,
-      color: 'var(--accent)',
-      kind: 'milestone',
-    });
-  }
+  const milestonePoints = (roadmap.milestones ?? []).map((m) => ({
+    id: m.id,
+    label: m.title,
+    at: m.date,
+    color: m.color ?? 'var(--accent)',
+    kind: 'milestone',
+    epicId: m.epicId,
+    editable: true,
+  }));
 
-  const range = bars.length > 0
-    ? {
-        from: bars.reduce((m, b) => (b.start < m ? b.start : m), bars[0].start),
-        to: bars.reduce((m, b) => (b.end > m ? b.end : m), bars[0].end),
-      }
-    : projectStart && projectEnd ? { from: projectStart, to: projectEnd }
-    : defaultRange();
+  // Active-sprint marker keeps the visual cue we already had — but tagged
+  // 'sprint' so the UI can render it differently and skip the milestone
+  // edit affordances.
+  const activeSprint = sprints.find((s) => s.status === 'Active');
+  const sprintMarkers = activeSprint && activeSprint.endDate
+    ? [{
+        id: `sprint-${activeSprint.id}`,
+        label: `${activeSprint.name} ends`,
+        at: activeSprint.endDate,
+        color: 'var(--accent)',
+        kind: 'sprint',
+        editable: false,
+      }]
+    : [];
+
+  const undated = roadmap.epics
+    .filter((e) => !e.startDate || !e.endDate)
+    .map((e) => ({ id: e.id, title: e.title }));
 
   return {
     bars,
-    points,
-    range,
+    points: [...milestonePoints, ...sprintMarkers],
+    range: { from: roadmap.from, to: roadmap.to },
+    dependencies: roadmap.epics.flatMap((e) =>
+      (e.dependsOn ?? []).map((depId) => ({ from: depId, to: e.id }))),
+    undated,
     emptyHint: bars.length === 0
-      ? 'Add sprints and link tasks to epics — epic bars span their sprints.'
+      ? 'No epics placed on the timeline yet. Set start and end dates on an epic to see it here.'
       : undefined,
+    editable: true,
   };
 }
 
@@ -99,5 +93,5 @@ function defaultRange() {
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const end = new Date(now.getFullYear(), now.getMonth() + 2, 1);
-  return { from: start.toISOString(), to: end.toISOString() };
+  return { from: start.toISOString().slice(0, 10), to: end.toISOString().slice(0, 10) };
 }

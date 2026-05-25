@@ -45,6 +45,10 @@
   pointer-events: none;
 }
 
+.roadmap-view__lanes-wrap {
+  position: relative;
+}
+
 .roadmap-view__lanes {
   list-style: none;
   margin: 0;
@@ -52,6 +56,22 @@
   display: flex;
   flex-direction: column;
   gap: var(--s-4);
+  position: relative;
+  z-index: 1;
+}
+
+/* Dependency arrow overlay. The SVG inhabits the same right-column gutter as
+   the tracks (the lane-label column is 160px), so we offset it the same way. */
+.roadmap-view__deps {
+  position: absolute;
+  top: 0;
+  left: 160px;
+  right: 0;
+  bottom: 0;
+  width: calc(100% - 160px);
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .roadmap-view__lane {
@@ -104,6 +124,40 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
+.roadmap-view[data-editable='true'] .roadmap-view__bar {
+  cursor: grab;
+}
+
+.roadmap-view__handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: ew-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+.roadmap-view__handle::after {
+  content: '';
+  width: 2px;
+  height: 60%;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 1px;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.roadmap-view__handle:hover::after,
+.roadmap-view__bar:hover .roadmap-view__handle::after {
+  opacity: 1;
+}
+
+.roadmap-view__handle--start { left: 0; }
+.roadmap-view__handle--end { right: 0; }
+
 .roadmap-view__bar-label {
   font-size: var(--fs-xs);
   font-weight: var(--fw-medium);
@@ -145,6 +199,20 @@
   border-radius: 50%;
   transform: translate(-50%, -50%);
   box-shadow: 0 0 0 2px var(--surface);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.roadmap-view__point:disabled {
+  cursor: default;
+}
+
+.roadmap-view__point--milestone {
+  border-radius: 2px;
+  width: 12px;
+  height: 12px;
+  transform: translate(-50%, -50%) rotate(45deg);
 }
 
 .roadmap-view__point--target {

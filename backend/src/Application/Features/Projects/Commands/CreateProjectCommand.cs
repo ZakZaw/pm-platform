@@ -83,7 +83,8 @@ public class CreateProjectCommandHandler(
             project.TargetDate,
             project.AIControlMode.ToString(),
             project.CreatedBy, project.CreatedAt,
-            project.IsPersonal));
+            project.IsPersonal,
+            "PM"));
     }
 
     private async Task<string> ResolveUniqueSlugAsync(Guid orgId, string baseSlug, CancellationToken ct)

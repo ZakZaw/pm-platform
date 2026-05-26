@@ -3,15 +3,17 @@ using Application.Common;
 using Application.Features.Roadmap.Commands;
 using Application.Features.Roadmap.Queries;
 using Domain.Enums;
+using Infrastructure.Services;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Api.Controllers;
 
 [ApiController]
 [Authorize]
-public class RoadmapController(ISender mediator) : ControllerBase
+public class RoadmapController(ISender mediator, IOptions<FrontendSettings> frontend) : ControllerBase
 {
     [HttpGet("api/v1/projects/{projectId:guid}/roadmap")]
     [RequireProjectRole(ProjectRole.Viewer)]
@@ -89,6 +91,49 @@ public class RoadmapController(ISender mediator) : ControllerBase
         return result.IsSuccess ? NoContent() : ToProblem(result.Error!);
     }
 
+    [HttpPost("api/v1/projects/{projectId:guid}/roadmap/share-links")]
+    [RequireProjectRole(ProjectRole.TeamLead)]
+    public async Task<ActionResult<RoadmapShareLinkResponseDto>> CreateShareLink(
+        Guid projectId,
+        [FromBody] CreateShareLinkBodyDto body,
+        CancellationToken ct)
+    {
+        var result = await mediator.Send(new CreateRoadmapShareLinkCommand(
+            projectId, body.Password, body.ExpiresAt,
+            body.HideInternalLabels ?? false, body.HideAssignees ?? false), ct);
+        if (!result.IsSuccess) return ToProblem(result.Error!);
+        return Ok(WithUrl(result.Value!));
+    }
+
+    [HttpGet("api/v1/projects/{projectId:guid}/roadmap/share-links")]
+    [RequireProjectRole(ProjectRole.TeamLead)]
+    public async Task<ActionResult<IReadOnlyList<RoadmapShareLinkResponseDto>>> ListShareLinks(
+        Guid projectId, CancellationToken ct)
+    {
+        var result = await mediator.Send(new ListRoadmapShareLinksQuery(projectId), ct);
+        if (!result.IsSuccess) return ToProblem(result.Error!);
+        return Ok(result.Value!.Select(WithUrl).ToList());
+    }
+
+    [HttpDelete("api/v1/projects/{projectId:guid}/roadmap/share-links/{linkId:guid}")]
+    [RequireProjectRole(ProjectRole.TeamLead)]
+    public async Task<ActionResult> RevokeShareLink(
+        Guid projectId, Guid linkId, CancellationToken ct)
+    {
+        var result = await mediator.Send(new RevokeRoadmapShareLinkCommand(linkId), ct);
+        return result.IsSuccess ? NoContent() : ToProblem(result.Error!);
+    }
+
+    private RoadmapShareLinkResponseDto WithUrl(RoadmapShareLinkDto dto)
+    {
+        var baseUrl = (frontend.Value.BaseUrl ?? string.Empty).TrimEnd('/');
+        var url = $"{baseUrl}/share/roadmap/{dto.Token}";
+        return new RoadmapShareLinkResponseDto(
+            dto.Id, dto.ProjectId, dto.Token, url, dto.HasPassword,
+            dto.ExpiresAt, dto.HideInternalLabels, dto.HideAssignees,
+            dto.CreatedByUserId, dto.CreatedByName, dto.CreatedAt, dto.RevokedAt);
+    }
+
     private ObjectResult ToProblem(Error error)
     {
         var status = error.Code switch
@@ -105,11 +150,34 @@ public class RoadmapController(ISender mediator) : ControllerBase
             "Milestone.NotFound" => StatusCodes.Status404NotFound,
             "Milestone.InvalidTitle" => StatusCodes.Status422UnprocessableEntity,
             "Milestone.EpicNotInProject" => StatusCodes.Status422UnprocessableEntity,
+            "RoadmapShare.InvalidExpiry" => StatusCodes.Status422UnprocessableEntity,
+            "RoadmapShare.InvalidPasswordValue" => StatusCodes.Status422UnprocessableEntity,
+            "RoadmapShare.NotFound" => StatusCodes.Status404NotFound,
             _ => StatusCodes.Status400BadRequest
         };
         return Problem(title: error.Code, detail: error.Message, statusCode: status);
     }
 }
+
+public record CreateShareLinkBodyDto(
+    string? Password,
+    DateTime? ExpiresAt,
+    bool? HideInternalLabels,
+    bool? HideAssignees);
+
+public record RoadmapShareLinkResponseDto(
+    Guid Id,
+    Guid ProjectId,
+    string Token,
+    string Url,
+    bool HasPassword,
+    DateTime? ExpiresAt,
+    bool HideInternalLabels,
+    bool HideAssignees,
+    Guid CreatedByUserId,
+    string? CreatedByName,
+    DateTime CreatedAt,
+    DateTime? RevokedAt);
 
 public record UpdateEpicDatesBodyDto(
     DateOnly? StartDate,

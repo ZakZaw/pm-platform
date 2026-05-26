@@ -47,7 +47,8 @@ public class CreateOrganizationCommandHandler(
         {
             var extension = ExtensionFor(request.LogoContentType!);
             var fileName = $"{Guid.NewGuid():N}{extension}";
-            logoUrl = await fileStorage.SaveAsync(logoBytes, "orgs", fileName, ct);
+            var stored = await fileStorage.SaveAsync(logoBytes, "orgs", fileName, ct);
+            logoUrl = stored.PublicUrl;
         }
 
         var org = new Organization

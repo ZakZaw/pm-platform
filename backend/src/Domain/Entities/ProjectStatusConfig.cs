@@ -21,6 +21,11 @@ public class ProjectStatusConfig
     public int OrderIndex { get; set; }
     public bool IsDoneState { get; set; }
     public bool IsVisible { get; set; } = true;
+    /// <summary>PM-21 WIP limit. Null = no limit. The board shows a
+    /// warning ring on the column when current task count exceeds this.
+    /// Status-machine enforcement isn't applied — limits are advisory.
+    /// </summary>
+    public int? WipLimit { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public Project Project { get; set; } = null!;

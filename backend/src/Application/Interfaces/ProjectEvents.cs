@@ -22,6 +22,12 @@ public static class ProjectEvents
 
     // Phase 2 cross-cutting
     public const string ActivityRecorded = "activity.recorded";
+
+    // F2-07 PM-22 planning poker
+    public const string PokerStarted = "poker.started";
+    public const string PokerVoteCast = "poker.vote_cast";
+    public const string PokerRevealed = "poker.revealed";
+    public const string PokerClosed = "poker.closed";
 }
 
 /// <summary>

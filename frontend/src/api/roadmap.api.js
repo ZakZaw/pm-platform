@@ -35,4 +35,26 @@ export const roadmapApi = {
     apiClient
       .delete(`/projects/${projectId}/epics/${epicId}/dependencies/${prereqId}`)
       .then((r) => r.data),
+
+  // F2-06 — public, no-auth share links onto the roadmap.
+  listShareLinks: (projectId) =>
+    apiClient.get(`/projects/${projectId}/roadmap/share-links`).then((r) => r.data),
+
+  createShareLink: (projectId, body) =>
+    apiClient.post(`/projects/${projectId}/roadmap/share-links`, body).then((r) => r.data),
+
+  revokeShareLink: (projectId, linkId) =>
+    apiClient.delete(`/projects/${projectId}/roadmap/share-links/${linkId}`).then((r) => r.data),
+};
+
+// Public share read uses no auth — call axios directly so the auth
+// interceptor doesn't hijack the URL or attach a bearer token.
+import axios from 'axios';
+export const publicShareApi = {
+  getRoadmap: (token, password) =>
+    axios
+      .get(`/api/v1/share/roadmap/${encodeURIComponent(token)}`, {
+        params: password ? { password } : undefined,
+      })
+      .then((r) => r.data),
 };

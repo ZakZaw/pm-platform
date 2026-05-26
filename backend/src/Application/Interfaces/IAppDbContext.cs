@@ -30,6 +30,17 @@ public interface IAppDbContext
     DbSet<EpicDependency> EpicDependencies { get; }
     DbSet<Milestone> Milestones { get; }
 
+    // F2-06 shareable read-only roadmap link
+    DbSet<RoadmapShareLink> RoadmapShareLinks { get; }
+
+    // F2-07 task enhancements
+    DbSet<Attachment> Attachments { get; }
+    DbSet<Label> Labels { get; }
+    DbSet<TaskLabel> TaskLabels { get; }
+    DbSet<TimeLog> TimeLogs { get; }
+    DbSet<PokerSession> PokerSessions { get; }
+    DbSet<PokerVote> PokerVotes { get; }
+
     // F2-04 dashboard customisation
     DbSet<UserDashboardLayout> UserDashboardLayouts { get; }
 

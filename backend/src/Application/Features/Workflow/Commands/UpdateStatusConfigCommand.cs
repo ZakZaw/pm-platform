@@ -11,7 +11,9 @@ public record UpdateStatusConfigCommand(
     string? DisplayName,
     string? Color,
     bool? IsDoneState,
-    bool? IsVisible) : IRequest<Result<StatusConfigDto>>;
+    bool? IsVisible,
+    int? WipLimit,
+    bool ClearWipLimit) : IRequest<Result<StatusConfigDto>>;
 
 public class UpdateStatusConfigCommandHandler(IAppDbContext db)
     : IRequestHandler<UpdateStatusConfigCommand, Result<StatusConfigDto>>
@@ -67,10 +69,20 @@ public class UpdateStatusConfigCommandHandler(IAppDbContext db)
             config.IsVisible = visible;
         }
 
+        if (request.ClearWipLimit)
+        {
+            config.WipLimit = null;
+        }
+        else if (request.WipLimit is { } wip)
+        {
+            if (wip <= 0) return Result.Failure<StatusConfigDto>(WipLimitErrors.Invalid);
+            config.WipLimit = wip;
+        }
+
         await db.SaveChangesAsync(ct);
 
         return Result.Success(new StatusConfigDto(
             config.Id, config.ProjectId, config.Status.ToString(), config.DisplayName,
-            config.Color, config.OrderIndex, config.IsDoneState, config.IsVisible));
+            config.Color, config.OrderIndex, config.IsDoneState, config.IsVisible, config.WipLimit));
     }
 }

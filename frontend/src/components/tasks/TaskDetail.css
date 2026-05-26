@@ -320,6 +320,26 @@
 /* AI estimate suggestion (inline) */
 .task-detail__ai-estimate { margin: 0; }
 
+/* F2-07 attachments + time logs stacked under the breakdown card */
+.task-detail__addons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+  margin-top: var(--s-5);
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--divider);
+}
+
+.drawer-prop--block {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-2);
+}
+
+.drawer-prop--block > .label-key {
+  margin-bottom: var(--s-1);
+}
+
 /* Activity */
 .task-detail__tabs {
   margin-bottom: var(--s-4);

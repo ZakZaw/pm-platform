@@ -1,0 +1,61 @@
+.timelogs-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.timelogs-section__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.timelogs-section__form {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.timelogs-section__duration {
+  width: 100px;
+}
+
+.timelogs-section__date {
+  width: 140px;
+}
+
+.timelogs-section__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.timelogs-section__row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-3);
+  font-size: var(--fs-sm);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+}
+
+.timelogs-section__minutes {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--fw-medium);
+  min-width: 64px;
+}
+
+.timelogs-section__date {
+  min-width: 56px;
+  font-size: var(--fs-xs);
+}
+
+.timelogs-section__who {
+  min-width: 100px;
+  font-size: var(--fs-xs);
+}

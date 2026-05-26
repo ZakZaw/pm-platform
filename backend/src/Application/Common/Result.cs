@@ -168,6 +168,30 @@ public static class EpicErrors
         new("Epic.DependencyNotFound", "Dependency not found.");
 }
 
+public static class RoadmapShareErrors
+{
+    public static readonly Error NotFound =
+        new("RoadmapShare.NotFound", "Share link not found.");
+
+    public static readonly Error Expired =
+        new("RoadmapShare.Expired", "This share link has expired.");
+
+    public static readonly Error Revoked =
+        new("RoadmapShare.Revoked", "This share link has been revoked.");
+
+    public static readonly Error PasswordRequired =
+        new("RoadmapShare.PasswordRequired", "This share link requires a password.");
+
+    public static readonly Error InvalidPassword =
+        new("RoadmapShare.InvalidPassword", "The password is incorrect.");
+
+    public static readonly Error InvalidPasswordValue =
+        new("RoadmapShare.InvalidPasswordValue", "Password must be 4-128 characters.");
+
+    public static readonly Error InvalidExpiry =
+        new("RoadmapShare.InvalidExpiry", "Expiry must be in the future.");
+}
+
 public static class MilestoneErrors
 {
     public static readonly Error NotFound =
@@ -541,6 +565,81 @@ public static class InvitationErrors
 
     public static readonly Error EmailMismatch =
         new("Invitation.EmailMismatch", "This invitation was sent to a different email address.");
+}
+
+public static class AttachmentErrors
+{
+    public static readonly Error NotFound =
+        new("Attachment.NotFound", "Attachment not found.");
+
+    public static readonly Error FileTooLarge =
+        new("Attachment.FileTooLarge", "Attachments must be 50 MB or less.");
+
+    public static readonly Error EmptyFile =
+        new("Attachment.EmptyFile", "Cannot attach an empty file.");
+
+    public static readonly Error InvalidFileName =
+        new("Attachment.InvalidFileName", "File name must be 1-260 characters.");
+}
+
+public static class LabelErrors
+{
+    public static readonly Error NotFound =
+        new("Label.NotFound", "Label not found.");
+
+    public static readonly Error InvalidName =
+        new("Label.InvalidName", "Label name must be 1-60 characters.");
+
+    public static readonly Error InvalidColor =
+        new("Label.InvalidColor", "Label color must be one of neutral, info, purple, warning, danger, success, accent, or rose.");
+
+    public static readonly Error DuplicateName =
+        new("Label.DuplicateName", "A label with this name already exists on this project.");
+
+    public static readonly Error NotInProject =
+        new("Label.NotInProject", "One or more labels do not belong to this project.");
+}
+
+public static class TimeLogErrors
+{
+    public static readonly Error NotFound =
+        new("TimeLog.NotFound", "Time log entry not found.");
+
+    public static readonly Error InvalidMinutes =
+        new("TimeLog.InvalidMinutes", "Logged time must be between 1 and 1440 minutes (one day).");
+
+    public static readonly Error Forbidden =
+        new("TimeLog.Forbidden", "Only the entry author or a project PM can delete a time log.");
+}
+
+public static class WipLimitErrors
+{
+    public static readonly Error Invalid =
+        new("WipLimit.Invalid", "WIP limit must be a positive number, or null to remove the limit.");
+}
+
+public static class PokerErrors
+{
+    public static readonly Error NotFound =
+        new("Poker.NotFound", "Planning poker session not found.");
+
+    public static readonly Error AlreadyOpen =
+        new("Poker.AlreadyOpen", "A planning poker session is already open on this task.");
+
+    public static readonly Error NotVoting =
+        new("Poker.NotVoting", "Cannot vote on a session that is not open for voting.");
+
+    public static readonly Error NotRevealable =
+        new("Poker.NotRevealable", "Only an open session can be revealed.");
+
+    public static readonly Error AlreadyClosed =
+        new("Poker.AlreadyClosed", "Session is already closed.");
+
+    public static readonly Error InvalidValue =
+        new("Poker.InvalidValue", "Vote value must be one of 0, 1, 2, 3, 5, 8, 13, 21, ?, or coffee.");
+
+    public static readonly Error HostOnly =
+        new("Poker.HostOnly", "Only the session host can reveal or close.");
 }
 
 public static class CustomFieldErrors

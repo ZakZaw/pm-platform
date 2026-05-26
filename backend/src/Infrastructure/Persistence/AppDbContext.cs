@@ -36,6 +36,17 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<EpicDependency> EpicDependencies => Set<EpicDependency>();
     public DbSet<Milestone> Milestones => Set<Milestone>();
 
+    // F2-06 shareable read-only roadmap link
+    public DbSet<RoadmapShareLink> RoadmapShareLinks => Set<RoadmapShareLink>();
+
+    // F2-07 task enhancements
+    public DbSet<Attachment> Attachments => Set<Attachment>();
+    public DbSet<Label> Labels => Set<Label>();
+    public DbSet<TaskLabel> TaskLabels => Set<TaskLabel>();
+    public DbSet<TimeLog> TimeLogs => Set<TimeLog>();
+    public DbSet<PokerSession> PokerSessions => Set<PokerSession>();
+    public DbSet<PokerVote> PokerVotes => Set<PokerVote>();
+
     // F2-04 dashboard customisation
     public DbSet<UserDashboardLayout> UserDashboardLayouts => Set<UserDashboardLayout>();
 

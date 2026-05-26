@@ -20,13 +20,23 @@
 
 .workflow-row {
   display: grid;
-  grid-template-columns: auto auto minmax(160px, 1fr) 180px auto auto auto auto;
+  grid-template-columns: auto auto minmax(160px, 1fr) 180px auto auto auto auto auto;
   align-items: center;
   gap: var(--s-5);
   padding: var(--s-5);
   background: var(--surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--r-md);
+}
+
+.workflow-wip {
+  align-items: center;
+}
+
+.workflow-wip__input {
+  width: 56px;
+  text-align: center;
+  padding: 4px;
 }
 
 .workflow-delete {

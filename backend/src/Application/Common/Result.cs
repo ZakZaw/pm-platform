@@ -280,6 +280,15 @@ public static class SprintErrors
 
     public static readonly Error NotActive =
         new("Sprint.NotActive", "Only an Active sprint can be closed.");
+
+    public static readonly Error NotClosed =
+        new("Sprint.NotClosed", "A retrospective is only available for a closed sprint.");
+
+    public static readonly Error RetroNotFound =
+        new("Sprint.RetroNotFound", "No retrospective has been generated for this sprint yet.");
+
+    public static readonly Error RetroAlreadyApplied =
+        new("Sprint.RetroAlreadyApplied", "The next-sprint draft for this retrospective has already been applied.");
 }
 
 public static class AIErrors

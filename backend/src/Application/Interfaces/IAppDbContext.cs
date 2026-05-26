@@ -44,6 +44,9 @@ public interface IAppDbContext
     // F2-09 task-level dependencies feed the Task->Done unblock automation.
     DbSet<TaskDependency> TaskDependencies { get; }
 
+    // F2-11 AI-generated retro per closed sprint.
+    DbSet<SprintRetrospective> SprintRetrospectives { get; }
+
     // F2-04 dashboard customisation
     DbSet<UserDashboardLayout> UserDashboardLayouts { get; }
 

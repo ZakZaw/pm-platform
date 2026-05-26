@@ -50,6 +50,9 @@ public class AppDbContext : DbContext, IAppDbContext
     // F2-09 task-level dependencies (Task->Done unblock automation).
     public DbSet<TaskDependency> TaskDependencies => Set<TaskDependency>();
 
+    // F2-11 AI sprint retrospective (one per closed sprint).
+    public DbSet<SprintRetrospective> SprintRetrospectives => Set<SprintRetrospective>();
+
     // F2-04 dashboard customisation
     public DbSet<UserDashboardLayout> UserDashboardLayouts => Set<UserDashboardLayout>();
 

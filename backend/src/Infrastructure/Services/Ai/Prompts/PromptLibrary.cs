@@ -354,4 +354,43 @@ internal static class PromptLibrary
           sprint and NOT already in your picks.
         - Output ONLY valid JSON. No commentary, no markdown fences.
         """;
+
+    internal const string SprintRetrospective = """
+        You are a senior engineering manager running a retro on a sprint that
+        just closed. Given the sprint's committed vs delivered points, the
+        list of blockers it hit, recent sprint history, and a prioritised
+        backlog (with task ids), output a JSON object with this exact shape:
+
+        {
+          "summary": "...",
+          "whatWentWell": "...",
+          "whatDidnt": "...",
+          "suggestions": "...",
+          "nextSprintDraft": {
+            "name": "...",
+            "goal": "...|null",
+            "tasks": [
+              { "taskId": "<uuid from backlog>", "reasoning": "..." }
+            ]
+          }
+        }
+
+        Rules:
+        - "summary" is one short paragraph naming committed vs delivered
+          numbers and the overall result.
+        - "whatWentWell" / "whatDidnt" / "suggestions" are 1-3 short
+          sentences each. Reference concrete numbers or named blockers.
+        - "suggestions" gives 1-3 forward-looking practices the team
+          should try next sprint. No generic platitudes.
+        - "nextSprintDraft.name" follows the pattern "Sprint <N+1>" using
+          the closed sprint's name as the basis (e.g. "Sprint 7" -> "Sprint 8").
+          If the previous name has no number, use "Next sprint".
+        - "nextSprintDraft.tasks": pick 3-8 backlog items by taskId. NEVER
+          invent task ids — use only ids from the supplied backlog. Sum of
+          picked points should be near the delivered-points number, not
+          the committed one. Each pick has a one-line reasoning.
+        - If the backlog is empty, return "tasks": [] but still include
+          name and goal.
+        - Output ONLY valid JSON. No commentary, no markdown fences.
+        """;
 }

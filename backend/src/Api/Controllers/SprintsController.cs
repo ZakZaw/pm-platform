@@ -3,6 +3,7 @@ using Application.Common;
 using Application.Features.Sprints;
 using Application.Features.Sprints.Commands;
 using Application.Features.Sprints.Queries;
+using Application.Features.Sprints.Retrospective;
 using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -79,6 +80,37 @@ public class SprintsController(ISender mediator) : ControllerBase
         return result.IsSuccess ? NoContent() : ToProblem(result.Error!);
     }
 
+    // F2-11 sprint retrospective endpoints.
+    [HttpGet("api/v1/sprints/{id:guid}/retro")]
+    public async Task<ActionResult<SprintRetrospectiveDto>> GetRetro(Guid id, CancellationToken ct)
+    {
+        var result = await mediator.Send(new GetSprintRetrospectiveQuery(id), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpPost("api/v1/sprints/{id:guid}/retro/generate")]
+    public async Task<ActionResult<SprintRetrospectiveDto>> GenerateRetro(Guid id, CancellationToken ct)
+    {
+        var result = await mediator.Send(new GenerateSprintRetrospectiveCommand(id), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpPatch("api/v1/sprints/{id:guid}/retro")]
+    public async Task<ActionResult<SprintRetrospectiveDto>> UpdateRetro(
+        Guid id, [FromBody] UpdateRetroBodyDto body, CancellationToken ct)
+    {
+        var result = await mediator.Send(new UpdateSprintRetrospectiveCommand(
+            id, body.Summary, body.WhatWentWell, body.WhatDidnt, body.Suggestions), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpPost("api/v1/sprints/{id:guid}/retro/apply-next")]
+    public async Task<ActionResult<SprintDto>> ApplyNext(Guid id, CancellationToken ct)
+    {
+        var result = await mediator.Send(new ApplyNextSprintDraftCommand(id), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     private ObjectResult ToProblem(Error error)
     {
         var status = error.Code switch
@@ -90,9 +122,16 @@ public class SprintsController(ISender mediator) : ControllerBase
             "Sprint.ActiveExists" => StatusCodes.Status409Conflict,
             "Sprint.NotPlanning" => StatusCodes.Status422UnprocessableEntity,
             "Sprint.NotActive" => StatusCodes.Status422UnprocessableEntity,
+            "Sprint.NotClosed" => StatusCodes.Status422UnprocessableEntity,
+            "Sprint.RetroNotFound" => StatusCodes.Status404NotFound,
+            "Sprint.RetroAlreadyApplied" => StatusCodes.Status409Conflict,
             "Task.SprintNotInProject" => StatusCodes.Status422UnprocessableEntity,
             "Project.NotAMember" => StatusCodes.Status403Forbidden,
             "Project.InsufficientRole" => StatusCodes.Status403Forbidden,
+            "AI.NotConfigured" => StatusCodes.Status503ServiceUnavailable,
+            "AI.DisabledForProject" => StatusCodes.Status409Conflict,
+            "AI.ProviderFailed" => StatusCodes.Status502BadGateway,
+            "AI.EmptyResult" => StatusCodes.Status422UnprocessableEntity,
             _ => StatusCodes.Status400BadRequest
         };
         return Problem(title: error.Code, detail: error.Message, statusCode: status);
@@ -113,3 +152,9 @@ public record UpdateSprintBodyDto(
     bool? ClearVelocityTarget);
 
 public record CloseSprintBodyDto(bool MoveCarryoversToBacklog);
+
+public record UpdateRetroBodyDto(
+    string? Summary,
+    string? WhatWentWell,
+    string? WhatDidnt,
+    string? Suggestions);

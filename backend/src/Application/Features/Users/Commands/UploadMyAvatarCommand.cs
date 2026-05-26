@@ -38,9 +38,9 @@ public class UploadMyAvatarCommandHandler(
 
         var extension = ExtensionFor(request.ContentType);
         var fileName = $"{Guid.NewGuid():N}{extension}";
-        var url = await fileStorage.SaveAsync(request.Bytes, "users", fileName, ct);
+        var stored = await fileStorage.SaveAsync(request.Bytes, "users", fileName, ct);
 
-        user.AvatarUrl = url;
+        user.AvatarUrl = stored.PublicUrl;
         await db.SaveChangesAsync(ct);
 
         return Result.Success(new UserProfileDto(

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Filter, Plus } from 'lucide-react';
+import { Filter, Plus, Share2 } from 'lucide-react';
 import {
   Badge,
   Button,
@@ -16,6 +16,7 @@ import { projectsApi } from '@/api/projects.api';
 import { roadmapApi } from '@/api/roadmap.api';
 import { adapterForType } from '@/components/roadmap/roadmapRegistry';
 import { RoadmapView } from '@/components/roadmap/RoadmapView';
+import { ShareLinkModal } from '@/components/roadmap/ShareLinkModal';
 import { findProjectType } from '@/constants/projectTypes';
 import './RoadmapPage.css';
 
@@ -44,6 +45,7 @@ export function RoadmapPage() {
   const [milestoneOpen, setMilestoneOpen] = useState(false);
   const [pendingCascade, setPendingCascade] = useState(null);
   const [milestoneMenu, setMilestoneMenu] = useState(null);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const reload = useCallback(async (proj) => {
     const adapter = adapterForType(proj.type);
@@ -204,6 +206,16 @@ export function RoadmapPage() {
             </div>
             {canEdit && (
               <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setShareOpen(true)}
+                title="Generate a public read-only link"
+              >
+                <Share2 size={13} aria-hidden="true" /> Share
+              </Button>
+            )}
+            {canEdit && (
+              <Button
                 variant="primary"
                 size="sm"
                 onClick={() => setMilestoneOpen(true)}
@@ -264,6 +276,12 @@ export function RoadmapPage() {
           }
         }}
         epics={data?.bars ?? []}
+      />
+
+      <ShareLinkModal
+        open={shareOpen}
+        projectId={project?.id}
+        onClose={() => setShareOpen(false)}
       />
 
       <Modal

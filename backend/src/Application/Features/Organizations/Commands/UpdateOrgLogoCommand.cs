@@ -33,7 +33,8 @@ public class UpdateOrgLogoCommandHandler(IAppDbContext db, IFileStorage fileStor
 
         var extension = ExtensionFor(request.LogoContentType);
         var fileName = $"{Guid.NewGuid():N}{extension}";
-        org.LogoUrl = await fileStorage.SaveAsync(request.LogoBytes, "orgs", fileName, ct);
+        var stored = await fileStorage.SaveAsync(request.LogoBytes, "orgs", fileName, ct);
+        org.LogoUrl = stored.PublicUrl;
 
         await db.SaveChangesAsync(ct);
 

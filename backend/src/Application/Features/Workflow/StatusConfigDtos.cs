@@ -8,4 +8,5 @@ public record StatusConfigDto(
     string Color,
     int OrderIndex,
     bool IsDoneState,
-    bool IsVisible);
+    bool IsVisible,
+    int? WipLimit = null);

@@ -14,6 +14,7 @@ import {
   MoreHorizontal,
   Sparkles,
   Trash2,
+  Users,
   X,
 } from 'lucide-react';
 import {
@@ -39,6 +40,10 @@ import { SprintPicker } from './SprintPicker';
 import { CommentList } from './CommentList';
 import { CommentInput } from './CommentInput';
 import { CustomFieldsSection } from './CustomFieldsSection';
+import { AttachmentsSection } from './AttachmentsSection';
+import { LabelsSection } from './LabelsSection';
+import { TimeLogsSection } from './TimeLogsSection';
+import { PlanningPokerModal } from './PlanningPokerModal';
 import './TaskDetail.css';
 
 const DEFAULT_TASK_COLOR = 'var(--accent)';
@@ -81,13 +86,16 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
   const [aiBreakdownOpen, setAiBreakdownOpen] = useState(false);
   const [aiEstimate, setAiEstimate] = useState(null);
   const [aiEstimateLoading, setAiEstimateLoading] = useState(false);
+  const [pokerOpen, setPokerOpen] = useState(false);
+  const [labels, setLabels] = useState(task.labels ?? []);
 
   useEffect(() => {
     setTitleDraft(task.title);
     setDescDraft(task.description ?? '');
     setPointsDraft(task.storyPoints == null ? '' : String(task.storyPoints));
     setPrUrlDraft(task.prUrl ?? '');
-  }, [task.id, task.title, task.description, task.storyPoints, task.prUrl]);
+    setLabels(task.labels ?? []);
+  }, [task.id, task.title, task.description, task.storyPoints, task.prUrl, task.labels]);
 
   // Fetch the project's epics so we can render the color swatch beside the
   // task and resolve a name for the inline display. EpicPicker has its own
@@ -424,6 +432,16 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
         onClose={() => setAiBreakdownOpen(false)}
         onApply={applyAiBreakdown}
       />
+      <PlanningPokerModal
+        open={pokerOpen}
+        task={task}
+        projectId={projectId}
+        onClose={() => setPokerOpen(false)}
+        onClosedWithEstimate={(pts) => {
+          setPokerOpen(false);
+          onUpdated?.({ ...task, storyPoints: pts });
+        }}
+      />
       <aside
         className="task-detail"
         aria-label={`Task: ${task.title}`}
@@ -580,6 +598,14 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                     <Sparkles size={11} aria-hidden="true" />{' '}
                     {aiEstimateLoading ? 'Thinking…' : 'AI'}
                   </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setPokerOpen(true)}
+                    title="Estimate as a group with planning poker."
+                  >
+                    <Users size={11} aria-hidden="true" /> Poker
+                  </Button>
                 </div>
               </div>
               <div className="drawer-prop">
@@ -662,6 +688,16 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                     Add URL…
                   </button>
                 )}
+              </div>
+
+              <div className="drawer-prop drawer-prop--block">
+                <span className="label-key">Labels</span>
+                <LabelsSection
+                  taskId={task.id}
+                  projectId={projectId}
+                  initial={labels}
+                  onChange={setLabels}
+                />
               </div>
 
               <CustomFieldsSection taskId={task.id} projectId={projectId} />
@@ -780,6 +816,24 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                   </Button>
                 </form>
               </div>
+            </div>
+
+            {/* F2-07 PM-18 attachments + PM-20 time logs */}
+            <div className="task-detail__addons">
+              <AttachmentsSection taskId={task.id} />
+              <TimeLogsSection
+                taskId={task.id}
+                totalMinutes={task.timeLoggedMinutes ?? 0}
+                onLogged={(delta) => {
+                  // Optimistically reflect the new total in the parent — the
+                  // server keeps Task.timeLoggedMinutes canonical so reloads
+                  // pick up the same number.
+                  onUpdated?.({
+                    ...task,
+                    timeLoggedMinutes: Math.max(0, (task.timeLoggedMinutes ?? 0) + delta),
+                  });
+                }}
+              />
             </div>
 
             {/* Activity */}

@@ -49,7 +49,8 @@ public class WorkflowController(ISender mediator) : ControllerBase
         CancellationToken ct)
     {
         var result = await mediator.Send(new UpdateStatusConfigCommand(
-            projectId, configId, body.DisplayName, body.Color, body.IsDoneState, body.IsVisible), ct);
+            projectId, configId, body.DisplayName, body.Color, body.IsDoneState, body.IsVisible,
+            body.WipLimit, body.ClearWipLimit ?? false), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
@@ -77,6 +78,7 @@ public class WorkflowController(ISender mediator) : ControllerBase
             "Workflow.InvalidDisplayName" => StatusCodes.Status422UnprocessableEntity,
             "Workflow.InvalidColor" => StatusCodes.Status422UnprocessableEntity,
             "Workflow.InvalidReorder" => StatusCodes.Status422UnprocessableEntity,
+            "WipLimit.Invalid" => StatusCodes.Status422UnprocessableEntity,
             _ => StatusCodes.Status400BadRequest,
         };
         return Problem(title: error.Code, detail: error.Message, statusCode: status);
@@ -87,7 +89,9 @@ public record UpdateStatusConfigBodyDto(
     string? DisplayName,
     string? Color,
     bool? IsDoneState,
-    bool? IsVisible);
+    bool? IsVisible,
+    int? WipLimit,
+    bool? ClearWipLimit);
 
 public record ReorderStatusConfigBodyDto(IReadOnlyList<Guid>? OrderedConfigIds);
 

@@ -32,6 +32,7 @@ export function KanbanColumn({
   points,
   displayName,
   tone,
+  wipLimit = null,
   children,
   onAddTask,
 }) {
@@ -62,17 +63,30 @@ export function KanbanColumn({
   const statusKey = STATUS_MAP[status]?.key ?? 'todo';
   const dotColor = STATUS_TONE_DOT[tone] ?? DOT_COLORS[statusKey] ?? 'var(--text-muted)';
   const label = displayName ?? STATUS_MAP[status]?.label ?? status;
+  const wipExceeded = wipLimit != null && count > wipLimit;
 
   return (
     <div
       ref={setNodeRef}
-      className={['kanban-col', isOver ? 'is-over' : ''].filter(Boolean).join(' ')}
+      className={[
+        'kanban-col',
+        isOver ? 'is-over' : '',
+        wipExceeded ? 'is-wip-exceeded' : '',
+      ].filter(Boolean).join(' ')}
     >
       <header className="kanban-col-head">
         <div className="kanban-col-title">
           <span className="kanban-col-title-dot" style={{ background: dotColor }} />
           <span>{label}</span>
-          <span className="kanban-col-count">{count}</span>
+          <span
+            className={`kanban-col-count ${wipExceeded ? 'is-over-limit' : ''}`}
+            title={wipLimit != null ? `WIP limit: ${wipLimit}` : undefined}
+          >
+            {count}
+            {wipLimit != null && (
+              <span className="kanban-col-count__limit">/{wipLimit}</span>
+            )}
+          </span>
         </div>
         <div className="row gap-2">
           {points != null && <span className="kanban-col-count">{points}p</span>}

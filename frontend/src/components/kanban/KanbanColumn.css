@@ -37,3 +37,20 @@
   border-color: var(--border-strong);
   color: var(--text-secondary);
 }
+
+/* PM-21 WIP limit visuals — advisory only; the column still accepts drops. */
+.kanban-col.is-wip-exceeded {
+  outline: 1.5px solid var(--warning);
+  outline-offset: -1.5px;
+}
+
+.kanban-col-count.is-over-limit {
+  color: var(--warning);
+  font-weight: var(--fw-semibold);
+}
+
+.kanban-col-count__limit {
+  color: var(--text-muted);
+  font-weight: var(--fw-regular);
+  margin-left: 1px;
+}

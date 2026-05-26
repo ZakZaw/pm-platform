@@ -67,6 +67,6 @@ public class CreateStatusConfigCommandHandler(IAppDbContext db)
 
         return Result.Success(new StatusConfigDto(
             config.Id, config.ProjectId, config.Status.ToString(), config.DisplayName,
-            config.Color, config.OrderIndex, config.IsDoneState, config.IsVisible));
+            config.Color, config.OrderIndex, config.IsDoneState, config.IsVisible, config.WipLimit));
     }
 }

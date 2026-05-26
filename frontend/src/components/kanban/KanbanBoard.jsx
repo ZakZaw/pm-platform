@@ -153,6 +153,7 @@ export function KanbanBoard({
                     points={pts > 0 ? pts : null}
                     displayName={cfg?.displayName}
                     tone={cfg?.color}
+                    wipLimit={cfg?.wipLimit ?? null}
                     onAddTask={projectId ? (title) => addTaskInColumn(col.status, title) : undefined}
                   >
                     {col.cards.map((card) => (

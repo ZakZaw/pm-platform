@@ -37,6 +37,7 @@ import { RoadmapPage } from '@/pages/project/RoadmapPage';
 import { ProjectListPage } from '@/pages/project/ProjectListPage';
 import { CustomFieldsPage } from '@/pages/project/CustomFieldsPage';
 import { OrgPortfolioPage } from '@/pages/dashboard/OrgPortfolioPage';
+import { RoadmapPublicPage } from '@/pages/share/RoadmapPublicPage';
 import { AppShell } from '@/components/layout/AppShell';
 import { ToastProvider } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
@@ -71,6 +72,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/invitations/:token" element={<AcceptInvitePage />} />
+          <Route path="/share/roadmap/:token" element={<RoadmapPublicPage />} />
           <Route element={<ProtectedLayout />}>
             <Route path="/home" element={<HomePage />} />
             <Route path="/dashboard" element={<MyWorkPage />} />

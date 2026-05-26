@@ -236,6 +236,53 @@ function Row({ cfg, onPatch, onDelete }) {
   return <RowInner key={cfg.displayName} cfg={cfg} onPatch={onPatch} onDelete={onDelete} />;
 }
 
+// PM-21 WIP limit per-column. Empty input clears the cap; positive numbers
+// set it. The board uses this advisory limit to flag overflowing columns —
+// it does not block transitions.
+function WipLimitInput({ cfg, onPatch }) {
+  const [value, setValue] = useState(cfg.wipLimit == null ? '' : String(cfg.wipLimit));
+  useEffect(() => {
+    setValue(cfg.wipLimit == null ? '' : String(cfg.wipLimit));
+  }, [cfg.wipLimit]);
+
+  function commit() {
+    const trimmed = value.trim();
+    if (trimmed === '') {
+      if (cfg.wipLimit == null) return;
+      onPatch({ clearWipLimit: true });
+      return;
+    }
+    const n = parseInt(trimmed, 10);
+    if (Number.isNaN(n) || n <= 0) {
+      setValue(cfg.wipLimit == null ? '' : String(cfg.wipLimit));
+      return;
+    }
+    if (n === cfg.wipLimit) return;
+    onPatch({ wipLimit: n });
+  }
+
+  return (
+    <label className="workflow-toggle workflow-wip" title="WIP limit (blank = no limit)">
+      <span className="muted">WIP</span>
+      <input
+        type="number"
+        min={1}
+        className="input workflow-wip__input"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            e.currentTarget.blur();
+          }
+        }}
+        aria-label={`WIP limit for ${cfg.displayName}`}
+      />
+    </label>
+  );
+}
+
 function RowInner({ cfg, onPatch, onDelete }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: cfg.id,
@@ -311,6 +358,8 @@ function RowInner({ cfg, onPatch, onDelete }) {
         />
         <span>Done state</span>
       </label>
+
+      <WipLimitInput cfg={cfg} onPatch={onPatch} />
 
       <span className="workflow-system">{cfg.status}</span>
 

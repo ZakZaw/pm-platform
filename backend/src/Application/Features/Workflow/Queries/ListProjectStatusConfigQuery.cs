@@ -40,7 +40,7 @@ public class ListProjectStatusConfigQueryHandler(IAppDbContext db)
 
         var dtos = rows.Select(r => new StatusConfigDto(
             r.Id, r.ProjectId, r.Status.ToString(), r.DisplayName, r.Color,
-            r.OrderIndex, r.IsDoneState, r.IsVisible)).ToList();
+            r.OrderIndex, r.IsDoneState, r.IsVisible, r.WipLimit)).ToList();
 
         return Result.Success<IReadOnlyList<StatusConfigDto>>(dtos);
     }

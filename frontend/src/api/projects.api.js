@@ -10,6 +10,10 @@ export const projectsApi = {
   getBySlug: (orgSlug, projectSlug) =>
     apiClient.get(`/orgs/${orgSlug}/projects/${projectSlug}`).then((r) => r.data),
 
+  // F2-08 — PM-only mutator for project settings (currently just aiControlMode).
+  updateSettings: (projectId, body) =>
+    apiClient.patch(`/projects/${projectId}/settings`, body).then((r) => r.data),
+
   listMembers: (projectId) =>
     apiClient.get(`/projects/${projectId}/members`).then((r) => r.data),
 

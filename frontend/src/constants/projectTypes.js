@@ -98,6 +98,7 @@ export function navItemsForType(typeId) {
     { key: 'members', label: 'Members', icon: Users, path: 'settings/members' },
     { key: 'workflow', label: 'Workflow', icon: Settings, path: 'settings/workflow' },
     { key: 'fields', label: 'Fields', icon: ListTodo, path: 'settings/fields' },
+    { key: 'ai-settings', label: 'AI', icon: Sparkles, path: 'settings/ai' },
   ];
 
   if (typeId === 'Engineering') {

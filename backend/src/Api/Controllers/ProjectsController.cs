@@ -48,6 +48,18 @@ public class ProjectsController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    [HttpPatch("api/v1/projects/{projectId:guid}/settings")]
+    [RequireProjectRole(ProjectRole.PM)]
+    public async Task<ActionResult<ProjectDto>> UpdateSettings(
+        Guid projectId,
+        [FromBody] UpdateProjectSettingsBodyDto body,
+        CancellationToken ct)
+    {
+        var result = await mediator.Send(
+            new UpdateProjectSettingsCommand(projectId, body.AIControlMode), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     [HttpGet("api/v1/projects/{projectId:guid}/members")]
     [RequireProjectRole(ProjectRole.Viewer)]
     public async Task<ActionResult<IReadOnlyList<ProjectMemberDto>>> ListMembers(
@@ -102,6 +114,7 @@ public class ProjectsController(ISender mediator) : ControllerBase
             "Project.AlreadyMember" => StatusCodes.Status409Conflict,
             "Project.MemberNotFound" => StatusCodes.Status404NotFound,
             "Project.InvalidProjectRole" => StatusCodes.Status422UnprocessableEntity,
+            "Project.InvalidAIControlMode" => StatusCodes.Status422UnprocessableEntity,
             "Project.LastPM" => StatusCodes.Status422UnprocessableEntity,
             _ => StatusCodes.Status400BadRequest
         };
@@ -117,3 +130,4 @@ public record CreateProjectBodyDto(
 
 public record AddProjectMemberBodyDto(Guid UserId, string? Role);
 public record UpdateProjectMemberRoleBodyDto(string? Role);
+public record UpdateProjectSettingsBodyDto(string? AIControlMode);

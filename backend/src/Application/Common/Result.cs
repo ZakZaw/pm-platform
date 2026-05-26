@@ -301,6 +301,9 @@ public static class AIErrors
 
     public static readonly Error InvalidProjectName =
         new("AI.InvalidProjectName", "Project name must be 2-120 characters.");
+
+    public static readonly Error DisabledForProject =
+        new("AI.DisabledForProject", "AI is turned off for this project. A PM can switch it back on in Project Settings.");
 }
 
 public static class CommentErrors

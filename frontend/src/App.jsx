@@ -36,6 +36,7 @@ import { RunDetailPage } from '@/pages/project/RunDetailPage';
 import { RoadmapPage } from '@/pages/project/RoadmapPage';
 import { ProjectListPage } from '@/pages/project/ProjectListPage';
 import { CustomFieldsPage } from '@/pages/project/CustomFieldsPage';
+import { AISettingsPage } from '@/pages/project/AISettingsPage';
 import { OrgPortfolioPage } from '@/pages/dashboard/OrgPortfolioPage';
 import { RoadmapPublicPage } from '@/pages/share/RoadmapPublicPage';
 import { AppShell } from '@/components/layout/AppShell';
@@ -187,6 +188,10 @@ function App() {
             <Route
               path="/:slug/projects/:projectSlug/settings/fields"
               element={<Keyed paramKey="projectSlug"><CustomFieldsPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/settings/ai"
+              element={<Keyed paramKey="projectSlug"><AISettingsPage /></Keyed>}
             />
             <Route path="/settings/profile" element={<ProfilePage />} />
           </Route>

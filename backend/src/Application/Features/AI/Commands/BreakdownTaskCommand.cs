@@ -23,7 +23,7 @@ public record TaskBreakdownDto(
     string Reasoning);
 
 public class BreakdownTaskCommandHandler(
-    IAppDbContext db, ICurrentUser currentUser, IAIService ai)
+    IAppDbContext db, ICurrentUser currentUser, IAIService ai, IAIControlGate aiGate)
     : IRequestHandler<BreakdownTaskCommand, Result<TaskBreakdownDto>>
 {
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
@@ -47,6 +47,9 @@ public class BreakdownTaskCommandHandler(
             .FirstOrDefaultAsync(ct);
         if (task is null)
             return Result.Failure<TaskBreakdownDto>(TaskErrors.NotFound);
+
+        if (!await aiGate.IsAllowedAsync(task.ProjectId, ct))
+            return Result.Failure<TaskBreakdownDto>(AIErrors.DisabledForProject);
 
         var input = new AITaskBreakdownInput(
             task.Title,

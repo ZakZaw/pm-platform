@@ -20,7 +20,7 @@ public record AiFillSprintCommand(Guid SprintId, int TargetCapacityPercent)
     : IRequest<Result<SprintFillPlanDto>>;
 
 public class AiFillSprintCommandHandler(
-    IAppDbContext db, ICurrentUser currentUser, IAIService ai)
+    IAppDbContext db, ICurrentUser currentUser, IAIService ai, IAIControlGate aiGate)
     : IRequestHandler<AiFillSprintCommand, Result<SprintFillPlanDto>>
 {
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
@@ -40,6 +40,9 @@ public class AiFillSprintCommandHandler(
             .FirstOrDefaultAsync(ct);
         if (sprint is null)
             return Result.Failure<SprintFillPlanDto>(SprintErrors.NotFound);
+
+        if (!await aiGate.IsAllowedAsync(sprint.ProjectId, ct))
+            return Result.Failure<SprintFillPlanDto>(AIErrors.DisabledForProject);
 
         var totalHours = await db.ProjectMemberships
             .Where(m => m.ProjectId == sprint.ProjectId)

@@ -96,3 +96,10 @@
   border-color: var(--accent);
   color: var(--text);
 }
+
+/* F2-08 mode chip in the page-title row */
+.ai-inbox-mode-chip {
+  text-decoration: none;
+  display: inline-flex;
+  align-self: center;
+}

@@ -31,6 +31,7 @@ public class UpdateTaskStatusCommandHandler(
             return Result.Failure<TaskDto>(TaskErrors.NotFound);
 
         var wasDone = task.Status == DomainTaskStatus.Done;
+        var wasBlocked = task.Status == DomainTaskStatus.Blocked;
 
         try
         {
@@ -70,6 +71,24 @@ public class UpdateTaskStatusCommandHandler(
                     ByUserId: userId), ct);
             }
             catch { /* handlers don't roll back the user's status change */ }
+        }
+
+        // F2-10 — Blocked cascade analysis. Fires only on the entry into
+        // Blocked; subsequent reason edits don't re-trigger.
+        if (target == DomainTaskStatus.Blocked && !wasBlocked)
+        {
+            try
+            {
+                await mediatorPublisher.Publish(new TaskTransitionedToBlockedNotification(
+                    TaskId: task.Id,
+                    ProjectId: task.ProjectId,
+                    EpicId: task.EpicId,
+                    TaskKey: $"{projectKey}-{task.KeyNum}",
+                    TaskTitle: task.Title,
+                    Reason: request.Reason,
+                    ByUserId: userId), ct);
+            }
+            catch { /* handler failures don't revert the block */ }
         }
 
         return Result.Success(CreateTaskCommandHandler.ToDto(task, projectKey));

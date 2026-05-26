@@ -397,9 +397,16 @@ export function SprintDetailPage() {
             </>
           )}
           {sprint.status === 'Closed' && (
-            <Link to={`/${orgSlug}/projects/${projectSlug}/sprints/${sprint.id}/board`}>
-              <Button variant="secondary">View board</Button>
-            </Link>
+            <>
+              <Link to={`/${orgSlug}/projects/${projectSlug}/sprints/${sprint.id}/board`}>
+                <Button variant="secondary">View board</Button>
+              </Link>
+              <Link to={`/${orgSlug}/projects/${projectSlug}/sprints/${sprint.id}/retro`}>
+                <Button variant="ai">
+                  <Sparkles size={13} aria-hidden="true" /> Retrospective
+                </Button>
+              </Link>
+            </>
           )}
           </div>
         </div>

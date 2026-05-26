@@ -94,3 +94,48 @@ public record AISprintHealthInsight(
     double Confidence);
 
 public record AISprintHealthOption(string Label, bool Recommended);
+
+// F2-11 sprint-close retrospective.
+//
+// Input: enough context for the model to score the sprint without a
+// re-query. Backlog candidates are highest-priority backlog items
+// (with key + title + points) so the AI can suggest a sensible next-
+// sprint draft without inventing tasks; the apply command later
+// resolves the picks by task id, never by free-form title.
+
+public record AIRetroBacklogCandidate(
+    Guid TaskId,
+    string Key,
+    string Title,
+    int Points,
+    string Priority);
+
+public record AIRetroSprintHistory(
+    string Name,
+    int CommittedPoints,
+    int DeliveredPoints);
+
+public record AISprintRetroInput(
+    string ProjectName,
+    string SprintName,
+    string? Goal,
+    int CommittedPoints,
+    int DeliveredPoints,
+    int Carryovers,
+    IReadOnlyList<string> Blockers,
+    IReadOnlyList<AIRetroSprintHistory> RecentSprints,
+    IReadOnlyList<AIRetroBacklogCandidate> Backlog);
+
+public record AIRetroDraftPick(Guid TaskId, string Reasoning);
+
+public record AIRetroNextSprintDraft(
+    string Name,
+    string? Goal,
+    IReadOnlyList<AIRetroDraftPick> Tasks);
+
+public record AISprintRetrospective(
+    string Summary,
+    string WhatWentWell,
+    string WhatDidnt,
+    string Suggestions,
+    AIRetroNextSprintDraft? NextSprintDraft);

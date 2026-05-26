@@ -24,4 +24,18 @@ export const sprintsApi = {
 
   removeTask: (taskId) =>
     apiClient.delete(`/sprints/tasks/${taskId}`).then((r) => r.data),
+
+  // F2-11 retrospective endpoints. getRetro returns 404 when nothing
+  // has been generated yet — call generateRetro to kick it off.
+  getRetro: (sprintId) =>
+    apiClient.get(`/sprints/${sprintId}/retro`).then((r) => r.data),
+
+  generateRetro: (sprintId) =>
+    apiClient.post(`/sprints/${sprintId}/retro/generate`).then((r) => r.data),
+
+  updateRetro: (sprintId, body) =>
+    apiClient.patch(`/sprints/${sprintId}/retro`, body).then((r) => r.data),
+
+  applyNextSprintDraft: (sprintId) =>
+    apiClient.post(`/sprints/${sprintId}/retro/apply-next`).then((r) => r.data),
 };

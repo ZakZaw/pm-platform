@@ -364,6 +364,64 @@ public class GeminiAIService(IOptions<AISettings> options, ILogger<GeminiAIServi
         return new AISprintFillPlan(input.CapacityPoints, total, kept, overallReasoning);
     }
 
+    public async Task<AISprintRetrospective> GenerateSprintRetrospectiveAsync(
+        AISprintRetroInput input, CancellationToken ct)
+    {
+        var json = await CallJsonAsync(PromptLibrary.SprintRetrospective, input, ct);
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+
+        string GetStr(string key) =>
+            root.TryGetProperty(key, out var p) ? (p.GetString() ?? "").Trim() : string.Empty;
+
+        var summary = GetStr("summary");
+        var whatWentWell = GetStr("whatWentWell");
+        var whatDidnt = GetStr("whatDidnt");
+        var suggestions = GetStr("suggestions");
+
+        AIRetroNextSprintDraft? draft = null;
+        if (root.TryGetProperty("nextSprintDraft", out var dEl)
+            && dEl.ValueKind == JsonValueKind.Object)
+        {
+            var name = dEl.TryGetProperty("name", out var n)
+                ? (n.GetString() ?? "").Trim()
+                : string.Empty;
+            var goal = dEl.TryGetProperty("goal", out var g) && g.ValueKind != JsonValueKind.Null
+                ? g.GetString()
+                : null;
+
+            // Only keep picks whose id is in the supplied backlog — the
+            // prompt forbids invented ids, but enforce it here too.
+            var allowed = input.Backlog.Select(b => b.TaskId).ToHashSet();
+            var picks = new List<AIRetroDraftPick>();
+            if (dEl.TryGetProperty("tasks", out var picksArr)
+                && picksArr.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var el in picksArr.EnumerateArray())
+                {
+                    if (!el.TryGetProperty("taskId", out var idEl)) continue;
+                    if (!Guid.TryParse(idEl.GetString(), out var taskId)) continue;
+                    if (!allowed.Contains(taskId)) continue;
+                    var why = el.TryGetProperty("reasoning", out var r)
+                        ? (r.GetString() ?? "").Trim()
+                        : string.Empty;
+                    picks.Add(new AIRetroDraftPick(taskId, why));
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(name) || picks.Count > 0)
+            {
+                draft = new AIRetroNextSprintDraft(
+                    string.IsNullOrWhiteSpace(name) ? "Next sprint" : name,
+                    goal,
+                    picks);
+            }
+        }
+
+        return new AISprintRetrospective(
+            summary, whatWentWell, whatDidnt, suggestions, draft);
+    }
+
     private async Task<string> CallJsonAsync(string systemPrompt, object payload, CancellationToken ct)
     {
         var content = JsonSerializer.Serialize(payload, JsonOpts);

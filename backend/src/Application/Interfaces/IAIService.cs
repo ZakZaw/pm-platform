@@ -90,4 +90,14 @@ public interface IAIService
     Task<AISprintHealthInsight> GenerateSprintHealthInsightAsync(
         AISprintHealthInput input,
         CancellationToken ct);
+
+    /// <summary>
+    /// F2-11 — Post-close retrospective. Returns four narrative fields
+    /// the PM can edit, plus an optional <see cref="AIRetroNextSprintDraft"/>
+    /// that picks backlog items by task id (so applying the draft never
+    /// silently invents new tasks).
+    /// </summary>
+    Task<AISprintRetrospective> GenerateSprintRetrospectiveAsync(
+        AISprintRetroInput input,
+        CancellationToken ct);
 }

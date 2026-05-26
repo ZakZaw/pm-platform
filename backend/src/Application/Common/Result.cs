@@ -238,6 +238,15 @@ public static class TaskErrors
 
     public static readonly Error NoOpTransition =
         new("Task.NoOpTransition", "Task is already in that status.");
+
+    public static readonly Error DependencyCycle =
+        new("Task.DependencyCycle", "Adding this dependency would create a cycle.");
+
+    public static readonly Error DependencyNotInProject =
+        new("Task.DependencyNotInProject", "Both tasks must belong to the same project.");
+
+    public static readonly Error DependencyNotFound =
+        new("Task.DependencyNotFound", "Dependency not found.");
 }
 
 public static class SubtaskErrors

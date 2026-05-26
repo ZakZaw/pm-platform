@@ -22,4 +22,18 @@ export const tasksApi = {
   // spreadsheet can flag failed rows inline.
   bulk: (projectId, body) =>
     apiClient.post(`/projects/${projectId}/tasks/bulk`, body).then((r) => r.data),
+
+  // F2-09 task dependencies.
+  // Returns { dependsOn: [...], blocking: [...] } — each entry has
+  // { id, taskId, key, title, status }.
+  listDependencies: (taskId) =>
+    apiClient.get(`/tasks/${taskId}/dependencies`).then((r) => r.data),
+
+  addDependency: (taskId, dependsOnTaskId) =>
+    apiClient
+      .post(`/tasks/${taskId}/dependencies`, { dependsOnTaskId })
+      .then((r) => r.data),
+
+  removeDependency: (taskId, prereqId) =>
+    apiClient.delete(`/tasks/${taskId}/dependencies/${prereqId}`).then((r) => r.data),
 };

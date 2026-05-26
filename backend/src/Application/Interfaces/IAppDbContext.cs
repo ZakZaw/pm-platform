@@ -41,6 +41,9 @@ public interface IAppDbContext
     DbSet<PokerSession> PokerSessions { get; }
     DbSet<PokerVote> PokerVotes { get; }
 
+    // F2-09 task-level dependencies feed the Task->Done unblock automation.
+    DbSet<TaskDependency> TaskDependencies { get; }
+
     // F2-04 dashboard customisation
     DbSet<UserDashboardLayout> UserDashboardLayouts { get; }
 

@@ -47,6 +47,9 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<PokerSession> PokerSessions => Set<PokerSession>();
     public DbSet<PokerVote> PokerVotes => Set<PokerVote>();
 
+    // F2-09 task-level dependencies (Task->Done unblock automation).
+    public DbSet<TaskDependency> TaskDependencies => Set<TaskDependency>();
+
     // F2-04 dashboard customisation
     public DbSet<UserDashboardLayout> UserDashboardLayouts => Set<UserDashboardLayout>();
 

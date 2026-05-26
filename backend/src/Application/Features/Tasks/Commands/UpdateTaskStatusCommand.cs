@@ -1,4 +1,5 @@
 using Application.Common;
+using Application.Features.Tasks.Notifications;
 using Application.Interfaces;
 using Domain.Exceptions;
 using MediatR;
@@ -13,7 +14,8 @@ public record UpdateTaskStatusCommand(Guid TaskId, string To, string? Reason)
 public class UpdateTaskStatusCommandHandler(
     IAppDbContext db,
     ICurrentUser currentUser,
-    IProjectEventBus events)
+    IProjectEventBus events,
+    IPublisher mediatorPublisher)
     : IRequestHandler<UpdateTaskStatusCommand, Result<TaskDto>>
 {
     public async Task<Result<TaskDto>> Handle(UpdateTaskStatusCommand request, CancellationToken ct)
@@ -27,6 +29,8 @@ public class UpdateTaskStatusCommandHandler(
         var task = await db.Tasks.FirstOrDefaultAsync(t => t.Id == request.TaskId, ct);
         if (task is null)
             return Result.Failure<TaskDto>(TaskErrors.NotFound);
+
+        var wasDone = task.Status == DomainTaskStatus.Done;
 
         try
         {
@@ -45,6 +49,29 @@ public class UpdateTaskStatusCommandHandler(
             .Where(p => p.Id == task.ProjectId)
             .Select(p => p.Key)
             .FirstAsync(ct);
+
+        // F2-09 — fan out to the Task->Done automation handlers (epic auto-
+        // complete, unblock dependents, sprint goal progress). The publish
+        // happens after SaveChanges so the handlers can read the updated
+        // status when they re-query. Handler failures are swallowed — the
+        // canonical write already succeeded and shouldn't be reverted.
+        if (target == DomainTaskStatus.Done && !wasDone)
+        {
+            try
+            {
+                await mediatorPublisher.Publish(new TaskTransitionedToDoneNotification(
+                    TaskId: task.Id,
+                    ProjectId: task.ProjectId,
+                    EpicId: task.EpicId,
+                    SprintId: task.SprintId,
+                    TaskKey: $"{projectKey}-{task.KeyNum}",
+                    TaskTitle: task.Title,
+                    TaskPoints: task.StoryPoints ?? 0,
+                    ByUserId: userId), ct);
+            }
+            catch { /* handlers don't roll back the user's status change */ }
+        }
+
         return Result.Success(CreateTaskCommandHandler.ToDto(task, projectKey));
     }
 

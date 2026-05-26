@@ -43,6 +43,7 @@ import { CustomFieldsSection } from './CustomFieldsSection';
 import { AttachmentsSection } from './AttachmentsSection';
 import { LabelsSection } from './LabelsSection';
 import { TimeLogsSection } from './TimeLogsSection';
+import { DependenciesSection } from './DependenciesSection';
 import { PlanningPokerModal } from './PlanningPokerModal';
 import './TaskDetail.css';
 
@@ -698,6 +699,10 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                   initial={labels}
                   onChange={setLabels}
                 />
+              </div>
+
+              <div className="drawer-prop drawer-prop--block">
+                <DependenciesSection taskId={task.id} projectId={projectId} />
               </div>
 
               <CustomFieldsSection taskId={task.id} projectId={projectId} />

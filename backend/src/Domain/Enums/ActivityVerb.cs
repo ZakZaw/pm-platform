@@ -17,6 +17,7 @@ public enum ActivityVerb
     EpicUpdated,
     EpicDatesChanged,
     EpicArchived,
+    EpicCompleted,
 
     // Milestones (F2-01)
     MilestoneCreated,
@@ -26,6 +27,7 @@ public enum ActivityVerb
     // Sprints
     SprintStarted,
     SprintClosed,
+    SprintGoalReached,
 
     // Comments
     CommentAdded,

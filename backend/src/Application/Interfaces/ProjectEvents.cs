@@ -28,6 +28,9 @@ public static class ProjectEvents
     public const string PokerVoteCast = "poker.vote_cast";
     public const string PokerRevealed = "poker.revealed";
     public const string PokerClosed = "poker.closed";
+
+    // F2-09 task->done automation
+    public const string AiSuggestionCreated = "ai.suggestion_created";
 }
 
 /// <summary>

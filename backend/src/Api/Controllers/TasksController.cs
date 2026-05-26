@@ -125,6 +125,34 @@ public class TasksController(ISender mediator, IOptions<FrontendSettings> fronte
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    // F2-09 task dependencies — feeds the Task->Done unblock automation.
+    [HttpGet("api/v1/tasks/{taskId:guid}/dependencies")]
+    public async Task<ActionResult<TaskDependencyListDto>> Dependencies(
+        Guid taskId, CancellationToken ct)
+    {
+        var result = await mediator.Send(new ListTaskDependenciesQuery(taskId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpPost("api/v1/tasks/{taskId:guid}/dependencies")]
+    public async Task<ActionResult<TaskDependencyDto>> AddDependency(
+        Guid taskId,
+        [FromBody] AddTaskDependencyBodyDto body,
+        CancellationToken ct)
+    {
+        var result = await mediator.Send(
+            new AddTaskDependencyCommand(taskId, body.DependsOnTaskId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpDelete("api/v1/tasks/{taskId:guid}/dependencies/{prereqId:guid}")]
+    public async Task<ActionResult> RemoveDependency(
+        Guid taskId, Guid prereqId, CancellationToken ct)
+    {
+        var result = await mediator.Send(new RemoveTaskDependencyCommand(taskId, prereqId), ct);
+        return result.IsSuccess ? NoContent() : ToProblem(result.Error!);
+    }
+
     private ObjectResult ToProblem(Error error)
     {
         var status = error.Code switch
@@ -136,11 +164,16 @@ public class TasksController(ISender mediator, IOptions<FrontendSettings> fronte
             "Task.NoOpTransition" => StatusCodes.Status422UnprocessableEntity,
             "Task.ReasonRequired" => StatusCodes.Status422UnprocessableEntity,
             "Task.PersonalAssigneeLocked" => StatusCodes.Status403Forbidden,
+            "Task.DependencyCycle" => StatusCodes.Status409Conflict,
+            "Task.DependencyNotInProject" => StatusCodes.Status422UnprocessableEntity,
+            "Task.DependencyNotFound" => StatusCodes.Status404NotFound,
             _ => StatusCodes.Status400BadRequest
         };
         return Problem(title: error.Code, detail: error.Message, statusCode: status);
     }
 }
+
+public record AddTaskDependencyBodyDto(Guid DependsOnTaskId);
 
 public record CreateTaskBodyDto(
     string Title,

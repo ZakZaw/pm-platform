@@ -16,5 +16,6 @@ public enum NotificationKind
     SprintClosed,
     ProjectInvite,
     AiSuggestion,
+    TaskUnblocked,
     System
 }

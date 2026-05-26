@@ -29,7 +29,8 @@ public record AIGeneratedTaskListDto(
 public class GenerateTaskListCommandHandler(
     IAppDbContext db,
     ICurrentUser currentUser,
-    IAIService ai)
+    IAIService ai,
+    IAIControlGate aiGate)
     : IRequestHandler<GenerateTaskListCommand, Result<AIGeneratedTaskListDto>>
 {
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
@@ -43,6 +44,9 @@ public class GenerateTaskListCommandHandler(
         var description = (request.Description ?? string.Empty).Trim();
         if (description.Length is < 10 or > 2000)
             return Result.Failure<AIGeneratedTaskListDto>(AIErrors.InvalidDescription);
+
+        if (!await aiGate.IsAllowedAsync(request.ProjectId, ct))
+            return Result.Failure<AIGeneratedTaskListDto>(AIErrors.DisabledForProject);
 
         if (!ai.IsConfigured)
             return Result.Failure<AIGeneratedTaskListDto>(AIErrors.NotConfigured);

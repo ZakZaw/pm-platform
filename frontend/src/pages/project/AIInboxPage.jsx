@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
+import { Link, useParams } from 'react-router-dom';
+import { Eye, Power, ShieldQuestion, Sparkles } from 'lucide-react';
 import { AISuggestionCard, Badge, Button, Segmented, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { aiApi } from '@/api/ai.api';
@@ -176,6 +176,9 @@ export function AIInboxPage() {
             <h1 className="page-title row gap-3">
               <Sparkles size={18} color="var(--ai-2)" aria-hidden="true" />
               AI Inbox
+              {project?.aiControlMode && (
+                <AiModeChip mode={project.aiControlMode} orgSlug={orgSlug} projectSlug={projectSlug} />
+              )}
             </h1>
             <div className="page-subtitle">
               Durable AI insights for {project?.name ?? 'this project'}. Accept what's useful, dismiss the rest.
@@ -292,4 +295,30 @@ function timeAgo(iso) {
   if (h < 24) return `${h}h ago`;
   const d = Math.floor(h / 24);
   return `${d}d ago`;
+}
+
+// F2-08 — small chip surfacing the project's AI control mode in the inbox
+// header. Doubles as a deep-link to the settings page so PMs can flip it
+// from where they see suggestions.
+const MODE_PRESENTATION = {
+  Off:        { tone: 'neutral', Icon: Power,          label: 'AI off' },
+  AskMeFirst: { tone: 'warning', Icon: ShieldQuestion, label: 'Ask me first' },
+  Suggest:    { tone: 'info',    Icon: Eye,            label: 'Suggest' },
+  Autopilot:  { tone: 'purple',  Icon: Sparkles,       label: 'Autopilot' },
+};
+
+function AiModeChip({ mode, orgSlug, projectSlug }) {
+  const pres = MODE_PRESENTATION[mode] ?? MODE_PRESENTATION.Suggest;
+  const Icon = pres.Icon;
+  return (
+    <Link
+      to={`/${orgSlug}/projects/${projectSlug}/settings/ai`}
+      className="ai-inbox-mode-chip"
+      title="Change AI mode in project settings"
+    >
+      <Badge tone={pres.tone}>
+        <Icon size={10} aria-hidden="true" /> {pres.label}
+      </Badge>
+    </Link>
+  );
 }

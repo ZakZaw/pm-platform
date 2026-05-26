@@ -22,7 +22,8 @@ public record GenerateEpicPreviewCommand(
 public class GenerateEpicPreviewCommandHandler(
     IAppDbContext db,
     ICurrentUser currentUser,
-    IAIService ai)
+    IAIService ai,
+    IAIControlGate aiGate)
     : IRequestHandler<GenerateEpicPreviewCommand, Result<AIGeneratedEpicDto>>
 {
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
@@ -36,6 +37,9 @@ public class GenerateEpicPreviewCommandHandler(
         var description = (request.Description ?? string.Empty).Trim();
         if (description.Length is < 10 or > 2000)
             return Result.Failure<AIGeneratedEpicDto>(AIErrors.InvalidDescription);
+
+        if (!await aiGate.IsAllowedAsync(request.ProjectId, ct))
+            return Result.Failure<AIGeneratedEpicDto>(AIErrors.DisabledForProject);
 
         if (!ai.IsConfigured)
             return Result.Failure<AIGeneratedEpicDto>(AIErrors.NotConfigured);

@@ -18,7 +18,7 @@ public record GenerateSprintHealthInsightCommand(Guid ProjectId)
     : IRequest<Result<AISuggestionDto>>;
 
 public class GenerateSprintHealthInsightCommandHandler(
-    IAppDbContext db, ICurrentUser currentUser, IAIService ai)
+    IAppDbContext db, ICurrentUser currentUser, IAIService ai, IAIControlGate aiGate)
     : IRequestHandler<GenerateSprintHealthInsightCommand, Result<AISuggestionDto>>
 {
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
@@ -28,6 +28,9 @@ public class GenerateSprintHealthInsightCommandHandler(
     {
         if (currentUser.UserId is not { } userId)
             return Result.Failure<AISuggestionDto>(AuthErrors.NotAuthenticated);
+
+        if (!await aiGate.IsAllowedAsync(request.ProjectId, ct))
+            return Result.Failure<AISuggestionDto>(AIErrors.DisabledForProject);
 
         if (!ai.IsConfigured)
             return Result.Failure<AISuggestionDto>(AIErrors.NotConfigured);

@@ -190,6 +190,7 @@ public class AIController(ISender mediator) : ControllerBase
             "AI.RequestAlreadyApplied" => StatusCodes.Status409Conflict,
             "AI.ProviderFailed" => StatusCodes.Status502BadGateway,
             "AI.NotConfigured" => StatusCodes.Status503ServiceUnavailable,
+            "AI.DisabledForProject" => StatusCodes.Status409Conflict,
             "Project.InvalidType" => StatusCodes.Status422UnprocessableEntity,
             "Task.InvalidTitle" => StatusCodes.Status422UnprocessableEntity,
             "Task.EpicNotInProject" => StatusCodes.Status422UnprocessableEntity,

@@ -14,7 +14,7 @@ public record EstimateTaskPointsCommand(Guid TaskId)
     : IRequest<Result<TaskEstimateDto>>;
 
 public class EstimateTaskPointsCommandHandler(
-    IAppDbContext db, ICurrentUser currentUser, IAIService ai)
+    IAppDbContext db, ICurrentUser currentUser, IAIService ai, IAIControlGate aiGate)
     : IRequestHandler<EstimateTaskPointsCommand, Result<TaskEstimateDto>>
 {
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
@@ -38,6 +38,9 @@ public class EstimateTaskPointsCommandHandler(
             .FirstOrDefaultAsync(ct);
         if (task is null)
             return Result.Failure<TaskEstimateDto>(TaskErrors.NotFound);
+
+        if (!await aiGate.IsAllowedAsync(task.ProjectId, ct))
+            return Result.Failure<TaskEstimateDto>(AIErrors.DisabledForProject);
 
         var orgId = await db.Projects
             .Where(p => p.Id == task.ProjectId)

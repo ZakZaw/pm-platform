@@ -103,7 +103,22 @@ public class AIController(ISender mediator) : ControllerBase
     {
         if (body.Epic is null)
             return ToProblem(AIErrors.InvalidPayload);
-        var result = await mediator.Send(new ApplyEpicGenerationCommand(projectId, body.Epic), ct);
+        var result = await mediator.Send(new ApplyEpicGenerationCommand(
+            projectId, body.Epic, body.TargetSprintId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    // F2-14 — "new feature request -> epic breakdown". Same AI pass as
+    // /generate-epic plus a deterministic timeline-impact projection
+    // (which sprints overflow, which milestones shift) so the user
+    // sees the cost of accepting before they pick a destination.
+    [HttpPost("api/v1/projects/{projectId:guid}/ai/breakdown")]
+    [RequireProjectRole(ProjectRole.TeamLead)]
+    public async Task<ActionResult<AIEpicBreakdownPreviewDto>> Breakdown(
+        Guid projectId, [FromBody] GenerateEpicBodyDto body, CancellationToken ct)
+    {
+        var result = await mediator.Send(new GenerateEpicBreakdownCommand(
+            projectId, body.Description ?? string.Empty), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
@@ -229,6 +244,8 @@ public class AIController(ISender mediator) : ControllerBase
             "Org.NotFound" => StatusCodes.Status404NotFound,
             "Task.NotFound" => StatusCodes.Status404NotFound,
             "Sprint.NotFound" => StatusCodes.Status404NotFound,
+            "Sprint.NotActive" => StatusCodes.Status422UnprocessableEntity,
+            "Task.SprintNotInProject" => StatusCodes.Status422UnprocessableEntity,
             "Project.NotFound" => StatusCodes.Status404NotFound,
             "Project.NotAMember" => StatusCodes.Status403Forbidden,
             "Project.InsufficientRole" => StatusCodes.Status403Forbidden,
@@ -269,7 +286,10 @@ public record ApplyGenerationBodyDto(
 public record ApplyTypedGenerationBodyDto(string? ProjectName);
 
 public record GenerateEpicBodyDto(string? Description);
-public record ApplyEpicBodyDto(AIGeneratedEpicDto? Epic);
+// F2-14 — TargetSprintId is optional. Null means "Add to backlog";
+// non-null means "Add to sprint X" and triggers a sprint validation
+// pass in the apply command.
+public record ApplyEpicBodyDto(AIGeneratedEpicDto? Epic, Guid? TargetSprintId = null);
 public record GenerateTasksBodyDto(string? Description, Guid? EpicId, int? MaxTasks);
 public record ApplyTasksBodyDto(Guid? EpicId, IReadOnlyList<AIGeneratedTaskDto>? Tasks);
 

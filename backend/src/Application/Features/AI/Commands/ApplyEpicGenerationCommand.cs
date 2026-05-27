@@ -16,10 +16,17 @@ namespace Application.Features.AI.Commands;
 /// Mirrors <see cref="ApplyProjectGenerationCommand"/> but scoped to one epic
 /// and an existing project — so there's no project create, no
 /// AIGenerationRequest row, and tasks share the project's KeyNum sequence.
+///
+/// F2-14: <paramref name="TargetSprintId"/> is the
+/// "Add to backlog" / "Add to sprint X" picker output. Null leaves the
+/// new tasks unassigned; otherwise every created task gets its SprintId
+/// set, after the command verifies the sprint belongs to the project
+/// and isn't closed.
 /// </summary>
 public record ApplyEpicGenerationCommand(
     Guid ProjectId,
-    AIGeneratedEpicDto Epic) : IRequest<Result<EpicDto>>;
+    AIGeneratedEpicDto Epic,
+    Guid? TargetSprintId = null) : IRequest<Result<EpicDto>>;
 
 public class ApplyEpicGenerationCommandHandler(IAppDbContext db, ICurrentUser currentUser)
     : IRequestHandler<ApplyEpicGenerationCommand, Result<EpicDto>>
@@ -44,6 +51,25 @@ public class ApplyEpicGenerationCommandHandler(IAppDbContext db, ICurrentUser cu
             .FirstOrDefaultAsync(ct);
         if (project is null)
             return Result.Failure<EpicDto>(ProjectErrors.NotFound);
+
+        // F2-14 — validate the target sprint up front. We hard-stop on
+        // a closed sprint (the AC says "Add to sprint X" implies an
+        // open one) rather than silently dropping the choice.
+        Guid? targetSprintId = null;
+        if (request.TargetSprintId is { } sprintId)
+        {
+            var sprint = await db.Sprints
+                .Where(s => s.Id == sprintId)
+                .Select(s => new { s.Id, s.ProjectId, s.Status })
+                .FirstOrDefaultAsync(ct);
+            if (sprint is null)
+                return Result.Failure<EpicDto>(SprintErrors.NotFound);
+            if (sprint.ProjectId != project.Id)
+                return Result.Failure<EpicDto>(TaskErrors.SprintNotInProject);
+            if (sprint.Status == SprintStatus.Closed)
+                return Result.Failure<EpicDto>(SprintErrors.NotActive);
+            targetSprintId = sprint.Id;
+        }
 
         var epic = new Epic
         {
@@ -76,11 +102,14 @@ public class ApplyEpicGenerationCommandHandler(IAppDbContext db, ICurrentUser cu
                 ProjectId = project.Id,
                 KeyNum = nextKeyNum++,
                 EpicId = epic.Id,
+                SprintId = targetSprintId,
                 Title = TrimOrDefault(taskDto.Title, "Untitled task"),
                 Description = taskDto.Description,
                 StoryPoints = pts,
                 Priority = ParsePriority(taskDto.Priority),
-                Status = DomainTaskStatus.Backlog,
+                Status = targetSprintId is null
+                    ? DomainTaskStatus.Backlog
+                    : DomainTaskStatus.ToDo,
                 PriorityOrder = nextOrder++,
                 AcceptanceCriteria = (taskDto.AcceptanceCriteria ?? [])
                     .Where(ac => !string.IsNullOrWhiteSpace(ac))
@@ -103,6 +132,7 @@ public class ApplyEpicGenerationCommandHandler(IAppDbContext db, ICurrentUser cu
             {
                 epicId = epic.Id,
                 taskCount = request.Epic.Tasks?.Count ?? 0,
+                targetSprintId,
             }, JsonOpts),
             Applied = true,
             AppliedAt = DateTime.UtcNow,

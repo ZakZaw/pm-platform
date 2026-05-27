@@ -198,3 +198,112 @@
   font-size: var(--fs-xs);
   line-height: var(--lh-normal);
 }
+
+/* F2-14 — timeline-impact panel + destination picker, rendered inside
+   the epic-breakdown preview after the task list. */
+.ai-draft__impact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  margin-top: var(--s-5);
+  padding: var(--s-4) var(--s-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.ai-draft__impact-head {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+}
+
+.ai-draft__impact-summary {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.ai-draft__impact-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.ai-draft__impact-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+  font-size: var(--fs-xs);
+}
+
+.ai-draft__impact-row-name {
+  color: var(--text);
+}
+
+.ai-draft__impact-row-meta {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.ai-draft__impact-row.is-warn .ai-draft__impact-row-meta {
+  color: var(--warning);
+}
+
+.ai-draft__impact-empty {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.ai-draft__destination {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  margin-top: var(--s-5);
+}
+
+.ai-draft__destination-head {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+}
+
+.ai-draft__destination-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.ai-draft__destination-opt {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: var(--fs-md);
+}
+.ai-draft__destination-opt.is-selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.ai-draft__destination-opt input[type="radio"] {
+  margin: 0;
+}
+.ai-draft__destination-opt-meta {
+  margin-left: auto;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.ai-draft__destination-opt.is-warn .ai-draft__destination-opt-meta {
+  color: var(--warning);
+}

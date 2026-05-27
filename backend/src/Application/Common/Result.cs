@@ -695,3 +695,31 @@ public static class CustomFieldErrors
     public static readonly Error TaskNotInProject =
         new("CustomField.TaskNotInProject", "The task does not belong to this field's project.");
 }
+
+// F2-16 channels.
+public static class ChannelErrors
+{
+    public static readonly Error NotFound =
+        new("Channel.NotFound", "Channel not found.");
+
+    public static readonly Error InvalidName =
+        new("Channel.InvalidName", "Channel name must be 2-120 characters.");
+
+    public static readonly Error NotAMember =
+        new("Channel.NotAMember", "You are not a member of this channel.");
+
+    public static readonly Error Archived =
+        new("Channel.Archived", "This channel has been archived.");
+
+    public static readonly Error CannotArchiveSystem =
+        new("Channel.CannotArchiveSystem",
+            "Org, project and team channels can only be archived through their owning entity.");
+
+    public static readonly Error InvalidScope =
+        new("Channel.InvalidScope",
+            "Only Topic channels can be created directly; project/team channels are auto-created.");
+
+    public static readonly Error EpicNotInOrg =
+        new("Channel.EpicNotInOrg",
+            "The linked epic does not belong to a project in this organisation.");
+}

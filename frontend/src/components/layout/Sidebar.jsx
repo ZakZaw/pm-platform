@@ -5,6 +5,7 @@ import {
   FolderKanban,
   Home,
   LayoutGrid,
+  MessageSquare,
   Plus,
   Settings,
   Sparkles,
@@ -134,6 +135,12 @@ export function Sidebar() {
             <NavLink to={`/${slug}/portfolio`} className={navCls} title="Portfolio">
               <span className="nav-icon"><FolderKanban size={14} aria-hidden="true" /></span>
               <span>Portfolio</span>
+            </NavLink>
+          )}
+          {slug && (
+            <NavLink to={`/${slug}/chat`} className={navCls} title="Chat">
+              <span className="nav-icon"><MessageSquare size={14} aria-hidden="true" /></span>
+              <span>Chat</span>
             </NavLink>
           )}
         </div>

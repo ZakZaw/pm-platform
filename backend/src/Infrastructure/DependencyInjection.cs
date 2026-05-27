@@ -49,6 +49,10 @@ public static class DependencyInjection
         // alongside the scoped IAIService above.
         services.AddHostedService<VelocityReplanScannerService>();
 
+        // F2-16 — daily sweep that archives Topic channels with >30d
+        // of silence.
+        services.AddHostedService<Services.Channels.TopicChannelArchiveService>();
+
         // Phase 1.5 project-type registry. One provider per ProjectType
         // value; the registry indexes them on construction and throws if
         // any are missing — so adding a new type means adding a provider

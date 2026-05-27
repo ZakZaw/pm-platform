@@ -31,6 +31,20 @@ public class RemoveProjectMemberCommandHandler(IAppDbContext db)
         }
 
         db.ProjectMemberships.Remove(membership);
+
+        // F2-16 — also drop the user's matching channel membership so
+        // they stop seeing the project channel in their sidebar.
+        var channelMember = await db.ChannelMembers
+            .Where(m => m.UserId == request.UserId
+                     && m.Channel.ProjectId == request.ProjectId
+                     && m.Channel.Type == ChannelType.Project
+                     && m.Channel.ArchivedAt == null)
+            .FirstOrDefaultAsync(ct);
+        if (channelMember is not null)
+        {
+            db.ChannelMembers.Remove(channelMember);
+        }
+
         await db.SaveChangesAsync(ct);
         return Result.Success();
     }

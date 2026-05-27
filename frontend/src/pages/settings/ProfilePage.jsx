@@ -27,6 +27,11 @@ export function ProfilePage() {
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState('');
   const [capacity, setCapacity] = useState(40);
+  // F2-13 — out-of-office date. Stored as YYYY-MM-DD locally (HTML
+  // date inputs only handle the date portion); we round-trip the
+  // server's ISO timestamp through that format and re-emit at end of
+  // day UTC so the trigger fires correctly.
+  const [oooDate, setOooDate] = useState('');
 
   const [loadError, setLoadError] = useState(null);
   const [saveError, setSaveError] = useState(null);
@@ -55,6 +60,9 @@ export function ProfilePage() {
         setTimezone(p.timezone);
         setTags(p.skillTags ?? []);
         setCapacity(p.capacityHoursPerWeek);
+        setOooDate(p.outOfOfficeUntil
+          ? new Date(p.outOfOfficeUntil).toISOString().slice(0, 10)
+          : '');
       })
       .catch((err) => {
         if (!cancelled) {
@@ -107,14 +115,23 @@ export function ProfilePage() {
     setSaveSuccess(false);
     setSubmitting(true);
     try {
+      // Treat the picked date as end-of-day local — the server
+      // re-coerces past dates to null so a stale value here is safe.
+      const oooIso = oooDate
+        ? new Date(`${oooDate}T23:59:59`).toISOString()
+        : null;
       const updated = await usersApi.updateProfile({
         fullName,
         timezone,
         skillTags: tags,
         capacityHoursPerWeek: capacity,
+        outOfOfficeUntil: oooIso,
       });
       setProfile(updated);
       updateAuthUser?.({ id: updated.id, email: updated.email, fullName: updated.fullName, avatarUrl: updated.avatarUrl });
+      setOooDate(updated.outOfOfficeUntil
+        ? new Date(updated.outOfOfficeUntil).toISOString().slice(0, 10)
+        : '');
       setSaveSuccess(true);
     } catch (err) {
       setSaveError(err.response?.data?.detail ?? 'Could not save profile.');
@@ -241,6 +258,14 @@ export function ProfilePage() {
             value={capacity}
             onChange={(e) => setCapacity(Number(e.target.value))}
             help="Used by AI assignment to estimate your bandwidth."
+          />
+
+          <Input
+            label="Out of office until"
+            type="date"
+            value={oooDate}
+            onChange={(e) => setOooDate(e.target.value)}
+            help="While set, AI excludes you as a reassignment candidate and notifies PMs on each project you own work in."
           />
 
           <div>

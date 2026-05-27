@@ -45,7 +45,8 @@ public class UploadMyAvatarCommandHandler(
 
         return Result.Success(new UserProfileDto(
             user.Id, user.Email, user.FullName, user.AvatarUrl,
-            user.Timezone, user.SkillTags, user.CapacityHoursPerWeek));
+            user.Timezone, user.SkillTags, user.CapacityHoursPerWeek,
+            user.OutOfOfficeUntil));
     }
 
     private static string ExtensionFor(string contentType) => contentType.ToLowerInvariant() switch

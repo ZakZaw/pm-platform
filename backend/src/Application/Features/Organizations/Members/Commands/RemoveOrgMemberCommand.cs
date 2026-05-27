@@ -1,4 +1,5 @@
 using Application.Common;
+using Application.Features.AI.Notifications;
 using Application.Interfaces;
 using Domain.Enums;
 using MediatR;
@@ -14,7 +15,8 @@ public record RemoveOrgMemberCommand(string Slug, Guid UserId) : IRequest<Result
 // re-invited later.
 public class RemoveOrgMemberCommandHandler(
     IAppDbContext db,
-    ICurrentUser currentUser)
+    ICurrentUser currentUser,
+    IPublisher mediatorPublisher)
     : IRequestHandler<RemoveOrgMemberCommand, Result>
 {
     public async Task<Result> Handle(RemoveOrgMemberCommand request, CancellationToken ct)
@@ -56,6 +58,19 @@ public class RemoveOrgMemberCommandHandler(
 
         target.RemovedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
+
+        // F2-13 — fan out the trigger so the reassignment scorer can
+        // suggest takeovers for the removed member's open tasks. Scoped
+        // to this org so we don't accidentally walk projects in orgs
+        // the user is still a member of. Failures don't reverse the
+        // removal that already committed.
+        try
+        {
+            await mediatorPublisher.Publish(
+                new MemberBecameUnavailableNotification(
+                    target.UserId, "org_removed", org.Id), ct);
+        }
+        catch { /* logged in handler */ }
 
         return Result.Success();
     }

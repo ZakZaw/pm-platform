@@ -162,6 +162,27 @@ export function AIInboxPage() {
     }
   }
 
+  // F2-13 — bulk-accept (picks = []) or override per row. Server
+  // normalises an empty picks array to "use defaults".
+  async function applyReassignments(suggestion, picks) {
+    try {
+      const updated = await aiApi.applyReassignments(suggestion.id,
+        picks && picks.length > 0 ? picks : null);
+      setSuggestions((cur) => cur.filter((s) => s.id !== suggestion.id));
+      toast.show({
+        tone: 'success',
+        message: `Reassigned ${picks?.length ? `${picks.length} task${picks.length === 1 ? '' : 's'}` : 'tasks'}.`,
+      });
+      return updated;
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        message: describeAiError(err, 'Could not apply reassignments.'),
+      });
+      throw err;
+    }
+  }
+
   // Filter chips derived from the current suggestion set so we don't
   // show chips that wouldn't match anything.
   const typesPresent = useMemo(() => {
@@ -269,6 +290,7 @@ export function AIInboxPage() {
               onDismiss={() => dismiss(s)}
               onAccept={() => accept(s)}
               onApplyReplan={(opt) => applyReplan(s, opt)}
+              onApplyReassignments={(picks) => applyReassignments(s, picks)}
             />
           ))}
         </ul>
@@ -279,18 +301,25 @@ export function AIInboxPage() {
 
 // Single inbox row. Holds the option-selection state locally so picking
 // a replan option on card A doesn't accidentally light up card B.
-function SuggestionListItem({ suggestion, onDismiss, onAccept, onApplyReplan }) {
+function SuggestionListItem({
+  suggestion, onDismiss, onAccept, onApplyReplan, onApplyReassignments,
+}) {
   const acted = suggestion.status !== 'Open';
   const typeMeta = findProjectType(suggestion.projectType);
   const TypeIcon = typeMeta?.icon;
   const isReplan = suggestion.kind === 'sprint.replan';
+  const isReassign = suggestion.kind === 'member.unavailable';
   const replan = useMemo(
     () => (isReplan ? parseReplanPayload(suggestion.payloadJson) : null),
     [isReplan, suggestion.payloadJson],
   );
+  const reassign = useMemo(
+    () => (isReassign ? parseReassignmentPayload(suggestion.payloadJson) : null),
+    [isReassign, suggestion.payloadJson],
+  );
   const fallbackOpts = useMemo(
-    () => (isReplan ? [] : parseGenericOptions(suggestion.payloadJson)),
-    [isReplan, suggestion.payloadJson],
+    () => (isReplan || isReassign ? [] : parseGenericOptions(suggestion.payloadJson)),
+    [isReplan, isReassign, suggestion.payloadJson],
   );
 
   const [selectedIdx, setSelectedIdx] = useState(() => {
@@ -299,6 +328,18 @@ function SuggestionListItem({ suggestion, onDismiss, onAccept, onApplyReplan }) 
     return recIdx >= 0 ? recIdx : (replan.options.length > 0 ? 0 : undefined);
   });
   const [applying, setApplying] = useState(false);
+
+  // F2-13 — assignee selection per task, initialised to the top
+  // candidate (the bulk-accept default).
+  const [picks, setPicks] = useState(() => {
+    if (!isReassign || !reassign) return {};
+    const init = {};
+    for (const t of reassign.tasks) {
+      const top = t.candidates[0];
+      if (top) init[t.taskId] = top.userId;
+    }
+    return init;
+  });
 
   const opts = isReplan
     ? replan?.options.map((o) => ({ label: o.label, recommended: o.recommended })) ?? []
@@ -318,13 +359,37 @@ function SuggestionListItem({ suggestion, onDismiss, onAccept, onApplyReplan }) 
             setApplying(false);
           }
         }
-      : onAccept;
+      : isReassign
+        ? async () => {
+            if (!reassign) return;
+            // If every row still points at the default top candidate,
+            // send an empty pick list and let the server use defaults
+            // ("bulk accept"). Otherwise send the explicit overrides.
+            const overrides = reassign.tasks
+              .map((t) => {
+                const chosen = picks[t.taskId];
+                const top = t.candidates[0]?.userId;
+                return chosen && chosen !== top
+                  ? { taskId: t.taskId, newAssigneeId: chosen }
+                  : null;
+              })
+              .filter(Boolean);
+            setApplying(true);
+            try {
+              await onApplyReassignments(overrides);
+            } finally {
+              setApplying(false);
+            }
+          }
+        : onAccept;
 
   const applyLabel = isReplan
     ? selectedIdx != null && replan?.options[selectedIdx]
       ? `Apply: ${REPLAN_OPTION_LABELS[replan.options[selectedIdx].key]}`
       : 'Apply'
-    : 'Mark as accepted';
+    : isReassign
+      ? 'Apply reassignments'
+      : 'Mark as accepted';
 
   return (
     <li className="ai-inbox-row">
@@ -344,7 +409,22 @@ function SuggestionListItem({ suggestion, onDismiss, onAccept, onApplyReplan }) 
           </span>
         }
         title={suggestion.title}
-        body={suggestion.body}
+        body={
+          isReassign && reassign ? (
+            <>
+              <div>{suggestion.body}</div>
+              <ReassignmentBlock
+                reassign={reassign}
+                picks={picks}
+                onChange={(taskId, userId) =>
+                  setPicks((cur) => ({ ...cur, [taskId]: userId }))}
+                disabled={applying || acted}
+              />
+            </>
+          ) : (
+            suggestion.body
+          )
+        }
         options={opts}
         selectedOptionIndex={isReplan ? selectedIdx : undefined}
         onSelect={isReplan ? setSelectedIdx : undefined}
@@ -352,11 +432,86 @@ function SuggestionListItem({ suggestion, onDismiss, onAccept, onApplyReplan }) 
         onDismiss={acted ? undefined : onDismiss}
         onApply={onApply}
         applyLabel={applyLabel}
-        applyDisabled={isReplan && selectedIdx == null}
+        applyDisabled={
+          (isReplan && selectedIdx == null)
+          || (isReassign && (!reassign || reassign.tasks.length === 0))
+        }
         loading={applying}
       />
     </li>
   );
+}
+
+// F2-13 — table of (task → suggested assignee) rows. Defaulted to the
+// top candidate; the PM can drop down to override per row before
+// pressing Apply.
+function ReassignmentBlock({ reassign, picks, onChange, disabled }) {
+  if (!reassign || reassign.tasks.length === 0) return null;
+  return (
+    <div className="reassign-block">
+      {reassign.tasks.map((t) => {
+        const chosen = picks[t.taskId] ?? t.candidates[0]?.userId ?? '';
+        const chosenCand = t.candidates.find((c) => c.userId === chosen);
+        return (
+          <div key={t.taskId} className="reassign-row">
+            <div>
+              <div className="reassign-task-key">{t.key}</div>
+              <div className="reassign-task-title">{t.title}</div>
+            </div>
+            <select
+              className="reassign-select"
+              value={chosen}
+              disabled={disabled}
+              onChange={(e) => onChange(t.taskId, e.target.value)}
+              aria-label={`Reassignee for ${t.key}`}
+            >
+              {t.candidates.map((c) => (
+                <option key={c.userId} value={c.userId}>
+                  {c.fullName} — fit {Math.round(c.score * 100)}%
+                </option>
+              ))}
+            </select>
+            <span className="reassign-score">
+              {chosenCand
+                ? `skill ${Math.round(chosenCand.skillMatch * 100)} · cap ${Math.round(chosenCand.capacityHeadroom * 100)} · hist ${Math.round(chosenCand.historyFit * 100)}`
+                : ''}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// F2-13 — parses the member.unavailable payload into a render-friendly
+// shape. Defensive on every nested array — any missing field collapses
+// to a usable default rather than throwing.
+function parseReassignmentPayload(payloadJson) {
+  if (!payloadJson) return null;
+  let obj;
+  try { obj = JSON.parse(payloadJson); }
+  catch { return null; }
+
+  const tasks = Array.isArray(obj?.tasks) ? obj.tasks : [];
+  return {
+    trigger: obj?.trigger ?? null,
+    leavingUserId: obj?.leavingUserId ?? null,
+    leavingUserName: obj?.leavingUserName ?? null,
+    tasks: tasks.map((t) => ({
+      taskId: t.taskId,
+      key: t.key ?? '',
+      title: t.title ?? '',
+      priority: t.priority,
+      candidates: (Array.isArray(t.candidates) ? t.candidates : []).map((c) => ({
+        userId: c.userId,
+        fullName: c.fullName ?? 'Unnamed',
+        score: typeof c.score === 'number' ? c.score : 0,
+        skillMatch: typeof c.skillMatch === 'number' ? c.skillMatch : 0,
+        capacityHeadroom: typeof c.capacityHeadroom === 'number' ? c.capacityHeadroom : 0,
+        historyFit: typeof c.historyFit === 'number' ? c.historyFit : 0,
+      })),
+    })).filter((t) => t.candidates.length > 0),
+  };
 }
 
 // Generic non-replan suggestions store `options` as an array of `{ label,

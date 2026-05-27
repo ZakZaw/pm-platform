@@ -181,6 +181,32 @@ public class AIController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    // F2-13 — manual trigger that fans out the same "member
+    // unavailable" notification the org-removal / OOO / capacity-zero
+    // soft triggers use. Useful for previewing the reassignment card
+    // without actually marking someone OOO. Authorization mirrors the
+    // org-member read endpoints (auth-only; handler reads org/project
+    // membership inline).
+    [HttpPost("api/v1/users/{userId:guid}/ai/reassignment")]
+    public async Task<IActionResult> GenerateReassignmentSuggestion(
+        Guid userId,
+        [FromQuery(Name = "org_id")] Guid? orgId,
+        CancellationToken ct)
+    {
+        var result = await mediator.Send(
+            new GenerateReassignmentSuggestionCommand(userId, orgId), ct);
+        return result.IsSuccess ? NoContent() : ToProblem(result.Error!);
+    }
+
+    [HttpPost("api/v1/ai/suggestions/{id:guid}/apply-reassignments")]
+    public async Task<ActionResult<AISuggestionDto>> ApplyReassignments(
+        Guid id, [FromBody] ApplyReassignmentsBodyDto body, CancellationToken ct)
+    {
+        var result = await mediator.Send(
+            new ApplyReassignmentsCommand(id, body?.Picks), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     [HttpPost("api/v1/ai/suggestions/{id:guid}/dismiss")]
     public async Task<IActionResult> DismissSuggestion(Guid id, CancellationToken ct)
     {
@@ -251,3 +277,8 @@ public record ApplyTasksBodyDto(Guid? EpicId, IReadOnlyList<AIGeneratedTaskDto>?
 // <see cref="VelocityReplanOption"/> (CutScope|AddResource|ShiftMilestone),
 // case-insensitive.
 public record ApplyReplanBodyDto(string? Option);
+
+// F2-13 apply-reassignment body. Picks is the optional override list
+// (taskId -> chosen assignee). When omitted, the top candidate for
+// every task is applied — that's the "bulk accept" path from the AC.
+public record ApplyReassignmentsBodyDto(IReadOnlyList<ReassignmentPick>? Picks);

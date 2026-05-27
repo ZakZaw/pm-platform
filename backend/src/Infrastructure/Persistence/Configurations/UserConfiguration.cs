@@ -24,6 +24,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasColumnType("text[]")
             .HasDefaultValueSql("ARRAY[]::text[]");
         builder.Property(u => u.CapacityHoursPerWeek).IsRequired().HasDefaultValue(40);
+        builder.Property(u => u.OutOfOfficeUntil);
         builder.Property(u => u.CreatedAt).IsRequired();
     }
 }

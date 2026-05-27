@@ -31,7 +31,8 @@ public class UsersController(ISender mediator) : ControllerBase
             body.FullName,
             body.Timezone,
             body.SkillTags ?? [],
-            body.CapacityHoursPerWeek), ct);
+            body.CapacityHoursPerWeek,
+            body.OutOfOfficeUntil), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
@@ -114,6 +115,7 @@ public record UpdateMyProfileBodyDto(
     string FullName,
     string Timezone,
     string[]? SkillTags,
-    int CapacityHoursPerWeek);
+    int CapacityHoursPerWeek,
+    DateTime? OutOfOfficeUntil);
 
 public record UploadAvatarFormDto(IFormFile? Avatar);

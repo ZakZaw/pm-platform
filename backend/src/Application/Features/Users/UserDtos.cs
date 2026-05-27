@@ -7,4 +7,5 @@ public record UserProfileDto(
     string? AvatarUrl,
     string Timezone,
     string[] SkillTags,
-    int CapacityHoursPerWeek);
+    int CapacityHoursPerWeek,
+    DateTime? OutOfOfficeUntil);

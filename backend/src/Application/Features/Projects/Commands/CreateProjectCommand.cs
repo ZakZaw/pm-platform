@@ -70,6 +70,24 @@ public class CreateProjectCommandHandler(
             Role = ProjectRole.PM
         });
 
+        // F2-16 — every project gets a Project channel on create, with
+        // the owner as the first member. New project members sync in
+        // through AddProjectMemberCommand.
+        var projectChannel = new Channel
+        {
+            OrganizationId = org.Id,
+            ProjectId = project.Id,
+            Name = trimmedName,
+            Type = ChannelType.Project,
+            CreatedByUserId = userId,
+        };
+        db.Channels.Add(projectChannel);
+        db.ChannelMembers.Add(new ChannelMember
+        {
+            ChannelId = projectChannel.Id,
+            UserId = userId,
+        });
+
         // Type-specific seeding (Sales → default pipeline stages, etc.).
         await projectTypes.Get(projectType).SeedNewProjectAsync(db, project.Id, userId, ct);
 

@@ -86,6 +86,10 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<WorkflowRun> WorkflowRuns => Set<WorkflowRun>();
     public DbSet<ChecklistItem> ChecklistItems => Set<ChecklistItem>();
 
+    // F2-16 channels (no message entity yet — that lands in F2-18).
+    public DbSet<Channel> Channels => Set<Channel>();
+    public DbSet<ChannelMember> ChannelMembers => Set<ChannelMember>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Team / TeamMembership stay ignored until the team-management

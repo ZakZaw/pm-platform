@@ -56,6 +56,30 @@ public class AddProjectMemberCommandHandler(IAppDbContext db)
             Role = role,
         };
         db.ProjectMemberships.Add(membership);
+
+        // F2-16 — keep the project's channel membership in lock-step.
+        // Old projects without a channel just skip; the next channel
+        // controller call will materialise one if needed.
+        var channelId = await db.Channels
+            .Where(c => c.ProjectId == project.Id
+                     && c.Type == ChannelType.Project
+                     && c.ArchivedAt == null)
+            .Select(c => (Guid?)c.Id)
+            .FirstOrDefaultAsync(ct);
+        if (channelId is { } cid)
+        {
+            var alreadyChannelMember = await db.ChannelMembers
+                .AnyAsync(m => m.ChannelId == cid && m.UserId == request.UserId, ct);
+            if (!alreadyChannelMember)
+            {
+                db.ChannelMembers.Add(new ChannelMember
+                {
+                    ChannelId = cid,
+                    UserId = request.UserId,
+                });
+            }
+        }
+
         await db.SaveChangesAsync(ct);
 
         var user = await db.Users

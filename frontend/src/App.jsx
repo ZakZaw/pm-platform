@@ -40,6 +40,8 @@ import { CustomFieldsPage } from '@/pages/project/CustomFieldsPage';
 import { AISettingsPage } from '@/pages/project/AISettingsPage';
 import { OrgPortfolioPage } from '@/pages/dashboard/OrgPortfolioPage';
 import { RoadmapPublicPage } from '@/pages/share/RoadmapPublicPage';
+import { ChannelsLayout } from '@/pages/chat/ChannelsLayout';
+import { ChannelPage } from '@/pages/chat/ChannelPage';
 import { AppShell } from '@/components/layout/AppShell';
 import { ToastProvider } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
@@ -59,6 +61,16 @@ function ProtectedLayout() {
 function Keyed({ children, paramKey }) {
   const params = useParams();
   return <div key={params[paramKey]}>{children}</div>;
+}
+
+// Holding-pattern shown while ChannelsLayout figures out which channel
+// to redirect the user into.
+function ChannelPlaceholder() {
+  return (
+    <div className="chat-pane chat-pane-empty">
+      <p className="muted">Pick a channel from the sidebar.</p>
+    </div>
+  );
 }
 
 function App() {
@@ -199,6 +211,16 @@ function App() {
               element={<Keyed paramKey="projectSlug"><AISettingsPage /></Keyed>}
             />
             <Route path="/settings/profile" element={<ProfilePage />} />
+            <Route
+              path="/:slug/chat"
+              element={<Keyed paramKey="slug"><ChannelsLayout /></Keyed>}
+            >
+              <Route index element={<ChannelPlaceholder />} />
+              <Route
+                path=":channelId"
+                element={<Keyed paramKey="channelId"><ChannelPage /></Keyed>}
+              />
+            </Route>
           </Route>
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="*" element={<Navigate to="/home" replace />} />

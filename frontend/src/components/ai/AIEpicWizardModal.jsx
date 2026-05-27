@@ -24,14 +24,20 @@ const PRIORITY_TONES = {
 export function AIEpicWizardModal({ open, projectId, onClose, onCreated }) {
   const toast = useToast();
   const [description, setDescription] = useState('');
+  // F2-14 — preview now carries the AI epic AND a timeline impact
+  // projection. Shape: { epic: AIGeneratedEpicDto, impact: ... }
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  // F2-14 — destination picker. null = backlog; otherwise a sprint id
+  // chosen from the impact panel.
+  const [targetSprintId, setTargetSprintId] = useState(null);
 
   function reset() {
     setDescription('');
     setPreview(null);
     setError(null);
+    setTargetSprintId(null);
   }
 
   function handleClose() {
@@ -48,10 +54,13 @@ export function AIEpicWizardModal({ open, projectId, onClose, onCreated }) {
     }
     setLoading(true);
     try {
-      const draft = await aiApi.generateEpic(projectId, {
+      // F2-14 — the breakdown endpoint returns both the AI epic and a
+      // timeline-impact projection in one round-trip.
+      const draft = await aiApi.breakdownFeature(projectId, {
         description: description.trim(),
       });
       setPreview(draft);
+      setTargetSprintId(null);
     } catch (err) {
       setError(describeAiError(err, 'Could not generate the epic. Try a different prompt.'));
     } finally {
@@ -61,20 +70,26 @@ export function AIEpicWizardModal({ open, projectId, onClose, onCreated }) {
 
   async function regenerate() {
     setPreview(null);
+    setTargetSprintId(null);
     await generate();
   }
 
   async function confirm() {
-    if (!preview) return;
-    if ((preview.title ?? '').trim().length < 2) {
+    if (!preview?.epic) return;
+    if ((preview.epic.title ?? '').trim().length < 2) {
       setError('Epic title must be at least 2 characters.');
       return;
     }
     setError(null);
     setLoading(true);
     try {
-      const epic = await aiApi.applyEpic(projectId, preview);
-      toast.show({ tone: 'success', message: 'Epic created.' });
+      const epic = await aiApi.applyEpic(projectId, preview.epic, { targetSprintId });
+      toast.show({
+        tone: 'success',
+        message: targetSprintId
+          ? 'Epic created and added to sprint.'
+          : 'Epic created in backlog.',
+      });
       reset();
       onCreated?.(epic);
     } catch (err) {
@@ -85,28 +100,34 @@ export function AIEpicWizardModal({ open, projectId, onClose, onCreated }) {
   }
 
   function updateTitle(v) {
-    setPreview((p) => ({ ...p, title: v }));
+    setPreview((p) => ({ ...p, epic: { ...p.epic, title: v } }));
   }
   function updateDescription(v) {
-    setPreview((p) => ({ ...p, description: v }));
+    setPreview((p) => ({ ...p, epic: { ...p.epic, description: v } }));
   }
   function updateTask(idx, patch) {
     setPreview((p) => ({
       ...p,
-      tasks: p.tasks.map((t, i) => (i === idx ? { ...t, ...patch } : t)),
+      epic: {
+        ...p.epic,
+        tasks: p.epic.tasks.map((t, i) => (i === idx ? { ...t, ...patch } : t)),
+      },
     }));
   }
   function removeTask(idx) {
     setPreview((p) => ({
       ...p,
-      tasks: p.tasks.filter((_, i) => i !== idx),
+      epic: {
+        ...p.epic,
+        tasks: p.epic.tasks.filter((_, i) => i !== idx),
+      },
     }));
   }
 
-  const totals = preview
+  const totals = preview?.epic
     ? {
-        tasks: preview.tasks.length,
-        points: preview.tasks.reduce((s, t) => s + (t.storyPoints ?? 0), 0),
+        tasks: preview.epic.tasks.length,
+        points: preview.epic.tasks.reduce((s, t) => s + (t.storyPoints ?? 0), 0),
       }
     : null;
 
@@ -141,7 +162,7 @@ export function AIEpicWizardModal({ open, projectId, onClose, onCreated }) {
           </div>
         )}
 
-        {preview && (
+        {preview?.epic && (
           <div className="ai-draft__plan">
             <div className="ai-draft__plan-head hstack">
               <Sparkles size={14} color="var(--ai-2)" aria-hidden="true" />
@@ -156,21 +177,21 @@ export function AIEpicWizardModal({ open, projectId, onClose, onCreated }) {
             <div className="ai-draft__epic">
               <input
                 className="input ai-draft__epic-title"
-                value={preview.title}
+                value={preview.epic.title}
                 onChange={(e) => updateTitle(e.target.value)}
                 placeholder="Epic title"
               />
               <textarea
                 className="ai-draft__epic-desc"
                 rows={2}
-                value={preview.description ?? ''}
+                value={preview.epic.description ?? ''}
                 onChange={(e) => updateDescription(e.target.value)}
                 placeholder="Short description (optional)"
               />
             </div>
 
             <div className="ai-draft__tasks">
-              {preview.tasks.map((t, i) => (
+              {preview.epic.tasks.map((t, i) => (
                 <TaskRow
                   key={i}
                   task={t}
@@ -178,12 +199,21 @@ export function AIEpicWizardModal({ open, projectId, onClose, onCreated }) {
                   onRemove={() => removeTask(i)}
                 />
               ))}
-              {preview.tasks.length === 0 && (
+              {preview.epic.tasks.length === 0 && (
                 <p className="ai-draft__empty">
                   All tasks removed. Regenerate or close to start over.
                 </p>
               )}
             </div>
+
+            {preview.impact && <TimelineImpactPanel impact={preview.impact} />}
+            {preview.impact && (
+              <DestinationPicker
+                impact={preview.impact}
+                value={targetSprintId}
+                onChange={setTargetSprintId}
+              />
+            )}
           </div>
         )}
       </ModalBody>
@@ -212,17 +242,135 @@ export function AIEpicWizardModal({ open, projectId, onClose, onCreated }) {
               onClick={confirm}
               disabled={
                 loading
-                || preview.tasks.length === 0
-                || (preview.title ?? '').trim().length < 2
+                || !preview?.epic
+                || preview.epic.tasks.length === 0
+                || (preview.epic.title ?? '').trim().length < 2
               }
             >
               <Check size={13} aria-hidden="true" />
-              {loading ? ' Creating…' : ' Create epic'}
+              {loading
+                ? ' Creating…'
+                : targetSprintId
+                  ? ' Add to sprint'
+                  : ' Add to backlog'}
             </Button>
           </>
         )}
       </ModalFooter>
     </Modal>
+  );
+}
+
+// F2-14 — read-only summary of how the generated epic would land on
+// the project's existing work: estimated sprints to complete, which
+// open sprints would overflow, which milestones would shift.
+function TimelineImpactPanel({ impact }) {
+  const velocityNote = impact.hasHistoricalVelocity
+    ? `Based on a velocity of ${impact.projectVelocityPointsPerSprint}pt / ${impact.averageSprintLengthDays}d sprint.`
+    : `No closed-sprint history yet — using a fallback velocity of ${impact.projectVelocityPointsPerSprint}pt.`;
+  return (
+    <div className="ai-draft__impact" aria-label="Timeline impact">
+      <div className="ai-draft__impact-head">Timeline impact</div>
+      <div className="ai-draft__impact-summary">
+        {impact.addedStoryPoints}pt added · ~{impact.estimatedSprintsToComplete} sprint{impact.estimatedSprintsToComplete === 1 ? '' : 's'}
+        {impact.projectedShiftDays > 0 ? ` · ~${impact.projectedShiftDays}d of downstream work` : ''}.
+        {' '}{velocityNote}
+      </div>
+
+      <div className="ai-draft__impact-head" style={{ fontSize: 'var(--fs-xs)' }}>Open sprints</div>
+      {impact.sprints.length === 0 ? (
+        <p className="ai-draft__impact-empty">No planning or active sprints in this project.</p>
+      ) : (
+        <ul className="ai-draft__impact-list">
+          {impact.sprints.map((s) => (
+            <li
+              key={s.sprintId}
+              className={`ai-draft__impact-row${s.projectedOverflowPoints > 0 ? ' is-warn' : ''}`}
+            >
+              <span className="ai-draft__impact-row-name">
+                {s.name} <span className="muted">· {s.status}</span>
+              </span>
+              <span className="ai-draft__impact-row-meta">
+                {s.committedPoints}/{s.targetPoints}pt committed ·
+                {' '}{s.projectedOverflowPoints > 0
+                  ? `${s.projectedOverflowPoints}pt overflow`
+                  : `${s.remainingCapacityPoints}pt free`}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="ai-draft__impact-head" style={{ fontSize: 'var(--fs-xs)' }}>Milestones in next 90 days</div>
+      {impact.milestones.length === 0 ? (
+        <p className="ai-draft__impact-empty">No upcoming milestones within the projection window.</p>
+      ) : (
+        <ul className="ai-draft__impact-list">
+          {impact.milestones.map((m) => (
+            <li
+              key={m.milestoneId}
+              className={`ai-draft__impact-row${m.projectedShiftDays > 0 ? ' is-warn' : ''}`}
+            >
+              <span className="ai-draft__impact-row-name">{m.title}</span>
+              <span className="ai-draft__impact-row-meta">
+                in {m.daysUntil}d ·
+                {' '}{m.projectedShiftDays > 0 ? `+${m.projectedShiftDays}d shift` : 'no shift'}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+// F2-14 — destination picker driving the apply-epic targetSprintId.
+// Always shows "Backlog" as the first option; open sprints follow,
+// ordered as the impact panel returned them. Sprints whose status is
+// Closed never appear here (the backend filters them out before
+// projection runs).
+function DestinationPicker({ impact, value, onChange }) {
+  return (
+    <div className="ai-draft__destination" role="radiogroup" aria-label="Destination">
+      <div className="ai-draft__destination-head">Add to…</div>
+      <div className="ai-draft__destination-options">
+        <label className={`ai-draft__destination-opt${value === null ? ' is-selected' : ''}`}>
+          <input
+            type="radio"
+            name="ai-epic-destination"
+            checked={value === null}
+            onChange={() => onChange(null)}
+          />
+          <span>Backlog</span>
+          <span className="ai-draft__destination-opt-meta">tasks land unsprinted</span>
+        </label>
+        {impact.sprints.map((s) => (
+          <label
+            key={s.sprintId}
+            className={[
+              'ai-draft__destination-opt',
+              value === s.sprintId ? 'is-selected' : '',
+              s.projectedOverflowPoints > 0 ? 'is-warn' : '',
+            ].filter(Boolean).join(' ')}
+          >
+            <input
+              type="radio"
+              name="ai-epic-destination"
+              checked={value === s.sprintId}
+              onChange={() => onChange(s.sprintId)}
+            />
+            <span>
+              {s.name} <span className="muted">· {s.status}</span>
+            </span>
+            <span className="ai-draft__destination-opt-meta">
+              {s.projectedOverflowPoints > 0
+                ? `would overflow by ${s.projectedOverflowPoints}pt`
+                : `${s.remainingCapacityPoints}pt free`}
+            </span>
+          </label>
+        ))}
+      </div>
+    </div>
   );
 }
 

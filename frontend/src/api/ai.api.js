@@ -44,9 +44,20 @@ export const aiApi = {
       .post(`/projects/${projectId}/ai/generate-epic`, { description })
       .then((r) => r.data),
 
-  applyEpic: (projectId, epic) =>
+  // F2-14 — same AI pass as generateEpic plus a timeline-impact
+  // projection (which sprints overflow, which milestones shift).
+  breakdownFeature: (projectId, { description }) =>
     apiClient
-      .post(`/projects/${projectId}/ai/apply-epic`, { epic })
+      .post(`/projects/${projectId}/ai/breakdown`, { description })
+      .then((r) => r.data),
+
+  // F2-14 — applyEpic now accepts an optional targetSprintId. Null
+  // means "Add to backlog" (default); non-null means "Add to sprint X"
+  // and the new tasks land in that sprint as ToDo.
+  applyEpic: (projectId, epic, { targetSprintId = null } = {}) =>
+    apiClient
+      .post(`/projects/${projectId}/ai/apply-epic`,
+        { epic, targetSprintId })
       .then((r) => r.data),
 
   generateTasks: (projectId, { description, epicId = null, maxTasks = null }) =>

@@ -26,7 +26,8 @@ public class GetMyProfileQueryHandler(
                 u.AvatarUrl,
                 u.Timezone,
                 u.SkillTags,
-                u.CapacityHoursPerWeek))
+                u.CapacityHoursPerWeek,
+                u.OutOfOfficeUntil))
             .FirstOrDefaultAsync(ct);
 
         return user is null

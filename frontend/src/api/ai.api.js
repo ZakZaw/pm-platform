@@ -95,4 +95,21 @@ export const aiApi = {
     apiClient
       .post(`/ai/suggestions/${suggestionId}/apply-replan`, { option })
       .then((r) => r.data),
+
+  // F2-13 — manual trigger to preview the reassignment card for a
+  // teammate. orgId scopes the walk to a single org when supplied.
+  generateReassignmentSuggestion: (userId, { orgId } = {}) =>
+    apiClient
+      .post(`/users/${userId}/ai/reassignment`, null,
+        { params: orgId ? { org_id: orgId } : undefined })
+      .then((r) => r.data),
+
+  // F2-13 — bulk-accept (omit picks) or override per task. Picks is
+  // an array of { taskId, newAssigneeId } overriding the default top
+  // candidate for that task.
+  applyReassignments: (suggestionId, picks) =>
+    apiClient
+      .post(`/ai/suggestions/${suggestionId}/apply-reassignments`,
+        { picks: picks ?? null })
+      .then((r) => r.data),
 };

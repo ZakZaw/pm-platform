@@ -103,3 +103,48 @@
   display: inline-flex;
   align-self: center;
 }
+
+/* F2-13 — reassignment card body. Lives inside an AISuggestionCard,
+   so it inherits the card's chrome and ai-suggest spacing tokens. */
+.reassign-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  margin-top: var(--s-3);
+  padding: var(--s-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+
+.reassign-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(160px, 1.4fr) auto;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--divider);
+}
+.reassign-row:last-child { border-bottom: 0; }
+
+.reassign-task-key {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  letter-spacing: var(--tracking-mono);
+}
+
+.reassign-task-title {
+  color: var(--text);
+  font-size: var(--fs-md);
+}
+
+.reassign-score {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+.reassign-select {
+  width: 100%;
+}

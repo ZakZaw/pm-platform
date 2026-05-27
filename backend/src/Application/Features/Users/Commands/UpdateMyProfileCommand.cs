@@ -1,19 +1,29 @@
 using Application.Common;
+using Application.Features.AI.Notifications;
 using Application.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Features.Users.Commands;
 
+/// <summary>
+/// Profile update from /users/me. Also the entry point for F2-13's two
+/// soft triggers: setting <see cref="OutOfOfficeUntil"/> to a future
+/// timestamp, or dropping <see cref="CapacityHoursPerWeek"/> to zero —
+/// either transition publishes <see cref="MemberBecameUnavailableNotification"/>
+/// so the reassignment scorer can offer the PM a candidate list.
+/// </summary>
 public record UpdateMyProfileCommand(
     string FullName,
     string Timezone,
     string[] SkillTags,
-    int CapacityHoursPerWeek) : IRequest<Result<UserProfileDto>>;
+    int CapacityHoursPerWeek,
+    DateTime? OutOfOfficeUntil) : IRequest<Result<UserProfileDto>>;
 
 public class UpdateMyProfileCommandHandler(
     IAppDbContext db,
-    ICurrentUser currentUser)
+    ICurrentUser currentUser,
+    IPublisher mediatorPublisher)
     : IRequestHandler<UpdateMyProfileCommand, Result<UserProfileDto>>
 {
     private const int MaxSkillTags = 20;
@@ -45,16 +55,46 @@ public class UpdateMyProfileCommandHandler(
         if (user is null)
             return Result.Failure<UserProfileDto>(UserErrors.NotFound);
 
+        // Capture pre-edit state so we can detect F2-13's trip wires
+        // after persistence. Comparing afterwards keeps the math local
+        // to one transaction.
+        var wasOoo = IsOutOfOfficeAsOf(user.OutOfOfficeUntil, DateTime.UtcNow);
+        var hadCapacity = user.CapacityHoursPerWeek > 0;
+
         user.FullName = fullName;
         user.Timezone = request.Timezone;
         user.SkillTags = normalisedTags;
         user.CapacityHoursPerWeek = request.CapacityHoursPerWeek;
+        user.OutOfOfficeUntil = NormaliseOooTimestamp(request.OutOfOfficeUntil);
 
         await db.SaveChangesAsync(ct);
 
+        var isNowOoo = IsOutOfOfficeAsOf(user.OutOfOfficeUntil, DateTime.UtcNow);
+        var hasCapacityNow = user.CapacityHoursPerWeek > 0;
+
+        string? trigger = null;
+        if (!wasOoo && isNowOoo) trigger = "ooo";
+        else if (hadCapacity && !hasCapacityNow) trigger = "capacity_zero";
+
+        if (trigger is not null)
+        {
+            // Fire-and-forget: handler failures don't reverse the user
+            // edit they reacted to. The handler itself swallows
+            // per-project errors so one bad project doesn't fail the
+            // others.
+            try
+            {
+                await mediatorPublisher.Publish(
+                    new MemberBecameUnavailableNotification(
+                        userId, trigger, OrgId: null), ct);
+            }
+            catch { /* logged in handler */ }
+        }
+
         return Result.Success(new UserProfileDto(
             user.Id, user.Email, user.FullName, user.AvatarUrl,
-            user.Timezone, user.SkillTags, user.CapacityHoursPerWeek));
+            user.Timezone, user.SkillTags, user.CapacityHoursPerWeek,
+            user.OutOfOfficeUntil));
     }
 
     private static bool IsValidIanaTimezone(string? id)
@@ -71,6 +111,21 @@ public class UpdateMyProfileCommandHandler(
         catch (TimeZoneNotFoundException) { return false; }
         catch (InvalidTimeZoneException) { return false; }
     }
+
+    // OOO is only "set" when in the future. Anything in the past is the
+    // same as null — we coerce so a stale value doesn't keep marking the
+    // user unavailable forever.
+    private static DateTime? NormaliseOooTimestamp(DateTime? raw)
+    {
+        if (raw is null) return null;
+        var utc = raw.Value.Kind == DateTimeKind.Utc
+            ? raw.Value
+            : raw.Value.ToUniversalTime();
+        return utc <= DateTime.UtcNow ? null : utc;
+    }
+
+    private static bool IsOutOfOfficeAsOf(DateTime? until, DateTime now) =>
+        until is not null && until > now;
 
     // Lowercase + trim + drop empties + dedupe (case-insensitive, since we
     // lowercase first) + cap at 20 tags. Order preserved.

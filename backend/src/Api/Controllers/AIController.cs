@@ -156,6 +156,31 @@ public class AIController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    // F2-12 — manual trigger for the daily scanner. The scanner uses
+    // the same command path with the threshold gate; here we
+    // force-generate regardless of projection so a PM can preview the
+    // replan card on demand. Authorization mirrors the sprint-retro
+    // endpoints (Auth-only on the route, handler validates via the AI
+    // gate + sprint state).
+    [HttpPost("api/v1/sprints/{sprintId:guid}/ai/replan")]
+    public async Task<ActionResult<AISuggestionDto>> GenerateVelocityReplan(
+        Guid sprintId, CancellationToken ct)
+    {
+        var result = await mediator.Send(new GenerateVelocityReplanCommand(sprintId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpPost("api/v1/ai/suggestions/{id:guid}/apply-replan")]
+    public async Task<ActionResult<AISuggestionDto>> ApplyVelocityReplan(
+        Guid id, [FromBody] ApplyReplanBodyDto body, CancellationToken ct)
+    {
+        if (body?.Option is null
+            || !Enum.TryParse<VelocityReplanOption>(body.Option, ignoreCase: true, out var option))
+            return ToProblem(AIErrors.InvalidPayload);
+        var result = await mediator.Send(new ApplyVelocityReplanCommand(id, option), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     [HttpPost("api/v1/ai/suggestions/{id:guid}/dismiss")]
     public async Task<IActionResult> DismissSuggestion(Guid id, CancellationToken ct)
     {
@@ -191,6 +216,7 @@ public class AIController(ISender mediator) : ControllerBase
             "AI.ProviderFailed" => StatusCodes.Status502BadGateway,
             "AI.NotConfigured" => StatusCodes.Status503ServiceUnavailable,
             "AI.DisabledForProject" => StatusCodes.Status409Conflict,
+            "Milestone.NotFound" => StatusCodes.Status404NotFound,
             "Project.InvalidType" => StatusCodes.Status422UnprocessableEntity,
             "Task.InvalidTitle" => StatusCodes.Status422UnprocessableEntity,
             "Task.EpicNotInProject" => StatusCodes.Status422UnprocessableEntity,
@@ -220,3 +246,8 @@ public record GenerateEpicBodyDto(string? Description);
 public record ApplyEpicBodyDto(AIGeneratedEpicDto? Epic);
 public record GenerateTasksBodyDto(string? Description, Guid? EpicId, int? MaxTasks);
 public record ApplyTasksBodyDto(Guid? EpicId, IReadOnlyList<AIGeneratedTaskDto>? Tasks);
+
+// F2-12 apply-option body. Option is the string name of
+// <see cref="VelocityReplanOption"/> (CutScope|AddResource|ShiftMilestone),
+// case-insensitive.
+public record ApplyReplanBodyDto(string? Option);

@@ -100,4 +100,15 @@ public interface IAIService
     Task<AISprintRetrospective> GenerateSprintRetrospectiveAsync(
         AISprintRetroInput input,
         CancellationToken ct);
+
+    /// <summary>
+    /// F2-12 — Three concrete replan options (cut scope / add
+    /// resource / shift milestone) for an in-flight sprint whose pace
+    /// is projected to miss its commitment. The caller pre-picks
+    /// candidate ids; the model picks from them and the parser strips
+    /// any id not in the candidate list.
+    /// </summary>
+    Task<AIVelocityReplanResult> GenerateVelocityReplanAsync(
+        AIVelocityReplanInput input,
+        CancellationToken ct);
 }

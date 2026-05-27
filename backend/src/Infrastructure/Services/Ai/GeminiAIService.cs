@@ -364,6 +364,118 @@ public class GeminiAIService(IOptions<AISettings> options, ILogger<GeminiAIServi
         return new AISprintFillPlan(input.CapacityPoints, total, kept, overallReasoning);
     }
 
+    public async Task<AIVelocityReplanResult> GenerateVelocityReplanAsync(
+        AIVelocityReplanInput input, CancellationToken ct)
+    {
+        var json = await CallJsonAsync(PromptLibrary.VelocityReplan, input, ct);
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+
+        var headline = root.TryGetProperty("headline", out var h)
+            ? (h.GetString() ?? "").Trim()
+            : string.Empty;
+
+        var cuttableIds = input.CuttableTasks.Select(c => c.TaskId).ToHashSet();
+        var memberIds = input.UnderutilizedMembers.Select(m => m.UserId).ToHashSet();
+        var milestoneIds = input.DownstreamMilestones.Select(m => m.MilestoneId).ToHashSet();
+
+        AIReplanCutScopeOption? cutScope = null;
+        if (root.TryGetProperty("cutScope", out var cs)
+            && cs.ValueKind == JsonValueKind.Object)
+        {
+            var summary = cs.TryGetProperty("summary", out var s)
+                ? (s.GetString() ?? "").Trim()
+                : string.Empty;
+            var ids = ReadGuidArray(cs, "taskIds")
+                .Where(id => cuttableIds.Contains(id))
+                .ToList();
+            var pointsCut = cs.TryGetProperty("pointsCut", out var pc) && pc.TryGetInt32(out var pcv)
+                ? pcv
+                : input.CuttableTasks
+                    .Where(c => ids.Contains(c.TaskId))
+                    .Sum(c => c.Points);
+            var daysSaved = cs.TryGetProperty("daysSaved", out var ds) && ds.TryGetInt32(out var dsv)
+                ? dsv
+                : 0;
+            if (ids.Count > 0)
+            {
+                cutScope = new AIReplanCutScopeOption(summary, ids, pointsCut, daysSaved);
+            }
+        }
+
+        AIReplanAddResourceOption? addResource = null;
+        if (root.TryGetProperty("addResource", out var ar)
+            && ar.ValueKind == JsonValueKind.Object)
+        {
+            var summary = ar.TryGetProperty("summary", out var s)
+                ? (s.GetString() ?? "").Trim()
+                : string.Empty;
+            Guid? memberId = null;
+            if (ar.TryGetProperty("memberId", out var mid)
+                && mid.ValueKind == JsonValueKind.String
+                && Guid.TryParse(mid.GetString(), out var mg)
+                && memberIds.Contains(mg))
+            {
+                memberId = mg;
+            }
+            var reassign = ReadGuidArray(ar, "reassignTaskIds")
+                .Where(id => cuttableIds.Contains(id))
+                .ToList();
+            var daysSaved = ar.TryGetProperty("daysSaved", out var d) && d.TryGetInt32(out var dv)
+                ? dv
+                : 0;
+            // Only emit an addResource option when we got a real member
+            // — without one the apply path can't write.
+            if (memberId is not null)
+            {
+                addResource = new AIReplanAddResourceOption(summary, memberId, reassign, daysSaved);
+            }
+        }
+
+        AIReplanShiftMilestoneOption? shiftMilestone = null;
+        if (root.TryGetProperty("shiftMilestone", out var sm)
+            && sm.ValueKind == JsonValueKind.Object)
+        {
+            var summary = sm.TryGetProperty("summary", out var s)
+                ? (s.GetString() ?? "").Trim()
+                : string.Empty;
+            Guid? milestoneId = null;
+            if (sm.TryGetProperty("milestoneId", out var mid)
+                && mid.ValueKind == JsonValueKind.String
+                && Guid.TryParse(mid.GetString(), out var mg)
+                && milestoneIds.Contains(mg))
+            {
+                milestoneId = mg;
+            }
+            var shiftDays = sm.TryGetProperty("shiftDays", out var sd) && sd.TryGetInt32(out var sdv)
+                ? sdv
+                : 0;
+            if (milestoneId is not null && shiftDays > 0)
+            {
+                shiftMilestone = new AIReplanShiftMilestoneOption(summary, milestoneId, shiftDays);
+            }
+        }
+
+        return new AIVelocityReplanResult(headline, cutScope, addResource, shiftMilestone);
+    }
+
+    private static IEnumerable<Guid> ReadGuidArray(JsonElement parent, string key)
+    {
+        if (!parent.TryGetProperty(key, out var arr)
+            || arr.ValueKind != JsonValueKind.Array)
+        {
+            yield break;
+        }
+        foreach (var el in arr.EnumerateArray())
+        {
+            if (el.ValueKind == JsonValueKind.String
+                && Guid.TryParse(el.GetString(), out var g))
+            {
+                yield return g;
+            }
+        }
+    }
+
     public async Task<AISprintRetrospective> GenerateSprintRetrospectiveAsync(
         AISprintRetroInput input, CancellationToken ct)
     {

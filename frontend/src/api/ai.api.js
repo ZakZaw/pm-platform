@@ -81,4 +81,18 @@ export const aiApi = {
 
   acceptSuggestion: (id) =>
     apiClient.post(`/ai/suggestions/${id}/accept`).then((r) => r.data),
+
+  // F2-12 — manual trigger for the daily replan scanner. Force-generates
+  // regardless of the projection threshold so a PM can preview the card.
+  generateVelocityReplan: (sprintId) =>
+    apiClient
+      .post(`/sprints/${sprintId}/ai/replan`)
+      .then((r) => r.data),
+
+  // F2-12 — apply one of the three options. `option` is the case-insensitive
+  // string name: "CutScope" | "AddResource" | "ShiftMilestone".
+  applyVelocityReplan: (suggestionId, option) =>
+    apiClient
+      .post(`/ai/suggestions/${suggestionId}/apply-replan`, { option })
+      .then((r) => r.data),
 };

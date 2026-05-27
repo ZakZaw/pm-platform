@@ -44,6 +44,11 @@ public static class DependencyInjection
         services.Configure<AISettings>(configuration.GetSection("AI"));
         services.AddScoped<IAIService, GeminiAIService>();
 
+        // F2-12 — daily sweep over active sprints. The hosted service
+        // scopes its own DbContext per tick, so it's safe to register
+        // alongside the scoped IAIService above.
+        services.AddHostedService<VelocityReplanScannerService>();
+
         // Phase 1.5 project-type registry. One provider per ProjectType
         // value; the registry indexes them on construction and throws if
         // any are missing — so adding a new type means adding a provider

@@ -8,6 +8,14 @@ import { describeAiError } from '@/components/ai/aiErrors';
 import { findProjectType } from '@/constants/projectTypes';
 import './AIInboxPage.css';
 
+// F2-12 — short labels for the three replan options, surfaced both in
+// the option list and the success toast on apply.
+const REPLAN_OPTION_LABELS = {
+  CutScope: 'Cut scope',
+  AddResource: 'Add resource',
+  ShiftMilestone: 'Shift milestone',
+};
+
 // F1.5-08 — colour tokens per project type for inbox card chips. Reuses
 // the status-* / accent-* tone families so the chips are theme-aware.
 const TYPE_TONE = {
@@ -136,13 +144,21 @@ export function AIInboxPage() {
     }
   }
 
-  function parseOptions(payloadJson) {
-    if (!payloadJson) return [];
+  // F2-12 — apply one of the three replan options. On success, drop the
+  // card from the open list (it flips to Accepted server-side).
+  async function applyReplan(suggestion, optionKey) {
     try {
-      const obj = JSON.parse(payloadJson);
-      return Array.isArray(obj?.options) ? obj.options : [];
-    } catch {
-      return [];
+      await aiApi.applyVelocityReplan(suggestion.id, optionKey);
+      setSuggestions((cur) => cur.filter((s) => s.id !== suggestion.id));
+      toast.show({
+        tone: 'success',
+        message: `Applied ${REPLAN_OPTION_LABELS[optionKey] ?? 'replan'}.`,
+      });
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        message: describeAiError(err, 'Could not apply replan.'),
+      });
     }
   }
 
@@ -246,43 +262,159 @@ export function AIInboxPage() {
         <p className="muted">No insights match these filters.</p>
       ) : (
         <ul className="ai-inbox-list">
-          {filtered.map((s) => {
-            const opts = parseOptions(s.payloadJson);
-            const acted = s.status !== 'Open';
-            const typeMeta = findProjectType(s.projectType);
-            const TypeIcon = typeMeta?.icon;
-            return (
-              <li key={s.id} className="ai-inbox-row">
-                <AISuggestionCard
-                  chipLabel={
-                    <span className="row" style={{ gap: 4 }}>
-                      {TypeIcon && <TypeIcon size={11} aria-hidden="true" />}
-                      <span>{typeMeta?.label ?? 'AI insight'}</span>
-                    </span>
-                  }
-                  scope={
-                    <span className="row" style={{ gap: 6 }}>
-                      <Badge tone={TYPE_TONE[s.projectType] ?? 'neutral'}>
-                        {categoryForKind(s.kind)}
-                      </Badge>
-                      <span>{timeAgo(s.createdAt)}</span>
-                    </span>
-                  }
-                  title={s.title}
-                  body={s.body}
-                  options={opts}
-                  footer={`From ${s.provider}${acted ? ` · ${s.status}` : ''}`}
-                  onDismiss={acted ? undefined : () => dismiss(s)}
-                  onApply={acted ? undefined : () => accept(s)}
-                  applyLabel="Mark as accepted"
-                />
-              </li>
-            );
-          })}
+          {filtered.map((s) => (
+            <SuggestionListItem
+              key={s.id}
+              suggestion={s}
+              onDismiss={() => dismiss(s)}
+              onAccept={() => accept(s)}
+              onApplyReplan={(opt) => applyReplan(s, opt)}
+            />
+          ))}
         </ul>
       )}
     </div>
   );
+}
+
+// Single inbox row. Holds the option-selection state locally so picking
+// a replan option on card A doesn't accidentally light up card B.
+function SuggestionListItem({ suggestion, onDismiss, onAccept, onApplyReplan }) {
+  const acted = suggestion.status !== 'Open';
+  const typeMeta = findProjectType(suggestion.projectType);
+  const TypeIcon = typeMeta?.icon;
+  const isReplan = suggestion.kind === 'sprint.replan';
+  const replan = useMemo(
+    () => (isReplan ? parseReplanPayload(suggestion.payloadJson) : null),
+    [isReplan, suggestion.payloadJson],
+  );
+  const fallbackOpts = useMemo(
+    () => (isReplan ? [] : parseGenericOptions(suggestion.payloadJson)),
+    [isReplan, suggestion.payloadJson],
+  );
+
+  const [selectedIdx, setSelectedIdx] = useState(() => {
+    if (!isReplan || !replan) return undefined;
+    const recIdx = replan.options.findIndex((o) => o.recommended);
+    return recIdx >= 0 ? recIdx : (replan.options.length > 0 ? 0 : undefined);
+  });
+  const [applying, setApplying] = useState(false);
+
+  const opts = isReplan
+    ? replan?.options.map((o) => ({ label: o.label, recommended: o.recommended })) ?? []
+    : fallbackOpts;
+
+  const onApply = acted
+    ? undefined
+    : isReplan
+      ? async () => {
+          if (selectedIdx == null || !replan) return;
+          const choice = replan.options[selectedIdx];
+          if (!choice) return;
+          setApplying(true);
+          try {
+            await onApplyReplan(choice.key);
+          } finally {
+            setApplying(false);
+          }
+        }
+      : onAccept;
+
+  const applyLabel = isReplan
+    ? selectedIdx != null && replan?.options[selectedIdx]
+      ? `Apply: ${REPLAN_OPTION_LABELS[replan.options[selectedIdx].key]}`
+      : 'Apply'
+    : 'Mark as accepted';
+
+  return (
+    <li className="ai-inbox-row">
+      <AISuggestionCard
+        chipLabel={
+          <span className="row" style={{ gap: 4 }}>
+            {TypeIcon && <TypeIcon size={11} aria-hidden="true" />}
+            <span>{typeMeta?.label ?? 'AI insight'}</span>
+          </span>
+        }
+        scope={
+          <span className="row" style={{ gap: 6 }}>
+            <Badge tone={TYPE_TONE[suggestion.projectType] ?? 'neutral'}>
+              {categoryForKind(suggestion.kind)}
+            </Badge>
+            <span>{timeAgo(suggestion.createdAt)}</span>
+          </span>
+        }
+        title={suggestion.title}
+        body={suggestion.body}
+        options={opts}
+        selectedOptionIndex={isReplan ? selectedIdx : undefined}
+        onSelect={isReplan ? setSelectedIdx : undefined}
+        footer={`From ${suggestion.provider}${acted ? ` · ${suggestion.status}` : ''}`}
+        onDismiss={acted ? undefined : onDismiss}
+        onApply={onApply}
+        applyLabel={applyLabel}
+        applyDisabled={isReplan && selectedIdx == null}
+        loading={applying}
+      />
+    </li>
+  );
+}
+
+// Generic non-replan suggestions store `options` as an array of `{ label,
+// recommended }` directly in the payload — matches the sprint.health shape.
+function parseGenericOptions(payloadJson) {
+  if (!payloadJson) return [];
+  try {
+    const obj = JSON.parse(payloadJson);
+    return Array.isArray(obj?.options) ? obj.options : [];
+  } catch {
+    return [];
+  }
+}
+
+// F2-12 — flatten the cutScope / addResource / shiftMilestone tuple into
+// a single `options` list the AISuggestionCard can render. The first
+// non-null option is the default selection; "cut scope" is marked
+// recommended when it has concrete points to drop.
+function parseReplanPayload(payloadJson) {
+  if (!payloadJson) return null;
+  let obj;
+  try { obj = JSON.parse(payloadJson); }
+  catch { return null; }
+
+  const options = [];
+  if (obj?.cutScope) {
+    const tasks = Array.isArray(obj.cutScope.tasks) ? obj.cutScope.tasks : [];
+    const taskKeys = tasks.map((t) => t.key).filter(Boolean).slice(0, 3).join(', ');
+    const tail = tasks.length > 3 ? ` +${tasks.length - 3} more` : '';
+    const detail = taskKeys ? ` (${taskKeys}${tail})` : '';
+    options.push({
+      key: 'CutScope',
+      label: `Cut scope — drop ${obj.cutScope.pointsCut ?? 0}pt${detail} · ~${obj.cutScope.daysSaved ?? 0}d saved`,
+      recommended: (obj.cutScope.pointsCut ?? 0) > 0,
+      summary: obj.cutScope.summary,
+    });
+  }
+  if (obj?.addResource) {
+    const who = obj.addResource.memberName ?? 'a free teammate';
+    const tasks = Array.isArray(obj.addResource.tasks) ? obj.addResource.tasks : [];
+    const detail = tasks.length > 0 ? ` (${tasks.length} task${tasks.length === 1 ? '' : 's'})` : '';
+    options.push({
+      key: 'AddResource',
+      label: `Add resource — reassign to ${who}${detail} · ~${obj.addResource.daysSaved ?? 0}d saved`,
+      recommended: false,
+      summary: obj.addResource.summary,
+    });
+  }
+  if (obj?.shiftMilestone) {
+    const name = obj.shiftMilestone.milestoneTitle ?? 'milestone';
+    options.push({
+      key: 'ShiftMilestone',
+      label: `Shift milestone "${name}" by ${obj.shiftMilestone.shiftDays ?? 0} days`,
+      recommended: false,
+      summary: obj.shiftMilestone.summary,
+    });
+  }
+  return { projection: obj?.projection, options };
 }
 
 function timeAgo(iso) {

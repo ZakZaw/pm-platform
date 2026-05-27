@@ -139,3 +139,56 @@ public record AISprintRetrospective(
     string WhatDidnt,
     string Suggestions,
     AIRetroNextSprintDraft? NextSprintDraft);
+
+// F2-12 velocity-drop replan.
+//
+// Input candidates are picked by the scanner before the AI call:
+// CuttableTasks are the lowest-priority not-done items currently in
+// the sprint; UnderutilizedMembers come from project membership minus
+// the assignees already at >80% capacity; DownstreamMilestones are
+// pinned to epics that contain any sprint task.
+//
+// The AI's job is to pick from these — invented ids are stripped by
+// the parser so applying an option always references a real entity.
+
+public record AIReplanCuttable(Guid TaskId, string Key, string Title, int Points, string Priority);
+public record AIReplanMember(Guid UserId, string FullName, int CapacityHoursPerWeek);
+public record AIReplanMilestone(Guid MilestoneId, string Title, DateOnly Date);
+
+public record AIVelocityReplanInput(
+    string ProjectName,
+    string SprintName,
+    int DaysElapsed,
+    int DaysTotal,
+    int CommittedPoints,
+    int DonePoints,
+    int ProjectedDelivered,
+    int ProjectedShortfallPoints,
+    int ProjectedDaysBehind,
+    int RecentAverageVelocity,
+    IReadOnlyList<AIReplanCuttable> CuttableTasks,
+    IReadOnlyList<AIReplanMember> UnderutilizedMembers,
+    IReadOnlyList<AIReplanMilestone> DownstreamMilestones);
+
+public record AIReplanCutScopeOption(
+    string Summary,
+    IReadOnlyList<Guid> TaskIds,
+    int PointsCut,
+    int DaysSaved);
+
+public record AIReplanAddResourceOption(
+    string Summary,
+    Guid? MemberId,
+    IReadOnlyList<Guid> ReassignTaskIds,
+    int DaysSaved);
+
+public record AIReplanShiftMilestoneOption(
+    string Summary,
+    Guid? MilestoneId,
+    int ShiftDays);
+
+public record AIVelocityReplanResult(
+    string Headline,
+    AIReplanCutScopeOption? CutScope,
+    AIReplanAddResourceOption? AddResource,
+    AIReplanShiftMilestoneOption? ShiftMilestone);

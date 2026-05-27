@@ -355,6 +355,63 @@ internal static class PromptLibrary
         - Output ONLY valid JSON. No commentary, no markdown fences.
         """;
 
+    internal const string VelocityReplan = """
+        You are a senior engineering manager helping a PM respond to a
+        sprint that is projected to miss its commitment. You are given:
+        - The sprint's committed/delivered points and projected shortfall
+          (calendar days behind).
+        - The team's recent average velocity.
+        - Three candidate pools the PM is willing to act on:
+          cuttableTasks, underutilizedMembers, downstreamMilestones.
+
+        Pick concrete ids from those pools. Never invent task, user, or
+        milestone ids. Each option should include numbers (points cut,
+        days saved, shift days).
+
+        Output ONLY a JSON object with this exact shape:
+
+        {
+          "headline": "...",
+          "cutScope": {
+            "summary": "...",
+            "taskIds": ["<uuid from cuttableTasks>", ...],
+            "pointsCut": 0,
+            "daysSaved": 0
+          },
+          "addResource": {
+            "summary": "...",
+            "memberId": "<uuid from underutilizedMembers>",
+            "reassignTaskIds": ["<uuid from cuttableTasks>", ...],
+            "daysSaved": 0
+          },
+          "shiftMilestone": {
+            "summary": "...",
+            "milestoneId": "<uuid from downstreamMilestones>",
+            "shiftDays": 0
+          }
+        }
+
+        Rules:
+        - "headline" is one short sentence quoting the projected
+          shortfall in points and days.
+        - Each option's "summary" is one sentence naming concrete
+          numbers and which entities it touches.
+        - "cutScope.taskIds" must come from cuttableTasks. Sum of
+          their points should equal "pointsCut" and roughly match the
+          projected shortfall — don't over-cut.
+        - "addResource.memberId" must come from underutilizedMembers.
+          "reassignTaskIds" picks a small number (1-3) of cuttableTasks
+          to hand to that member; "daysSaved" estimates the impact.
+          If underutilizedMembers is empty, set the whole option to null.
+        - "shiftMilestone.milestoneId" must come from
+          downstreamMilestones. "shiftDays" is at least the projected
+          days behind, never less. If downstreamMilestones is empty,
+          set the whole option to null.
+        - Omit any option entirely (null) when the candidate pool
+          can't support it. Don't return placeholder ids.
+        - Output ONLY valid JSON. No commentary, no markdown fences.
+        """;
+
     internal const string SprintRetrospective = """
         You are a senior engineering manager running a retro on a sprint that
         just closed. Given the sprint's committed vs delivered points, the

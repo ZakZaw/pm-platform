@@ -67,13 +67,34 @@ public class ListMyChannelsQueryHandler(
             })
             .ToListAsync(ct);
 
+        // F2-18 unread counts: count top-level messages posted after
+        // the caller's LastReadAt (or all of them if they've never
+        // opened the channel). One round-trip — group by channel and
+        // hydrate a dict.
+        var channelIds = rows.Select(r => r.Id).ToList();
+        var unreadRows = await db.Messages
+            .Where(m => channelIds.Contains(m.ChannelId)
+                     && m.ParentMessageId == null
+                     && m.DeletedAt == null
+                     && m.AuthorId != userId)
+            .Select(m => new { m.ChannelId, m.CreatedAt })
+            .ToListAsync(ct);
+        var unreadByChannel = unreadRows
+            .GroupBy(m => m.ChannelId)
+            .ToDictionary(
+                g => g.Key,
+                g =>
+                {
+                    lastReadByChannel.TryGetValue(g.Key, out var lastRead);
+                    return lastRead is null
+                        ? g.Count()
+                        : g.Count(m => m.CreatedAt > lastRead.Value);
+                });
+
         var items = rows.Select(r =>
         {
             lastReadByChannel.TryGetValue(r.Id, out var lastRead);
-            // No Message entity yet — surface a 1/0 "has activity since
-            // last read" so the sidebar can show a badge. F2-18 replaces
-            // this with a real count.
-            var unread = lastRead is null || r.LastActivityAt > lastRead.Value ? 1 : 0;
+            unreadByChannel.TryGetValue(r.Id, out var unread);
             return new ChannelListItemDto(
                 r.Id, r.Name, r.Type.ToString(),
                 r.ProjectId, r.ProjectName, r.ProjectKey,

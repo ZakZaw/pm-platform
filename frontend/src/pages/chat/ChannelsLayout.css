@@ -138,10 +138,13 @@
 }
 
 .chat-pane-body {
+  /* Holds the F2-18 MessageList — positioning context for the thread
+     side panel, flex column so the scroller fills available height. */
+  position: relative;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--s-7) var(--s-6);
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .chat-pane-placeholder {

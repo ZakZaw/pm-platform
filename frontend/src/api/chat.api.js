@@ -1,6 +1,6 @@
 import { apiClient } from './client';
 
-// F2-16 — channel scaffolding. Message posting lands in F2-18.
+// F2-16 channels + F2-17 DMs + F2-18 messages.
 export const chatApi = {
   listChannels: (orgSlug, { includeArchived = false } = {}) =>
     apiClient
@@ -35,4 +35,31 @@ export const chatApi = {
 
   archive: (channelId) =>
     apiClient.post(`/channels/${channelId}/archive`).then(() => undefined),
+
+  // F2-18 messages, threads, reactions.
+  listMessages: (channelId, { before = null, limit = 50 } = {}) =>
+    apiClient
+      .get(`/channels/${channelId}/messages`, {
+        params: { before: before ?? undefined, limit },
+      })
+      .then((r) => r.data),
+
+  postMessage: (channelId, { bodyMd, parentMessageId = null }) =>
+    apiClient
+      .post(`/channels/${channelId}/messages`, { bodyMd, parentMessageId })
+      .then((r) => r.data),
+
+  editMessage: (messageId, { bodyMd }) =>
+    apiClient.patch(`/messages/${messageId}`, { bodyMd }).then((r) => r.data),
+
+  deleteMessage: (messageId) =>
+    apiClient.delete(`/messages/${messageId}`).then(() => undefined),
+
+  toggleReaction: (messageId, { emoji }) =>
+    apiClient
+      .post(`/messages/${messageId}/reactions`, { emoji })
+      .then((r) => r.data),
+
+  getThread: (parentMessageId) =>
+    apiClient.get(`/messages/${parentMessageId}/thread`).then((r) => r.data),
 };

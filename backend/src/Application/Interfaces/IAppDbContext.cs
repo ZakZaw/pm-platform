@@ -80,9 +80,13 @@ public interface IAppDbContext
     DbSet<WorkflowRun> WorkflowRuns { get; }
     DbSet<ChecklistItem> ChecklistItems { get; }
 
-    // F2-16 channels (no message entity yet — that lands in F2-18).
+    // F2-16 channels.
     DbSet<Channel> Channels { get; }
     DbSet<ChannelMember> ChannelMembers { get; }
+
+    // F2-18 messages + reactions.
+    DbSet<Message> Messages { get; }
+    DbSet<MessageReaction> MessageReactions { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

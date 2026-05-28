@@ -64,6 +64,16 @@ public class TasksController(ISender mediator, IOptions<FrontendSettings> fronte
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    // F2-18 — resolve a display key like "AT-247" inside an org.
+    // Powers the [[task:KEY]] embed in chat messages.
+    [HttpGet("api/v1/orgs/{slug}/tasks/by-key/{key}")]
+    public async Task<ActionResult<TaskDto>> GetByKey(
+        string slug, string key, CancellationToken ct)
+    {
+        var result = await mediator.Send(new GetTaskByKeyQuery(slug, key), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     [HttpPatch("api/v1/tasks/{id:guid}")]
     public async Task<ActionResult<TaskDto>> Update(
         Guid id,

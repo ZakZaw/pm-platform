@@ -1,24 +1,34 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useOutletContext, useParams } from 'react-router-dom';
-import { Archive, Hash, Link2, MessageSquare, Sparkles } from 'lucide-react';
+import { Archive, AtSign, Hash, Link2 } from 'lucide-react';
 import { Avatar, Badge, Button, useToast } from '@/components/ui';
 import { chatApi } from '@/api/chat.api';
+import { MessageList } from '@/components/chat/MessageList';
 
 const TYPE_TONES = {
   OrgWide: 'info',
   Project: 'purple',
   Team: 'success',
   Topic: 'neutral',
+  Dm: 'info',
+};
+
+const TYPE_ICONS = {
+  OrgWide: Hash,
+  Project: Hash,
+  Team: Hash,
+  Topic: Hash,
+  Dm: AtSign,
 };
 
 /**
- * F2-16 channel detail. Shows the channel header (name + type + linked
- * epic badge when present), a member list, and a placeholder for the
- * message thread which lands in F2-18. Marks the channel as read when
- * the component mounts.
+ * Channel detail surface. Header + live message thread (F2-18) + member
+ * panel. Marks the channel as read on mount; subsequent posts bubble
+ * a fresh sidebar refresh through the outlet so the parent layout
+ * re-reads its unread badges.
  */
 export function ChannelPage() {
-  const { channelId } = useParams();
+  const { slug: orgSlug, channelId } = useParams();
   const ctx = useOutletContext() ?? {};
   const toast = useToast();
 
@@ -101,11 +111,13 @@ export function ChannelPage() {
     );
   }
 
+  const HeaderIcon = TYPE_ICONS[channel.type] ?? Hash;
+
   return (
     <div className="chat-pane">
       <header className="chat-pane-head">
         <div className="row gap-3" style={{ alignItems: 'center' }}>
-          <Hash size={16} aria-hidden="true" color="var(--text-muted)" />
+          <HeaderIcon size={16} aria-hidden="true" color="var(--text-muted)" />
           <h1 className="chat-pane-title">{channel.name}</h1>
           <Badge tone={TYPE_TONES[channel.type] ?? 'neutral'}>{channel.type}</Badge>
           {channel.epicId && channel.epicTitle && (
@@ -128,17 +140,16 @@ export function ChannelPage() {
       </header>
 
       <div className="chat-pane-body">
-        <div className="chat-pane-placeholder">
-          <Sparkles size={18} aria-hidden="true" color="var(--ai-2)" />
-          <p className="chat-placeholder-title">Messages land in the F2-18 milestone</p>
-          <p className="chat-placeholder-sub">
-            Channels and membership are live now. Once the message entity ships,
-            this pane will fill with the thread.
-          </p>
-          <p className="chat-placeholder-sub muted" style={{ marginTop: 'var(--s-3)' }}>
-            <MessageSquare size={11} aria-hidden="true" /> Last activity {timeAgo(channel.lastActivityAt)}
-          </p>
-        </div>
+        <MessageList
+          channelId={channel.id}
+          channelArchived={!!channel.archivedAt}
+          orgSlug={orgSlug}
+          onActivity={() => {
+            // Posting / receiving a message changes the sidebar unread
+            // badge — refresh the channel list (debounced upstream).
+            refreshSidebar?.();
+          }}
+        />
       </div>
 
       <aside className="chat-pane-members" aria-label="Channel members">
@@ -162,16 +173,4 @@ export function ChannelPage() {
       </aside>
     </div>
   );
-}
-
-function timeAgo(iso) {
-  if (!iso) return '';
-  const diff = Date.now() - new Date(iso).getTime();
-  const m = Math.floor(diff / 60_000);
-  if (m < 1) return 'just now';
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  const d = Math.floor(h / 24);
-  return `${d}d ago`;
 }

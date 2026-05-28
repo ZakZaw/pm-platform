@@ -732,3 +732,30 @@ public static class ChannelErrors
         new("Channel.DmTooManyMembers",
             "Direct messages can have at most 8 members.");
 }
+
+/// <summary>F2-18 chat messages, threads, reactions.</summary>
+public static class MessageErrors
+{
+    public static readonly Error NotFound =
+        new("Message.NotFound", "Message not found.");
+
+    public static readonly Error EmptyBody =
+        new("Message.EmptyBody", "Message cannot be empty.");
+
+    public static readonly Error TooLong =
+        new("Message.TooLong", "Message cannot exceed 10,000 characters.");
+
+    public static readonly Error NotAuthor =
+        new("Message.NotAuthor", "Only the author can edit or delete a message.");
+
+    public static readonly Error AlreadyDeleted =
+        new("Message.AlreadyDeleted", "This message has already been deleted.");
+
+    public static readonly Error CannotThreadReply =
+        new("Message.CannotThreadReply",
+            "Replies can only attach to a top-level message.");
+
+    public static readonly Error InvalidEmoji =
+        new("Message.InvalidEmoji",
+            "Reaction must be an emoji shortcode like \":+1:\".");
+}

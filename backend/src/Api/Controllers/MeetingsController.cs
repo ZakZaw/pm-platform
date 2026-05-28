@@ -3,6 +3,7 @@ using Application.Features.AI;
 using Application.Features.Meetings;
 using Application.Features.Meetings.Commands;
 using Application.Features.Meetings.Queries;
+using Application.Features.Meetings.Transcripts;
 using Application.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -149,6 +150,40 @@ public class MeetingsController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    // F2-21 transcript — POST appends a finalised segment, GET returns
+    // the accumulated history, /download renders .txt or .vtt.
+    [HttpPost("api/v1/meetings/{id:guid}/transcript/segments")]
+    public async Task<ActionResult<TranscriptSegmentDto>> PostTranscriptSegment(
+        Guid id, [FromBody] PostTranscriptSegmentBodyDto body, CancellationToken ct)
+    {
+        var result = await mediator.Send(new PostTranscriptSegmentCommand(
+            id,
+            body.Text ?? string.Empty,
+            body.StartedAt ?? DateTime.UtcNow,
+            body.EndedAt ?? DateTime.UtcNow), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpGet("api/v1/meetings/{id:guid}/transcript")]
+    public async Task<ActionResult<MeetingTranscriptDto>> GetTranscript(Guid id, CancellationToken ct)
+    {
+        var result = await mediator.Send(new GetMeetingTranscriptQuery(id), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpGet("api/v1/meetings/{id:guid}/transcript/download")]
+    public async Task<IActionResult> DownloadTranscript(
+        Guid id,
+        [FromQuery] string format = "txt",
+        CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new RenderTranscriptQuery(id, format), ct);
+        if (!result.IsSuccess) return ToProblem(result.Error!);
+        var rendered = result.Value!;
+        return File(System.Text.Encoding.UTF8.GetBytes(rendered.Body),
+            rendered.MimeType, rendered.FileName);
+    }
+
     private ObjectResult ToProblem(Error error)
     {
         var status = error.Code switch
@@ -173,6 +208,10 @@ public class MeetingsController(ISender mediator) : ControllerBase
             "AI.NotConfigured" => StatusCodes.Status503ServiceUnavailable,
             "AI.ProviderFailed" => StatusCodes.Status502BadGateway,
             "Video.NotConfigured" => StatusCodes.Status503ServiceUnavailable,
+            "Transcript.EmptyText" => StatusCodes.Status422UnprocessableEntity,
+            "Transcript.TooLong" => StatusCodes.Status422UnprocessableEntity,
+            "Transcript.InvalidFormat" => StatusCodes.Status422UnprocessableEntity,
+            "Transcript.AlreadyFinalised" => StatusCodes.Status409Conflict,
             _ => StatusCodes.Status400BadRequest,
         };
         return Problem(title: error.Code, detail: error.Message, statusCode: status);
@@ -217,3 +256,5 @@ public record PreviewAgendaBodyDto(
 
 public record CreateGuestLinkBodyDto(string? GuestLabel, int? HoursValid);
 public record GuestJoinBodyDto(string? DisplayName);
+public record PostTranscriptSegmentBodyDto(
+    string? Text, DateTime? StartedAt, DateTime? EndedAt);

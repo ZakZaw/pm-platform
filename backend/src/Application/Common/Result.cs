@@ -833,3 +833,22 @@ public static class VideoErrors
         new("Video.InvalidWebhookSignature",
             "Rejected webhook — signature failed to verify.");
 }
+
+/// <summary>F2-21 live transcript.</summary>
+public static class TranscriptErrors
+{
+    public static readonly Error EmptyText =
+        new("Transcript.EmptyText", "Segment text cannot be empty.");
+
+    public static readonly Error TooLong =
+        new("Transcript.TooLong",
+            "Segment text cannot exceed 2,000 characters.");
+
+    public static readonly Error InvalidFormat =
+        new("Transcript.InvalidFormat",
+            "Download format must be 'txt' or 'vtt'.");
+
+    public static readonly Error AlreadyFinalised =
+        new("Transcript.AlreadyFinalised",
+            "Transcript is locked — the meeting has ended.");
+}

@@ -47,6 +47,16 @@ public static class ChannelEvents
 }
 
 /// <summary>
+/// F2-21 per-meeting push event names. Delivered via the
+/// meeting:{guid} SignalR group — clients call JoinMeeting after they
+/// enter the room so transcript chunks fan out to that room only.
+/// </summary>
+public static class MeetingEvents
+{
+    public const string TranscriptSegment = "meeting.transcript_segment";
+}
+
+/// <summary>
 /// Per-user push event names (delivered via SignalR Clients.User, not the
 /// project group).
 /// </summary>

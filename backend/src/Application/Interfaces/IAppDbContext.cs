@@ -95,5 +95,8 @@ public interface IAppDbContext
     // F2-20 guest links for video joins.
     DbSet<MeetingGuestLink> MeetingGuestLinks { get; }
 
+    // F2-21 live speaker-labelled transcript.
+    DbSet<MeetingTranscript> MeetingTranscripts { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -101,6 +101,9 @@ public class AppDbContext : DbContext, IAppDbContext
     // F2-20 guest links for video joins.
     public DbSet<MeetingGuestLink> MeetingGuestLinks => Set<MeetingGuestLink>();
 
+    // F2-21 live speaker-labelled transcript.
+    public DbSet<MeetingTranscript> MeetingTranscripts => Set<MeetingTranscript>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Team / TeamMembership stay ignored until the team-management

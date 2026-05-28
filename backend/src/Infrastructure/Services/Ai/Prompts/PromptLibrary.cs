@@ -450,4 +450,36 @@ internal static class PromptLibrary
           name and goal.
         - Output ONLY valid JSON. No commentary, no markdown fences.
         """;
+
+    internal const string MeetingAgenda = """
+        You are a senior project manager drafting an agenda for an upcoming
+        meeting. Given the meeting type, title, duration, project name, the
+        active sprint name (if any), recent blocker titles, attendee names,
+        and any organiser notes, output a JSON object with this exact shape:
+
+        {
+          "items": [
+            { "title": "...", "estimatedMinutes": 5 }
+          ]
+        }
+
+        Rules:
+        - Produce between 3 and 7 items. Each item's title is a concrete,
+          actionable phrase (verb-led, no jargon).
+        - The sum of estimatedMinutes must equal the meeting's duration
+          minutes. If the duration is short (<= 15 min), keep items terse;
+          if long (>= 60 min), bias toward fewer, longer items rather
+          than padding the list.
+        - Tailor to the meeting type:
+            * Standup: blockers, yesterday/today/help-needed cadence.
+            * Planning: pull from backlog, capacity check, sprint goal.
+            * Review: demo of completed work, stakeholder feedback.
+            * Retrospective: what went well, what didn't, action items.
+            * OneOnOne: career, blockers, feedback both directions.
+            * Other: infer from the title.
+        - If recentBlockerTitles is non-empty, work them in to one item.
+        - If organiserNotes is non-empty, treat it as guidance and let it
+          shape the items — don't ignore it, but don't echo it verbatim.
+        - Output ONLY valid JSON. No commentary, no markdown fences.
+        """;
 }

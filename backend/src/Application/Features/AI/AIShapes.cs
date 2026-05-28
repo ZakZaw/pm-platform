@@ -192,3 +192,25 @@ public record AIVelocityReplanResult(
     AIReplanCutScopeOption? CutScope,
     AIReplanAddResourceOption? AddResource,
     AIReplanShiftMilestoneOption? ShiftMilestone);
+
+// F2-19 meeting agenda draft. Inputs are the context the model needs
+// to fit the meeting to the project: type ("Retrospective" vs
+// "Standup" produces very different bullets), active sprint name,
+// blockers worth surfacing, and any pre-existing agenda the organiser
+// has already typed (so a regenerate is a refinement, not a wipe).
+
+public record AIMeetingAgendaInput(
+    string MeetingType,
+    string MeetingTitle,
+    int DurationMinutes,
+    string ProjectName,
+    string? ActiveSprintName,
+    IReadOnlyList<string> RecentBlockerTitles,
+    IReadOnlyList<string> AttendeeFullNames,
+    string? OrganiserNotes);
+
+public record AIMeetingAgendaItem(string Title, int EstimatedMinutes);
+
+public record AIMeetingAgenda(
+    IReadOnlyList<AIMeetingAgendaItem> Items,
+    string Body);

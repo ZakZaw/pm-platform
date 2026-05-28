@@ -759,3 +759,52 @@ public static class MessageErrors
         new("Message.InvalidEmoji",
             "Reaction must be an emoji shortcode like \":+1:\".");
 }
+
+/// <summary>F2-19 scheduled meetings.</summary>
+public static class MeetingErrors
+{
+    public static readonly Error NotFound =
+        new("Meeting.NotFound", "Meeting not found.");
+
+    public static readonly Error InvalidTitle =
+        new("Meeting.InvalidTitle", "Title must be 2-200 characters.");
+
+    public static readonly Error InvalidType =
+        new("Meeting.InvalidType",
+            "Type must be Standup, Planning, Review, Retrospective, OneOnOne, or Other.");
+
+    public static readonly Error InvalidDuration =
+        new("Meeting.InvalidDuration",
+            "Duration must be between 5 and 480 minutes.");
+
+    public static readonly Error InvalidScheduledAt =
+        new("Meeting.InvalidScheduledAt",
+            "Scheduled time must be in the future.");
+
+    public static readonly Error InvalidRecurrence =
+        new("Meeting.InvalidRecurrence",
+            "Recurrence rule must follow the RFC 5545 RRULE syntax (FREQ=DAILY|WEEKLY|MONTHLY...).");
+
+    public static readonly Error AttendeesRequired =
+        new("Meeting.AttendeesRequired",
+            "A meeting must have at least one attendee besides the organiser.");
+
+    public static readonly Error AttendeeNotInProject =
+        new("Meeting.AttendeeNotInProject",
+            "Every attendee must be a member of the project.");
+
+    public static readonly Error NotOrganiser =
+        new("Meeting.NotOrganiser",
+            "Only the meeting organiser can change the meeting.");
+
+    public static readonly Error AlreadyStarted =
+        new("Meeting.AlreadyStarted",
+            "Agenda edits are locked once the meeting starts.");
+
+    public static readonly Error NotAttendee =
+        new("Meeting.NotAttendee", "You are not on the invite list for this meeting.");
+
+    public static readonly Error AlreadyCancelled =
+        new("Meeting.AlreadyCancelled",
+            "This meeting has already been cancelled.");
+}

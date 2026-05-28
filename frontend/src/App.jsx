@@ -42,6 +42,9 @@ import { OrgPortfolioPage } from '@/pages/dashboard/OrgPortfolioPage';
 import { RoadmapPublicPage } from '@/pages/share/RoadmapPublicPage';
 import { ChannelsLayout } from '@/pages/chat/ChannelsLayout';
 import { ChannelPage } from '@/pages/chat/ChannelPage';
+import { MeetingsPage } from '@/pages/meetings/MeetingsPage';
+import { CreateMeetingPage } from '@/pages/meetings/CreateMeetingPage';
+import { MeetingDetailPage } from '@/pages/meetings/MeetingDetailPage';
 import { AppShell } from '@/components/layout/AppShell';
 import { ToastProvider } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
@@ -209,6 +212,18 @@ function App() {
             <Route
               path="/:slug/projects/:projectSlug/settings/ai"
               element={<Keyed paramKey="projectSlug"><AISettingsPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/meetings"
+              element={<Keyed paramKey="projectSlug"><MeetingsPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/meetings/new"
+              element={<Keyed paramKey="projectSlug"><CreateMeetingPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/meetings/:meetingId"
+              element={<Keyed paramKey="meetingId"><MeetingDetailPage /></Keyed>}
             />
             <Route path="/settings/profile" element={<ProfilePage />} />
             <Route

@@ -32,6 +32,9 @@ public static class DependencyInjection
         services.Configure<FrontendSettings>(configuration.GetSection("Frontend"));
         services.AddScoped<IEmailService, ConsoleEmailService>();
 
+        // F2-19 — .ics writer is pure / state-free; singleton.
+        services.AddSingleton<Application.Features.Meetings.IcsCalendarWriter>();
+
         services.AddSingleton<IProjectEventBus, SignalRProjectEventBus>();
         services.AddScoped<IActivityRecorder, EfActivityRecorder>();
         services.AddScoped<INotificationService, EfNotificationService>();

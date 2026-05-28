@@ -36,4 +36,22 @@ public class ConsoleEmailService(
 
         return Task.CompletedTask;
     }
+
+    public Task SendMeetingInviteAsync(
+        IReadOnlyList<string> toEmails,
+        string organiserFullName,
+        string organiserEmail,
+        string subject,
+        string bodyMd,
+        string icsBody,
+        CancellationToken ct = default)
+    {
+        // Dev stub. The console log carries enough that a developer can
+        // copy the .ics into a file and double-click it to verify
+        // calendar-client compatibility without needing a real SMTP path.
+        logger.LogInformation(
+            "[meeting-invite] to={To} organiser=\"{Organiser}\" subject=\"{Subject}\"\n{Ics}",
+            string.Join(",", toEmails), organiserFullName, subject, icsBody);
+        return Task.CompletedTask;
+    }
 }

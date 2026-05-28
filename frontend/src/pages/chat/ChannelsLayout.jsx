@@ -2,15 +2,20 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, Outlet, useNavigate, useParams } from 'react-router-dom';
 import {
   Archive,
+  AtSign,
   Bookmark,
   Building2,
   FolderKanban,
   Hash,
+  MessageSquarePlus,
   Plus,
   Users,
+  X,
 } from 'lucide-react';
-import { Button, Input, Modal, ModalBody, ModalFooter, ModalHeader, useToast } from '@/components/ui';
+import { Avatar, Button, Input, Modal, ModalBody, ModalFooter, ModalHeader, useToast } from '@/components/ui';
 import { chatApi } from '@/api/chat.api';
+import { orgsApi } from '@/api/orgs.api';
+import { useAuthStore } from '@/store/authStore';
 import './ChannelsLayout.css';
 
 const TYPE_ICONS = {
@@ -18,15 +23,17 @@ const TYPE_ICONS = {
   Project: FolderKanban,
   Team: Users,
   Topic: Hash,
+  Dm: AtSign,
 };
 
-const TYPE_ORDER = ['OrgWide', 'Project', 'Team', 'Topic'];
+const TYPE_ORDER = ['OrgWide', 'Project', 'Team', 'Topic', 'Dm'];
 
 const TYPE_LABELS = {
   OrgWide: 'Organisation',
   Project: 'Projects',
   Team: 'Teams',
   Topic: 'Topics',
+  Dm: 'Direct messages',
 };
 
 /**
@@ -45,6 +52,7 @@ export function ChannelsLayout() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [dmOpen, setDmOpen] = useState(false);
 
   // Child pages (ChannelPage) call this through outlet context to
   // refresh the sidebar after a mark-read / archive / leave action.
@@ -102,20 +110,37 @@ export function ChannelsLayout() {
     toast.show({ tone: 'success', message: `Created #${newChannel.name}.` });
   }
 
+  async function handleDmCreated(newDm) {
+    setDmOpen(false);
+    await refresh();
+    navigate(`/${orgSlug}/chat/${newDm.id}`);
+  }
+
   return (
     <div className="chat-layout">
       <aside className="chat-sidebar" aria-label="Channels">
         <header className="chat-sidebar-head">
           <div className="chat-sidebar-title">Channels</div>
-          <button
-            type="button"
-            className="btn btn-ghost btn-icon-sm"
-            onClick={() => setCreateOpen(true)}
-            title="New topic channel"
-            aria-label="New topic channel"
-          >
-            <Plus size={13} aria-hidden="true" />
-          </button>
+          <div className="row gap-2">
+            <button
+              type="button"
+              className="btn btn-ghost btn-icon-sm"
+              onClick={() => setDmOpen(true)}
+              title="New direct message"
+              aria-label="New direct message"
+            >
+              <MessageSquarePlus size={13} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost btn-icon-sm"
+              onClick={() => setCreateOpen(true)}
+              title="New topic channel"
+              aria-label="New topic channel"
+            >
+              <Plus size={13} aria-hidden="true" />
+            </button>
+          </div>
         </header>
 
         {loading && <p className="muted chat-sidebar-empty">Loading…</p>}
@@ -173,6 +198,13 @@ export function ChannelsLayout() {
         orgSlug={orgSlug}
         onClose={() => setCreateOpen(false)}
         onCreated={handleCreated}
+      />
+
+      <NewDmModal
+        open={dmOpen}
+        orgSlug={orgSlug}
+        onClose={() => setDmOpen(false)}
+        onCreated={handleDmCreated}
       />
     </div>
   );
@@ -241,3 +273,171 @@ function CreateTopicModal({ open, orgSlug, onClose, onCreated }) {
   );
 }
 
+
+// F2-17 — picker for direct-message conversation. Multi-select up to
+// seven others (the caller fills the 8th slot). 1:1 DM dedup happens
+// server-side: if a DM with the same member set already exists, the
+// command returns it instead of creating a duplicate.
+const MAX_OTHER_MEMBERS = 7;
+
+function NewDmModal({ open, orgSlug, onClose, onCreated }) {
+  const toast = useToast();
+  const me = useAuthStore((s) => s.user);
+  const [search, setSearch] = useState('');
+  const [results, setResults] = useState([]);
+  const [picked, setPicked] = useState([]); // [{ userId, fullName, email, avatarUrl }]
+  const [busy, setBusy] = useState(false);
+  const [searching, setSearching] = useState(false);
+
+  function closeAndReset() {
+    setSearch('');
+    setResults([]);
+    setPicked([]);
+    onClose?.();
+  }
+
+  // Debounced search against /orgs/{slug}/members. Min 1 char so the
+  // typeahead doesn't yank everyone in big orgs. We drive results
+  // exclusively from the async response so the linter is happy about
+  // setState-in-effect rules.
+  useEffect(() => {
+    if (!open) return undefined;
+    const trimmed = search.trim();
+    let cancelled = false;
+    const handle = setTimeout(async () => {
+      if (trimmed.length === 0) {
+        if (!cancelled) setResults([]);
+        return;
+      }
+      setSearching(true);
+      try {
+        const page = await orgsApi.listMembers(orgSlug, { search: trimmed, pageSize: 10 });
+        if (cancelled) return;
+        const pickedIds = new Set(picked.map((p) => p.userId));
+        const filtered = (page.items ?? page).filter((m) =>
+          m.userId !== me?.id && !pickedIds.has(m.userId));
+        setResults(filtered);
+      } catch {
+        if (!cancelled) setResults([]);
+      } finally {
+        if (!cancelled) setSearching(false);
+      }
+    }, 180);
+    return () => { cancelled = true; clearTimeout(handle); };
+  }, [open, orgSlug, search, picked, me?.id]);
+
+  function pick(member) {
+    if (picked.length >= MAX_OTHER_MEMBERS) return;
+    setPicked((cur) => [...cur, member]);
+    setSearch('');
+    setResults([]);
+  }
+
+  function unpick(userId) {
+    setPicked((cur) => cur.filter((p) => p.userId !== userId));
+  }
+
+  async function submit(e) {
+    e.preventDefault();
+    if (picked.length === 0) return;
+    setBusy(true);
+    try {
+      const dm = await chatApi.createDm(orgSlug, {
+        memberIds: picked.map((p) => p.userId),
+      });
+      const wasReused = new Date(dm.createdAt).getTime() < Date.now() - 5_000;
+      toast.show({
+        tone: 'success',
+        message: wasReused ? 'Opened existing DM.' : 'DM created.',
+      });
+      // Reset before bubbling up so the parent's navigate happens with
+      // a clean modal state ready for the next open.
+      setSearch('');
+      setResults([]);
+      setPicked([]);
+      onCreated?.(dm);
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        message: err.response?.data?.detail ?? 'Could not start DM.',
+      });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Modal open={open} onClose={closeAndReset} labelledBy="chat-dm-title" size="md">
+      <ModalHeader>
+        <AtSign size={14} aria-hidden="true" />
+        <h2 id="chat-dm-title" className="modal-title">New direct message</h2>
+      </ModalHeader>
+      <form onSubmit={submit}>
+        <ModalBody>
+          {picked.length > 0 && (
+            <div className="dm-chip-row">
+              {picked.map((p) => (
+                <span key={p.userId} className="dm-chip">
+                  <Avatar src={p.avatarUrl} name={p.fullName || p.email} size="xs" />
+                  <span className="truncate">{p.fullName || p.email}</span>
+                  <button
+                    type="button"
+                    className="dm-chip-x"
+                    onClick={() => unpick(p.userId)}
+                    aria-label={`Remove ${p.fullName}`}
+                  >
+                    <X size={11} aria-hidden="true" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          <Input
+            label="Add member"
+            data-autofocus
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={picked.length >= MAX_OTHER_MEMBERS
+              ? `Maximum ${MAX_OTHER_MEMBERS} other members reached`
+              : 'Search by name or email'}
+            disabled={picked.length >= MAX_OTHER_MEMBERS}
+          />
+          {results.length > 0 && (
+            <ul className="dm-result-list">
+              {results.map((m) => (
+                <li key={m.userId}>
+                  <button
+                    type="button"
+                    className="dm-result-row"
+                    onClick={() => pick(m)}
+                  >
+                    <Avatar src={m.avatarUrl} name={m.fullName || m.email} size="sm" />
+                    <div className="col" style={{ gap: 1, minWidth: 0, flex: 1 }}>
+                      <div className="dm-result-name truncate">{m.fullName}</div>
+                      <div className="dm-result-mail truncate">{m.email}</div>
+                    </div>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {!searching && search.trim().length > 0 && results.length === 0 && (
+            <p className="muted" style={{ fontSize: 'var(--fs-xs)', marginTop: 'var(--s-3)' }}>
+              No matching members.
+            </p>
+          )}
+          <p className="muted" style={{ fontSize: 'var(--fs-xs)', marginTop: 'var(--s-3)' }}>
+            Direct messages can include up to 8 people. Picking the same set
+            twice opens the existing conversation.
+          </p>
+        </ModalBody>
+        <ModalFooter>
+          <Button type="button" variant="ghost" onClick={closeAndReset} disabled={busy}>Cancel</Button>
+          <Button type="submit" variant="ai" disabled={busy || picked.length === 0}>
+            {busy ? 'Opening…' : picked.length > 1 ? 'Open group DM' : 'Open DM'}
+          </Button>
+        </ModalFooter>
+      </form>
+    </Modal>
+  );
+}

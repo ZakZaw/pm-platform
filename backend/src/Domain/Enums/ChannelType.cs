@@ -13,6 +13,10 @@ namespace Domain.Enums;
 ///     when a team is created (Team commands land later).</item>
 ///   <item><b>Topic</b> — ad-hoc, optionally linked to an Epic. Picked
 ///     up by the inactivity sweep after 30 days of silence.</item>
+///   <item><b>Dm</b> — direct message, 1:1 or up to 8 members. Members
+///     define the channel — a 1:1 with the same pair is deduped on
+///     create. No project / team / epic scoping; org-scoped only. Not
+///     touched by the inactivity sweep.</item>
 /// </list>
 /// </summary>
 public enum ChannelType
@@ -21,4 +25,5 @@ public enum ChannelType
     Project = 1,
     Team = 2,
     Topic = 3,
+    Dm = 4,
 }

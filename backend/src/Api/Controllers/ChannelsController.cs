@@ -39,6 +39,18 @@ public class ChannelsController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    // F2-17 — create (or look up) a DM. 1:1 dedup happens in the
+    // command: posting the same member set twice returns the existing
+    // channel.
+    [HttpPost("api/v1/orgs/{slug}/dms")]
+    public async Task<ActionResult<ChannelDetailDto>> CreateDm(
+        string slug, [FromBody] CreateDmChannelBodyDto body, CancellationToken ct)
+    {
+        var result = await mediator.Send(new CreateDmChannelCommand(
+            slug, body.MemberIds ?? []), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     [HttpPost("api/v1/channels/{id:guid}/members")]
     public async Task<ActionResult<ChannelMemberDto>> AddMember(
         Guid id, [FromBody] AddChannelMemberBodyDto body, CancellationToken ct)
@@ -84,6 +96,8 @@ public class ChannelsController(ISender mediator) : ControllerBase
             "Channel.InvalidScope" => StatusCodes.Status422UnprocessableEntity,
             "Channel.InvalidName" => StatusCodes.Status422UnprocessableEntity,
             "Channel.EpicNotInOrg" => StatusCodes.Status422UnprocessableEntity,
+            "Channel.DmMembersRequired" => StatusCodes.Status422UnprocessableEntity,
+            "Channel.DmTooManyMembers" => StatusCodes.Status422UnprocessableEntity,
             _ => StatusCodes.Status400BadRequest,
         };
         return Problem(title: error.Code, detail: error.Message, statusCode: status);
@@ -96,3 +110,5 @@ public record CreateTopicChannelBodyDto(
     IReadOnlyList<Guid>? MemberIds);
 
 public record AddChannelMemberBodyDto(Guid UserId);
+
+public record CreateDmChannelBodyDto(IReadOnlyList<Guid>? MemberIds);

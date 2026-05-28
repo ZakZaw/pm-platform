@@ -722,4 +722,13 @@ public static class ChannelErrors
     public static readonly Error EpicNotInOrg =
         new("Channel.EpicNotInOrg",
             "The linked epic does not belong to a project in this organisation.");
+
+    // F2-17 DMs.
+    public static readonly Error DmMembersRequired =
+        new("Channel.DmMembersRequired",
+            "Pick at least one other member for the direct message.");
+
+    public static readonly Error DmTooManyMembers =
+        new("Channel.DmTooManyMembers",
+            "Direct messages can have at most 8 members.");
 }

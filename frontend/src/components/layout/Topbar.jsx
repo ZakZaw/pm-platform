@@ -33,6 +33,8 @@ const SECTION_LABEL = {
   members: 'Members',
   workflow: 'Workflow',
   fields: 'Fields',
+  ai: 'AI',
+  integrations: 'Integrations',
   new: 'New project',
   home: 'Home',
   dashboard: 'My work',

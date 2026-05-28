@@ -25,6 +25,11 @@ public class TaskConfiguration : IEntityTypeConfiguration<TaskEntity>
             .HasDefaultValueSql("ARRAY[]::text[]");
         builder.Property(t => t.TimeLoggedMinutes).IsRequired();
         builder.Property(t => t.PrUrl).HasMaxLength(512);
+        // F2-23 — GitHub PR / CI metadata for the linked pull request.
+        builder.Property(t => t.PrNumber);
+        builder.Property(t => t.PrState).HasConversion<string>().HasMaxLength(20);
+        builder.Property(t => t.CiStatus).HasConversion<string>().HasMaxLength(20);
+        builder.Property(t => t.CiUrl).HasMaxLength(1000);
         builder.Property(t => t.CreatedByAi).IsRequired();
         // F2-22 — source meeting for tasks accepted from action-item drafts.
         builder.Property(t => t.SourceMeetingId);

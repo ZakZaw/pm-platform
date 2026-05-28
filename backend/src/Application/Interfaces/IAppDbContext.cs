@@ -101,5 +101,8 @@ public interface IAppDbContext
     // F2-22 post-meeting action-item drafts.
     DbSet<MeetingActionItem> MeetingActionItems { get; }
 
+    // F2-23 source-control integrations (GitHub).
+    DbSet<Integration> Integrations { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

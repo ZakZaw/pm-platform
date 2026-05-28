@@ -3,10 +3,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   Calendar,
   Check,
+  CheckCircle2,
   Clock,
   Copy,
   Link as LinkIcon,
   Repeat,
+  Sparkles,
   Trash2,
   Users,
   Video,
@@ -186,6 +188,25 @@ export function MeetingDetailPage() {
                 }
               >
                 <Video size={12} aria-hidden="true" /> Join meeting
+              </Button>
+            )}
+            {isOrganiser && meeting.status === 'Scheduled' && (
+              <FinaliseButton
+                meetingId={meeting.id}
+                onFinalised={async () => {
+                  await refresh();
+                  navigate(`/${orgSlug}/projects/${projectSlug}/meetings/${meeting.id}/summary`);
+                }}
+              />
+            )}
+            {meeting.status === 'Completed' && (
+              <Button
+                variant="primary"
+                onClick={() =>
+                  navigate(`/${orgSlug}/projects/${projectSlug}/meetings/${meeting.id}/summary`)
+                }
+              >
+                <Sparkles size={12} aria-hidden="true" /> View summary
               </Button>
             )}
             {isOrganiser && meeting.status === 'Scheduled' && (
@@ -541,5 +562,40 @@ function GuestLinksCard({ meetingId, toast }) {
         </ul>
       )}
     </section>
+  );
+}
+
+/**
+ * F2-22 — organiser action to mark a meeting Completed and run the
+ * post-meeting AI pass. Decoupled so the toast / busy state stays
+ * out of the detail page's main render path.
+ */
+function FinaliseButton({ meetingId, onFinalised }) {
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+  async function run() {
+    if (!confirm('Finalise this meeting? Captions stop and the AI generates a summary.')) return;
+    setBusy(true);
+    try {
+      await meetingsApi.finalise(meetingId);
+      toast.show({ tone: 'success', message: 'Meeting finalised — opening the summary.' });
+      await onFinalised?.();
+    } catch (err) {
+      const status = err.response?.status;
+      const msg = status === 503
+        ? 'AI is not configured on the server.'
+        : status === 422
+        ? 'No transcript yet — captions need to run first.'
+        : err.response?.data?.detail ?? 'Could not finalise.';
+      toast.show({ tone: 'danger', message: msg });
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <Button variant="primary" onClick={run} disabled={busy}>
+      <CheckCircle2 size={12} aria-hidden="true" />
+      {busy ? ' Finalising…' : ' Finalise & summarise'}
+    </Button>
   );
 }

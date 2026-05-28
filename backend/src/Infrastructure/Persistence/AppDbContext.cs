@@ -104,6 +104,9 @@ public class AppDbContext : DbContext, IAppDbContext
     // F2-21 live speaker-labelled transcript.
     public DbSet<MeetingTranscript> MeetingTranscripts => Set<MeetingTranscript>();
 
+    // F2-22 post-meeting action-item drafts.
+    public DbSet<MeetingActionItem> MeetingActionItems => Set<MeetingActionItem>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Team / TeamMembership stay ignored until the team-management

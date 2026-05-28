@@ -42,6 +42,10 @@ public class Task
     public int TimeLoggedMinutes { get; set; }
     public string? PrUrl { get; set; }
     public bool CreatedByAi { get; set; }
+    /// <summary>F2-22 — if the task was accepted from a meeting's
+    /// action-item draft, this holds the source meeting id so the
+    /// task drawer can render a "From meeting" affordance.</summary>
+    public Guid? SourceMeetingId { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public Project Project { get; set; } = null!;

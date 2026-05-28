@@ -26,6 +26,8 @@ public class TaskConfiguration : IEntityTypeConfiguration<TaskEntity>
         builder.Property(t => t.TimeLoggedMinutes).IsRequired();
         builder.Property(t => t.PrUrl).HasMaxLength(512);
         builder.Property(t => t.CreatedByAi).IsRequired();
+        // F2-22 — source meeting for tasks accepted from action-item drafts.
+        builder.Property(t => t.SourceMeetingId);
         builder.Property(t => t.CreatedAt).IsRequired();
 
         builder.HasIndex(t => new { t.ProjectId, t.Status });

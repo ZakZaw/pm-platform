@@ -214,3 +214,37 @@ public record AIMeetingAgendaItem(string Title, int EstimatedMinutes);
 public record AIMeetingAgenda(
     IReadOnlyList<AIMeetingAgendaItem> Items,
     string Body);
+
+// F2-22 post-meeting processing.
+//
+// Input is a flat list of finalised transcript segments + the attendee
+// list (so the model can pick a confident owner by name). The result
+// is split into a TL;DR, a couple of short lists, and action-item
+// drafts whose owner names the parser maps back to user ids before
+// we hand the structure to the persistence command.
+
+public record AIMeetingTranscriptSegment(string Speaker, string Text);
+
+public record AIMeetingAttendee(Guid UserId, string FullName);
+
+public record AIMeetingProcessingInput(
+    string MeetingTitle,
+    string MeetingType,
+    DateTime MeetingStartedAt,
+    string ProjectName,
+    IReadOnlyList<AIMeetingAttendee> Attendees,
+    IReadOnlyList<AIMeetingTranscriptSegment> Segments);
+
+public record AIMeetingActionItem(
+    string Title,
+    string? Description,
+    string? OwnerFullName,
+    string? Priority,
+    int? DueInDays);
+
+public record AIMeetingProcessingResult(
+    string SummaryMd,
+    IReadOnlyList<string> Decisions,
+    IReadOnlyList<string> OpenQuestions,
+    IReadOnlyList<string> Blockers,
+    IReadOnlyList<AIMeetingActionItem> ActionItems);

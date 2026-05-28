@@ -852,3 +852,26 @@ public static class TranscriptErrors
         new("Transcript.AlreadyFinalised",
             "Transcript is locked — the meeting has ended.");
 }
+
+/// <summary>F2-22 post-meeting AI processing.</summary>
+public static class ActionItemErrors
+{
+    public static readonly Error NotFound =
+        new("ActionItem.NotFound", "Action item not found.");
+
+    public static readonly Error AlreadyAccepted =
+        new("ActionItem.AlreadyAccepted",
+            "This action item has already been accepted.");
+
+    public static readonly Error AlreadyDismissed =
+        new("ActionItem.AlreadyDismissed",
+            "This action item has already been dismissed.");
+
+    public static readonly Error InvalidTitle =
+        new("ActionItem.InvalidTitle",
+            "Action-item title must be 2-300 characters.");
+
+    public static readonly Error EmptyTranscript =
+        new("ActionItem.EmptyTranscript",
+            "Can't process a meeting that has no transcript segments yet.");
+}

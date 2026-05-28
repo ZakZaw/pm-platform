@@ -534,6 +534,68 @@ public class GeminiAIService(IOptions<AISettings> options, ILogger<GeminiAIServi
             summary, whatWentWell, whatDidnt, suggestions, draft);
     }
 
+    public async Task<AIMeetingProcessingResult> ProcessMeetingTranscriptAsync(
+        AIMeetingProcessingInput input, CancellationToken ct)
+    {
+        var json = await CallJsonAsync(PromptLibrary.MeetingProcessing, input, ct);
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+
+        string GetStr(string key) =>
+            root.TryGetProperty(key, out var p) ? (p.GetString() ?? "").Trim() : string.Empty;
+
+        IReadOnlyList<string> GetStringArray(string key)
+        {
+            if (!root.TryGetProperty(key, out var arr) || arr.ValueKind != JsonValueKind.Array)
+                return [];
+            var list = new List<string>();
+            foreach (var el in arr.EnumerateArray())
+            {
+                var s = el.GetString();
+                if (!string.IsNullOrWhiteSpace(s)) list.Add(s.Trim());
+            }
+            return list;
+        }
+
+        var actionItems = new List<AIMeetingActionItem>();
+        if (root.TryGetProperty("actionItems", out var items) && items.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var el in items.EnumerateArray())
+            {
+                var title = el.TryGetProperty("title", out var t)
+                    ? (t.GetString() ?? "").Trim()
+                    : string.Empty;
+                if (string.IsNullOrWhiteSpace(title)) continue;
+
+                var description = el.TryGetProperty("description", out var d) && d.ValueKind != JsonValueKind.Null
+                    ? d.GetString()
+                    : null;
+                var owner = el.TryGetProperty("ownerFullName", out var o) && o.ValueKind != JsonValueKind.Null
+                    ? o.GetString()
+                    : null;
+                var priority = el.TryGetProperty("priority", out var p)
+                    ? NormalisePriority(p.GetString())
+                    : "Medium";
+                int? due = null;
+                if (el.TryGetProperty("dueInDays", out var dd) && dd.ValueKind == JsonValueKind.Number)
+                    due = Math.Max(0, dd.GetInt32());
+
+                actionItems.Add(new AIMeetingActionItem(
+                    title.Length > 300 ? title[..300] : title,
+                    string.IsNullOrWhiteSpace(description) ? null : description.Trim(),
+                    string.IsNullOrWhiteSpace(owner) ? null : owner.Trim(),
+                    priority, due));
+            }
+        }
+
+        return new AIMeetingProcessingResult(
+            GetStr("summary"),
+            GetStringArray("decisions"),
+            GetStringArray("openQuestions"),
+            GetStringArray("blockers"),
+            actionItems);
+    }
+
     public async Task<AIMeetingAgenda> GenerateMeetingAgendaAsync(
         AIMeetingAgendaInput input, CancellationToken ct)
     {

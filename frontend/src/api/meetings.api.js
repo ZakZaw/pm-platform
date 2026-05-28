@@ -68,4 +68,28 @@ export const meetingsApi = {
         responseType: 'blob',
       })
       .then((r) => ({ blob: r.data, headers: r.headers })),
+
+  // F2-22 post-meeting AI processing.
+  finalise: (meetingId) =>
+    apiClient.post(`/meetings/${meetingId}/finalise`).then((r) => r.data),
+
+  process: (meetingId) =>
+    apiClient.post(`/meetings/${meetingId}/process`).then((r) => r.data),
+
+  getSummary: (meetingId) =>
+    apiClient.get(`/meetings/${meetingId}/summary`).then((r) => r.data),
+
+  listActionItems: (meetingId) =>
+    apiClient.get(`/meetings/${meetingId}/action-items`).then((r) => r.data),
+
+  acceptActionItem: (actionItemId, body) =>
+    apiClient.post(`/action-items/${actionItemId}/accept`, body ?? {}).then((r) => r.data),
+
+  bulkAcceptActionItems: (meetingId, actionItemIds) =>
+    apiClient
+      .post(`/meetings/${meetingId}/action-items/bulk-accept`, { actionItemIds })
+      .then((r) => r.data),
+
+  dismissActionItem: (actionItemId) =>
+    apiClient.post(`/action-items/${actionItemId}/dismiss`).then((r) => r.data),
 };

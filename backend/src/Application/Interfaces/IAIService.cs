@@ -121,4 +121,14 @@ public interface IAIService
     Task<AIMeetingAgenda> GenerateMeetingAgendaAsync(
         AIMeetingAgendaInput input,
         CancellationToken ct);
+
+    /// <summary>
+    /// F2-22 — post-meeting processing. Given the transcript + attendee
+    /// list, returns a TL;DR, the meeting's decisions / open questions
+    /// / blockers, and draft action items with owner-name + priority +
+    /// due-in-days. The caller persists drafts; nothing is auto-created.
+    /// </summary>
+    Task<AIMeetingProcessingResult> ProcessMeetingTranscriptAsync(
+        AIMeetingProcessingInput input,
+        CancellationToken ct);
 }

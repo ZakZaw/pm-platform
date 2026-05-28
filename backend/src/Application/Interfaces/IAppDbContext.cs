@@ -107,5 +107,8 @@ public interface IAppDbContext
     // F2-24 public REST API keys.
     DbSet<ApiKey> ApiKeys { get; }
 
+    // F2-25 integration health snapshots.
+    DbSet<IntegrationHealth> IntegrationHealth { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

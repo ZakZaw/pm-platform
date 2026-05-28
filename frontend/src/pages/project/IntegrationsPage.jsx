@@ -10,6 +10,10 @@ import './IntegrationsPage.css';
 
 const REPO_RE = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
 
+// F2-25 health indicator styling.
+const HEALTH_TONE = { Healthy: 'success', Degraded: 'warning', Failed: 'danger', Unknown: 'neutral' };
+const HEALTH_LABEL = { Healthy: 'Healthy', Degraded: 'Degraded', Failed: 'Failed', Unknown: 'Not checked' };
+
 /**
  * F2-23 — connect a project to a GitHub repo. Branches/PRs/CI that name
  * a task key ("AT-247") then drive that task's status + PR/CI badges.
@@ -166,6 +170,9 @@ export function IntegrationsPage() {
                   <ExternalLink size={12} aria-hidden="true" />
                 </a>
                 <div className="intg-meta">
+                  <Badge tone={HEALTH_TONE[i.health] ?? 'neutral'} dot title={i.healthError ?? ''}>
+                    {HEALTH_LABEL[i.health] ?? 'Unknown'}
+                  </Badge>
                   {i.webhookActive ? (
                     <Badge tone="success" dot>Webhook active</Badge>
                   ) : (
@@ -180,6 +187,9 @@ export function IntegrationsPage() {
                         month: 'short', day: 'numeric',
                       })}
                     </span>
+                  )}
+                  {i.healthError && (i.health === 'Failed' || i.health === 'Degraded') && (
+                    <span className="intg-health-error">{i.healthError}</span>
                   )}
                 </div>
                 {canEdit && (

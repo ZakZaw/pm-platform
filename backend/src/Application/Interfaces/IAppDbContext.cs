@@ -88,5 +88,9 @@ public interface IAppDbContext
     DbSet<Message> Messages { get; }
     DbSet<MessageReaction> MessageReactions { get; }
 
+    // F2-19 scheduled meetings + attendees.
+    DbSet<Meeting> Meetings { get; }
+    DbSet<MeetingAttendee> MeetingAttendees { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

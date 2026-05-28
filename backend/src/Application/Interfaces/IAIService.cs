@@ -111,4 +111,14 @@ public interface IAIService
     Task<AIVelocityReplanResult> GenerateVelocityReplanAsync(
         AIVelocityReplanInput input,
         CancellationToken ct);
+
+    /// <summary>
+    /// F2-19 — draft a meeting agenda from project context. The model
+    /// returns a markdown body with 3-7 bullet items and an estimated
+    /// run length per item. The organiser can edit or replace it before
+    /// scheduling — we don't gate scheduling on AI being configured.
+    /// </summary>
+    Task<AIMeetingAgenda> GenerateMeetingAgendaAsync(
+        AIMeetingAgendaInput input,
+        CancellationToken ct);
 }

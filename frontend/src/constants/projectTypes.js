@@ -8,6 +8,7 @@
 import {
   BarChart3,
   Briefcase,
+  CalendarClock,
   CalendarDays,
   ClipboardList,
   Code2,
@@ -91,6 +92,7 @@ export function navItemsForType(typeId) {
   const universal = [
     { key: 'roadmap', label: 'Roadmap', icon: MapIcon, path: 'roadmap' },
     { key: 'calendar', label: 'Calendar', icon: CalendarDays, path: 'calendar' },
+    { key: 'meetings', label: 'Meetings', icon: CalendarClock, path: 'meetings' },
     { key: 'dashboard', label: 'Dashboard', icon: BarChart3, path: 'dashboard' },
     { key: 'ai', label: 'AI Inbox', icon: Sparkles, path: 'ai' },
   ];

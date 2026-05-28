@@ -534,6 +534,52 @@ public class GeminiAIService(IOptions<AISettings> options, ILogger<GeminiAIServi
             summary, whatWentWell, whatDidnt, suggestions, draft);
     }
 
+    public async Task<AIMeetingAgenda> GenerateMeetingAgendaAsync(
+        AIMeetingAgendaInput input, CancellationToken ct)
+    {
+        var json = await CallJsonAsync(PromptLibrary.MeetingAgenda, input, ct);
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+
+        var items = new List<AIMeetingAgendaItem>();
+        if (root.TryGetProperty("items", out var arr) && arr.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var el in arr.EnumerateArray())
+            {
+                var title = el.TryGetProperty("title", out var t)
+                    ? (t.GetString() ?? string.Empty).Trim()
+                    : string.Empty;
+                if (string.IsNullOrWhiteSpace(title)) continue;
+                var mins = el.TryGetProperty("estimatedMinutes", out var m) && m.ValueKind == JsonValueKind.Number
+                    ? Math.Max(1, m.GetInt32())
+                    : 5;
+                items.Add(new AIMeetingAgendaItem(title, mins));
+            }
+        }
+
+        // Rescale item minutes if the sum drifted from the meeting
+        // duration — the model is usually close but never exact.
+        if (items.Count > 0 && input.DurationMinutes > 0)
+        {
+            var sum = items.Sum(i => i.EstimatedMinutes);
+            if (sum != input.DurationMinutes && sum > 0)
+            {
+                items = items
+                    .Select(i => new AIMeetingAgendaItem(
+                        i.Title,
+                        Math.Max(1, (int)Math.Round(i.EstimatedMinutes * (double)input.DurationMinutes / sum))))
+                    .ToList();
+            }
+        }
+
+        // Render to markdown so the organiser sees the draft as
+        // editable text. We don't ship the items array to the
+        // frontend independently — the body is the source of truth.
+        var body = string.Join("\n", items.Select(i =>
+            $"- **{i.Title}** _(≈ {i.EstimatedMinutes} min)_"));
+        return new AIMeetingAgenda(items, body);
+    }
+
     private async Task<string> CallJsonAsync(string systemPrompt, object payload, CancellationToken ct)
     {
         var content = JsonSerializer.Serialize(payload, JsonOpts);

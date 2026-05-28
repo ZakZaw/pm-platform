@@ -910,3 +910,19 @@ public static class IntegrationErrors
         new("Integration.InvalidSignature",
             "Webhook signature verification failed.");
 }
+
+/// <summary>F2-24 public REST API keys.</summary>
+public static class ApiKeyErrors
+{
+    public static readonly Error NotFound =
+        new("ApiKey.NotFound", "API key not found.");
+
+    public static readonly Error Forbidden =
+        new("ApiKey.Forbidden", "Only an organization admin can manage API keys.");
+
+    public static readonly Error InvalidName =
+        new("ApiKey.InvalidName", "API key name must be 2–120 characters.");
+
+    public static readonly Error AlreadyRevoked =
+        new("ApiKey.AlreadyRevoked", "This API key is already revoked.");
+}

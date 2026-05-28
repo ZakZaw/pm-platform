@@ -1,0 +1,96 @@
+/* F2-24 — API keys settings page. */
+
+.ak-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--s-5);
+  margin-bottom: var(--s-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.ak-create {
+  display: flex;
+  gap: var(--s-3);
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.ak-create > :first-child { flex: 1; min-width: 220px; }
+
+.ak-secret {
+  border: 1px solid var(--accent-border);
+  background: var(--accent-soft);
+  border-radius: var(--r-md);
+  padding: var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.ak-secret-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--text);
+}
+.ak-secret-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+.ak-secret-value {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--s-2) var(--s-3);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.ak-empty {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.ak-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.ak-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "main action" "meta action";
+  gap: var(--s-1) var(--s-3);
+  align-items: center;
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.ak-row.is-inactive { opacity: 0.7; }
+.ak-row-main {
+  grid-area: main;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+.ak-name { font-weight: var(--fw-medium); color: var(--text); }
+.ak-prefix { font-size: var(--fs-xs); color: var(--text-secondary); }
+.ak-row-meta {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  font-size: var(--fs-xs);
+}

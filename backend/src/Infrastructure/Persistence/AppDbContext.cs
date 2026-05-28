@@ -110,6 +110,9 @@ public class AppDbContext : DbContext, IAppDbContext
     // F2-23 source-control integrations (GitHub).
     public DbSet<Integration> Integrations => Set<Integration>();
 
+    // F2-24 public REST API keys.
+    public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Team / TeamMembership stay ignored until the team-management

@@ -1,11 +1,16 @@
 using System.Text;
+using Api.Middleware;
 using Application;
 using DotNetEnv;
 using Infrastructure;
+using Infrastructure.Auth;
 using Infrastructure.Hubs;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 
 // Load the repo-root .env into process env so local `dotnet watch run`
 // behaves like docker-compose (which reads .env natively). TraversePath
@@ -46,9 +51,40 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
 builder.Services.AddSignalR();
+
+// F2-24 — public REST API documented with Swashbuckle (Swagger UI at
+// /swagger, spec at /swagger/v1/swagger.json). Advertise both auth
+// schemes so the "Authorize" button works for either.
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(opt =>
+{
+    opt.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "PM Platform API",
+        Version = "v1",
+        Description = "Public REST API for the PM Platform. Authenticate with a "
+            + "user Bearer JWT or an organization API key (X-Api-Key header).",
+    });
+
+    opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "JWT access token.",
+    });
+    opt.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
+    {
+        Name = ApiKeyAuthenticationHandler.HeaderName,
+        Type = SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Header,
+        Description = "Organization API key (pmk_…).",
+    });
+});
 
 var jwtIssuer = builder.Configuration["Jwt:Issuer"]!;
 var jwtAudience = builder.Configuration["Jwt:Audience"]!;
@@ -86,16 +122,30 @@ builder.Services
                 return Task.CompletedTask;
             }
         };
-    });
+    })
+    // F2-24 — API-key scheme as an alternative to the JWT.
+    .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
+        ApiKeyAuthenticationHandler.SchemeName, null);
 
-builder.Services.AddAuthorization();
+// Accept either a user JWT or an org API key on any [Authorize] endpoint.
+builder.Services.AddAuthorization(options =>
+{
+    options.DefaultPolicy = new AuthorizationPolicyBuilder(
+            JwtBearerDefaults.AuthenticationScheme,
+            ApiKeyAuthenticationHandler.SchemeName)
+        .RequireAuthenticatedUser()
+        .Build();
+});
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+// F2-24 — Swagger UI (/swagger) + spec (/swagger/v1/swagger.json).
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.MapOpenApi();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "PM Platform API v1");
+    c.DocumentTitle = "PM Platform API";
+});
 
 var uploadsRoot = Path.Combine(app.Environment.ContentRootPath, "wwwroot", "uploads");
 Directory.CreateDirectory(uploadsRoot);
@@ -104,6 +154,10 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(uploadsRoot),
     RequestPath = "/uploads"
 });
+
+// F2-24 — per-key rate limiting with X-RateLimit-* headers, before auth
+// so it also shields unauthenticated endpoints.
+app.UseMiddleware<ApiRateLimitMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -2,6 +2,7 @@ using Application.Common;
 using Application.Features.AI;
 using Application.Features.Meetings;
 using Application.Features.Meetings.Commands;
+using Application.Features.Meetings.Processing;
 using Application.Features.Meetings.Queries;
 using Application.Features.Meetings.Transcripts;
 using Application.Interfaces;
@@ -184,6 +185,62 @@ public class MeetingsController(ISender mediator) : ControllerBase
             rendered.MimeType, rendered.FileName);
     }
 
+    // F2-22 post-meeting AI processing.
+    [HttpPost("api/v1/meetings/{id:guid}/finalise")]
+    public async Task<ActionResult<MeetingSummaryDto>> Finalise(Guid id, CancellationToken ct)
+    {
+        var result = await mediator.Send(new FinaliseMeetingCommand(id), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpPost("api/v1/meetings/{id:guid}/process")]
+    public async Task<ActionResult<MeetingSummaryDto>> Process(Guid id, CancellationToken ct)
+    {
+        var result = await mediator.Send(new ProcessMeetingTranscriptCommand(id), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpGet("api/v1/meetings/{id:guid}/summary")]
+    public async Task<ActionResult<MeetingSummaryDto>> GetSummary(Guid id, CancellationToken ct)
+    {
+        var result = await mediator.Send(new GetMeetingSummaryQuery(id), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpGet("api/v1/meetings/{id:guid}/action-items")]
+    public async Task<ActionResult<IReadOnlyList<MeetingActionItemDto>>> ListActionItems(
+        Guid id, CancellationToken ct)
+    {
+        var result = await mediator.Send(new ListActionItemsQuery(id), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpPost("api/v1/action-items/{id:guid}/accept")]
+    public async Task<ActionResult<MeetingActionItemDto>> AcceptActionItem(
+        Guid id, [FromBody] AcceptActionItemBodyDto body, CancellationToken ct)
+    {
+        var result = await mediator.Send(new AcceptActionItemCommand(
+            id, body.ExistingTaskId, body.Title, body.Description,
+            body.AssigneeId, body.DueDate, body.Priority), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpPost("api/v1/meetings/{id:guid}/action-items/bulk-accept")]
+    public async Task<ActionResult<IReadOnlyList<MeetingActionItemDto>>> BulkAcceptActionItems(
+        Guid id, [FromBody] BulkAcceptActionItemsBodyDto body, CancellationToken ct)
+    {
+        var result = await mediator.Send(new AcceptActionItemsBulkCommand(
+            id, body.ActionItemIds ?? []), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpPost("api/v1/action-items/{id:guid}/dismiss")]
+    public async Task<ActionResult<MeetingActionItemDto>> DismissActionItem(Guid id, CancellationToken ct)
+    {
+        var result = await mediator.Send(new DismissActionItemCommand(id), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     private ObjectResult ToProblem(Error error)
     {
         var status = error.Code switch
@@ -212,6 +269,12 @@ public class MeetingsController(ISender mediator) : ControllerBase
             "Transcript.TooLong" => StatusCodes.Status422UnprocessableEntity,
             "Transcript.InvalidFormat" => StatusCodes.Status422UnprocessableEntity,
             "Transcript.AlreadyFinalised" => StatusCodes.Status409Conflict,
+            "ActionItem.NotFound" => StatusCodes.Status404NotFound,
+            "ActionItem.AlreadyAccepted" => StatusCodes.Status409Conflict,
+            "ActionItem.AlreadyDismissed" => StatusCodes.Status409Conflict,
+            "ActionItem.InvalidTitle" => StatusCodes.Status422UnprocessableEntity,
+            "ActionItem.EmptyTranscript" => StatusCodes.Status422UnprocessableEntity,
+            "Task.NotFound" => StatusCodes.Status404NotFound,
             _ => StatusCodes.Status400BadRequest,
         };
         return Problem(title: error.Code, detail: error.Message, statusCode: status);
@@ -258,3 +321,13 @@ public record CreateGuestLinkBodyDto(string? GuestLabel, int? HoursValid);
 public record GuestJoinBodyDto(string? DisplayName);
 public record PostTranscriptSegmentBodyDto(
     string? Text, DateTime? StartedAt, DateTime? EndedAt);
+
+public record AcceptActionItemBodyDto(
+    Guid? ExistingTaskId,
+    string? Title,
+    string? Description,
+    Guid? AssigneeId,
+    DateTime? DueDate,
+    string? Priority);
+
+public record BulkAcceptActionItemsBodyDto(IReadOnlyList<Guid>? ActionItemIds);

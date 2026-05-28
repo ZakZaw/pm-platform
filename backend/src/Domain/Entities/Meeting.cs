@@ -65,8 +65,19 @@ public class Meeting
     public DateTime? RecordingStoppedAt { get; set; }
     public string? RecordingUrl { get; set; }
 
+    // F2-22 — AI post-meeting processing artifacts. SummaryMd is a
+    // TL;DR; the *Json columns hold short lists (decisions, open
+    // questions, blockers). ProcessedAt is the last successful run
+    // stamp; null until the meeting is finalised and the AI completes.
+    public string? SummaryMd { get; set; }
+    public string? DecisionsJson { get; set; }
+    public string? OpenQuestionsJson { get; set; }
+    public string? BlockersJson { get; set; }
+    public DateTime? ProcessedAt { get; set; }
+
     public Project Project { get; set; } = null!;
     public User Organizer { get; set; } = null!;
     public ICollection<MeetingAttendee> Attendees { get; set; } = [];
     public ICollection<MeetingGuestLink> GuestLinks { get; set; } = [];
+    public ICollection<MeetingActionItem> ActionItems { get; set; } = [];
 }

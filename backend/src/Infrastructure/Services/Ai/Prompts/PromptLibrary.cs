@@ -451,6 +451,50 @@ internal static class PromptLibrary
         - Output ONLY valid JSON. No commentary, no markdown fences.
         """;
 
+    internal const string MeetingProcessing = """
+        You are a senior project manager processing a meeting transcript.
+        Given the meeting's title and type, the attendee list, and a flat
+        list of finalised transcript segments (speaker + text), output a
+        JSON object with this exact shape:
+
+        {
+          "summary": "...",
+          "decisions": ["..."],
+          "openQuestions": ["..."],
+          "blockers": ["..."],
+          "actionItems": [
+            {
+              "title": "...",
+              "description": "...|null",
+              "ownerFullName": "...|null",
+              "priority": "Low|Medium|High|Urgent",
+              "dueInDays": 7
+            }
+          ]
+        }
+
+        Rules:
+        - "summary" is a TL;DR — 2-4 sentences of prose, written in past
+          tense, naming the outcomes not the discussion.
+        - "decisions" is 0-5 items. A decision is a concrete commit-to
+          ("we will ship X by Friday"), not an opinion. If nothing was
+          decided, return an empty array — don't fabricate.
+        - "openQuestions" is 0-5 items, each phrased as a question.
+        - "blockers" is 0-5 items naming specific obstacles the team
+          identified, not vague risks.
+        - "actionItems" is 0-10 items:
+            * "title" is an actionable phrase ≤ 80 chars, verb-led.
+            * "ownerFullName" MUST match an attendee's name exactly when
+              the transcript names them; otherwise null. Never invent
+              a name not in the attendee list.
+            * "priority" is one of Low / Medium / High / Urgent.
+            * "dueInDays" is the relative deadline in days from the
+              meeting end. If the speaker said "next sprint" or "this
+              week", interpret it; if unclear use 7.
+            * "description" is optional context — 1-2 sentences.
+        - Output ONLY valid JSON. No commentary, no markdown fences.
+        """;
+
     internal const string MeetingAgenda = """
         You are a senior project manager drafting an agenda for an upcoming
         meeting. Given the meeting type, title, duration, project name, the

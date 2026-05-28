@@ -1,0 +1,191 @@
+/* F2-22 — Summary page + action-item card layout. */
+
+.ms-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: var(--s-6);
+  align-items: start;
+}
+@media (max-width: 1120px) {
+  .ms-grid { grid-template-columns: 1fr; }
+}
+
+.ms-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--s-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+.ms-card h2 {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+}
+
+.ms-tldr {
+  font-size: var(--fs-md);
+  color: var(--text);
+  line-height: var(--lh-snug);
+  white-space: pre-wrap;
+}
+
+.ms-list {
+  margin: 0;
+  padding-left: var(--s-5);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+}
+.ms-list li { margin-bottom: var(--s-2); }
+.ms-list li:last-child { margin-bottom: 0; }
+
+.ms-empty {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.ms-actions-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+}
+
+/* Action item cards */
+.ar-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.ar-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.ar-card.is-accepted {
+  border-color: var(--success-border);
+  background: var(--success-soft);
+}
+.ar-card.is-dismissed {
+  opacity: 0.7;
+}
+
+.ar-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+}
+.ar-card-check {
+  margin-top: 4px;
+  cursor: pointer;
+}
+.ar-card-title-row {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+.ar-card-title {
+  margin: 0;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+}
+
+.ar-card-desc {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  line-height: var(--lh-snug);
+}
+
+.ar-card-edit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.ar-card-edit-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s-2);
+}
+@media (max-width: 760px) {
+  .ar-card-edit-row { grid-template-columns: 1fr; }
+}
+.ar-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+.ar-edit-field select,
+.ar-edit-field input {
+  height: 32px;
+  padding: 0 var(--s-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-size: var(--fs-sm);
+}
+
+.ar-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+.ar-card-meta {
+  display: flex;
+  gap: var(--s-3);
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  align-items: center;
+}
+.ar-card-due {
+  color: var(--text-secondary);
+}
+
+/* Link-to-existing-task picker */
+.ar-link-wrap {
+  position: relative;
+}
+.ar-link-menu {
+  position: absolute;
+  right: 0;
+  z-index: 50;
+  margin-top: var(--s-2);
+  width: 360px;
+  max-width: 80vw;
+  padding: var(--s-3) 0;
+}
+.ar-link-search {
+  padding: 0 var(--s-3) var(--s-3);
+}
+.ar-link-list {
+  max-height: 280px;
+  overflow-y: auto;
+}
+.ar-link-empty {
+  padding: var(--s-3) var(--s-4);
+  font-size: var(--fs-sm);
+  margin: 0;
+}
+.ar-link-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--s-3);
+}

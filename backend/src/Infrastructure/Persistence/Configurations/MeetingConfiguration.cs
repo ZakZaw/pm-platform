@@ -33,6 +33,13 @@ public class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
         builder.Property(m => m.RecordingStoppedAt);
         builder.Property(m => m.RecordingUrl).HasMaxLength(1000);
 
+        // F2-22 AI post-meeting processing outputs.
+        builder.Property(m => m.SummaryMd);
+        builder.Property(m => m.DecisionsJson).HasColumnType("jsonb");
+        builder.Property(m => m.OpenQuestionsJson).HasColumnType("jsonb");
+        builder.Property(m => m.BlockersJson).HasColumnType("jsonb");
+        builder.Property(m => m.ProcessedAt);
+
         // Per-project chronological feed and series lookup.
         builder.HasIndex(m => new { m.ProjectId, m.ScheduledAt });
         builder.HasIndex(m => m.SeriesId);
@@ -46,6 +53,42 @@ public class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
             .WithMany()
             .HasForeignKey(m => m.OrganizerId)
             .OnDelete(DeleteBehavior.Restrict);
+    }
+}
+
+public class MeetingActionItemConfiguration : IEntityTypeConfiguration<MeetingActionItem>
+{
+    public void Configure(EntityTypeBuilder<MeetingActionItem> builder)
+    {
+        builder.ToTable("meeting_action_items");
+        builder.HasKey(a => a.Id);
+
+        builder.Property(a => a.MeetingId).IsRequired();
+        builder.Property(a => a.Title).IsRequired().HasMaxLength(300);
+        builder.Property(a => a.Description).HasMaxLength(2000);
+        builder.Property(a => a.SuggestedOwnerUserId);
+        builder.Property(a => a.SuggestedDueDate);
+        builder.Property(a => a.SuggestedPriority)
+            .HasConversion<string>().HasMaxLength(20).IsRequired();
+        builder.Property(a => a.AcceptedAt);
+        builder.Property(a => a.AcceptedTaskId);
+        builder.Property(a => a.AcceptedByUserId);
+        builder.Property(a => a.DismissedAt);
+        builder.Property(a => a.DismissedByUserId);
+        builder.Property(a => a.OrderIndex).IsRequired();
+        builder.Property(a => a.CreatedAt).IsRequired();
+
+        builder.HasIndex(a => new { a.MeetingId, a.OrderIndex });
+
+        builder.HasOne(a => a.Meeting)
+            .WithMany(m => m.ActionItems)
+            .HasForeignKey(a => a.MeetingId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(a => a.SuggestedOwner)
+            .WithMany()
+            .HasForeignKey(a => a.SuggestedOwnerUserId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }
 

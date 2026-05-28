@@ -98,5 +98,8 @@ public interface IAppDbContext
     // F2-21 live speaker-labelled transcript.
     DbSet<MeetingTranscript> MeetingTranscripts { get; }
 
+    // F2-22 post-meeting action-item drafts.
+    DbSet<MeetingActionItem> MeetingActionItems { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

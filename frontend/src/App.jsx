@@ -47,6 +47,7 @@ import { CreateMeetingPage } from '@/pages/meetings/CreateMeetingPage';
 import { MeetingDetailPage } from '@/pages/meetings/MeetingDetailPage';
 import { MeetingRoomPage } from '@/pages/meetings/MeetingRoomPage';
 import { GuestMeetingPage } from '@/pages/meetings/GuestMeetingPage';
+import { MeetingSummaryPage } from '@/pages/meetings/MeetingSummaryPage';
 import { AppShell } from '@/components/layout/AppShell';
 import { ToastProvider } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
@@ -231,6 +232,10 @@ function App() {
             <Route
               path="/:slug/projects/:projectSlug/meetings/:meetingId/room"
               element={<Keyed paramKey="meetingId"><MeetingRoomPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/meetings/:meetingId/summary"
+              element={<Keyed paramKey="meetingId"><MeetingSummaryPage /></Keyed>}
             />
             <Route path="/settings/profile" element={<ProfilePage />} />
             <Route

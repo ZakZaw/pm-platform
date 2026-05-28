@@ -13,6 +13,7 @@ import { Track } from 'livekit-client';
 import { Circle, MessageSquare, X } from 'lucide-react';
 import { Badge, Button, Skeleton, useToast } from '@/components/ui';
 import { meetingsApi } from '@/api/meetings.api';
+import { TranscriptPanel } from '@/components/meetings/TranscriptPanel';
 import './meetingRoom.css';
 
 /**
@@ -161,7 +162,7 @@ function MeetingRoomInner({ join, sidePanel, onSidePanelChange, onLeave, onToast
               {sidePanel === 'chat' ? (
                 <p className="muted">In-room chat wires up with F2-18 channels.</p>
               ) : (
-                <p className="muted">Live speaker-labelled transcript lands in F2-21.</p>
+                <TranscriptPanel meetingId={join.meetingId} />
               )}
             </div>
           </aside>

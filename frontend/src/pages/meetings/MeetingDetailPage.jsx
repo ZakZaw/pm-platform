@@ -305,8 +305,102 @@ export function MeetingDetailPage() {
         {isOrganiser && meeting.status === 'Scheduled' && (
           <GuestLinksCard meetingId={meeting.id} toast={toast} />
         )}
+
+        <TranscriptCard meetingId={meeting.id} toast={toast} />
       </div>
     </div>
+  );
+}
+
+/**
+ * F2-21 — post-meeting transcript surface on the detail page. Shows
+ * the count + last-segment time + .txt / .vtt download buttons. The
+ * live panel itself lives in the room — here we just expose the
+ * artifact.
+ */
+function TranscriptCard({ meetingId, toast }) {
+  const [transcript, setTranscript] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const t = await meetingsApi.getTranscript(meetingId);
+        if (!cancelled) setTranscript(t);
+      } catch {
+        if (!cancelled) setTranscript(null);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [meetingId]);
+
+  async function download(format) {
+    setDownloading(true);
+    try {
+      const { blob, headers } = await meetingsApi.downloadTranscript(meetingId, format);
+      const disposition = headers?.['content-disposition'] ?? '';
+      const match = disposition.match(/filename="?([^";]+)"?/i);
+      const fileName = match?.[1] ?? `transcript.${format}`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        message: err.response?.data?.detail ?? 'Could not download transcript.',
+      });
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  const hasSegments = (transcript?.segments?.length ?? 0) > 0;
+
+  return (
+    <section className="meeting-detail-card" style={{ gridColumn: '1 / -1' }}>
+      <div className="row between">
+        <h2>Transcript</h2>
+        {transcript?.lastSegmentAt && (
+          <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>
+            Last segment {new Date(transcript.lastSegmentAt).toLocaleString([], {
+              month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+            })}
+          </span>
+        )}
+      </div>
+      {loading ? (
+        <p className="muted">Loading transcript…</p>
+      ) : hasSegments ? (
+        <>
+          <p className="muted">
+            {transcript.segments.length} segments captured.
+          </p>
+          <div className="row gap-2">
+            <Button size="sm" variant="ghost" onClick={() => download('txt')} disabled={downloading}>
+              Download .txt
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => download('vtt')} disabled={downloading}>
+              Download .vtt
+            </Button>
+          </div>
+        </>
+      ) : (
+        <p className="muted">
+          No transcript yet. Once participants enable captions in the room,
+          segments appear here.
+        </p>
+      )}
+    </section>
   );
 }
 

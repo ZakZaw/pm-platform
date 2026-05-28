@@ -48,4 +48,24 @@ export const meetingsApi = {
     apiClient
       .post(`/meetings/guest/${token}/join`, { displayName })
       .then((r) => r.data),
+
+  // F2-21 transcript.
+  getTranscript: (meetingId) =>
+    apiClient.get(`/meetings/${meetingId}/transcript`).then((r) => r.data),
+
+  postTranscriptSegment: (meetingId, { text, startedAt, endedAt }) =>
+    apiClient
+      .post(`/meetings/${meetingId}/transcript/segments`, {
+        text, startedAt, endedAt,
+      })
+      .then((r) => r.data),
+
+  /** Returns a Blob the caller can pipe into a download link. */
+  downloadTranscript: (meetingId, format = 'txt') =>
+    apiClient
+      .get(`/meetings/${meetingId}/transcript/download`, {
+        params: { format },
+        responseType: 'blob',
+      })
+      .then((r) => ({ blob: r.data, headers: r.headers })),
 };

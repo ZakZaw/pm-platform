@@ -35,8 +35,19 @@ public class ProjectHub : Hub
     public Task LeaveChannel(string channelId) =>
         Groups.RemoveFromGroupAsync(Context.ConnectionId, ChannelGroupName(channelId));
 
+    // F2-21 transcript: clients join the meeting:{id} group on entry
+    // so transcript segments only fan out to people currently in the
+    // room, not the whole project.
+    public Task JoinMeeting(string meetingId) =>
+        Groups.AddToGroupAsync(Context.ConnectionId, MeetingGroupName(meetingId));
+
+    public Task LeaveMeeting(string meetingId) =>
+        Groups.RemoveFromGroupAsync(Context.ConnectionId, MeetingGroupName(meetingId));
+
     internal static string GroupName(Guid projectId) => $"project:{projectId:D}";
     internal static string GroupName(string projectId) => $"project:{projectId}";
     internal static string ChannelGroupName(Guid channelId) => $"channel:{channelId:D}";
     internal static string ChannelGroupName(string channelId) => $"channel:{channelId}";
+    internal static string MeetingGroupName(Guid meetingId) => $"meeting:{meetingId:D}";
+    internal static string MeetingGroupName(string meetingId) => $"meeting:{meetingId}";
 }

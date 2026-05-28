@@ -29,4 +29,11 @@ public interface IProjectEventBus
     /// call <c>JoinChannel(channelId)</c> after they open a channel.
     /// </summary>
     Task PublishToChannelAsync(Guid channelId, string eventName, object? payload, CancellationToken ct = default);
+
+    /// <summary>
+    /// Push an event to every client currently in the meeting's hub group.
+    /// Used by F2-21 transcript chunks. Clients call
+    /// <c>JoinMeeting(meetingId)</c> after they enter the room.
+    /// </summary>
+    Task PublishToMeetingAsync(Guid meetingId, string eventName, object? payload, CancellationToken ct = default);
 }

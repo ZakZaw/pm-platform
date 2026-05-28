@@ -15,6 +15,13 @@ export const chatApi = {
       .post(`/orgs/${orgSlug}/channels`, { name, epicId, memberIds })
       .then((r) => r.data),
 
+  // F2-17 — create or look up a DM. Posting the same member set twice
+  // returns the existing channel rather than creating a duplicate.
+  createDm: (orgSlug, { memberIds }) =>
+    apiClient
+      .post(`/orgs/${orgSlug}/dms`, { memberIds })
+      .then((r) => r.data),
+
   addMember: (channelId, userId) =>
     apiClient
       .post(`/channels/${channelId}/members`, { userId })

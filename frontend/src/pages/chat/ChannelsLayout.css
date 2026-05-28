@@ -221,3 +221,76 @@
   font-size: var(--fs-xs);
   color: var(--text-muted);
 }
+
+/* F2-17 — DM picker chips + member result list. Used inside the
+   "New direct message" modal. */
+.dm-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin-bottom: var(--s-3);
+}
+
+.dm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  max-width: 200px;
+  padding: 4px var(--s-2) 4px 4px;
+  background: var(--accent-soft);
+  color: var(--text);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
+}
+
+.dm-chip-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 0;
+  border-radius: var(--r-pill);
+  cursor: pointer;
+}
+.dm-chip-x:hover { color: var(--danger); background: var(--surface-hover); }
+
+.dm-result-list {
+  margin: var(--s-3) 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+
+.dm-result-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-4);
+  background: transparent;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+}
+.dm-result-row:hover { background: var(--surface-hover); }
+
+.dm-result-name {
+  font-size: var(--fs-md);
+  color: var(--text);
+}
+
+.dm-result-mail {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}

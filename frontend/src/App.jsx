@@ -8,6 +8,7 @@ import { HomePage } from '@/pages/home/HomePage';
 import { CreateOrgPage } from '@/pages/onboarding/CreateOrgPage';
 import { OrgHomePage } from '@/pages/org/OrgHomePage';
 import { MembersPage } from '@/pages/settings/MembersPage';
+import { ApiKeysPage } from '@/pages/settings/ApiKeysPage';
 import { ProfilePage } from '@/pages/settings/ProfilePage';
 import { CreateProjectPage } from '@/pages/project/CreateProjectPage';
 import { ProjectHomePage } from '@/pages/project/ProjectHomePage';
@@ -104,6 +105,7 @@ function App() {
               element={<Keyed paramKey="slug"><OrgHomePage /></Keyed>}
             />
             <Route path="/:slug/settings/members" element={<MembersPage />} />
+            <Route path="/:slug/settings/api-keys" element={<ApiKeysPage />} />
             <Route path="/:slug/projects/new" element={<CreateProjectPage />} />
             <Route path="/:slug/projects/new/ai" element={<AIGenerationWizard />} />
             <Route

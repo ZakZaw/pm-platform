@@ -35,6 +35,7 @@ const SECTION_LABEL = {
   fields: 'Fields',
   ai: 'AI',
   integrations: 'Integrations',
+  'api-keys': 'API keys',
   new: 'New project',
   home: 'Home',
   dashboard: 'My work',

@@ -104,5 +104,8 @@ public interface IAppDbContext
     // F2-23 source-control integrations (GitHub).
     DbSet<Integration> Integrations { get; }
 
+    // F2-24 public REST API keys.
+    DbSet<ApiKey> ApiKeys { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

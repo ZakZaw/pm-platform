@@ -92,5 +92,8 @@ public interface IAppDbContext
     DbSet<Meeting> Meetings { get; }
     DbSet<MeetingAttendee> MeetingAttendees { get; }
 
+    // F2-20 guest links for video joins.
+    DbSet<MeetingGuestLink> MeetingGuestLinks { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

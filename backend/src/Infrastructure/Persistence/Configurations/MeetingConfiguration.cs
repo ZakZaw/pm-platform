@@ -26,6 +26,13 @@ public class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
         builder.Property(m => m.CreatedAt).IsRequired();
         builder.Property(m => m.UpdatedAt).IsRequired();
 
+        // F2-20 live-room columns.
+        builder.Property(m => m.ActiveParticipantCount).IsRequired();
+        builder.Property(m => m.RecordingEgressId).HasMaxLength(80);
+        builder.Property(m => m.RecordingStartedAt);
+        builder.Property(m => m.RecordingStoppedAt);
+        builder.Property(m => m.RecordingUrl).HasMaxLength(1000);
+
         // Per-project chronological feed and series lookup.
         builder.HasIndex(m => new { m.ProjectId, m.ScheduledAt });
         builder.HasIndex(m => m.SeriesId);
@@ -39,6 +46,32 @@ public class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
             .WithMany()
             .HasForeignKey(m => m.OrganizerId)
             .OnDelete(DeleteBehavior.Restrict);
+    }
+}
+
+public class MeetingGuestLinkConfiguration : IEntityTypeConfiguration<MeetingGuestLink>
+{
+    public void Configure(EntityTypeBuilder<MeetingGuestLink> builder)
+    {
+        builder.ToTable("meeting_guest_links");
+        builder.HasKey(g => g.Id);
+
+        builder.Property(g => g.MeetingId).IsRequired();
+        builder.Property(g => g.CreatedByUserId).IsRequired();
+        builder.Property(g => g.Token).IsRequired().HasMaxLength(64);
+        builder.Property(g => g.GuestLabel).HasMaxLength(80);
+        builder.Property(g => g.CreatedAt).IsRequired();
+        builder.Property(g => g.ExpiresAt).IsRequired();
+        builder.Property(g => g.RevokedAt);
+
+        // Public-route lookup goes through the token, never the id.
+        builder.HasIndex(g => g.Token).IsUnique();
+        builder.HasIndex(g => g.MeetingId);
+
+        builder.HasOne(g => g.Meeting)
+            .WithMany(m => m.GuestLinks)
+            .HasForeignKey(g => g.MeetingId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
 

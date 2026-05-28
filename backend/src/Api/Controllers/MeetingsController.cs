@@ -3,6 +3,7 @@ using Application.Features.AI;
 using Application.Features.Meetings;
 using Application.Features.Meetings.Commands;
 using Application.Features.Meetings.Queries;
+using Application.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -105,6 +106,49 @@ public class MeetingsController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    // F2-20 — issue a LiveKit access token. Attendee-only; the room
+    // opens 15 min before the scheduled start.
+    [HttpPost("api/v1/meetings/{id:guid}/join")]
+    public async Task<ActionResult<MeetingJoinTokenDto>> Join(Guid id, CancellationToken ct)
+    {
+        var result = await mediator.Send(new JoinMeetingCommand(id), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpPost("api/v1/meetings/{id:guid}/guest-links")]
+    public async Task<ActionResult<MeetingGuestLinkDto>> CreateGuestLink(
+        Guid id, [FromBody] CreateGuestLinkBodyDto body, CancellationToken ct)
+    {
+        var result = await mediator.Send(new CreateGuestLinkCommand(
+            id, body.GuestLabel, body.HoursValid), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpGet("api/v1/meetings/{id:guid}/guest-links")]
+    public async Task<ActionResult<IReadOnlyList<MeetingGuestLinkDto>>> ListGuestLinks(
+        Guid id, CancellationToken ct)
+    {
+        var result = await mediator.Send(new ListGuestLinksQuery(id), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpDelete("api/v1/meetings/guest-links/{id:guid}")]
+    public async Task<IActionResult> RevokeGuestLink(Guid id, CancellationToken ct)
+    {
+        var result = await mediator.Send(new RevokeGuestLinkCommand(id), ct);
+        return result.IsSuccess ? NoContent() : ToProblem(result.Error!);
+    }
+
+    // Anonymous endpoint — the guest token itself is the credential.
+    [AllowAnonymous]
+    [HttpPost("api/v1/meetings/guest/{token}/join")]
+    public async Task<ActionResult<MeetingJoinTokenDto>> JoinAsGuest(
+        string token, [FromBody] GuestJoinBodyDto body, CancellationToken ct)
+    {
+        var result = await mediator.Send(new JoinAsGuestCommand(token, body.DisplayName), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     private ObjectResult ToProblem(Error error)
     {
         var status = error.Code switch
@@ -123,8 +167,12 @@ public class MeetingsController(ISender mediator) : ControllerBase
             "Meeting.InvalidDuration" => StatusCodes.Status422UnprocessableEntity,
             "Meeting.InvalidScheduledAt" => StatusCodes.Status422UnprocessableEntity,
             "Meeting.InvalidRecurrence" => StatusCodes.Status422UnprocessableEntity,
+            "Meeting.TooEarlyToJoin" => StatusCodes.Status409Conflict,
+            "Meeting.GuestLinkNotFound" => StatusCodes.Status404NotFound,
+            "Meeting.GuestLinkExpired" => StatusCodes.Status410Gone,
             "AI.NotConfigured" => StatusCodes.Status503ServiceUnavailable,
             "AI.ProviderFailed" => StatusCodes.Status502BadGateway,
+            "Video.NotConfigured" => StatusCodes.Status503ServiceUnavailable,
             _ => StatusCodes.Status400BadRequest,
         };
         return Problem(title: error.Code, detail: error.Message, statusCode: status);
@@ -166,3 +214,6 @@ public record PreviewAgendaBodyDto(
     int? DurationMinutes,
     IReadOnlyList<Guid>? AttendeeUserIds,
     string? OrganiserNotes);
+
+public record CreateGuestLinkBodyDto(string? GuestLabel, int? HoursValid);
+public record GuestJoinBodyDto(string? DisplayName);

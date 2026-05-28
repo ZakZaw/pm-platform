@@ -1,0 +1,117 @@
+/* F2-20 — meeting room layout. Full-bleed video stage + slide-in
+   side panel for the chat / transcript. */
+
+.mr-shell {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--topbar-h, 56px));
+  background: var(--bg-subtle);
+}
+
+.mr-shell-loading,
+.mr-shell-error {
+  align-items: center;
+  justify-content: center;
+  padding: var(--s-7);
+  gap: var(--s-3);
+}
+.mr-error-title {
+  margin: 0;
+  font-size: var(--fs-xl);
+  color: var(--text);
+}
+
+.mr-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-3) var(--s-5);
+  border-bottom: 1px solid var(--divider);
+  background: var(--surface);
+}
+.mr-eyebrow {
+  margin: 0;
+  font-size: var(--fs-2xs);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: var(--tracking-wide);
+}
+.mr-title {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+}
+
+.mr-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+.mr-body-with-aside {
+  grid-template-columns: 1fr 360px;
+}
+@media (max-width: 760px) {
+  .mr-body-with-aside { grid-template-columns: 1fr; }
+}
+
+/* LiveKit's primitives ship default styling via @livekit/components-styles.
+   We override the surface tones to match the app theme so the room
+   doesn't look like a foreign element. */
+.mr-livekit {
+  --lk-bg: var(--bg-subtle);
+  --lk-fg: var(--text);
+  --lk-accent-bg: var(--accent);
+  --lk-accent-fg: var(--text-on-accent);
+  --lk-border-color: var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-subtle);
+}
+
+.mr-grid {
+  flex: 1;
+  min-height: 0;
+}
+
+.mr-aside {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--surface);
+  border-left: 1px solid var(--divider);
+}
+.mr-aside-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--divider);
+}
+.mr-aside-title {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+}
+.mr-aside-close {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.mr-aside-close:hover { background: var(--surface-hover); }
+.mr-aside-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--s-4);
+}

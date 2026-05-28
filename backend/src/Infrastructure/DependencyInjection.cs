@@ -35,6 +35,21 @@ public static class DependencyInjection
         // F2-19 — .ics writer is pure / state-free; singleton.
         services.AddSingleton<Application.Features.Meetings.IcsCalendarWriter>();
 
+        // F2-20 — LiveKit video. We register even when LIVEKIT_URL is
+        // blank so the rest of the app stays bootable; IsConfigured
+        // gates the join endpoint.
+        services.Configure<Services.Video.VideoSettings>(configuration.GetSection("Video"));
+        services.AddHttpClient();
+        services.AddSingleton<IVideoService, Services.Video.LiveKitVideoService>();
+
+        // Guest-link URL builder. Resolves at request time so the
+        // FrontendSettings binding has the latest value.
+        services.AddScoped(sp =>
+        {
+            var frontend = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<FrontendSettings>>().Value;
+            return new Application.Features.Meetings.Commands.GuestLinkUrlBuilder(frontend.BaseUrl);
+        });
+
         services.AddSingleton<IProjectEventBus, SignalRProjectEventBus>();
         services.AddScoped<IActivityRecorder, EfActivityRecorder>();
         services.AddScoped<INotificationService, EfNotificationService>();

@@ -22,4 +22,11 @@ public interface IProjectEventBus
     /// requires the JWT to carry a Sub claim, which our JwtService does.
     /// </summary>
     Task PublishToUserAsync(Guid userId, string eventName, object? payload, CancellationToken ct = default);
+
+    /// <summary>
+    /// Push an event to every client currently in the channel's hub group.
+    /// Used by F2-18 chat for live message / reaction updates. Clients
+    /// call <c>JoinChannel(channelId)</c> after they open a channel.
+    /// </summary>
+    Task PublishToChannelAsync(Guid channelId, string eventName, object? payload, CancellationToken ct = default);
 }

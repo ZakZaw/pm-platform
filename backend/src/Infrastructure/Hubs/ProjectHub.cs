@@ -24,6 +24,19 @@ public class ProjectHub : Hub
     public Task LeaveProject(string projectId) =>
         Groups.RemoveFromGroupAsync(Context.ConnectionId, GroupName(projectId));
 
+    // F2-18 chat: clients join one channel group at a time so live
+    // message events only fan out to people actually looking at the
+    // channel. Membership access is enforced by command-level checks,
+    // not by the hub — joining a group you don't belong to just means
+    // you'd see events for messages you also can't post.
+    public Task JoinChannel(string channelId) =>
+        Groups.AddToGroupAsync(Context.ConnectionId, ChannelGroupName(channelId));
+
+    public Task LeaveChannel(string channelId) =>
+        Groups.RemoveFromGroupAsync(Context.ConnectionId, ChannelGroupName(channelId));
+
     internal static string GroupName(Guid projectId) => $"project:{projectId:D}";
     internal static string GroupName(string projectId) => $"project:{projectId}";
+    internal static string ChannelGroupName(Guid channelId) => $"channel:{channelId:D}";
+    internal static string ChannelGroupName(string channelId) => $"channel:{channelId}";
 }

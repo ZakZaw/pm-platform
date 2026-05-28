@@ -34,6 +34,19 @@ public static class ProjectEvents
 }
 
 /// <summary>
+/// Per-channel push event names. Delivered via the channel:{guid}
+/// SignalR group — every connected channel member subscribes after
+/// JoinChannel.
+/// </summary>
+public static class ChannelEvents
+{
+    public const string MessagePosted = "chat.message_posted";
+    public const string MessageEdited = "chat.message_edited";
+    public const string MessageDeleted = "chat.message_deleted";
+    public const string ReactionToggled = "chat.reaction_toggled";
+}
+
+/// <summary>
 /// Per-user push event names (delivered via SignalR Clients.User, not the
 /// project group).
 /// </summary>

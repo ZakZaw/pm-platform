@@ -6,6 +6,11 @@ export const tasksApi = {
 
   get: (taskId) => apiClient.get(`/tasks/${taskId}`).then((r) => r.data),
 
+  // F2-18 — resolve a display key like "AT-247" inside an org. Used by
+  // the chat task-card embed.
+  getByKey: (orgSlug, key) =>
+    apiClient.get(`/orgs/${orgSlug}/tasks/by-key/${key}`).then((r) => r.data),
+
   create: (projectId, body) =>
     apiClient.post(`/projects/${projectId}/tasks`, body).then((r) => r.data),
 

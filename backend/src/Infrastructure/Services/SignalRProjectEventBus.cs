@@ -19,4 +19,11 @@ public class SignalRProjectEventBus(IHubContext<ProjectHub> hub) : IProjectEvent
             .User(userId.ToString())
             .SendAsync(eventName, payload, ct);
     }
+
+    public Task PublishToChannelAsync(Guid channelId, string eventName, object? payload, CancellationToken ct = default)
+    {
+        return hub.Clients
+            .Group(ProjectHub.ChannelGroupName(channelId))
+            .SendAsync(eventName, payload, ct);
+    }
 }

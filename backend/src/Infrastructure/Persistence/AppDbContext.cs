@@ -107,6 +107,9 @@ public class AppDbContext : DbContext, IAppDbContext
     // F2-22 post-meeting action-item drafts.
     public DbSet<MeetingActionItem> MeetingActionItems => Set<MeetingActionItem>();
 
+    // F2-23 source-control integrations (GitHub).
+    public DbSet<Integration> Integrations => Set<Integration>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Team / TeamMembership stay ignored until the team-management

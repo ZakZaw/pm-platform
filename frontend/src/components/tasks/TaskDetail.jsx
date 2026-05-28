@@ -3,6 +3,9 @@ import { useParams } from 'react-router-dom';
 import {
   ArrowUpRight,
   Check,
+  CircleAlert,
+  CircleCheck,
+  Clock,
   ExternalLink,
   Eye,
   GitCommit,
@@ -48,6 +51,24 @@ import { PlanningPokerModal } from './PlanningPokerModal';
 import './TaskDetail.css';
 
 const DEFAULT_TASK_COLOR = 'var(--accent)';
+
+// F2-23 — GitHub PR / CI badge styling.
+const PR_STATE_TONE = {
+  Open: 'info',
+  Merged: 'purple',
+  Closed: 'neutral',
+};
+const CI_TONE = {
+  Success: 'success',
+  Failure: 'danger',
+  Pending: 'warning',
+};
+
+function CiIcon({ status }) {
+  if (status === 'Success') return <CircleCheck size={10} aria-hidden="true" />;
+  if (status === 'Failure') return <CircleAlert size={10} aria-hidden="true" />;
+  return <Clock size={10} aria-hidden="true" />;
+}
 
 function shortKey(task) {
   if (task?.key) return task.key;
@@ -468,9 +489,16 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                   <Layers size={10} aria-hidden="true" /> {currentEpic.title}
                 </Badge>
               )}
-              {task.prUrl && (
-                <Badge>
-                  <GitPullRequest size={10} aria-hidden="true" /> PR
+              {(task.prUrl || task.prNumber) && (
+                <Badge tone={PR_STATE_TONE[task.prState] ?? 'neutral'}>
+                  <GitPullRequest size={10} aria-hidden="true" />
+                  {task.prNumber ? ` #${task.prNumber}` : ' PR'}
+                  {task.prState ? ` ${task.prState}` : ''}
+                </Badge>
+              )}
+              {task.ciStatus && (
+                <Badge tone={CI_TONE[task.ciStatus] ?? 'neutral'}>
+                  <CiIcon status={task.ciStatus} /> CI {task.ciStatus}
                 </Badge>
               )}
               <span
@@ -690,6 +718,22 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                   </button>
                 )}
               </div>
+
+              {task.ciStatus && (
+                <div className="drawer-prop">
+                  <span className="label-key">CI</span>
+                  <span className="row task-detail__pr-link">
+                    <Badge tone={CI_TONE[task.ciStatus] ?? 'neutral'}>
+                      <CiIcon status={task.ciStatus} /> {task.ciStatus}
+                    </Badge>
+                    {task.ciUrl && (
+                      <a href={task.ciUrl} target="_blank" rel="noreferrer noopener" title="View CI run">
+                        <ExternalLink size={11} aria-hidden="true" /> Logs
+                      </a>
+                    )}
+                  </span>
+                </div>
+              )}
 
               <div className="drawer-prop drawer-prop--block">
                 <span className="label-key">Labels</span>

@@ -140,5 +140,6 @@ public class CreateTaskCommandHandler(IAppDbContext db, ICurrentUser currentUser
         t.AssigneeId, t.ReviewerId, t.ReporterId,
         t.DueDate, t.PriorityOrder, t.AcceptanceCriteria,
         t.TimeLoggedMinutes, t.PrUrl,
+        t.PrNumber, t.PrState?.ToString(), t.CiStatus?.ToString(), t.CiUrl,
         t.CreatedByAi, t.CreatedAt);
 }

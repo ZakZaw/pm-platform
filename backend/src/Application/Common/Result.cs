@@ -875,3 +875,38 @@ public static class ActionItemErrors
         new("ActionItem.EmptyTranscript",
             "Can't process a meeting that has no transcript segments yet.");
 }
+
+/// <summary>F2-23 GitHub source-control integration.</summary>
+public static class IntegrationErrors
+{
+    public static readonly Error NotConfigured =
+        new("Integration.NotConfigured",
+            "GitHub integration is not configured on the server.");
+
+    public static readonly Error NotFound =
+        new("Integration.NotFound", "Integration not found.");
+
+    public static readonly Error Forbidden =
+        new("Integration.Forbidden",
+            "Only a project manager can manage integrations.");
+
+    public static readonly Error InvalidRepo =
+        new("Integration.InvalidRepo",
+            "Repository must be in \"owner/repo\" form.");
+
+    public static readonly Error RepoAlreadyLinked =
+        new("Integration.RepoAlreadyLinked",
+            "That repository is already linked to a project.");
+
+    public static readonly Error InvalidState =
+        new("Integration.InvalidState",
+            "The OAuth state was missing, expired, or tampered with.");
+
+    public static readonly Error TokenExchangeFailed =
+        new("Integration.TokenExchangeFailed",
+            "GitHub rejected the authorization. Please try connecting again.");
+
+    public static readonly Error InvalidSignature =
+        new("Integration.InvalidSignature",
+            "Webhook signature verification failed.");
+}

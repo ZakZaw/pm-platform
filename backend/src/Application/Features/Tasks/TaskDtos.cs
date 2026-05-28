@@ -22,6 +22,11 @@ public record TaskDto(
     string[] AcceptanceCriteria,
     int TimeLoggedMinutes,
     string? PrUrl,
+    // F2-23 GitHub PR / CI metadata for the linked pull request.
+    int? PrNumber,
+    string? PrState,
+    string? CiStatus,
+    string? CiUrl,
     bool CreatedByAi,
     DateTime CreatedAt);
 

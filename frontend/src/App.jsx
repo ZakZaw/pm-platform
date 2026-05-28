@@ -38,6 +38,7 @@ import { RoadmapPage } from '@/pages/project/RoadmapPage';
 import { ProjectListPage } from '@/pages/project/ProjectListPage';
 import { CustomFieldsPage } from '@/pages/project/CustomFieldsPage';
 import { AISettingsPage } from '@/pages/project/AISettingsPage';
+import { IntegrationsPage } from '@/pages/project/IntegrationsPage';
 import { OrgPortfolioPage } from '@/pages/dashboard/OrgPortfolioPage';
 import { RoadmapPublicPage } from '@/pages/share/RoadmapPublicPage';
 import { ChannelsLayout } from '@/pages/chat/ChannelsLayout';
@@ -216,6 +217,10 @@ function App() {
             <Route
               path="/:slug/projects/:projectSlug/settings/ai"
               element={<Keyed paramKey="projectSlug"><AISettingsPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/settings/integrations"
+              element={<Keyed paramKey="projectSlug"><IntegrationsPage /></Keyed>}
             />
             <Route
               path="/:slug/projects/:projectSlug/meetings"

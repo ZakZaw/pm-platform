@@ -24,6 +24,24 @@ if (!string.IsNullOrWhiteSpace(geminiEnv))
     builder.Configuration["AI:GeminiApiKey"] = geminiEnv;
 }
 
+// F2-23 — GitHub OAuth App creds live as flat env vars; bridge them to
+// the GitHub:* config section the adapter binds.
+var ghClientId = Environment.GetEnvironmentVariable("GITHUB_CLIENT_ID");
+if (!string.IsNullOrWhiteSpace(ghClientId))
+{
+    builder.Configuration["GitHub:ClientId"] = ghClientId;
+}
+var ghClientSecret = Environment.GetEnvironmentVariable("GITHUB_CLIENT_SECRET");
+if (!string.IsNullOrWhiteSpace(ghClientSecret))
+{
+    builder.Configuration["GitHub:ClientSecret"] = ghClientSecret;
+}
+var ghCallbackBase = Environment.GetEnvironmentVariable("API_BASE_URL");
+if (!string.IsNullOrWhiteSpace(ghCallbackBase))
+{
+    builder.Configuration["GitHub:CallbackBaseUrl"] = ghCallbackBase;
+}
+
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 

@@ -41,6 +41,16 @@ public class Task
     public string[] AcceptanceCriteria { get; set; } = [];
     public int TimeLoggedMinutes { get; set; }
     public string? PrUrl { get; set; }
+    /// <summary>F2-23 — GitHub PR metadata for the linked pull request.
+    /// Populated by the webhook receiver; null until a branch / PR that
+    /// names this task's key shows up. <see cref="PrUrl"/> is the link
+    /// target for the "Open PR" affordance.</summary>
+    public int? PrNumber { get; set; }
+    public PullRequestState? PrState { get; set; }
+    /// <summary>Rolled-up CI result for the linked PR's head commit.</summary>
+    public CiStatus? CiStatus { get; set; }
+    /// <summary>Deep link to the failing/passing CI run, for the badge.</summary>
+    public string? CiUrl { get; set; }
     public bool CreatedByAi { get; set; }
     /// <summary>F2-22 — if the task was accepted from a meeting's
     /// action-item draft, this holds the source meeting id so the

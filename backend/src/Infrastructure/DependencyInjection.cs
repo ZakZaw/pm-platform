@@ -50,6 +50,13 @@ public static class DependencyInjection
             return new Application.Features.Meetings.Commands.GuestLinkUrlBuilder(frontend.BaseUrl);
         });
 
+        // F2-23 — GitHub source-control integration. Registered even
+        // when client creds are blank; IsConfigured gates the OAuth
+        // endpoints, matching the AI / video posture.
+        services.Configure<ExternalAdapters.GitHub.GitHubSettings>(configuration.GetSection("GitHub"));
+        services.AddScoped<IGitHubService, ExternalAdapters.GitHub.GitHubAdapter>();
+        services.AddSingleton<IOAuthStateProtector, OAuthStateProtector>();
+
         services.AddSingleton<IProjectEventBus, SignalRProjectEventBus>();
         services.AddScoped<IActivityRecorder, EfActivityRecorder>();
         services.AddScoped<INotificationService, EfNotificationService>();

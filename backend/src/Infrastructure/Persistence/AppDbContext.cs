@@ -113,6 +113,9 @@ public class AppDbContext : DbContext, IAppDbContext
     // F2-24 public REST API keys.
     public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
 
+    // F2-25 integration health snapshots.
+    public DbSet<IntegrationHealth> IntegrationHealth => Set<IntegrationHealth>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Team / TeamMembership stay ignored until the team-management

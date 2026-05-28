@@ -83,6 +83,11 @@
 .intg-by {
   font-size: var(--fs-xs);
 }
+.intg-health-error {
+  flex-basis: 100%;
+  font-size: var(--fs-xs);
+  color: var(--danger);
+}
 
 .intg-hint {
   margin-top: var(--s-5);

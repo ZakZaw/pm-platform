@@ -166,6 +166,31 @@ public class GitHubAdapter(
         return CryptographicOperations.FixedTimeEquals(computed, providedBytes);
     }
 
+    public async Task<GitHubRepoAccess> CheckRepoAccessAsync(
+        string repoFullName, string? accessToken, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(accessToken))
+            return GitHubRepoAccess.Unauthorized;
+        try
+        {
+            using var req = BuildApiRequest(HttpMethod.Get, $"/repos/{repoFullName}", accessToken, body: null);
+            var client = httpClientFactory.CreateClient("github");
+            var resp = await client.SendAsync(req, ct);
+            return (int)resp.StatusCode switch
+            {
+                >= 200 and < 300 => GitHubRepoAccess.Ok,
+                401 or 403 => GitHubRepoAccess.Unauthorized,
+                404 => GitHubRepoAccess.NotFound,
+                _ => GitHubRepoAccess.Error,
+            };
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "GitHub repo access check failed for {Repo}", repoFullName);
+            return GitHubRepoAccess.Error;
+        }
+    }
+
     private HttpRequestMessage BuildApiRequest(
         HttpMethod method, string path, string accessToken, object? body)
     {

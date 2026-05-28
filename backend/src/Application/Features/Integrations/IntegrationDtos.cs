@@ -12,7 +12,12 @@ public record IntegrationDto(
     bool WebhookActive,
     string ConnectedByName,
     DateTime CreatedAt,
-    DateTime? LastEventAt);
+    DateTime? LastEventAt,
+    // F2-25 health snapshot.
+    string Health,
+    DateTime? HealthCheckedAt,
+    DateTime? LastSyncedAt,
+    string? HealthError);
 
 /// <summary>Returned by the authorize endpoint — the URL the browser
 /// should be sent to in order to start the GitHub OAuth consent.</summary>

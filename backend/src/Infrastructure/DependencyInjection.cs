@@ -57,6 +57,9 @@ public static class DependencyInjection
         services.AddScoped<IGitHubService, ExternalAdapters.GitHub.GitHubAdapter>();
         services.AddSingleton<IOAuthStateProtector, OAuthStateProtector>();
 
+        // F2-25 — periodic integration health probe.
+        services.AddHostedService<Services.Integrations.IntegrationHealthMonitorService>();
+
         services.AddSingleton<IProjectEventBus, SignalRProjectEventBus>();
         services.AddScoped<IActivityRecorder, EfActivityRecorder>();
         services.AddScoped<INotificationService, EfNotificationService>();

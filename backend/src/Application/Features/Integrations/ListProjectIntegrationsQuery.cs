@@ -1,5 +1,6 @@
 using Application.Common;
 using Application.Interfaces;
+using Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,18 +31,40 @@ public class ListProjectIntegrationsQueryHandler(IAppDbContext db, ICurrentUser 
         var items = await db.Integrations
             .Where(i => i.ProjectId == request.ProjectId)
             .OrderByDescending(i => i.CreatedAt)
+            .Select(i => new
+            {
+                i.Id,
+                i.ProjectId,
+                Provider = i.Provider.ToString(),
+                i.RepoFullName,
+                i.WebhookId,
+                ConnectedByName = i.ConnectedBy.FullName,
+                i.CreatedAt,
+                i.LastEventAt,
+                Health = db.IntegrationHealth
+                    .Where(h => h.IntegrationId == i.Id)
+                    .Select(h => new { h.Status, h.LastCheckedAt, h.LastSyncedAt, h.ErrorMessage })
+                    .FirstOrDefault(),
+            })
+            .ToListAsync(ct);
+
+        var dtos = items
             .Select(i => new IntegrationDto(
                 i.Id,
                 i.ProjectId,
-                i.Provider.ToString(),
+                i.Provider,
                 i.RepoFullName,
                 "https://github.com/" + i.RepoFullName,
                 i.WebhookId != null,
-                i.ConnectedBy.FullName,
+                i.ConnectedByName,
                 i.CreatedAt,
-                i.LastEventAt))
-            .ToListAsync(ct);
+                i.LastEventAt,
+                (i.Health?.Status ?? IntegrationHealthStatus.Unknown).ToString(),
+                i.Health?.LastCheckedAt,
+                i.Health?.LastSyncedAt,
+                i.Health?.ErrorMessage))
+            .ToList();
 
-        return Result.Success<IReadOnlyList<IntegrationDto>>(items);
+        return Result.Success<IReadOnlyList<IntegrationDto>>(dtos);
     }
 }

@@ -1,5 +1,14 @@
 namespace Application.Interfaces;
 
+/// <summary>F2-25 — outcome of probing a repo with a stored token.</summary>
+public enum GitHubRepoAccess
+{
+    Ok,
+    Unauthorized,
+    NotFound,
+    Error,
+}
+
 /// <summary>
 /// F2-23 — GitHub source-control adapter. Wraps the OAuth handshake,
 /// repo-webhook registration, and inbound-webhook signature checks.
@@ -38,4 +47,10 @@ public interface IGitHubService
     /// <c>X-Hub-Signature-256</c> value ("sha256=…"); <paramref name="body"/>
     /// is the exact bytes received.</summary>
     bool VerifyWebhookSignature(string? signatureHeader, byte[] body, string secret);
+
+    /// <summary>F2-25 — probe repo reachability with the stored token, for
+    /// the health monitor. Distinguishes auth failure (token revoked /
+    /// expired) from a missing repo from a transient error.</summary>
+    Task<GitHubRepoAccess> CheckRepoAccessAsync(
+        string repoFullName, string? accessToken, CancellationToken ct);
 }

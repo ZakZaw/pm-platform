@@ -45,6 +45,8 @@ import { ChannelPage } from '@/pages/chat/ChannelPage';
 import { MeetingsPage } from '@/pages/meetings/MeetingsPage';
 import { CreateMeetingPage } from '@/pages/meetings/CreateMeetingPage';
 import { MeetingDetailPage } from '@/pages/meetings/MeetingDetailPage';
+import { MeetingRoomPage } from '@/pages/meetings/MeetingRoomPage';
+import { GuestMeetingPage } from '@/pages/meetings/GuestMeetingPage';
 import { AppShell } from '@/components/layout/AppShell';
 import { ToastProvider } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
@@ -90,6 +92,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/invitations/:token" element={<AcceptInvitePage />} />
           <Route path="/share/roadmap/:token" element={<RoadmapPublicPage />} />
+          <Route path="/meetings/guest/:token" element={<GuestMeetingPage />} />
           <Route element={<ProtectedLayout />}>
             <Route path="/home" element={<HomePage />} />
             <Route path="/dashboard" element={<MyWorkPage />} />
@@ -224,6 +227,10 @@ function App() {
             <Route
               path="/:slug/projects/:projectSlug/meetings/:meetingId"
               element={<Keyed paramKey="meetingId"><MeetingDetailPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/projects/:projectSlug/meetings/:meetingId/room"
+              element={<Keyed paramKey="meetingId"><MeetingRoomPage /></Keyed>}
             />
             <Route path="/settings/profile" element={<ProfilePage />} />
             <Route

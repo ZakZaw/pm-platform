@@ -1,10 +1,22 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Calendar, Check, Clock, Repeat, Trash2, Users, X } from 'lucide-react';
+import {
+  Calendar,
+  Check,
+  Clock,
+  Copy,
+  Link as LinkIcon,
+  Repeat,
+  Trash2,
+  Users,
+  Video,
+  X,
+} from 'lucide-react';
 import {
   Avatar,
   Badge,
   Button,
+  Input,
   Skeleton,
   useToast,
 } from '@/components/ui';
@@ -165,11 +177,23 @@ export function MeetingDetailPage() {
               )}
             </div>
           </div>
-          {isOrganiser && meeting.status === 'Scheduled' && (
-            <Button variant="ghost" onClick={cancelMeeting}>
-              <Trash2 size={12} aria-hidden="true" /> Cancel meeting
-            </Button>
-          )}
+          <div className="row gap-2">
+            {meeting.status === 'Scheduled' && (
+              <Button
+                variant="primary"
+                onClick={() =>
+                  navigate(`/${orgSlug}/projects/${projectSlug}/meetings/${meeting.id}/room`)
+                }
+              >
+                <Video size={12} aria-hidden="true" /> Join meeting
+              </Button>
+            )}
+            {isOrganiser && meeting.status === 'Scheduled' && (
+              <Button variant="ghost" onClick={cancelMeeting}>
+                <Trash2 size={12} aria-hidden="true" /> Cancel meeting
+              </Button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -277,7 +301,151 @@ export function MeetingDetailPage() {
             ))}
           </ul>
         </section>
+
+        {isOrganiser && meeting.status === 'Scheduled' && (
+          <GuestLinksCard meetingId={meeting.id} toast={toast} />
+        )}
       </div>
     </div>
+  );
+}
+
+/**
+ * F2-20 — organiser surface to mint and revoke guest invite URLs.
+ * Lives on the detail page so the workflow is "schedule → invite
+ * externals" without a separate trip.
+ */
+function GuestLinksCard({ meetingId, toast }) {
+  const [links, setLinks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [label, setLabel] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const refresh = useCallback(async () => {
+    try {
+      const rows = await meetingsApi.listGuestLinks(meetingId);
+      setLinks(rows);
+    } catch {
+      // Non-fatal — the card just shows empty.
+    }
+  }, [meetingId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      await refresh();
+      if (!cancelled) setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [refresh]);
+
+  async function create() {
+    setBusy(true);
+    try {
+      await meetingsApi.createGuestLink(meetingId, { guestLabel: label.trim() || null });
+      setLabel('');
+      await refresh();
+      toast.show({ tone: 'success', message: 'Guest link created.' });
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        message: err.response?.data?.detail ?? 'Could not create link.',
+      });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function copy(url) {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.show({ tone: 'success', message: 'Link copied.' });
+    } catch {
+      toast.show({ tone: 'danger', message: 'Copy failed — select and copy manually.' });
+    }
+  }
+
+  async function revoke(id) {
+    if (!confirm('Revoke this guest link? Anyone holding it will be locked out.')) return;
+    try {
+      await meetingsApi.revokeGuestLink(id);
+      await refresh();
+    } catch (err) {
+      toast.show({
+        tone: 'danger',
+        message: err.response?.data?.detail ?? 'Could not revoke link.',
+      });
+    }
+  }
+
+  return (
+    <section className="meeting-detail-card" style={{ gridColumn: '1 / -1' }}>
+      <div className="row between">
+        <h2><LinkIcon size={12} aria-hidden="true" /> Guest links</h2>
+        <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>
+          Anyone with the link can join without an account.
+        </span>
+      </div>
+      <div className="row gap-2" style={{ alignItems: 'flex-end' }}>
+        <div style={{ flex: 1 }}>
+          <Input
+            label="Optional label"
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            placeholder="e.g. Client review"
+          />
+        </div>
+        <Button variant="primary" onClick={create} disabled={busy}>
+          {busy ? 'Creating…' : 'Create link'}
+        </Button>
+      </div>
+
+      {loading ? (
+        <p className="muted">Loading links…</p>
+      ) : links.length === 0 ? (
+        <p className="muted">No guest links yet.</p>
+      ) : (
+        <ul className="meeting-attendee-list">
+          {links.map((g) => {
+            const expired = new Date(g.expiresAt).getTime() < Date.now();
+            const dead = !!g.revokedAt || expired;
+            return (
+              <li key={g.id} className="meeting-attendee-list-row">
+                <div className="meeting-attendee-meta">
+                  <div className="meeting-attendee-name truncate">
+                    {g.guestLabel || 'Guest link'}
+                  </div>
+                  <div className="meeting-attendee-mail truncate" title={g.url}>
+                    {g.url}
+                  </div>
+                </div>
+                {g.revokedAt ? (
+                  <Badge tone="danger">Revoked</Badge>
+                ) : expired ? (
+                  <Badge tone="warning">Expired</Badge>
+                ) : (
+                  <Badge tone="success">
+                    Expires {new Date(g.expiresAt).toLocaleString([], {
+                      month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+                    })}
+                  </Badge>
+                )}
+                {!dead && (
+                  <Button size="sm" variant="ghost" onClick={() => copy(g.url)} title="Copy link">
+                    <Copy size={11} aria-hidden="true" />
+                  </Button>
+                )}
+                {!g.revokedAt && (
+                  <Button size="sm" variant="ghost" onClick={() => revoke(g.id)}>
+                    Revoke
+                  </Button>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
   );
 }

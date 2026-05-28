@@ -27,4 +27,25 @@ export const meetingsApi = {
   // Preview AI agenda for the create form (no persistence).
   previewAgenda: (projectId, body) =>
     apiClient.post(`/projects/${projectId}/meetings/agenda-preview`, body).then((r) => r.data),
+
+  // F2-20 video.
+  join: (meetingId) =>
+    apiClient.post(`/meetings/${meetingId}/join`).then((r) => r.data),
+
+  listGuestLinks: (meetingId) =>
+    apiClient.get(`/meetings/${meetingId}/guest-links`).then((r) => r.data),
+
+  createGuestLink: (meetingId, { guestLabel = null, hoursValid = null } = {}) =>
+    apiClient
+      .post(`/meetings/${meetingId}/guest-links`, { guestLabel, hoursValid })
+      .then((r) => r.data),
+
+  revokeGuestLink: (guestLinkId) =>
+    apiClient.delete(`/meetings/guest-links/${guestLinkId}`).then(() => undefined),
+
+  // Anonymous: token is the credential.
+  joinAsGuest: (token, displayName = null) =>
+    apiClient
+      .post(`/meetings/guest/${token}/join`, { displayName })
+      .then((r) => r.data),
 };

@@ -56,7 +56,17 @@ public class Meeting
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+    // F2-20 — live room state. ActiveParticipantCount is the truth
+    // the LiveKit webhook stream maintains; recording start/stop are
+    // driven from the 0->2 and last-leaves transitions on that count.
+    public int ActiveParticipantCount { get; set; }
+    public string? RecordingEgressId { get; set; }
+    public DateTime? RecordingStartedAt { get; set; }
+    public DateTime? RecordingStoppedAt { get; set; }
+    public string? RecordingUrl { get; set; }
+
     public Project Project { get; set; } = null!;
     public User Organizer { get; set; } = null!;
     public ICollection<MeetingAttendee> Attendees { get; set; } = [];
+    public ICollection<MeetingGuestLink> GuestLinks { get; set; } = [];
 }

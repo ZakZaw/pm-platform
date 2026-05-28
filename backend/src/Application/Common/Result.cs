@@ -807,4 +807,29 @@ public static class MeetingErrors
     public static readonly Error AlreadyCancelled =
         new("Meeting.AlreadyCancelled",
             "This meeting has already been cancelled.");
+
+    // F2-20 video join + guest links.
+    public static readonly Error TooEarlyToJoin =
+        new("Meeting.TooEarlyToJoin",
+            "The meeting room opens 15 minutes before the scheduled start.");
+
+    public static readonly Error GuestLinkNotFound =
+        new("Meeting.GuestLinkNotFound",
+            "Invite link is invalid or no longer active.");
+
+    public static readonly Error GuestLinkExpired =
+        new("Meeting.GuestLinkExpired",
+            "Invite link has expired. Ask the organiser for a fresh one.");
+}
+
+/// <summary>F2-20 built-in video.</summary>
+public static class VideoErrors
+{
+    public static readonly Error NotConfigured =
+        new("Video.NotConfigured",
+            "Video is not configured on the server. Set LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_SECRET.");
+
+    public static readonly Error InvalidWebhookSignature =
+        new("Video.InvalidWebhookSignature",
+            "Rejected webhook — signature failed to verify.");
 }

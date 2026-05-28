@@ -98,6 +98,9 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Meeting> Meetings => Set<Meeting>();
     public DbSet<MeetingAttendee> MeetingAttendees => Set<MeetingAttendee>();
 
+    // F2-20 guest links for video joins.
+    public DbSet<MeetingGuestLink> MeetingGuestLinks => Set<MeetingGuestLink>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Team / TeamMembership stay ignored until the team-management

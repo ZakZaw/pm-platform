@@ -8,20 +8,12 @@ import { useEffect, useState } from 'react';
 import { Avatar, Badge, Button, Icon, Skeleton } from '@/components/ui';
 import {
   BurndownChart,
+  EpicProgressBars,
   HealthGauge,
   VelocityChart,
   WorkloadHeatmap,
 } from '@/components/charts';
 import { activityApi } from '@/api/activity.api';
-
-const PLACEHOLDER_VELOCITY = [
-  { name: 'S18', committed: 35, completed: 32 },
-  { name: 'S19', committed: 38, completed: 38 },
-  { name: 'S20', committed: 36, completed: 30 },
-  { name: 'S21', committed: 40, completed: 42 },
-  { name: 'S22', committed: 39, completed: 36 },
-  { name: 'S23', committed: 42, completed: 41 },
-];
 
 const PLACEHOLDER_HEAT_DAYS = ['M', 'T', 'W', 'T', 'F', 'M', 'T', 'W', 'T', 'F'];
 
@@ -91,33 +83,46 @@ export const ENGINEERING_WIDGETS = [
     id: 'burndown',
     title: 'Sprint burndown',
     defaults: { w: 8, h: 5, minW: 4, minH: 4 },
-    render: ({ sprint, sprintDone, sprintTotal, daysLeft, isBehind, burnPoints, today, sprintLen }) => (
-      <div className="dash-card">
-        <header className="dash-card__head">
-          <strong>Sprint burndown</strong>
-          {sprint && (
-            <Badge tone={isBehind ? 'warning' : 'success'} dot>
-              {isBehind ? 'Behind ideal' : 'On track'}
-            </Badge>
-          )}
-        </header>
-        <div className="dash-card__body">
-          <div className="muted dashboard-sub">
-            {sprint
-              ? `${sprint.name} · ${sprintDone} / ${sprintTotal} pt · ${daysLeft} day${daysLeft === 1 ? '' : 's'} left`
-              : 'No active sprint'}
+    render: ({ burndown }) => {
+      const points = burndown?.points ?? [];
+      const actual = points.map((p) => p.remaining);
+      const total = burndown?.totalPoints ?? 0;
+      const days = burndown?.days ?? 14;
+      const today = burndown?.todayIndex ?? 0;
+      const hasSprint = !!burndown?.sprintId;
+      // Current remaining = last non-null sample; done = burned-down points.
+      const remainingNow = [...actual].reverse().find((v) => v != null) ?? total;
+      const done = total - remainingNow;
+      const daysLeft = Math.max(0, days - today);
+      const idealNow = days ? total * (1 - today / days) : 0;
+      const isBehind = remainingNow > idealNow + 2;
+      return (
+        <div className="dash-card">
+          <header className="dash-card__head">
+            <strong>Sprint burndown</strong>
+            {hasSprint && (
+              <Badge tone={isBehind ? 'warning' : 'success'} dot>
+                {isBehind ? 'Behind ideal' : 'On track'}
+              </Badge>
+            )}
+          </header>
+          <div className="dash-card__body">
+            <div className="muted dashboard-sub">
+              {hasSprint
+                ? `${burndown.sprintName} · ${done} / ${total} pt · ${daysLeft} day${daysLeft === 1 ? '' : 's'} left`
+                : 'No active sprint'}
+            </div>
+            {hasSprint ? (
+              <BurndownChart total={total} actual={actual} today={today} days={days} width={520} height={150} />
+            ) : (
+              <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-sm)' }}>
+                Start a sprint to see its burndown.
+              </p>
+            )}
           </div>
-          <BurndownChart
-            total={sprintTotal || 41}
-            actual={sprint ? burnPoints : [41, 39, 36, 34, 33, 31, 28, 28, 26, 24, 22]}
-            today={sprint ? today : 10}
-            days={sprintLen || 14}
-            width={520}
-            height={150}
-          />
         </div>
-      </div>
-    ),
+      );
+    },
   },
   {
     id: 'project-health',
@@ -150,10 +155,10 @@ export const ENGINEERING_WIDGETS = [
     id: 'velocity',
     title: 'Velocity',
     defaults: { w: 8, h: 5, minW: 4, minH: 4 },
-    render: ({ sprint, sprintTotal, sprintDone }) => (
+    render: ({ velocity }) => (
       <div className="dash-card">
         <header className="dash-card__head">
-          <strong>Velocity <span className="dashboard-sample">sample</span></strong>
+          <strong>Velocity</strong>
           <div className="row gap-4" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)' }}>
             <span className="row gap-2">
               <span className="dashboard-legend-swatch" style={{ background: 'var(--surface-hover)' }} />
@@ -163,22 +168,30 @@ export const ENGINEERING_WIDGETS = [
               <span className="dashboard-legend-swatch" style={{ background: 'var(--accent)' }} />
               Completed
             </span>
+            <span className="row gap-2">
+              <span className="dashboard-legend-swatch" style={{ background: 'var(--ai-2)' }} />
+              Avg
+            </span>
           </div>
         </header>
         <div className="dash-card__body">
-          <VelocityChart
-            sprints={[
-              ...PLACEHOLDER_VELOCITY,
-              {
-                name: sprint?.name ?? 'S24',
-                committed: sprintTotal || 41,
-                completed: sprintDone || 26,
-                current: true,
-              },
-            ]}
-            width={520}
-            height={150}
-          />
+          {(velocity?.length ?? 0) === 0 ? (
+            <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-sm)' }}>
+              No sprint history yet. Close a sprint to start tracking velocity.
+            </p>
+          ) : (
+            <VelocityChart
+              sprints={velocity.map((v) => ({
+                name: v.name,
+                committed: v.committed,
+                completed: v.completed,
+                rollingAverage: v.rollingAverage,
+                current: v.current,
+              }))}
+              width={520}
+              height={150}
+            />
+          )}
         </div>
       </div>
     ),
@@ -191,31 +204,7 @@ export const ENGINEERING_WIDGETS = [
       <div className="dash-card">
         <header className="dash-card__head"><strong>Epic progress</strong></header>
         <div className="dash-card__body">
-          {epicProgress.length === 0 ? (
-            <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-sm)' }}>No epics with tasks yet.</p>
-          ) : (
-            <div className="col gap-4">
-              {epicProgress.map((e) => {
-                const pct = e.total > 0 ? e.done / e.total : 0;
-                return (
-                  <div key={e.id}>
-                    <div className="row between" style={{ marginBottom: 4 }}>
-                      <span className="row gap-3">
-                        <span className="dashboard-epic-swatch" style={{ background: e.color }} />
-                        <span className="truncate" style={{ fontSize: 'var(--fs-sm)' }}>{e.name}</span>
-                      </span>
-                      <span className="mono muted" style={{ fontSize: 'var(--fs-xs)' }}>
-                        {e.done}/{e.total}
-                      </span>
-                    </div>
-                    <div className="dashboard-epic-track">
-                      <div className="dashboard-epic-fill" style={{ width: `${pct * 100}%`, background: e.color }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          <EpicProgressBars epics={epicProgress ?? []} metric="points" limit={6} />
         </div>
       </div>
     ),

@@ -1,0 +1,51 @@
+.epic-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+.epic-bars-empty {
+  margin: 0;
+  font-size: var(--fs-sm);
+}
+
+.epic-bar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--s-2);
+}
+
+.epic-bar-name {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-width: 0;
+  font-size: var(--fs-sm);
+  color: var(--text);
+}
+
+.epic-bar-swatch {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--r-xs);
+}
+
+.epic-bar-count {
+  flex: none;
+  font-size: var(--fs-xs);
+}
+
+.epic-bar-track {
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--surface-hover);
+  overflow: hidden;
+}
+
+.epic-bar-fill {
+  height: 100%;
+  border-radius: var(--r-pill);
+  transition: width var(--dur-base) var(--ease-out);
+}

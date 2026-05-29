@@ -11,18 +11,14 @@ import {
 import { projectsApi } from '@/api/projects.api';
 import { boardApi } from '@/api/board.api';
 import { sprintsApi } from '@/api/sprints.api';
-import { epicsApi } from '@/api/epics.api';
 import { dashboardApi } from '@/api/dashboard.api';
+import { analyticsApi } from '@/api/analytics.api';
 import { widgetsForType } from '@/components/dashboard/dashboardRegistry';
 import { DashboardCanvas, defaultLayout } from '@/components/dashboard/DashboardCanvas';
 import { ENGINEERING_WIDGETS } from '@/components/dashboard/engineeringWidgets';
 import { useProjectRealtime } from '@/hooks/useProjectRealtime';
 import { findProjectType } from '@/constants/projectTypes';
 import './DashboardPage.css';
-
-const EPIC_COLORS = ['#5B6AF0', '#4FD1E0', '#7A6BFF', '#C77BFF', '#3FB984', '#E0A23A', '#E5484D', '#4F9EFF'];
-
-function epicColor(epic, idx) { return epic.color || EPIC_COLORS[idx % EPIC_COLORS.length]; }
 
 function sumPts(board, predicate) {
   if (!board) return 0;
@@ -34,18 +30,6 @@ function sumPts(board, predicate) {
     }
   }
   return total;
-}
-
-function buildBurndown(total, done, days, today) {
-  if (!total || !days) return { actual: [], today: 0 };
-  const remaining = total - done;
-  const actual = Array.from({ length: days + 1 }, (_, i) => {
-    if (i > today) return null;
-    if (today === 0) return total;
-    const ratio = i / today;
-    return total - (total - remaining) * ratio;
-  });
-  return { actual, today };
 }
 
 function daysBetween(a, b) {
@@ -122,7 +106,9 @@ function EngineeringDashboard({ project }) {
   const toast = useToast();
   const [board, setBoard] = useState(null);
   const [sprint, setSprint] = useState(null);
-  const [epics, setEpics] = useState([]);
+  // F2-26 — real analytics, recomputed server-side. Replaces the previously
+  // client-derived / placeholder burndown, velocity and epic-progress.
+  const [analytics, setAnalytics] = useState({ burndown: null, velocity: [], epicProgress: [] });
   const [layout, setLayout] = useState(() => defaultLayout(ENGINEERING_WIDGETS));
   const [layoutLoaded, setLayoutLoaded] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -134,14 +120,16 @@ function EngineeringDashboard({ project }) {
 
   const reloadData = useCallback(async () => {
     try {
-      const [b, s, eps] = await Promise.all([
+      const [b, s, burndown, velocity, epicProgress] = await Promise.all([
         boardApi.get(project.id).catch(() => null),
         sprintsApi.getActive(project.id).catch(() => null),
-        epicsApi.listForProject(project.id).catch(() => []),
+        analyticsApi.burndown(project.id).catch(() => null),
+        analyticsApi.velocity(project.id).then((r) => r.sprints ?? []).catch(() => []),
+        analyticsApi.epicProgress(project.id).then((r) => r.epics ?? []).catch(() => []),
       ]);
       setBoard(b);
       setSprint(s);
-      setEpics(eps);
+      setAnalytics({ burndown, velocity, epicProgress });
       setActivityVersion((v) => v + 1);
     } catch (err) {
       setError(err.response?.data?.detail ?? 'Could not load dashboard.');
@@ -195,7 +183,9 @@ function EngineeringDashboard({ project }) {
     'epic.dates_changed': () => reloadData(),
   }), [reloadData]));
 
-  // Compute the shared ctx that every widget reads.
+  // Compute the shared ctx that every widget reads. Burndown / velocity /
+  // epic-progress now come straight from the analytics endpoints; only the
+  // board-derived KPI counters are computed client-side here.
   const ctx = useMemo(() => {
     const openTasks = (() => {
       if (!board) return 0;
@@ -215,46 +205,16 @@ function EngineeringDashboard({ project }) {
       ? Math.min(sprintLen, daysBetween(sprint.startDate, new Date().toISOString()))
       : 0;
     const daysLeft = Math.max(0, sprintLen - today);
-    const { actual: burnPoints } = buildBurndown(sprintTotal, sprintDone, sprintLen, today);
-    const idealAtToday = sprintLen ? sprintTotal * (1 - today / sprintLen) : 0;
-    const actualAtToday = sprintTotal - sprintDone;
-    const isBehind = actualAtToday > idealAtToday + 2;
-
-    const epicProgress = (() => {
-      if (!epics || epics.length === 0) return [];
-      const byEpic = {};
-      if (board) {
-        for (const lane of board.swimlanes) {
-          for (const col of lane.columns) {
-            for (const card of col.cards) {
-              if (!card.epicId) continue;
-              const entry = (byEpic[card.epicId] ??= { done: 0, total: 0 });
-              entry.total += 1;
-              if (col.status === 'Done') entry.done += 1;
-            }
-          }
-        }
-      }
-      return epics
-        .map((e, i) => ({
-          id: e.id,
-          name: e.title,
-          color: epicColor(e, i),
-          done: byEpic[e.id]?.done ?? 0,
-          total: byEpic[e.id]?.total ?? 0,
-        }))
-        .filter((e) => e.total > 0)
-        .sort((a, b) => b.total - a.total)
-        .slice(0, 4);
-    })();
 
     return {
-      project, board, sprint, epics,
+      project, board, sprint,
       openTasks, sprintTotal, sprintDone, sprintLen, today, daysLeft,
-      burnPoints, isBehind, epicProgress,
+      burndown: analytics.burndown,
+      velocity: analytics.velocity,
+      epicProgress: analytics.epicProgress,
       activityVersion,
     };
-  }, [project, board, sprint, epics, activityVersion]);
+  }, [project, board, sprint, analytics, activityVersion]);
 
   const removeWidget = (id) => setLayout((l) => l.filter((it) => it.i !== id));
 

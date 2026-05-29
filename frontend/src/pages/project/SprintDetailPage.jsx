@@ -19,6 +19,7 @@ import { TaskDetailDrawer } from '@/components/tasks/TaskDetailDrawer';
 import { projectsApi } from '@/api/projects.api';
 import { sprintsApi } from '@/api/sprints.api';
 import { boardApi } from '@/api/board.api';
+import { analyticsApi } from '@/api/analytics.api';
 import { tasksApi } from '@/api/tasks.api';
 import { aiApi } from '@/api/ai.api';
 import { describeAiError } from '@/components/ai/aiErrors';
@@ -70,6 +71,7 @@ export function SprintDetailPage() {
   const [project, setProject] = useState(null);
   const [sprint, setSprint] = useState(null);
   const [board, setBoard] = useState(null);
+  const [burndown, setBurndown] = useState(null);
   const [error, setError] = useState(null);
   const [openedTaskId, setOpenedTaskId] = useState(null);
   const [newTaskTitle, setNewTaskTitle] = useState('');
@@ -123,13 +125,15 @@ export function SprintDetailPage() {
   }, [board]);
 
   const load = useCallback(async (projectId) => {
-    const [sprints, b] = await Promise.all([
+    const [sprints, b, bd] = await Promise.all([
       sprintsApi.listForProject(projectId),
       boardApi.get(projectId, { sprintId }).catch(() => null),
+      analyticsApi.burndown(projectId, sprintId).catch(() => null),
     ]);
     const s = sprints.find((x) => x.id === sprintId);
     setSprint(s ?? null);
     setBoard(b);
+    setBurndown(bd);
   }, [sprintId]);
 
   useEffect(() => {
@@ -319,12 +323,14 @@ export function SprintDetailPage() {
   const pct = sprint.totalPoints > 0
     ? Math.round((sprint.donePoints / sprint.totalPoints) * 100)
     : 0;
-  const { actual: burnPoints } = buildBurndown(
-    sprint.totalPoints || 0,
-    sprint.donePoints || 0,
-    sprintLen,
-    today,
-  );
+  // Prefer the real day-by-day burndown from the analytics endpoint; fall
+  // back to the synthetic linear interpolation if it hasn't loaded.
+  const burnTotal = burndown?.totalPoints ?? sprint.totalPoints ?? 0;
+  const burnDays = burndown?.days || sprintLen || 14;
+  const burnToday = burndown?.todayIndex ?? today;
+  const burnPoints = burndown?.points
+    ? burndown.points.map((p) => p.remaining)
+    : buildBurndown(sprint.totalPoints || 0, sprint.donePoints || 0, sprintLen, today).actual;
   const canEditDates = sprint.status !== 'Closed';
 
   return (
@@ -481,10 +487,10 @@ export function SprintDetailPage() {
             </div>
             <div className="sprint-detail-chart-wrap">
               <BurndownChart
-                total={sprint.totalPoints || 1}
+                total={burnTotal || 1}
                 actual={burnPoints}
-                today={today}
-                days={sprintLen || 14}
+                today={burnToday}
+                days={burnDays}
                 width={620}
                 height={180}
               />

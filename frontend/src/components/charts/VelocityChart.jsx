@@ -1,13 +1,27 @@
 /**
- * Committed-vs-completed bar chart for the last N sprints.
- * `sprints` is `[{ name, committed, completed, current }]`.
+ * Committed-vs-completed bar chart for the last N sprints, with an optional
+ * rolling-average overlay line (AN-02).
+ * `sprints` is `[{ name, committed, completed, current, rollingAverage? }]`.
+ * When any entry carries a numeric `rollingAverage`, a line is drawn across
+ * the bar centers.
  */
 export function VelocityChart({ sprints = [], width = 320, height = 140 }) {
   if (sprints.length === 0) {
     return <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} />;
   }
-  const max = Math.max(...sprints.map((s) => Math.max(s.committed, s.completed)), 10);
+  const hasRolling = sprints.some((s) => typeof s.rollingAverage === 'number');
+  const max = Math.max(
+    ...sprints.map((s) => Math.max(s.committed, s.completed, s.rollingAverage ?? 0)),
+    10,
+  );
   const bw = (width - 22) / sprints.length - 6;
+  const barCenter = (i) => 22 + i * (bw + 6) + bw / 2;
+  const yFor = (v) => height - (v / max) * (height - 20);
+  const rollingPath = hasRolling
+    ? sprints
+        .map((s, i) => `${i === 0 ? 'M' : 'L'} ${barCenter(i)} ${yFor(s.rollingAverage ?? 0)}`)
+        .join(' ')
+    : '';
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
       {[10, 20, 30, 40, 50].filter((v) => v <= max).map((v) => (
@@ -67,6 +81,27 @@ export function VelocityChart({ sprints = [], width = 320, height = 140 }) {
           </g>
         );
       })}
+      {hasRolling && (
+        <>
+          <path
+            d={rollingPath}
+            stroke="var(--ai-2)"
+            strokeWidth="1.75"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          {sprints.map((s, i) => (
+            <circle
+              key={`r-${s.name}`}
+              cx={barCenter(i)}
+              cy={yFor(s.rollingAverage ?? 0)}
+              r="2.5"
+              fill="var(--ai-2)"
+            />
+          ))}
+        </>
+      )}
     </svg>
   );
 }

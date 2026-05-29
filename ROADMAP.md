@@ -1283,9 +1283,17 @@ Covered by F2-23 (GitHub integration). AC validated there.
 - Velocity shows last 6 sprints with rolling average overlay
 - Epic progress recomputed on every story-points change
 
+> **Implementation note (shipped).** Backend: `AnalyticsController` exposes the three GETs under `api/v1/projects/{id}/analytics/{burndown,velocity,epic-progress}` (all `RequireProjectRole(Viewer)`), backed by query handlers in `Application/Features/Analytics/`. Burndown reconstructs the real day-by-day remaining line from `TaskStatusChange` history against the sprint's **scope baseline** (so a closed sprint charts against its committed scope, not the carryover-stripped current set); the pure, unit-tested `BurndownCalculator` does the math (`tests/Unit/BurndownCalculatorTests.cs`). Velocity returns the last 6 *started* sprints (Active+Closed) with a trailing 3-sprint rolling average; committed = scope-baseline points, completed = `FinalVelocity` (closed) or live Done points (active). Epic-progress returns points+counts per non-archived epic.
+> **Frontend decision — SVG, not recharts.** The roadmap said "using recharts," but the shipped charts and CLAUDE.md's hard rules are token-styled hand-rolled SVG (no hardcoded colors). We extended the existing `BurndownChart`/`VelocityChart` (added a rolling-average overlay line in `--ai-2`) and added a new `EpicProgressBars` rather than introduce recharts. `recharts` remains in `package.json` but is unused — **remove it or adopt it deliberately** before building more charts; don't leave the ambiguity. The Engineering dashboard (`DashboardPage` + `engineeringWidgets`) and `SprintDetailPage` now consume the real endpoints — the burndown/velocity/epic-progress **placeholders are gone**. Charts still showing a `sample` chip (project health, team workload, weekly AI insight, all KPI cards except *Open tasks*) are the **next analytics gaps**.
+
 ---
 
 # Phase 3 — Public Beta (Weeks 21–32)
+
+> **⚠️ Before starting Phase 3 — a polishing + repositioning pass is planned.** This product is a **PMO platform**, not just a project-management app: it spans engineering, sales, support, marketing and operations projects under one org, and the org/portfolio layer (cross-project rollups, executive insight, resourcing across teams) is the differentiator. The pre-Phase-3 pass will (a) polish existing flows and (b) push the multi-type + org-level surfaces harder — which **will reshape the Phase 3 feature list below.** Treat the Phase 3 tasks as provisional until that pass lands. Specific things to carry in:
+> - **Analytics must go portfolio-level + per-type.** F2-26 delivered *engineering* charts (velocity/burndown/epic). A PMO needs an **org/portfolio dashboard** aggregating across projects, and type-appropriate metrics per project (sales: pipeline value/forecast; support: SLA attainment; marketing: assets shipped; ops: runs completed) — see the F1.5 analytics note ("Analytics endpoints expose a type-appropriate metric set"). Build the next analytics on the `Analytics` feature folder + `AnalyticsController` established here.
+> - **Kill the placeholders.** Several dashboard widgets still render `sample` data (project health/HealthGauge, team workload/WorkloadHeatmap, weekly AI insight, and the On-track / Bug-ratio / Cycle-time KPIs). These need real backend metrics before GA.
+> - **Decide on recharts vs SVG** (see F2-26 note) before the analytics surface grows.
 
 **Goal:** Org-level multi-project usage validated. Ready for general availability.
 

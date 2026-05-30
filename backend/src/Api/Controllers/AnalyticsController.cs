@@ -41,6 +41,33 @@ public class AnalyticsController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    // Project health (F3-16) — composite score + component signals, on demand.
+    [HttpGet("api/v1/projects/{projectId:guid}/analytics/health")]
+    [RequireProjectRole(ProjectRole.Viewer)]
+    public async Task<ActionResult<HealthDto>> Health(Guid projectId, CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new GetProjectHealthQuery(projectId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    // Headline KPI strip — open tasks, on-track %, bug ratio, avg cycle time.
+    [HttpGet("api/v1/projects/{projectId:guid}/analytics/kpis")]
+    [RequireProjectRole(ProjectRole.Viewer)]
+    public async Task<ActionResult<ProjectKpisDto>> Kpis(Guid projectId, CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new GetProjectKpisQuery(projectId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    // Team workload heatmap (F3-14) — per-member daily Done throughput.
+    [HttpGet("api/v1/projects/{projectId:guid}/analytics/workload")]
+    [RequireProjectRole(ProjectRole.Viewer)]
+    public async Task<ActionResult<WorkloadDto>> Workload(Guid projectId, CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new GetWorkloadQuery(projectId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     private ObjectResult ToProblem(Error error)
     {
         var status = error.Code switch

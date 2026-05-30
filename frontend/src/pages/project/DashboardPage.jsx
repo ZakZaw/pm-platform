@@ -108,7 +108,9 @@ function EngineeringDashboard({ project }) {
   const [sprint, setSprint] = useState(null);
   // F2-26 — real analytics, recomputed server-side. Replaces the previously
   // client-derived / placeholder burndown, velocity and epic-progress.
-  const [analytics, setAnalytics] = useState({ burndown: null, velocity: [], epicProgress: [] });
+  const [analytics, setAnalytics] = useState({
+    burndown: null, velocity: [], epicProgress: [], health: null, kpis: null, workload: null,
+  });
   const [layout, setLayout] = useState(() => defaultLayout(ENGINEERING_WIDGETS));
   const [layoutLoaded, setLayoutLoaded] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -120,16 +122,19 @@ function EngineeringDashboard({ project }) {
 
   const reloadData = useCallback(async () => {
     try {
-      const [b, s, burndown, velocity, epicProgress] = await Promise.all([
+      const [b, s, burndown, velocity, epicProgress, health, kpis, workload] = await Promise.all([
         boardApi.get(project.id).catch(() => null),
         sprintsApi.getActive(project.id).catch(() => null),
         analyticsApi.burndown(project.id).catch(() => null),
         analyticsApi.velocity(project.id).then((r) => r.sprints ?? []).catch(() => []),
         analyticsApi.epicProgress(project.id).then((r) => r.epics ?? []).catch(() => []),
+        analyticsApi.health(project.id).catch(() => null),
+        analyticsApi.kpis(project.id).catch(() => null),
+        analyticsApi.workload(project.id).catch(() => null),
       ]);
       setBoard(b);
       setSprint(s);
-      setAnalytics({ burndown, velocity, epicProgress });
+      setAnalytics({ burndown, velocity, epicProgress, health, kpis, workload });
       setActivityVersion((v) => v + 1);
     } catch (err) {
       setError(err.response?.data?.detail ?? 'Could not load dashboard.');
@@ -208,10 +213,14 @@ function EngineeringDashboard({ project }) {
 
     return {
       project, board, sprint,
-      openTasks, sprintTotal, sprintDone, sprintLen, today, daysLeft,
+      openTasks: analytics.kpis?.openTasks ?? openTasks,
+      sprintTotal, sprintDone, sprintLen, today, daysLeft,
       burndown: analytics.burndown,
       velocity: analytics.velocity,
       epicProgress: analytics.epicProgress,
+      health: analytics.health,
+      kpis: analytics.kpis,
+      workload: analytics.workload,
       activityVersion,
     };
   }, [project, board, sprint, analytics, activityVersion]);

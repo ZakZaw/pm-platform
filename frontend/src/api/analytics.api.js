@@ -21,4 +21,17 @@ export const analyticsApi = {
   // Returns { epics: [{ epicId, name, color, donePoints, totalPoints, doneCount, totalCount }] }.
   epicProgress: (projectId) =>
     apiClient.get(`/projects/${projectId}/analytics/epic-progress`).then((r) => r.data),
+
+  // F3-16 — composite health. Returns { score, band, signals: [{ label, tone, value }] }.
+  health: (projectId) =>
+    apiClient.get(`/projects/${projectId}/analytics/health`).then((r) => r.data),
+
+  // Headline KPIs. Returns { openTasks, onTrackPct, bugRatioPct, avgCycleDays };
+  // the ratio/duration fields may be null when there's not enough data.
+  kpis: (projectId) =>
+    apiClient.get(`/projects/${projectId}/analytics/kpis`).then((r) => r.data),
+
+  // F3-14 — team workload. Returns { days: [..], members: [{ userId, name, load: [..] }] }.
+  workload: (projectId) =>
+    apiClient.get(`/projects/${projectId}/analytics/workload`).then((r) => r.data),
 };

@@ -14,18 +14,6 @@
   align-content: start;
 }
 
-.dashboard-sample {
-  text-transform: none;
-  font-weight: var(--fw-medium);
-  font-size: var(--fs-2xs);
-  color: var(--text-muted);
-  padding: 1px var(--s-3);
-  background: var(--surface-2);
-  border-radius: var(--r-pill);
-  letter-spacing: 0;
-  margin-left: var(--s-3);
-}
-
 .dashboard-sub {
   font-size: var(--fs-xs);
   margin-bottom: var(--s-5);
@@ -78,6 +66,20 @@
   font-size: var(--fs-sm);
   line-height: var(--lh-relaxed);
   margin: 0 0 var(--s-5);
+}
+.dashboard-insight-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+}
+.dashboard-insight-chip {
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-medium);
+  color: var(--text-secondary);
+  padding: 2px var(--s-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-pill);
 }
 
 /* Activity feed inside col-12 card */

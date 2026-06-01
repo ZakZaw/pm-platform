@@ -1,48 +1,61 @@
-import { useEffect, useState } from 'react';
-import { operationsApi } from '@/api/operations.api';
 import { DashboardWidget, MetricRow } from '../DashboardWidget';
 
-function useWorkflows(projectId) {
-  const [workflows, setWorkflows] = useState(null);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    let cancelled = false;
-    operationsApi.listWorkflows(projectId)
-      .then((w) => { if (!cancelled) setWorkflows(w); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [projectId]);
-  return { workflows, loading };
+// polish D: Operations widgets read the server-computed `/analytics/operations`
+// aggregate (passed down by TypedDashboard). Completion / on-time / skip rates
+// are now computed over the trailing 30 days of scheduled runs — the honest
+// replacement for the old "was the last run skipped?" heuristic.
+
+function fmtRunDate(value) {
+  return new Date(value).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
-export function OperationsNext7DaysWidget({ project }) {
-  const { workflows, loading } = useWorkflows(project.id);
-  const now = Date.now();
-  const horizon = now + 7 * 86_400_000;
-  // Each workflow exposes nextRunAt; show the ones whose next run lands
-  // inside the next 7 days. (For multiple-run granularity per workflow
-  // we'd need a dedicated /runs endpoint — Phase 2.)
-  const upcoming = (workflows ?? []).filter((w) => {
-    if (!w.nextRunAt) return false;
-    const t = new Date(w.nextRunAt).getTime();
-    return t >= now && t <= horizon;
-  });
+export function OperationsCompletionWidget({ data, loading }) {
+  const pct = data?.completionPct;
+  const onTime = data?.onTimePct;
+  const total = data?.windowTotal ?? 0;
+  const accent = pct == null ? undefined : pct >= 90 ? 'var(--success)' : pct >= 70 ? 'var(--warning)' : 'var(--danger)';
+  return (
+    <DashboardWidget
+      title="Run completion"
+      eyebrow="Operations"
+      loading={loading}
+      empty={!loading && total === 0}
+      emptyText="No runs scheduled in the last 30 days."
+    >
+      <MetricRow
+        label="Completed · last 30 days"
+        value={pct == null ? '—' : `${pct}%`}
+        sublabel={onTime == null ? `${total} runs scheduled` : `${onTime}% on time · ${total} runs scheduled`}
+        accent={accent}
+      />
+      {pct != null && (
+        <div className="dashboard-widget__bar" aria-hidden="true">
+          <span
+            className="dashboard-widget__bar-seg"
+            style={{ width: `${pct}%`, background: accent ?? 'var(--accent)' }}
+          />
+        </div>
+      )}
+    </DashboardWidget>
+  );
+}
+
+export function OperationsNext7DaysWidget({ data, loading }) {
+  const upcoming = data?.upcoming ?? [];
   return (
     <DashboardWidget
       title="Next 7 days"
       eyebrow="Operations"
       loading={loading}
-      empty={!loading && upcoming.length === 0}
-      emptyText="No workflows scheduled to run in the next week."
+      empty={!loading && (data?.next7DaysCount ?? 0) === 0}
+      emptyText="No runs scheduled in the next week."
     >
-      <MetricRow label="Runs scheduled" value={upcoming.length} />
+      <MetricRow label="Runs scheduled" value={data?.next7DaysCount ?? 0} />
       <ul className="dashboard-widget__rows">
-        {upcoming.slice(0, 6).map((w) => (
-          <li key={w.id} className="dashboard-widget__row">
-            <span className="truncate">{w.name}</span>
-            <span className="mono dim">
-              {new Date(w.nextRunAt).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-            </span>
+        {upcoming.map((r) => (
+          <li key={r.runId} className="dashboard-widget__row">
+            <span className="truncate">{r.workflowName}</span>
+            <span className="mono dim">{fmtRunDate(r.scheduledFor)}</span>
           </li>
         ))}
       </ul>
@@ -50,31 +63,26 @@ export function OperationsNext7DaysWidget({ project }) {
   );
 }
 
-export function OperationsOverdueRunsWidget({ project }) {
-  const { workflows, loading } = useWorkflows(project.id);
-  const overdueTotal = (workflows ?? []).reduce((s, w) => s + (w.overdueRunCount ?? 0), 0);
-  const top = (workflows ?? [])
-    .filter((w) => (w.overdueRunCount ?? 0) > 0)
-    .sort((a, b) => b.overdueRunCount - a.overdueRunCount)
-    .slice(0, 5);
+export function OperationsOverdueRunsWidget({ data, loading }) {
+  const overdue = data?.overdue ?? [];
   return (
     <DashboardWidget
       title="Overdue runs"
       eyebrow="Operations"
       loading={loading}
-      empty={!loading && overdueTotal === 0}
+      empty={!loading && (data?.overdueCount ?? 0) === 0}
       emptyText="No overdue runs."
     >
       <MetricRow
         label="Past their scheduled time"
-        value={overdueTotal}
-        accent="var(--danger)"
+        value={data?.overdueCount ?? 0}
+        accent={(data?.overdueCount ?? 0) > 0 ? 'var(--danger)' : undefined}
       />
       <ul className="dashboard-widget__rows">
-        {top.map((w) => (
-          <li key={w.id} className="dashboard-widget__row">
-            <span className="truncate">{w.name}</span>
-            <span className="mono dim">{w.overdueRunCount}</span>
+        {overdue.map((r) => (
+          <li key={r.runId} className="dashboard-widget__row">
+            <span className="truncate">{r.workflowName}</span>
+            <span className="mono dim">{fmtRunDate(r.scheduledFor)}</span>
           </li>
         ))}
       </ul>
@@ -82,27 +90,22 @@ export function OperationsOverdueRunsWidget({ project }) {
   );
 }
 
-export function OperationsSkipRateWidget({ project }) {
-  const { workflows, loading } = useWorkflows(project.id);
-  // The list endpoint reports lastRunStatus per workflow; an aggregate
-  // skip-rate requires a per-run history endpoint (Phase 2). For now we
-  // surface how many workflows last finished as Skipped — a rough
-  // indicator that's still better than placeholder data.
-  const total = workflows?.length ?? 0;
-  const skipped = (workflows ?? []).filter((w) => w.lastRunStatus === 'Skipped').length;
-  const pct = total === 0 ? 0 : Math.round((skipped / total) * 100);
+export function OperationsSkipRateWidget({ data, loading }) {
+  const pct = data?.skipPct;
+  const total = data?.windowTotal ?? 0;
   return (
     <DashboardWidget
-      title="Recently skipped"
+      title="Skip rate"
       eyebrow="Operations"
       loading={loading}
       empty={!loading && total === 0}
-      emptyText="No workflows yet."
+      emptyText="No runs scheduled in the last 30 days."
     >
       <MetricRow
-        label="Workflows whose last run was skipped"
-        value={`${skipped} (${pct}%)`}
-        accent={pct >= 20 ? 'var(--warning)' : undefined}
+        label="Runs skipped · last 30 days"
+        value={pct == null ? '—' : `${pct}%`}
+        sublabel={`${total} runs scheduled`}
+        accent={pct != null && pct >= 20 ? 'var(--warning)' : undefined}
       />
     </DashboardWidget>
   );

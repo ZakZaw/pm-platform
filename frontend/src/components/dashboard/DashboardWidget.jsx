@@ -1,6 +1,20 @@
 import { Card, Skeleton } from '@/components/ui';
 import './DashboardWidget.css';
 
+// Theme-aware palette for stacked-bar / legend segments. Token references
+// (not hex) so the swatches track light/dark and the design system — cycle
+// through it with `SEGMENT_TOKENS[i % SEGMENT_TOKENS.length]`.
+export const SEGMENT_TOKENS = [
+  'var(--accent)',
+  'var(--info)',
+  'var(--violet)',
+  'var(--teal)',
+  'var(--success)',
+  'var(--amber)',
+  'var(--rose)',
+  'var(--warning)',
+];
+
 // Shared shell for typed-dashboard widgets — common header layout,
 // optional eyebrow label, loading + empty states. Keeps each widget
 // component focused on its own data fetch.

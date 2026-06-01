@@ -73,13 +73,33 @@ export function DashboardPage() {
     );
   }
 
-  const widgets = widgetsForType(project.type);
-  if (widgets) return <TypedDashboard project={project} widgets={widgets} />;
+  const config = widgetsForType(project.type);
+  if (config) return <TypedDashboard project={project} config={config} />;
   return <EngineeringDashboard project={project} />;
 }
 
-function TypedDashboard({ project, widgets }) {
+function TypedDashboard({ project, config }) {
   const meta = findProjectType(project.type);
+  const { load, widgets } = config;
+  // polish D: fetch the type's analytics aggregate once and hand it to every
+  // widget, so a four-widget dashboard makes one request instead of four.
+  // Generic has no aggregate (load === null) — its widgets self-fetch.
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(Boolean(load));
+
+  useEffect(() => {
+    if (!load) return undefined;
+    // `loading` starts true (initial state) when a fetcher exists; we don't
+    // reset it synchronously here on refetch — matches the widget convention
+    // and keeps the effect free of a cascading setState.
+    let cancelled = false;
+    load(project.id)
+      .then((d) => { if (!cancelled) setData(d); })
+      .catch(() => { if (!cancelled) setData(null); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [load, project.id]);
+
   return (
     <div className="main-inner dashboard">
       <div className="page-head">
@@ -95,7 +115,7 @@ function TypedDashboard({ project, widgets }) {
       </div>
       <div className="dashboard-typed-grid">
         {widgets.map((Widget, i) => (
-          <Widget key={i} project={project} />
+          <Widget key={i} project={project} data={data} loading={loading} />
         ))}
       </div>
     </div>
@@ -108,7 +128,9 @@ function EngineeringDashboard({ project }) {
   const [sprint, setSprint] = useState(null);
   // F2-26 — real analytics, recomputed server-side. Replaces the previously
   // client-derived / placeholder burndown, velocity and epic-progress.
-  const [analytics, setAnalytics] = useState({ burndown: null, velocity: [], epicProgress: [] });
+  const [analytics, setAnalytics] = useState({
+    burndown: null, velocity: [], epicProgress: [], health: null, kpis: null, workload: null, insight: null,
+  });
   const [layout, setLayout] = useState(() => defaultLayout(ENGINEERING_WIDGETS));
   const [layoutLoaded, setLayoutLoaded] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -120,16 +142,20 @@ function EngineeringDashboard({ project }) {
 
   const reloadData = useCallback(async () => {
     try {
-      const [b, s, burndown, velocity, epicProgress] = await Promise.all([
+      const [b, s, burndown, velocity, epicProgress, health, kpis, workload, insight] = await Promise.all([
         boardApi.get(project.id).catch(() => null),
         sprintsApi.getActive(project.id).catch(() => null),
         analyticsApi.burndown(project.id).catch(() => null),
         analyticsApi.velocity(project.id).then((r) => r.sprints ?? []).catch(() => []),
         analyticsApi.epicProgress(project.id).then((r) => r.epics ?? []).catch(() => []),
+        analyticsApi.health(project.id).catch(() => null),
+        analyticsApi.kpis(project.id).catch(() => null),
+        analyticsApi.workload(project.id).catch(() => null),
+        analyticsApi.insight(project.id).catch(() => null),
       ]);
       setBoard(b);
       setSprint(s);
-      setAnalytics({ burndown, velocity, epicProgress });
+      setAnalytics({ burndown, velocity, epicProgress, health, kpis, workload, insight });
       setActivityVersion((v) => v + 1);
     } catch (err) {
       setError(err.response?.data?.detail ?? 'Could not load dashboard.');
@@ -208,10 +234,15 @@ function EngineeringDashboard({ project }) {
 
     return {
       project, board, sprint,
-      openTasks, sprintTotal, sprintDone, sprintLen, today, daysLeft,
+      openTasks: analytics.kpis?.openTasks ?? openTasks,
+      sprintTotal, sprintDone, sprintLen, today, daysLeft,
       burndown: analytics.burndown,
       velocity: analytics.velocity,
       epicProgress: analytics.epicProgress,
+      health: analytics.health,
+      kpis: analytics.kpis,
+      workload: analytics.workload,
+      insight: analytics.insight,
       activityVersion,
     };
   }, [project, board, sprint, analytics, activityVersion]);

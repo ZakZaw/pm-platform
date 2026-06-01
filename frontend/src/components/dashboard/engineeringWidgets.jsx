@@ -5,7 +5,7 @@
 // its own paged history (see ActivityFeedWidget below).
 
 import { useEffect, useState } from 'react';
-import { Avatar, Badge, Button, Icon, Skeleton } from '@/components/ui';
+import { Avatar, Badge, Icon, Skeleton } from '@/components/ui';
 import {
   BurndownChart,
   EpicProgressBars,
@@ -15,31 +15,30 @@ import {
 } from '@/components/charts';
 import { activityApi } from '@/api/activity.api';
 
-const PLACEHOLDER_HEAT_DAYS = ['M', 'T', 'W', 'T', 'F', 'M', 'T', 'W', 'T', 'F'];
+// Maps a backend signal tone keyword to its design token color.
+const TONE_COLOR = {
+  success: 'var(--success)',
+  warning: 'var(--warning)',
+  danger: 'var(--danger)',
+  info: 'var(--info)',
+};
 
-const PLACEHOLDER_HEAT_DATA = [
-  { name: 'Priya', load: [3, 4, 5, 5, 4, 4, 3, 5, 5, 3] },
-  { name: 'Marcus', load: [4, 5, 5, 4, 4, 5, 5, 5, 4, 4] },
-  { name: 'Sasha', load: [2, 3, 3, 3, 2, 3, 3, 4, 3, 2] },
-  { name: 'Diego', load: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5] },
-  { name: 'Hana', load: [3, 4, 4, 4, 3, 3, 4, 4, 3, 3] },
-  { name: 'Aria', load: [1, 2, 3, 2, 2, 2, 3, 3, 2, 1] },
-];
+// Short header label for the weekly-insight tone badge.
+const INSIGHT_TONE_LABEL = {
+  success: 'On track',
+  warning: 'Watch',
+  danger: 'At risk',
+  info: 'FYI',
+};
 
-const HEALTH_SIGNALS = [
-  ['Burn rate', 'var(--warning)', '+0.4d'],
-  ['Blockers', 'var(--success)', '1'],
-  ['Coverage', 'var(--success)', '94%'],
-  ['WIP', 'var(--warning)', 'high'],
-];
+// KPI ratios render an em dash when the backend can't compute them yet (null)
+// rather than a misleading zero.
+const pct = (v) => (v == null ? '—' : `${Math.round(v)}%`);
 
-function KpiCard({ label, value, delta, tone = 'info', placeholder }) {
+function KpiCard({ label, value, delta, tone = 'info' }) {
   return (
     <div className="dash-kpi">
-      <div className="dash-kpi__label">
-        {label}
-        {placeholder && <span className="dashboard-sample">sample</span>}
-      </div>
+      <div className="dash-kpi__label">{label}</div>
       <div className="dash-kpi__row">
         <div className="dash-kpi__value">{value}</div>
         {delta && (
@@ -59,7 +58,13 @@ export const ENGINEERING_WIDGETS = [
     id: 'kpi-on-track',
     title: 'On track',
     defaults: { w: 3, h: 2, minW: 2, minH: 2, maxH: 3 },
-    render: () => <KpiCard label="On track" value="82%" delta="+4%" tone="success" placeholder />,
+    render: ({ kpis }) => (
+      <KpiCard
+        label="On track"
+        value={pct(kpis?.onTrackPct)}
+        tone={(kpis?.onTrackPct ?? 100) >= 90 ? 'success' : 'warning'}
+      />
+    ),
   },
   {
     id: 'kpi-open-tasks',
@@ -71,13 +76,25 @@ export const ENGINEERING_WIDGETS = [
     id: 'kpi-bug-ratio',
     title: 'Bug ratio',
     defaults: { w: 3, h: 2, minW: 2, minH: 2, maxH: 3 },
-    render: () => <KpiCard label="Bug ratio" value="11%" delta="−2%" tone="success" placeholder />,
+    render: ({ kpis }) => (
+      <KpiCard
+        label="Bug ratio"
+        value={pct(kpis?.bugRatioPct)}
+        tone={(kpis?.bugRatioPct ?? 0) <= 15 ? 'success' : 'warning'}
+      />
+    ),
   },
   {
     id: 'kpi-cycle-time',
     title: 'Avg cycle time',
     defaults: { w: 3, h: 2, minW: 2, minH: 2, maxH: 3 },
-    render: () => <KpiCard label="Avg cycle time" value="3.2d" delta="+0.4d" tone="warning" placeholder />,
+    render: ({ kpis }) => (
+      <KpiCard
+        label="Avg cycle time"
+        value={kpis?.avgCycleDays == null ? '—' : `${kpis.avgCycleDays}d`}
+        tone={(kpis?.avgCycleDays ?? 0) <= 4 ? 'success' : 'warning'}
+      />
+    ),
   },
   {
     id: 'burndown',
@@ -128,28 +145,36 @@ export const ENGINEERING_WIDGETS = [
     id: 'project-health',
     title: 'Project health',
     defaults: { w: 4, h: 5, minW: 3, minH: 4 },
-    render: () => (
-      <div className="dash-card">
-        <header className="dash-card__head">
-          <strong>Project health <span className="dashboard-sample">sample</span></strong>
-          <Badge tone="success">Healthy</Badge>
-        </header>
-        <div className="dash-card__body center">
-          <HealthGauge score={78} />
-          <div className="col gap-3 dashboard-signals">
-            {HEALTH_SIGNALS.map(([label, color, value]) => (
-              <div key={label} className="row between" style={{ fontSize: 'var(--fs-sm)' }}>
-                <span className="row gap-3">
-                  <span className="dashboard-signal-dot" style={{ background: color }} />
-                  {label}
-                </span>
-                <span className="mono muted">{value}</span>
-              </div>
-            ))}
+    render: ({ health }) => {
+      const score = health?.score ?? 0;
+      const bandTone = score >= 75 ? 'success' : score >= 50 ? 'warning' : 'danger';
+      const signals = health?.signals ?? [];
+      return (
+        <div className="dash-card">
+          <header className="dash-card__head">
+            <strong>Project health</strong>
+            {health && <Badge tone={bandTone}>{health.band}</Badge>}
+          </header>
+          <div className="dash-card__body center">
+            <HealthGauge score={score} />
+            <div className="col gap-3 dashboard-signals">
+              {signals.map((s) => (
+                <div key={s.label} className="row between" style={{ fontSize: 'var(--fs-sm)' }}>
+                  <span className="row gap-3">
+                    <span
+                      className="dashboard-signal-dot"
+                      style={{ background: TONE_COLOR[s.tone] ?? 'var(--text-muted)' }}
+                    />
+                    {s.label}
+                  </span>
+                  <span className="mono muted">{s.value}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-    ),
+      );
+    },
   },
   {
     id: 'velocity',
@@ -213,37 +238,61 @@ export const ENGINEERING_WIDGETS = [
     id: 'workload',
     title: 'Team workload',
     defaults: { w: 8, h: 5, minW: 4, minH: 4 },
-    render: () => (
-      <div className="dash-card">
-        <header className="dash-card__head">
-          <strong>Team workload <span className="dashboard-sample">sample</span></strong>
-          <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>last 2 weeks · daily pts</span>
-        </header>
-        <div className="dash-card__body">
-          <WorkloadHeatmap days={PLACEHOLDER_HEAT_DAYS} data={PLACEHOLDER_HEAT_DATA} />
+    render: ({ workload }) => {
+      const days = workload?.days ?? [];
+      const data = (workload?.members ?? []).map((m) => ({ name: m.name, load: m.load }));
+      return (
+        <div className="dash-card">
+          <header className="dash-card__head">
+            <strong>Team workload</strong>
+            <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>last 10 days · tasks done/day</span>
+          </header>
+          <div className="dash-card__body">
+            {data.length === 0 ? (
+              <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-sm)' }}>
+                No team members on this project yet.
+              </p>
+            ) : (
+              <WorkloadHeatmap days={days} data={data} />
+            )}
+          </div>
         </div>
-      </div>
-    ),
+      );
+    },
   },
   {
     id: 'ai-insight',
-    title: 'Weekly AI insight',
+    title: 'Weekly insight',
     defaults: { w: 4, h: 5, minW: 3, minH: 4 },
-    render: () => (
+    render: ({ insight }) => (
       <div className="ai-card" style={{ height: '100%' }}>
         <div className="ai-card-body">
           <div className="row gap-4" style={{ marginBottom: 'var(--s-4)' }}>
             <div className="ai-mark"><Icon name="sparkles" size={14} /></div>
             <strong>Weekly insight</strong>
-            <span className="dashboard-sample" style={{ marginLeft: 'auto' }}>sample</span>
+            {insight && (
+              <span style={{ marginLeft: 'auto' }}>
+                <Badge tone={insight.tone === 'info' ? 'info' : insight.tone} dot>
+                  {INSIGHT_TONE_LABEL[insight.tone] ?? 'Insight'}
+                </Badge>
+              </span>
+            )}
           </div>
-          <div className="dashboard-insight-title">You'll likely miss this sprint by ~12 pt</div>
-          <p className="muted dashboard-insight-body">
-            Two blockers are accruing time on Auth hardening. Marcus is at 95% capacity. Moving 12 pt to the next sprint keeps velocity within trend.
-          </p>
-          <Button variant="ai" size="sm" disabled title="Phase 2">
-            See full report <Icon name="arrow-right" size={12} />
-          </Button>
+          {insight ? (
+            <>
+              <div className="dashboard-insight-title">{insight.headline}</div>
+              <p className="muted dashboard-insight-body">{insight.detail}</p>
+              {insight.highlights?.length > 0 && (
+                <div className="dashboard-insight-chips">
+                  {insight.highlights.map((h) => (
+                    <span key={h} className="dashboard-insight-chip">{h}</span>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="muted dashboard-insight-body">No insight to show yet.</p>
+          )}
         </div>
       </div>
     ),

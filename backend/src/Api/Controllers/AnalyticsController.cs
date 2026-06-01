@@ -41,6 +41,80 @@ public class AnalyticsController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    // Project health (F3-16) — composite score + component signals, on demand.
+    [HttpGet("api/v1/projects/{projectId:guid}/analytics/health")]
+    [RequireProjectRole(ProjectRole.Viewer)]
+    public async Task<ActionResult<HealthDto>> Health(Guid projectId, CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new GetProjectHealthQuery(projectId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    // Headline KPI strip — open tasks, on-track %, bug ratio, avg cycle time.
+    [HttpGet("api/v1/projects/{projectId:guid}/analytics/kpis")]
+    [RequireProjectRole(ProjectRole.Viewer)]
+    public async Task<ActionResult<ProjectKpisDto>> Kpis(Guid projectId, CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new GetProjectKpisQuery(projectId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    // Team workload heatmap (F3-14) — per-member daily Done throughput.
+    [HttpGet("api/v1/projects/{projectId:guid}/analytics/workload")]
+    [RequireProjectRole(ProjectRole.Viewer)]
+    public async Task<ActionResult<WorkloadDto>> Workload(Guid projectId, CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new GetWorkloadQuery(projectId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    // Weekly insight (F3-18, computed) — the single most actionable signal.
+    [HttpGet("api/v1/projects/{projectId:guid}/analytics/insight")]
+    [RequireProjectRole(ProjectRole.Viewer)]
+    public async Task<ActionResult<WeeklyInsightDto>> Insight(Guid projectId, CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new GetWeeklyInsightQuery(projectId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    // ---- Per-type dashboard analytics (polish D) ----
+
+    // Sales — open pipeline, weighted forecast, stage funnel, win rate, at-risk deals.
+    [HttpGet("api/v1/projects/{projectId:guid}/analytics/sales")]
+    [RequireProjectRole(ProjectRole.Viewer)]
+    public async Task<ActionResult<SalesAnalyticsDto>> Sales(Guid projectId, CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new GetSalesAnalyticsQuery(projectId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    // Support — open/breached counts, per-queue split, trailing SLA attainment.
+    [HttpGet("api/v1/projects/{projectId:guid}/analytics/support")]
+    [RequireProjectRole(ProjectRole.Viewer)]
+    public async Task<ActionResult<SupportAnalyticsDto>> Support(Guid projectId, CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new GetSupportAnalyticsQuery(projectId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    // Marketing — active campaigns, channel mix, assets due, weekly publish throughput.
+    [HttpGet("api/v1/projects/{projectId:guid}/analytics/marketing")]
+    [RequireProjectRole(ProjectRole.Viewer)]
+    public async Task<ActionResult<MarketingAnalyticsDto>> Marketing(Guid projectId, CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new GetMarketingAnalyticsQuery(projectId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    // Operations — next-7-days + overdue runs, trailing completion/on-time/skip rates.
+    [HttpGet("api/v1/projects/{projectId:guid}/analytics/operations")]
+    [RequireProjectRole(ProjectRole.Viewer)]
+    public async Task<ActionResult<OperationsAnalyticsDto>> Operations(Guid projectId, CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new GetOperationsAnalyticsQuery(projectId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     private ObjectResult ToProblem(Error error)
     {
         var status = error.Code switch

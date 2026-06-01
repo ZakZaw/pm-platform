@@ -1,24 +1,8 @@
-import { useEffect, useState } from 'react';
-import { salesApi } from '@/api/sales.api';
-import { DashboardWidget, MetricRow, StackedBar } from '../DashboardWidget';
+import { DashboardWidget, MetricRow, StackedBar, SEGMENT_TOKENS } from '../DashboardWidget';
 
-const STAGE_COLORS = ['#5B6AF0', '#4FD1E0', '#7A6BFF', '#C77BFF', '#3FB984', '#E0A23A', '#E5484D'];
-
-function pipelineSegments(pipeline) {
-  if (!pipeline?.stages) return [];
-  return pipeline.stages.map((s, i) => ({
-    label: s.name,
-    value: s.deals.reduce((sum, d) => sum + (d.value ?? 0), 0),
-    color: STAGE_COLORS[i % STAGE_COLORS.length],
-  }));
-}
-
-function totalValue(pipeline) {
-  if (!pipeline?.stages) return 0;
-  let sum = 0;
-  for (const s of pipeline.stages) for (const d of s.deals) sum += d.value ?? 0;
-  return sum;
-}
+// polish D: Sales widgets read the server-computed `/analytics/sales`
+// aggregate (passed down by TypedDashboard) instead of re-deriving pipeline
+// math client-side from the raw deal list.
 
 function formatMoney(value, currency = 'USD') {
   try {
@@ -26,26 +10,17 @@ function formatMoney(value, currency = 'USD') {
       style: 'currency',
       currency,
       maximumFractionDigits: 0,
-    }).format(value);
+    }).format(value ?? 0);
   } catch {
-    return `$${value}`;
+    return `$${Math.round(value ?? 0)}`;
   }
 }
 
-export function SalesPipelineValueWidget({ project }) {
-  const [pipeline, setPipeline] = useState(null);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    let cancelled = false;
-    salesApi.getPipeline(project.id)
-      .then((p) => { if (!cancelled) setPipeline(p); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [project.id]);
-
-  const total = totalValue(pipeline);
-  const currency = pipeline?.stages?.[0]?.deals?.[0]?.currency ?? 'USD';
-  const segments = pipelineSegments(pipeline).filter((s) => s.value > 0);
+export function SalesPipelineValueWidget({ data, loading }) {
+  const segments = (data?.funnel ?? [])
+    .filter((s) => s.value > 0)
+    .map((s, i) => ({ label: s.name, value: s.value, color: SEGMENT_TOKENS[i % SEGMENT_TOKENS.length] }));
+  const currency = data?.currency ?? 'USD';
 
   return (
     <DashboardWidget
@@ -55,100 +30,91 @@ export function SalesPipelineValueWidget({ project }) {
       empty={!loading && segments.length === 0}
       emptyText="No open deals yet."
     >
-      <MetricRow label="Total open pipeline" value={formatMoney(total, currency)} />
+      <MetricRow label="Total open pipeline" value={formatMoney(data?.openPipelineValue, currency)} />
       {segments.length > 0 && <StackedBar segments={segments} />}
     </DashboardWidget>
   );
 }
 
-export function SalesConversionWidget({ project }) {
-  const [pipeline, setPipeline] = useState(null);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    let cancelled = false;
-    salesApi.getPipeline(project.id)
-      .then((p) => { if (!cancelled) setPipeline(p); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [project.id]);
+export function SalesForecastWidget({ data, loading }) {
+  const currency = data?.currency ?? 'USD';
+  const winRate = data?.winRatePct;
+  return (
+    <DashboardWidget
+      title="Weighted forecast"
+      eyebrow="Sales"
+      loading={loading}
+      empty={!loading && !data}
+      emptyText="No pipeline to forecast yet."
+    >
+      <MetricRow
+        label="Probability-weighted open pipeline"
+        value={formatMoney(data?.weightedForecast, currency)}
+        sublabel={`of ${formatMoney(data?.openPipelineValue, currency)} total open`}
+      />
+      <MetricRow
+        label="Won · last 90 days"
+        value={formatMoney(data?.wonValue, currency)}
+        sublabel={
+          winRate == null
+            ? `${data?.wonCount ?? 0} won · ${data?.lostCount ?? 0} lost`
+            : `${winRate}% win rate · ${data?.wonCount ?? 0} won / ${data?.lostCount ?? 0} lost`
+        }
+        accent={winRate != null && winRate >= 50 ? 'var(--success)' : undefined}
+      />
+    </DashboardWidget>
+  );
+}
 
-  // Funnel: stage with most deals at the top, then descending. Last stage
-  // typically has the won deals.
-  const stages = pipeline?.stages ?? [];
-  const counts = stages.map((s) => ({ name: s.name, count: s.deals.length }));
-  const max = counts.reduce((m, x) => Math.max(m, x.count), 0);
-
+export function SalesConversionWidget({ data, loading }) {
+  const funnel = data?.funnel ?? [];
   return (
     <DashboardWidget
       title="Conversion funnel"
       eyebrow="Sales"
       loading={loading}
-      empty={!loading && counts.every((c) => c.count === 0)}
+      empty={!loading && funnel.every((s) => s.count === 0)}
       emptyText="Deals will appear here once added."
     >
       <ul className="dashboard-widget__rows">
-        {counts.map((c) => {
-          const pct = max > 0 ? Math.round((c.count / max) * 100) : 0;
-          return (
-            <li key={c.name} className="dashboard-widget__row" style={{ position: 'relative' }}>
-              <span style={{ position: 'relative', zIndex: 1 }}>{c.name}</span>
-              <span className="mono dim" style={{ position: 'relative', zIndex: 1 }}>{c.count}</span>
-              <span
-                aria-hidden="true"
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: `linear-gradient(to right, var(--accent-soft) 0%, var(--accent-soft) ${pct}%, transparent ${pct}%)`,
-                  borderRadius: 'var(--r-sm)',
-                }}
-              />
-            </li>
-          );
-        })}
+        {funnel.map((s) => (
+          <li key={s.name} className="dashboard-widget__row" style={{ position: 'relative' }}>
+            <span style={{ position: 'relative', zIndex: 1 }}>{s.name}</span>
+            <span className="mono dim" style={{ position: 'relative', zIndex: 1 }}>
+              {s.count} · {Math.round(s.conversionPct)}%
+            </span>
+            <span
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: `linear-gradient(to right, var(--accent-soft) 0%, var(--accent-soft) ${s.conversionPct}%, transparent ${s.conversionPct}%)`,
+                borderRadius: 'var(--r-sm)',
+              }}
+            />
+          </li>
+        ))}
       </ul>
     </DashboardWidget>
   );
 }
 
-export function SalesDealsAtRiskWidget({ project }) {
-  const [pipeline, setPipeline] = useState(null);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    let cancelled = false;
-    salesApi.getPipeline(project.id)
-      .then((p) => { if (!cancelled) setPipeline(p); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [project.id]);
-
-  // "At risk" heuristic: probability < 30 and expected-close within
-  // 14 days. No bespoke endpoint yet (Phase 2 analytics will replace
-  // this with a server-side definition).
-  const now = Date.now();
-  const twoWeeks = 14 * 86_400_000;
-  const atRisk = [];
-  for (const s of pipeline?.stages ?? []) {
-    for (const d of s.deals ?? []) {
-      const close = d.expectedClose ? new Date(d.expectedClose).getTime() : null;
-      const dueSoon = close !== null && close - now <= twoWeeks;
-      if ((d.probability ?? 0) < 30 && dueSoon) atRisk.push({ ...d, stage: s.name });
-    }
-  }
-
+export function SalesDealsAtRiskWidget({ data, loading }) {
+  const atRisk = data?.dealsAtRisk ?? [];
   return (
     <DashboardWidget
       title="Deals at risk"
       eyebrow="Sales"
       loading={loading}
       empty={!loading && atRisk.length === 0}
-      emptyText="No at-risk deals — low probability with close in next 14 days."
+      emptyText="No at-risk deals — low probability with close in the next 14 days."
     >
-      <MetricRow label="Flagged" value={atRisk.length} accent="var(--danger)" />
+      <MetricRow label="Flagged" value={atRisk.length} accent={atRisk.length > 0 ? 'var(--danger)' : undefined} />
       <ul className="dashboard-widget__rows">
-        {atRisk.slice(0, 5).map((d) => (
+        {atRisk.map((d) => (
           <li key={d.id} className="dashboard-widget__row">
             <span className="truncate">{d.name}</span>
-            <span className="mono dim">{d.probability ?? 0}% · {d.stage}</span>
+            <span className="mono dim">{d.probability}% · {d.stageName}</span>
           </li>
         ))}
       </ul>

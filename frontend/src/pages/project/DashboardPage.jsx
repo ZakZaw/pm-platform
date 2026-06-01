@@ -73,13 +73,33 @@ export function DashboardPage() {
     );
   }
 
-  const widgets = widgetsForType(project.type);
-  if (widgets) return <TypedDashboard project={project} widgets={widgets} />;
+  const config = widgetsForType(project.type);
+  if (config) return <TypedDashboard project={project} config={config} />;
   return <EngineeringDashboard project={project} />;
 }
 
-function TypedDashboard({ project, widgets }) {
+function TypedDashboard({ project, config }) {
   const meta = findProjectType(project.type);
+  const { load, widgets } = config;
+  // polish D: fetch the type's analytics aggregate once and hand it to every
+  // widget, so a four-widget dashboard makes one request instead of four.
+  // Generic has no aggregate (load === null) — its widgets self-fetch.
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(Boolean(load));
+
+  useEffect(() => {
+    if (!load) return undefined;
+    // `loading` starts true (initial state) when a fetcher exists; we don't
+    // reset it synchronously here on refetch — matches the widget convention
+    // and keeps the effect free of a cascading setState.
+    let cancelled = false;
+    load(project.id)
+      .then((d) => { if (!cancelled) setData(d); })
+      .catch(() => { if (!cancelled) setData(null); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [load, project.id]);
+
   return (
     <div className="main-inner dashboard">
       <div className="page-head">
@@ -95,7 +115,7 @@ function TypedDashboard({ project, widgets }) {
       </div>
       <div className="dashboard-typed-grid">
         {widgets.map((Widget, i) => (
-          <Widget key={i} project={project} />
+          <Widget key={i} project={project} data={data} loading={loading} />
         ))}
       </div>
     </div>

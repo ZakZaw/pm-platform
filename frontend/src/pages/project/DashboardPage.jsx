@@ -109,7 +109,7 @@ function EngineeringDashboard({ project }) {
   // F2-26 — real analytics, recomputed server-side. Replaces the previously
   // client-derived / placeholder burndown, velocity and epic-progress.
   const [analytics, setAnalytics] = useState({
-    burndown: null, velocity: [], epicProgress: [], health: null, kpis: null, workload: null,
+    burndown: null, velocity: [], epicProgress: [], health: null, kpis: null, workload: null, insight: null,
   });
   const [layout, setLayout] = useState(() => defaultLayout(ENGINEERING_WIDGETS));
   const [layoutLoaded, setLayoutLoaded] = useState(false);
@@ -122,7 +122,7 @@ function EngineeringDashboard({ project }) {
 
   const reloadData = useCallback(async () => {
     try {
-      const [b, s, burndown, velocity, epicProgress, health, kpis, workload] = await Promise.all([
+      const [b, s, burndown, velocity, epicProgress, health, kpis, workload, insight] = await Promise.all([
         boardApi.get(project.id).catch(() => null),
         sprintsApi.getActive(project.id).catch(() => null),
         analyticsApi.burndown(project.id).catch(() => null),
@@ -131,10 +131,11 @@ function EngineeringDashboard({ project }) {
         analyticsApi.health(project.id).catch(() => null),
         analyticsApi.kpis(project.id).catch(() => null),
         analyticsApi.workload(project.id).catch(() => null),
+        analyticsApi.insight(project.id).catch(() => null),
       ]);
       setBoard(b);
       setSprint(s);
-      setAnalytics({ burndown, velocity, epicProgress, health, kpis, workload });
+      setAnalytics({ burndown, velocity, epicProgress, health, kpis, workload, insight });
       setActivityVersion((v) => v + 1);
     } catch (err) {
       setError(err.response?.data?.detail ?? 'Could not load dashboard.');
@@ -221,6 +222,7 @@ function EngineeringDashboard({ project }) {
       health: analytics.health,
       kpis: analytics.kpis,
       workload: analytics.workload,
+      insight: analytics.insight,
       activityVersion,
     };
   }, [project, board, sprint, analytics, activityVersion]);

@@ -5,7 +5,7 @@
 // its own paged history (see ActivityFeedWidget below).
 
 import { useEffect, useState } from 'react';
-import { Avatar, Badge, Button, Icon, Skeleton } from '@/components/ui';
+import { Avatar, Badge, Icon, Skeleton } from '@/components/ui';
 import {
   BurndownChart,
   EpicProgressBars,
@@ -23,17 +23,22 @@ const TONE_COLOR = {
   info: 'var(--info)',
 };
 
+// Short header label for the weekly-insight tone badge.
+const INSIGHT_TONE_LABEL = {
+  success: 'On track',
+  warning: 'Watch',
+  danger: 'At risk',
+  info: 'FYI',
+};
+
 // KPI ratios render an em dash when the backend can't compute them yet (null)
 // rather than a misleading zero.
 const pct = (v) => (v == null ? '—' : `${Math.round(v)}%`);
 
-function KpiCard({ label, value, delta, tone = 'info', placeholder }) {
+function KpiCard({ label, value, delta, tone = 'info' }) {
   return (
     <div className="dash-kpi">
-      <div className="dash-kpi__label">
-        {label}
-        {placeholder && <span className="dashboard-sample">sample</span>}
-      </div>
+      <div className="dash-kpi__label">{label}</div>
       <div className="dash-kpi__row">
         <div className="dash-kpi__value">{value}</div>
         {delta && (
@@ -257,23 +262,37 @@ export const ENGINEERING_WIDGETS = [
   },
   {
     id: 'ai-insight',
-    title: 'Weekly AI insight',
+    title: 'Weekly insight',
     defaults: { w: 4, h: 5, minW: 3, minH: 4 },
-    render: () => (
+    render: ({ insight }) => (
       <div className="ai-card" style={{ height: '100%' }}>
         <div className="ai-card-body">
           <div className="row gap-4" style={{ marginBottom: 'var(--s-4)' }}>
             <div className="ai-mark"><Icon name="sparkles" size={14} /></div>
             <strong>Weekly insight</strong>
-            <span className="dashboard-sample" style={{ marginLeft: 'auto' }}>sample</span>
+            {insight && (
+              <span style={{ marginLeft: 'auto' }}>
+                <Badge tone={insight.tone === 'info' ? 'info' : insight.tone} dot>
+                  {INSIGHT_TONE_LABEL[insight.tone] ?? 'Insight'}
+                </Badge>
+              </span>
+            )}
           </div>
-          <div className="dashboard-insight-title">You'll likely miss this sprint by ~12 pt</div>
-          <p className="muted dashboard-insight-body">
-            Two blockers are accruing time on Auth hardening. Marcus is at 95% capacity. Moving 12 pt to the next sprint keeps velocity within trend.
-          </p>
-          <Button variant="ai" size="sm" disabled title="Phase 2">
-            See full report <Icon name="arrow-right" size={12} />
-          </Button>
+          {insight ? (
+            <>
+              <div className="dashboard-insight-title">{insight.headline}</div>
+              <p className="muted dashboard-insight-body">{insight.detail}</p>
+              {insight.highlights?.length > 0 && (
+                <div className="dashboard-insight-chips">
+                  {insight.highlights.map((h) => (
+                    <span key={h} className="dashboard-insight-chip">{h}</span>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="muted dashboard-insight-body">No insight to show yet.</p>
+          )}
         </div>
       </div>
     ),

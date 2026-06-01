@@ -34,4 +34,8 @@ export const analyticsApi = {
   // F3-14 — team workload. Returns { days: [..], members: [{ userId, name, load: [..] }] }.
   workload: (projectId) =>
     apiClient.get(`/projects/${projectId}/analytics/workload`).then((r) => r.data),
+
+  // F3-18 — computed weekly insight. Returns { headline, detail, tone, highlights: [..] }.
+  insight: (projectId) =>
+    apiClient.get(`/projects/${projectId}/analytics/insight`).then((r) => r.data),
 };

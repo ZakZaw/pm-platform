@@ -68,6 +68,15 @@ public class AnalyticsController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    // Weekly insight (F3-18, computed) — the single most actionable signal.
+    [HttpGet("api/v1/projects/{projectId:guid}/analytics/insight")]
+    [RequireProjectRole(ProjectRole.Viewer)]
+    public async Task<ActionResult<WeeklyInsightDto>> Insight(Guid projectId, CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new GetWeeklyInsightQuery(projectId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     private ObjectResult ToProblem(Error error)
     {
         var status = error.Code switch

@@ -71,3 +71,97 @@ public class CycleTimeCalculatorTests
         Assert.Equal(2.0, CycleTimeCalculator.AverageDays(spans));
     }
 }
+
+public class WeeklyInsightCalculatorTests
+{
+    // A sprint half-way through with only a quarter of its points done is
+    // pacing to miss; the headline calls the shortfall and goes danger when
+    // the gap is a big share of the commitment.
+    [Fact]
+    public void BehindPace_FlagsProjectedMiss()
+    {
+        var insight = WeeklyInsightCalculator.Compute(new(
+            HasActiveSprint: true, SprintName: "Sprint 7",
+            Committed: 40, DonePoints: 10, ElapsedDays: 5, SprintLengthDays: 10,
+            BlockedPoints: 0, BlockedTaskCount: 0, TopBlockerTitle: null,
+            OverdueTaskCount: 0, BusiestMemberName: null, BusiestMemberWip: 0,
+            OpenTaskCount: 20));
+
+        // pace 2 pt/day × 5 remaining days = 10 more → 20 done, 20 short.
+        Assert.Contains("miss Sprint 7 by ~20 pt", insight.Headline);
+        Assert.Equal("danger", insight.Tone);
+    }
+
+    [Fact]
+    public void OnDayZero_DoesNotProjectMiss()
+    {
+        var insight = WeeklyInsightCalculator.Compute(new(
+            HasActiveSprint: true, SprintName: "Sprint 7",
+            Committed: 40, DonePoints: 0, ElapsedDays: 0, SprintLengthDays: 10,
+            BlockedPoints: 0, BlockedTaskCount: 0, TopBlockerTitle: null,
+            OverdueTaskCount: 0, BusiestMemberName: null, BusiestMemberWip: 0,
+            OpenTaskCount: 20));
+
+        Assert.Equal("success", insight.Tone);
+        Assert.Contains("on track", insight.Headline);
+    }
+
+    [Fact]
+    public void Blockers_LeadWhenPaceIsFine()
+    {
+        var insight = WeeklyInsightCalculator.Compute(new(
+            HasActiveSprint: true, SprintName: "Sprint 7",
+            Committed: 40, DonePoints: 30, ElapsedDays: 8, SprintLengthDays: 10,
+            BlockedPoints: 8, BlockedTaskCount: 2, TopBlockerTitle: "Auth hardening",
+            OverdueTaskCount: 0, BusiestMemberName: null, BusiestMemberWip: 0,
+            OpenTaskCount: 6));
+
+        Assert.Equal("warning", insight.Tone);
+        Assert.Contains("8 pt blocked", insight.Headline);
+        Assert.Contains("Auth hardening", insight.Detail);
+        Assert.Contains("2 blocked", insight.Highlights);
+    }
+
+    [Fact]
+    public void OnTrack_CallsOutBusiestMember()
+    {
+        var insight = WeeklyInsightCalculator.Compute(new(
+            HasActiveSprint: true, SprintName: "Sprint 7",
+            Committed: 40, DonePoints: 34, ElapsedDays: 8, SprintLengthDays: 10,
+            BlockedPoints: 0, BlockedTaskCount: 0, TopBlockerTitle: null,
+            OverdueTaskCount: 0, BusiestMemberName: "Marcus", BusiestMemberWip: 5,
+            OpenTaskCount: 4));
+
+        Assert.Equal("success", insight.Tone);
+        Assert.Contains("Marcus", insight.Detail);
+        Assert.Contains("Marcus · 5 WIP", insight.Highlights);
+    }
+
+    [Fact]
+    public void NoSprint_WithOverdue_Warns()
+    {
+        var insight = WeeklyInsightCalculator.Compute(new(
+            HasActiveSprint: false, SprintName: null,
+            Committed: 0, DonePoints: 0, ElapsedDays: 0, SprintLengthDays: 0,
+            BlockedPoints: 0, BlockedTaskCount: 0, TopBlockerTitle: null,
+            OverdueTaskCount: 3, BusiestMemberName: null, BusiestMemberWip: 0,
+            OpenTaskCount: 9));
+
+        Assert.Equal("warning", insight.Tone);
+        Assert.Contains("3 tasks overdue", insight.Headline);
+    }
+
+    [Fact]
+    public void NoSprint_NothingOpen_IsCalm()
+    {
+        var insight = WeeklyInsightCalculator.Compute(new(
+            HasActiveSprint: false, SprintName: null,
+            Committed: 0, DonePoints: 0, ElapsedDays: 0, SprintLengthDays: 0,
+            BlockedPoints: 0, BlockedTaskCount: 0, TopBlockerTitle: null,
+            OverdueTaskCount: 0, BusiestMemberName: null, BusiestMemberWip: 0,
+            OpenTaskCount: 0));
+
+        Assert.Equal("info", insight.Tone);
+        Assert.Empty(insight.Highlights);
+    }
+}

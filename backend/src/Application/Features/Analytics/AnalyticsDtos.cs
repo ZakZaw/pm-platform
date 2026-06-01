@@ -60,6 +60,18 @@ public record HealthDto(int Score, string Band, IReadOnlyList<HealthSignalDto> S
 /// </summary>
 public record ProjectKpisDto(int OpenTasks, double? OnTrackPct, double? BugRatioPct, double? AvgCycleDays);
 
+// ---- Weekly insight (F3-18, computed) ----
+
+/// <summary>
+/// The dashboard "insight of the week" — a single, most-actionable observation
+/// distilled from live project signals. <see cref="Tone"/> is a keyword
+/// (success/warning/danger/info) the frontend maps to a token; <see
+/// cref="Highlights"/> are short factual chips (e.g. "3 blocked"). This is the
+/// deterministic, server-computed replacement for the old sample card — not the
+/// LLM-narrated AI-Inbox suggestion (that lives in Features/AI).
+/// </summary>
+public record WeeklyInsightDto(string Headline, string Detail, string Tone, IReadOnlyList<string> Highlights);
+
 // ---- Team workload (F3-14) ----
 
 public record WorkloadMemberDto(Guid UserId, string Name, IReadOnlyList<int> Load);

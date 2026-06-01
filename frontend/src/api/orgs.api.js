@@ -7,6 +7,9 @@ export const orgsApi = {
 
   get: (slug) => apiClient.get(`/orgs/${slug}`).then((r) => r.data),
 
+  // F3-19 — org portfolio aggregate. Returns { rollup, projects, resourceConflicts }.
+  portfolio: (slug) => apiClient.get(`/orgs/${slug}/portfolio`).then((r) => r.data),
+
   update: (slug, body) => apiClient.patch(`/orgs/${slug}`, body).then((r) => r.data),
 
   uploadLogo: (slug, file) => {

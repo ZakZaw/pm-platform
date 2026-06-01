@@ -1292,7 +1292,7 @@ Covered by F2-23 (GitHub integration). AC validated there.
 # Phase 3 — Public Beta (Weeks 21–32)
 
 > **⚠️ Before starting Phase 3 — a polishing + repositioning pass is planned.** This product is a **PMO platform**, not just a project-management app: it spans engineering, sales, support, marketing and operations projects under one org, and the org/portfolio layer (cross-project rollups, executive insight, resourcing across teams) is the differentiator. The pre-Phase-3 pass will (a) polish existing flows and (b) push the multi-type + org-level surfaces harder — which **will reshape the Phase 3 feature list below.** Treat the Phase 3 tasks as provisional until that pass lands. Specific things to carry in:
-> - **Analytics must go portfolio-level + per-type.** F2-26 delivered *engineering* charts (velocity/burndown/epic). A PMO needs an **org/portfolio dashboard** aggregating across projects, and type-appropriate metrics per project (sales: pipeline value/forecast; support: SLA attainment; marketing: assets shipped; ops: runs completed) — see the F1.5 analytics note ("Analytics endpoints expose a type-appropriate metric set"). Build the next analytics on the `Analytics` feature folder + `AnalyticsController` established here.
+> - **Analytics must go portfolio-level + per-type.** F2-26 delivered *engineering* charts (velocity/burndown/epic). A PMO needs an **org/portfolio dashboard** aggregating across projects, and type-appropriate metrics per project (sales: pipeline value/forecast; support: SLA attainment; marketing: assets shipped; ops: runs completed) — see the F1.5 analytics note ("Analytics endpoints expose a type-appropriate metric set"). Build the next analytics on the `Analytics` feature folder + `AnalyticsController` established here. **Portfolio-level shipped (polish C, F3-19):** the org rollup, per-project health, and cross-project resource conflicts now come from one `GET /orgs/{slug}/portfolio` aggregate. **Per-type *depth* still open** — the typed project dashboards remain a static widget set; sales/support/marketing/ops chart widgets are the next gap.
 > - ~~**Kill the placeholders.**~~ **Done (pre-Phase-3 polish A + B).** Every engineering-dashboard widget now renders real backend metrics — project health/HealthGauge, team workload/WorkloadHeatmap, the On-track / Bug-ratio / Cycle-time KPIs (A), and the weekly insight (B). No `sample` chip remains. See the F2-26 implementation note.
 > - ~~**Decide on recharts vs SVG.**~~ **Settled — SVG.** `recharts` was removed from `package.json`; hand-rolled token-styled SVG is the committed direction.
 
@@ -1516,11 +1516,13 @@ Mirror of F2-23 for GitLab. Same feature parity.
 
 ---
 
-### F3-19 (AN-09) — Org portfolio dashboard
+### F3-19 (AN-09) — Org portfolio dashboard ✅ (pre-Phase-3 polish C)
 
-**Backend:** `GET /api/v1/orgs/{slug}/portfolio` — health score per project, cross-project resource conflicts (people on multiple projects), org-wide velocity.
+**Backend:** `GET /api/v1/orgs/{slug}/portfolio` — health score per project, cross-project resource conflicts (people on multiple projects), org-wide rollup.
 **Frontend:** `pages/dashboard/OrgPortfolioPage.jsx`.
 **AC:** Drill-down from each project. Resource conflict list ranked by severity.
+
+> **Implementation note (shipped).** `GET /api/v1/orgs/{slug}/portfolio` (`RequireOrgRole(Member)`) → `GetOrgPortfolioQuery` in `Application/Features/Analytics/`, returning one aggregate: per-project **health** (the type-agnostic, unit-tested `PortfolioHealthCalculator` — overdue/at-risk share, works across all six types) + a **type-appropriate headline** (engineering/generic: open tasks; sales: open pipeline value; support: open tickets; marketing: open work; ops: open runs), an org **rollup** strip (projects, at-risk count, open items, overdue, by-type breakdown), and the **cross-project resource-conflict** list (members carrying open work in 2+ projects, ranked by project count then load). One query per *present* type keeps it to a handful of round-trips. The handler reaches each type's work item natively (Task/Deal/Ticket/MarketingTask·Campaign/WorkflowRun·Workflow). `OrgPortfolioPage` was rewritten to consume the aggregate — rollup KPIs, a resource-conflict panel, and per-project health cards with drill-down — **replacing the F1.5-08 per-card N+1 client fetching** (the `components/portfolio/` summary registry + cards were removed). **Still open: per-type analytics *depth*** — the typed project dashboards (`TypedDashboard`) still ship a static widget set; sales funnel/forecast, support SLA-attainment trend, marketing throughput and ops completion charts are the next gap (build on this `Analytics` folder).
 
 ---
 

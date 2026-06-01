@@ -1,5 +1,7 @@
 using Api.Authorization;
 using Application.Common;
+using Application.Features.Analytics;
+using Application.Features.Analytics.Queries;
 using Application.Features.Organizations;
 using Application.Features.Organizations.Commands;
 using Application.Features.Organizations.Members;
@@ -83,6 +85,16 @@ public class OrgsController(ISender mediator) : ControllerBase
     public async Task<ActionResult<OrganizationDto>> SetSso(string slug, [FromBody] SetSsoBodyDto body, CancellationToken ct)
     {
         var result = await mediator.Send(new SetOrgSsoCommand(slug, body.Enabled), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    // F3-19 (AN-09) — org portfolio dashboard aggregate: per-project health +
+    // type-appropriate headline, org rollup, cross-project resource conflicts.
+    [HttpGet("{slug}/portfolio")]
+    [RequireOrgRole(OrgRole.Member)]
+    public async Task<ActionResult<OrgPortfolioDto>> Portfolio(string slug, CancellationToken ct)
+    {
+        var result = await mediator.Send(new GetOrgPortfolioQuery(slug), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 

@@ -165,3 +165,54 @@ public class WeeklyInsightCalculatorTests
         Assert.Empty(insight.Highlights);
     }
 }
+
+public class PortfolioHealthCalculatorTests
+{
+    [Fact]
+    public void NoOpenWork_IsFullyHealthy()
+    {
+        var score = PortfolioHealthCalculator.Score(new(0, 0, 0));
+        Assert.Equal(100, score);
+        Assert.Equal("Healthy", PortfolioHealthCalculator.Band(score));
+    }
+
+    [Fact]
+    public void CleanOpenWork_StaysHealthy()
+    {
+        // 20 open, none overdue / at risk → no penalty.
+        Assert.Equal(100, PortfolioHealthCalculator.Score(new(20, 0, 0)));
+    }
+
+    [Fact]
+    public void AllOverdue_IsCritical()
+    {
+        // Full overdue share → 60 penalty → 40.
+        var score = PortfolioHealthCalculator.Score(new(10, 10, 0));
+        Assert.Equal(40, score);
+        Assert.Equal("Critical", PortfolioHealthCalculator.Band(score));
+    }
+
+    [Fact]
+    public void HalfOverdue_LandsAtRisk()
+    {
+        // Half overdue → 30 penalty → 70.
+        var score = PortfolioHealthCalculator.Score(new(10, 5, 0));
+        Assert.Equal(70, score);
+        Assert.Equal("At risk", PortfolioHealthCalculator.Band(score));
+    }
+
+    [Fact]
+    public void OverdueAndAtRisk_StackPenalties()
+    {
+        // Half overdue (30) + half at risk (12.5) → 100 - 42.5 → 58 (rounded).
+        var score = PortfolioHealthCalculator.Score(new(10, 5, 5));
+        Assert.Equal(58, score);
+    }
+
+    [Fact]
+    public void MiscountedDimensions_ClampToOpenItems()
+    {
+        // Overdue/at-risk above the open count can't exceed their weights.
+        Assert.Equal(15, PortfolioHealthCalculator.Score(new(4, 9, 9)));
+    }
+}

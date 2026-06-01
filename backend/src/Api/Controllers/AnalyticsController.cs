@@ -77,6 +77,44 @@ public class AnalyticsController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    // ---- Per-type dashboard analytics (polish D) ----
+
+    // Sales — open pipeline, weighted forecast, stage funnel, win rate, at-risk deals.
+    [HttpGet("api/v1/projects/{projectId:guid}/analytics/sales")]
+    [RequireProjectRole(ProjectRole.Viewer)]
+    public async Task<ActionResult<SalesAnalyticsDto>> Sales(Guid projectId, CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new GetSalesAnalyticsQuery(projectId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    // Support — open/breached counts, per-queue split, trailing SLA attainment.
+    [HttpGet("api/v1/projects/{projectId:guid}/analytics/support")]
+    [RequireProjectRole(ProjectRole.Viewer)]
+    public async Task<ActionResult<SupportAnalyticsDto>> Support(Guid projectId, CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new GetSupportAnalyticsQuery(projectId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    // Marketing — active campaigns, channel mix, assets due, weekly publish throughput.
+    [HttpGet("api/v1/projects/{projectId:guid}/analytics/marketing")]
+    [RequireProjectRole(ProjectRole.Viewer)]
+    public async Task<ActionResult<MarketingAnalyticsDto>> Marketing(Guid projectId, CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new GetMarketingAnalyticsQuery(projectId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    // Operations — next-7-days + overdue runs, trailing completion/on-time/skip rates.
+    [HttpGet("api/v1/projects/{projectId:guid}/analytics/operations")]
+    [RequireProjectRole(ProjectRole.Viewer)]
+    public async Task<ActionResult<OperationsAnalyticsDto>> Operations(Guid projectId, CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new GetOperationsAnalyticsQuery(projectId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     private ObjectResult ToProblem(Error error)
     {
         var status = error.Code switch

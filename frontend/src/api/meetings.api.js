@@ -15,6 +15,19 @@ export const meetingsApi = {
   create: (projectId, body) =>
     apiClient.post(`/projects/${projectId}/meetings`, body).then((r) => r.data),
 
+  // Start an instant meeting: created InProgress, anchored to "now",
+  // never recurring. Server ignores any scheduledAt/recurrence we pass.
+  startInstant: (projectId, { title, type = 'Other', durationMinutes = 30, attendees = [] }) =>
+    apiClient
+      .post(`/projects/${projectId}/meetings`, {
+        title,
+        type,
+        durationMinutes,
+        attendees,
+        isInstant: true,
+      })
+      .then((r) => r.data),
+
   update: (meetingId, body) =>
     apiClient.patch(`/meetings/${meetingId}`, body).then((r) => r.data),
 

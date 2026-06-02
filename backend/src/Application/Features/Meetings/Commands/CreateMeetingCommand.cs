@@ -17,6 +17,15 @@ namespace Application.Features.Meetings.Commands;
 /// instances) — F2-19's AC is "recurring meetings create a series with
 /// one logical link", which the <see cref="Meeting.SeriesId"/>
 /// already covers.
+///
+/// <para>
+/// Instant meetings (<see cref="IsInstant"/>) skip the calendar:
+/// the server anchors <c>ScheduledAt</c> to "now", opens the row
+/// straight into <see cref="MeetingStatus.InProgress"/>, and never
+/// recurs. The caller-supplied <c>ScheduledAt</c> / <c>RecurrenceRule</c>
+/// are ignored in that case — the "Start the meeting" button drops the
+/// organiser straight into the room.
+/// </para>
 /// </summary>
 public record CreateMeetingCommand(
     Guid ProjectId,
@@ -28,7 +37,8 @@ public record CreateMeetingCommand(
     string? RecurrenceRule,
     string? AgendaMd,
     bool AgendaFromAi,
-    IReadOnlyList<MeetingAttendeeInput> Attendees) : IRequest<Result<MeetingDetailDto>>;
+    IReadOnlyList<MeetingAttendeeInput> Attendees,
+    bool IsInstant = false) : IRequest<Result<MeetingDetailDto>>;
 
 public record MeetingAttendeeInput(Guid UserId, bool Required);
 
@@ -48,10 +58,17 @@ public class CreateMeetingCommandHandler(
             return Result.Failure<MeetingDetailDto>(titleErr);
         if (MeetingValidation.ValidateDuration(request.DurationMinutes) is { } durErr)
             return Result.Failure<MeetingDetailDto>(durErr);
-        if (MeetingValidation.ValidateScheduledAt(request.ScheduledAt, DateTime.UtcNow) is { } whenErr)
-            return Result.Failure<MeetingDetailDto>(whenErr);
-        if (MeetingValidation.ValidateRecurrence(request.RecurrenceRule) is { } rrErr)
-            return Result.Failure<MeetingDetailDto>(rrErr);
+
+        // Instant meetings are anchored to "now" and never recur, so the
+        // when/recurrence inputs are server-controlled — skip those gates.
+        var now = DateTime.UtcNow;
+        if (!request.IsInstant)
+        {
+            if (MeetingValidation.ValidateScheduledAt(request.ScheduledAt, now) is { } whenErr)
+                return Result.Failure<MeetingDetailDto>(whenErr);
+            if (MeetingValidation.ValidateRecurrence(request.RecurrenceRule) is { } rrErr)
+                return Result.Failure<MeetingDetailDto>(rrErr);
+        }
 
         var typeResult = MeetingValidation.ParseType(request.Type);
         if (!typeResult.IsSuccess)
@@ -80,7 +97,9 @@ public class CreateMeetingCommandHandler(
             if (!seen.Add(a.UserId)) continue;
             inputs.Add(a);
         }
-        if (inputs.Count == 0)
+        // Instant meetings can start solo (grab a guest link / invite from
+        // the room); scheduled meetings still need at least one invitee.
+        if (inputs.Count == 0 && !request.IsInstant)
             return Result.Failure<MeetingDetailDto>(MeetingErrors.AttendeesRequired);
 
         var attendeeIds = inputs.Select(a => a.UserId).ToList();
@@ -98,9 +117,12 @@ public class CreateMeetingCommandHandler(
             Title = request.Title.Trim(),
             Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim(),
             Type = typeResult.Value,
-            ScheduledAt = request.ScheduledAt.ToUniversalTime(),
+            Status = request.IsInstant
+                ? Domain.Enums.MeetingStatus.InProgress
+                : Domain.Enums.MeetingStatus.Scheduled,
+            ScheduledAt = request.IsInstant ? now : request.ScheduledAt.ToUniversalTime(),
             DurationMinutes = request.DurationMinutes,
-            RecurrenceRule = string.IsNullOrWhiteSpace(request.RecurrenceRule)
+            RecurrenceRule = request.IsInstant || string.IsNullOrWhiteSpace(request.RecurrenceRule)
                 ? null
                 : request.RecurrenceRule!.Trim(),
             AgendaMd = string.IsNullOrWhiteSpace(request.AgendaMd) ? null : request.AgendaMd!.Trim(),

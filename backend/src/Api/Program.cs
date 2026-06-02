@@ -47,6 +47,29 @@ if (!string.IsNullOrWhiteSpace(ghCallbackBase))
     builder.Configuration["GitHub:CallbackBaseUrl"] = ghCallbackBase;
 }
 
+// F2-20 — LiveKit creds live as flat env vars; bridge them to the
+// Video:* section the video service binds. Without all three the
+// service reports IsConfigured=false and meeting rooms can't open.
+var livekitUrl = Environment.GetEnvironmentVariable("LIVEKIT_URL");
+if (!string.IsNullOrWhiteSpace(livekitUrl))
+{
+    builder.Configuration["Video:Url"] = livekitUrl;
+}
+var livekitApiKey = Environment.GetEnvironmentVariable("LIVEKIT_API_KEY");
+if (!string.IsNullOrWhiteSpace(livekitApiKey))
+{
+    builder.Configuration["Video:ApiKey"] = livekitApiKey;
+}
+// Accept both spellings — LiveKit Cloud's dashboard labels it
+// "API Secret" (LIVEKIT_API_SECRET), but LIVEKIT_SECRET is the shorter
+// form we documented first.
+var livekitSecret = Environment.GetEnvironmentVariable("LIVEKIT_SECRET")
+    ?? Environment.GetEnvironmentVariable("LIVEKIT_API_SECRET");
+if (!string.IsNullOrWhiteSpace(livekitSecret))
+{
+    builder.Configuration["Video:ApiSecret"] = livekitSecret;
+}
+
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 

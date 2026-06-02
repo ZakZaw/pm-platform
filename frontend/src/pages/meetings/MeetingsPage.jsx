@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { CalendarPlus, Repeat, Users } from 'lucide-react';
+import { CalendarPlus, Repeat, Users, Zap } from 'lucide-react';
 import {
   Badge,
   Button,
@@ -9,7 +9,9 @@ import {
 } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { meetingsApi } from '@/api/meetings.api';
+import { useAuthStore } from '@/store/authStore';
 import { describeRecurrence } from '@/components/meetings/recurrence';
+import { InstantMeetingModal } from '@/components/meetings/InstantMeetingModal';
 import '@/components/meetings/meetings.css';
 
 const TYPE_TONES = {
@@ -43,11 +45,14 @@ const RSVP_LABELS = {
 export function MeetingsPage() {
   const { slug: orgSlug, projectSlug } = useParams();
   const navigate = useNavigate();
+  const me = useAuthStore((s) => s.user);
 
   const [project, setProject] = useState(null);
+  const [members, setMembers] = useState([]);
   const [meetings, setMeetings] = useState([]);
   const [scope, setScope] = useState('upcoming');
   const [loading, setLoading] = useState(true);
+  const [instantOpen, setInstantOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -57,6 +62,7 @@ export function MeetingsPage() {
         const p = await projectsApi.getBySlug(orgSlug, projectSlug);
         if (cancelled) return;
         setProject(p);
+        projectsApi.listMembers(p.id).then((ms) => { if (!cancelled) setMembers(ms); });
         const list = await meetingsApi.listForProject(p.id, {
           includePast: scope === 'past' || scope === 'all',
           includeCancelled: scope === 'all',
@@ -102,14 +108,34 @@ export function MeetingsPage() {
               Recurring meetings live as a single series.
             </p>
           </div>
-          <Button
-            variant="primary"
-            onClick={() => navigate(`/${orgSlug}/projects/${projectSlug}/meetings/new`)}
-          >
-            <CalendarPlus size={12} aria-hidden="true" /> New meeting
-          </Button>
+          <div className="row gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => setInstantOpen(true)}
+            >
+              <Zap size={12} aria-hidden="true" /> Start instant meeting
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => navigate(`/${orgSlug}/projects/${projectSlug}/meetings/new`)}
+            >
+              <CalendarPlus size={12} aria-hidden="true" /> New meeting
+            </Button>
+          </div>
         </div>
       </header>
+
+      {instantOpen && (
+        <InstantMeetingModal
+          project={project}
+          members={members}
+          meId={me?.id}
+          onClose={() => setInstantOpen(false)}
+          onStarted={(meeting) =>
+            navigate(`/${orgSlug}/projects/${projectSlug}/meetings/${meeting.id}/room`)
+          }
+        />
+      )}
 
       <div className="meetings-toolbar">
         <Segmented

@@ -138,6 +138,9 @@ export function MeetingDetailPage() {
     () => (start && meeting ? new Date(start.getTime() + meeting.durationMinutes * 60_000) : null),
     [start, meeting]);
   const isOrganiser = !!meeting && meeting.organizerId === me?.id;
+  // Scheduled (room opens 15 min ahead) and InProgress (instant meeting
+  // already running) are both joinable / finalisable / cancellable.
+  const isLive = !!meeting && (meeting.status === 'Scheduled' || meeting.status === 'InProgress');
   const myAttendance = meeting?.attendees.find((a) => a.userId === me?.id);
   // AC: "Agenda editable up to meeting start time."
   const { canRsvp, canEditAgenda } = useMemo(() => {
@@ -167,7 +170,9 @@ export function MeetingDetailPage() {
             <h1 className="page-title">{meeting.title}</h1>
             <div className="row gap-2" style={{ marginTop: 'var(--s-2)', flexWrap: 'wrap' }}>
               <Badge tone={TYPE_TONES[meeting.type] ?? 'neutral'}>{meeting.type}</Badge>
-              {meeting.status !== 'Scheduled' && (
+              {meeting.status === 'InProgress' ? (
+                <Badge tone="warning" dot>Live now</Badge>
+              ) : meeting.status !== 'Scheduled' && (
                 <Badge tone={meeting.status === 'Cancelled' ? 'danger' : 'neutral'}>
                   {meeting.status}
                 </Badge>
@@ -180,17 +185,18 @@ export function MeetingDetailPage() {
             </div>
           </div>
           <div className="row gap-2">
-            {meeting.status === 'Scheduled' && (
+            {isLive && (
               <Button
                 variant="primary"
                 onClick={() =>
                   navigate(`/${orgSlug}/projects/${projectSlug}/meetings/${meeting.id}/room`)
                 }
               >
-                <Video size={12} aria-hidden="true" /> Join meeting
+                <Video size={12} aria-hidden="true" />
+                {meeting.status === 'InProgress' ? ' Rejoin meeting' : ' Join meeting'}
               </Button>
             )}
-            {isOrganiser && meeting.status === 'Scheduled' && (
+            {isOrganiser && isLive && (
               <FinaliseButton
                 meetingId={meeting.id}
                 onFinalised={async () => {
@@ -209,7 +215,7 @@ export function MeetingDetailPage() {
                 <Sparkles size={12} aria-hidden="true" /> View summary
               </Button>
             )}
-            {isOrganiser && meeting.status === 'Scheduled' && (
+            {isOrganiser && isLive && (
               <Button variant="ghost" onClick={cancelMeeting}>
                 <Trash2 size={12} aria-hidden="true" /> Cancel meeting
               </Button>
@@ -323,7 +329,7 @@ export function MeetingDetailPage() {
           </ul>
         </section>
 
-        {isOrganiser && meeting.status === 'Scheduled' && (
+        {isOrganiser && isLive && (
           <GuestLinksCard meetingId={meeting.id} toast={toast} />
         )}
 

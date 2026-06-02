@@ -48,17 +48,21 @@ public class MeetingsController(ISender mediator) : ControllerBase
         var attendees = (body.Attendees ?? [])
             .Select(a => new MeetingAttendeeInput(a.UserId, a.Required ?? true))
             .ToList();
+        var isInstant = body.IsInstant ?? false;
         var result = await mediator.Send(new CreateMeetingCommand(
             projectId,
             body.Title ?? string.Empty,
             body.Description,
             body.Type ?? string.Empty,
             body.ScheduledAt ?? DateTime.UtcNow,
-            body.DurationMinutes ?? 0,
+            // Instant huddles default to a 30-min block when the caller
+            // omits a duration; scheduled meetings must send one.
+            body.DurationMinutes ?? (isInstant ? 30 : 0),
             body.RecurrenceRule,
             body.AgendaMd,
             body.AgendaFromAi ?? false,
-            attendees), ct);
+            attendees,
+            isInstant), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
@@ -292,7 +296,8 @@ public record CreateMeetingBodyDto(
     string? RecurrenceRule,
     string? AgendaMd,
     bool? AgendaFromAi,
-    IReadOnlyList<MeetingAttendeeBodyDto>? Attendees);
+    IReadOnlyList<MeetingAttendeeBodyDto>? Attendees,
+    bool? IsInstant);
 
 public record UpdateMeetingBodyDto(
     string? Title,

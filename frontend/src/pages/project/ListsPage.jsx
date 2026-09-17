@@ -35,8 +35,8 @@ const listDropId = (id) => `list:${id}`;
 const listDragId = (id) => `list-handle:${id}`;
 const taskDragId = (id) => `task:${id}`;
 
-// The ListsPage is the only project view for Generic projects (CLAUDE.md
-// project-types section). It works without epics, sprints, or AC — just
+// The ListsPage is the only project view for Generic projects (see the
+// project-types design). It works without epics, sprints, or AC — just
 // drag tasks between lists and reorder the lists themselves.
 export function ListsPage() {
   const { slug: orgSlug, projectSlug } = useParams();

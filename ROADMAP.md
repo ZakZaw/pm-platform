@@ -2,7 +2,7 @@
 
 > Stack: .NET 10 · React + Vite · PostgreSQL · Docker
 > Based on Design Document v1.0
-> Design system: **Stratos** — tokens in `frontend/src/styles/tokens.css`; reference mockups, every component variant, every screen in `/New Design Files/`. CLAUDE.md → "Design System — Stratos" has the canonical token/primitive reference.
+> Design system: **Stratos** — tokens in `frontend/src/styles/tokens.css`; reference mockups, every component variant, every screen in `/New Design Files/` — the canonical token/primitive reference.
 
 Each task includes:
 
@@ -67,7 +67,7 @@ Each task includes:
 - `npm run dev` starts the dev server on port 5173
 - The page renders with the dark background sourced from `--bg-app`
 - Switching `<html data-theme="light">` flips surfaces/text without breaking layout
-- All folders listed in `CLAUDE.md` exist
+- All folders in the repository structure exist
 
 ---
 
@@ -1284,7 +1284,7 @@ Covered by F2-23 (GitHub integration). AC validated there.
 - Epic progress recomputed on every story-points change
 
 > **Implementation note (shipped).** Backend: `AnalyticsController` exposes the three GETs under `api/v1/projects/{id}/analytics/{burndown,velocity,epic-progress}` (all `RequireProjectRole(Viewer)`), backed by query handlers in `Application/Features/Analytics/`. Burndown reconstructs the real day-by-day remaining line from `TaskStatusChange` history against the sprint's **scope baseline** (so a closed sprint charts against its committed scope, not the carryover-stripped current set); the pure, unit-tested `BurndownCalculator` does the math (`tests/Unit/BurndownCalculatorTests.cs`). Velocity returns the last 6 *started* sprints (Active+Closed) with a trailing 3-sprint rolling average; committed = scope-baseline points, completed = `FinalVelocity` (closed) or live Done points (active). Epic-progress returns points+counts per non-archived epic.
-> **Frontend decision — SVG, not recharts (settled).** The roadmap said "using recharts," but the shipped charts and CLAUDE.md's hard rules are token-styled hand-rolled SVG (no hardcoded colors). We extended the existing `BurndownChart`/`VelocityChart` (added a rolling-average overlay line in `--ai-2`) and added a new `EpicProgressBars` rather than introduce recharts. The pre-Phase-3 polish pass **removed `recharts` from `package.json`** — SVG is the committed direction; reach for it (not a chart lib) for new charts. The Engineering dashboard (`DashboardPage` + `engineeringWidgets`) and `SprintDetailPage` now consume the real endpoints — the burndown/velocity/epic-progress **placeholders are gone**.
+> **Frontend decision — SVG, not recharts (settled).** The roadmap said "using recharts," but the shipped charts and the design-system hard rules are token-styled hand-rolled SVG (no hardcoded colors). We extended the existing `BurndownChart`/`VelocityChart` (added a rolling-average overlay line in `--ai-2`) and added a new `EpicProgressBars` rather than introduce recharts. The pre-Phase-3 polish pass **removed `recharts` from `package.json`** — SVG is the committed direction; reach for it (not a chart lib) for new charts. The Engineering dashboard (`DashboardPage` + `engineeringWidgets`) and `SprintDetailPage` now consume the real endpoints — the burndown/velocity/epic-progress **placeholders are gone**.
 > **Dashboard placeholders — all killed (pre-Phase-3 polish A + B).** Every engineering-dashboard widget now renders real, server-computed analytics under `Application/Features/Analytics/`: project health (F3-16), the KPI strip, team workload (F3-14), and — polish (B) — the **weekly insight** (F3-18). The weekly insight is a deterministic, unit-tested `WeeklyInsightCalculator` that picks the single most actionable signal (sprint-pace projected miss / blockers / overdue / busiest-member) and phrases it with real numbers + names; `GET …/analytics/insight` feeds the `ai-insight` widget. This is the *computed* dashboard card — distinct from the LLM-narrated sprint-health suggestion in the AI Inbox (`Features/AI`). No `sample` chip remains on the dashboard. **Polish C + D then closed both follow-on gaps:** portfolio-level (`GET /orgs/{slug}/portfolio`) and per-type dashboard depth (`GET …/analytics/{sales,support,marketing,operations}`, each behind a pure unit-tested calculator). See the Phase 3 callout.
 
 ---

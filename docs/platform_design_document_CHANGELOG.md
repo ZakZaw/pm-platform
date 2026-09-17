@@ -217,7 +217,7 @@ Reasons:
 
 ### Schema cluster correction
 
-CLAUDE.md "Schema clusters" was updated to:
+The "Schema clusters" list was updated to:
 > Cluster 2: Project Work (Epic, **Task**, Subtask, Sprint, **SprintTask**, Comment, Attachment)
 
 (Was: Epic, Story, Task, Subtask, Sprint, SprintTask, Comment, Attachment.)

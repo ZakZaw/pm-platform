@@ -7,6 +7,6 @@ public class AISettings
     public string? GeminiApiKey { get; set; }
 
     /// <summary>Override which Gemini model to call. Defaults to
-    /// gemini-2.0-flash per CLAUDE.md.</summary>
+    /// gemini-2.0-flash (see the project README / AI section).</summary>
     public string Model { get; set; } = "gemini-2.0-flash";
 }

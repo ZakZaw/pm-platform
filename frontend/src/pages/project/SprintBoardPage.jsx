@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { RefreshCw } from 'lucide-react';
-import { Badge, Button, Sparkline } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { sprintsApi } from '@/api/sprints.api';
 import { boardApi } from '@/api/board.api';
@@ -10,9 +10,11 @@ import { epicsApi } from '@/api/epics.api';
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
 import { LiveIndicator } from '@/components/kanban/LiveIndicator';
 import { ColumnsButton } from '@/components/kanban/ColumnsButton';
+import { SprintMeta } from '@/components/kanban/SprintMeta';
 import { TaskDetailDrawer } from '@/components/tasks/TaskDetailDrawer';
 import { useProjectHub } from '@/hooks/useProjectHub';
 import { useColumnVisibility } from '@/hooks/useColumnVisibility';
+import './BoardPage.css';
 import './SprintBoardPage.css';
 
 function fmtRange(start, end) {
@@ -85,7 +87,15 @@ export function SprintBoardPage() {
     useColumnVisibility(sprintId ? `sprint:${sprintId}` : null, allStatuses);
 
   if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
-  if (!project || !board) return <div className="main-inner"><p className="muted">Loading…</p></div>;
+  if (!project || !board) {
+    return (
+      <div className="main-inner board-page sprint-board" aria-busy="true">
+        <div className="page-head">
+          <Skeleton width="35%" height={20} />
+        </div>
+      </div>
+    );
+  }
 
   const daysLeft = sprint
     ? Math.max(0, Math.ceil((new Date(sprint.endDate) - new Date()) / 86_400_000))
@@ -110,51 +120,32 @@ export function SprintBoardPage() {
     <div className="main-inner board-page sprint-board">
       <div className="page-head">
         <div className="page-title-row">
-          <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>
-              {project.name} · Sprint board {range && <>· <span className="mono">{range}</span></>}
-            </div>
-            <h1 className="page-title row gap-3" style={{ fontSize: 'var(--fs-2xl)' }}>
+          <div className="board-page-heading">
+            <div className="eyebrow">{project.name} · Sprint board</div>
+            <h1 className="page-title board-page-title">
               {sprint?.name ?? 'Sprint'}
-              {closed && <Badge tone="neutral">Closed</Badge>}
+              {closed && <span className="status status-todo">Closed</span>}
               <LiveIndicator status={hubStatus} />
             </h1>
-            {sprint?.goal && (
-              <p className="page-subtitle" style={{ marginTop: 6 }}>
-                <span className="muted">Goal · </span>{sprint.goal}
-              </p>
-            )}
+            {sprint?.goal && <p className="page-subtitle">{sprint.goal}</p>}
+            <SprintMeta
+              burnPoints={burnPoints}
+              donePts={donePts}
+              totalPts={totalPts}
+              daysLeft={length != null && !closed ? daysLeft : null}
+              range={range}
+            />
           </div>
-          <div className="row gap-4">
-            {burnPoints && (
-              <div className="board-page-banner">
-                <div className="col" style={{ gap: 0 }}>
-                  <div className="eyebrow board-page-banner-label">Burndown</div>
-                  <div className="row gap-3" style={{ marginTop: 2 }}>
-                    <Sparkline points={burnPoints} width={88} height={20} ideal />
-                    {totalPts > 0 && (
-                      <span className="mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-secondary)' }}>
-                        {donePts}/{totalPts} pts
-                      </span>
-                    )}
-                  </div>
-                </div>
-                {length != null && !closed && (
-                  <>
-                    <div className="divider-v" style={{ alignSelf: 'stretch' }} />
-                    <div className="col center board-page-banner-days">
-                      <div className="mono board-page-banner-days-num" style={{ color: daysLeft <= 3 ? 'var(--warning)' : undefined }}>
-                        {daysLeft}d
-                      </div>
-                      <div className="muted board-page-banner-days-label">left</div>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-            <Button variant="ghost" size="sm" onClick={() => load(project.id).catch(() => {})} aria-label="Refresh" title="Refresh">
-              <RefreshCw size={14} aria-hidden="true" />
-            </Button>
+          <div className="board-page-actions">
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => load(project.id).catch(() => {})}
+              aria-label="Refresh"
+              title="Refresh"
+            >
+              <RefreshCw size={16} aria-hidden="true" />
+            </button>
             <ColumnsButton
               statuses={statusConfigs ?? []}
               isVisible={isStatusVisible}
@@ -162,13 +153,21 @@ export function SprintBoardPage() {
             />
           </div>
         </div>
+        {totalPts > 0 && (
+          <div
+            className="bar sprint-board-progress"
+            role="progressbar"
+            aria-valuenow={pct}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`Sprint progress ${pct}%`}
+            title={`${pct}% of points done`}
+          >
+            {/* Width is data-driven, so it stays inline. */}
+            <div className="bar-fill" style={{ width: `${pct}%` }} />
+          </div>
+        )}
       </div>
-
-      {totalPts > 0 && (
-        <div className="sprint-board-progress" aria-label={`Sprint progress ${pct}%`}>
-          <div className="sprint-board-progress-fill" style={{ width: `${pct}%` }} />
-        </div>
-      )}
 
       <div className="board-page-board">
         <KanbanBoard

@@ -5,29 +5,34 @@
 .calendar-page {
   display: flex;
   flex-direction: column;
-  gap: var(--s-5);
+  gap: var(--s-6);
 }
+
+.calendar-page .page-head { margin-bottom: 0; }
+
+.calendar-page__nav { align-items: center; }
 
 .calendar-page__legend {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--s-5) var(--s-6);
-  font-size: var(--fs-xs);
+  align-items: center;
+  gap: var(--s-4) var(--s-8);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
 }
 
+/* Legend swatch: round dot in the sprint's band colour (stronger than the
+   7% cell tint so it reads at a glance). */
 .calendar-page__swatch {
   display: inline-block;
-  width: 14px;
-  height: 14px;
-  border-radius: var(--r-xs);
-  border: 1px solid var(--border-subtle);
+  width: var(--s-4);
+  height: var(--s-4);
+  border-radius: var(--r-pill);
 }
-
-.calendar-page__grid {
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-md);
-  overflow: hidden;
-}
+.calendar-page__swatch.sprint-tint-a { background: var(--accent); }
+.calendar-page__swatch.sprint-tint-b { background: var(--violet); }
+.calendar-page__swatch.sprint-tint-c { background: var(--info); }
+.calendar-page__swatch.sprint-tint-d { background: var(--success); }
 
 /* Week view: 7 columns × 1 tall row. */
 .calendar-page__grid.is-week .cal-grid {
@@ -37,6 +42,10 @@
 .calendar-page__cell--week {
   min-height: 360px;
 }
+
+.calendar-page__cell-head { margin-bottom: var(--s-1); }
+
+.calendar-page__more { font-size: var(--fs-xs); }
 
 /* Sprint band tinting. Four light backgrounds rotate so adjacent sprints
    are visually distinct. Combined with .cal-cell.is-today the today
@@ -67,11 +76,11 @@
   box-shadow: var(--shadow-md);
 }
 
-/* Status colors mirror the .status-{key} chips so a quick scan of the
+/* Status colors mirror the .status-{key} read-outs so a quick scan of the
    calendar grid reads the same as the board. */
 .task-status-Backlog,
 .task-status-ToDo    { border-color: var(--text-muted);  background: var(--surface-2);    color: var(--text-secondary); }
-.task-status-InProgress { border-color: var(--info);    background: var(--info-soft);    color: var(--info); }
+.task-status-InProgress { border-color: var(--accent);  background: var(--accent-soft);  color: var(--accent); }
 .task-status-InReview   { border-color: var(--violet);  background: var(--violet-soft);  color: var(--violet); }
 .task-status-Blocked    { border-color: var(--danger);  background: var(--danger-soft);  color: var(--danger); }
 .task-status-Done       { border-color: var(--success); background: var(--success-soft); color: var(--success); text-decoration: line-through; opacity: 0.85; }

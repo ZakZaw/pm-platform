@@ -12,6 +12,11 @@ function shortKey(card) {
   return id ? id.slice(0, 4).toUpperCase() : '—';
 }
 
+/**
+ * Board card. Calm hierarchy: epic (coloured dot + small text) and key on
+ * top, the title as the one strong element, then a quiet meta row
+ * (priority flag, comment/file counts, points, assignee).
+ */
 export function KanbanCard({ card, onOpen, epic, isOverlay = false }) {
   const { slug: orgSlug } = useParams();
   const { members } = useOrgMembers(orgSlug);
@@ -20,8 +25,9 @@ export function KanbanCard({ card, onOpen, epic, isOverlay = false }) {
     disabled: isOverlay,
   });
   const { attributes, listeners, setNodeRef, transform, isDragging } = draggable;
+  // Drag transform is per-frame dynamic, so it has to stay inline.
   const style = isOverlay
-    ? { boxShadow: 'var(--shadow-lg)' }
+    ? undefined
     : {
         transform: CSS.Translate.toString(transform),
         opacity: isDragging ? 0 : 1,
@@ -51,23 +57,20 @@ export function KanbanCard({ card, onOpen, epic, isOverlay = false }) {
       {...(isOverlay ? {} : attributes)}
       onClick={isOverlay ? undefined : handleClick}
       onKeyDown={isOverlay ? undefined : handleKey}
-      className="card-task"
+      className={['card-task', 'kanban-card', isOverlay ? 'is-overlay' : ''].filter(Boolean).join(' ')}
       role={isOverlay ? undefined : 'button'}
       tabIndex={isOverlay ? undefined : 0}
       aria-label={`${card.title} — ${card.priority} priority`}
     >
-      <div className="card-task-head">
+      <div className="kanban-card-top">
         {epic ? (
           <span
-            className="badge card-task-epic-badge"
-            style={{
-              background: epic.color ? `color-mix(in srgb, ${epic.color} 12%, transparent)` : 'var(--surface-2)',
-              color: epic.color || 'var(--text-secondary)',
-              borderColor: epic.color ? `color-mix(in srgb, ${epic.color} 35%, transparent)` : 'var(--border-subtle)',
-            }}
-            title={epic.title}
+            className="kanban-card-epic"
+            // Epic colour is user data — passed as a custom property, styled in CSS.
+            style={epic.color ? { '--epic-color': epic.color } : undefined}
+            title={`Epic: ${epic.title}`}
           >
-            <span className="truncate" style={{ maxWidth: 120 }}>{epic.title}</span>
+            <span className="truncate">{epic.title}</span>
           </span>
         ) : (
           <span />
@@ -75,34 +78,34 @@ export function KanbanCard({ card, onOpen, epic, isOverlay = false }) {
         <span className="card-task-id">{shortKey(card)}</span>
       </div>
 
-      <div className="card-task-title">{card.title}</div>
+      <div className="kanban-card-title">{card.title}</div>
 
       {card.blockerKey && (
-        <div className="card-task-blocker">
-          <Link size={11} aria-hidden="true" />
+        <div className="kanban-card-blocker">
+          <Link size={12} aria-hidden="true" />
           <span>Blocked by</span>
           <span className="mono">{card.blockerKey}</span>
         </div>
       )}
 
-      <div className="card-task-meta">
+      <div className="kanban-card-meta">
         <Priority level={card.priority} />
         {comments > 0 && (
-          <span className="row gap-1" title={`${comments} comments`}>
-            <MessageSquare size={11} aria-hidden="true" />
+          <span className="kanban-card-count" title={`${comments} comments`}>
+            <MessageSquare size={12} aria-hidden="true" />
             {comments}
           </span>
         )}
         {files > 0 && (
-          <span className="row gap-1" title={`${files} attachments`}>
-            <Paperclip size={11} aria-hidden="true" />
+          <span className="kanban-card-count" title={`${files} attachments`}>
+            <Paperclip size={12} aria-hidden="true" />
             {files}
           </span>
         )}
-        <span className="meta-spacer" />
+        <span className="fill" />
         {card.storyPoints != null && (
-          <span className="card-task-est" title="Story points">
-            {card.storyPoints}p
+          <span className="kanban-card-pts" title="Story points">
+            {card.storyPoints} pts
           </span>
         )}
         {assignee ? (
@@ -113,7 +116,7 @@ export function KanbanCard({ card, onOpen, epic, isOverlay = false }) {
             alt={`Assigned to ${assignee.fullName}`}
           />
         ) : (
-          <span className="card-task-unassigned" title="Unassigned" />
+          <span className="kanban-card-unassigned" title="Unassigned" aria-label="Unassigned" />
         )}
       </div>
     </div>

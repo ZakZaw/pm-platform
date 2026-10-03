@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Clock, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { Button, useToast } from '@/components/ui';
 import { timeLogsApi } from '@/api/timeLogs.api';
+import { TaskSection } from './TaskSection';
 import './TimeLogsSection.css';
 
 const HOURS_DECIMAL = /^(\d+)(?:\.(\d+))?$/;
@@ -109,11 +110,8 @@ export function TimeLogsSection({ taskId, totalMinutes = 0, onLogged }) {
   }
 
   return (
+    <TaskSection title="Time logged" meta={`${formatMinutes(totalMinutes)} total`}>
     <div className="timelogs-section">
-      <div className="eyebrow timelogs-section__head">
-        <Clock size={11} aria-hidden="true" /> Time logged
-        <span className="muted">{formatMinutes(totalMinutes)} total</span>
-      </div>
 
       <form onSubmit={submit} className="timelogs-section__form">
         <input
@@ -167,5 +165,6 @@ export function TimeLogsSection({ taskId, totalMinutes = 0, onLogged }) {
         </ul>
       )}
     </div>
+    </TaskSection>
   );
 }

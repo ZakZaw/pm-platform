@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Plus } from 'lucide-react';
-import { Badge, Button, Input, Modal, ModalBody, ModalFooter, ModalHeader, Select, Skeleton, useToast } from '@/components/ui';
+import { Plus, UserSquare } from 'lucide-react';
+import { Button, EmptyState, Input, Modal, ModalBody, ModalFooter, ModalHeader, Select, Skeleton, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { salesApi } from '@/api/sales.api';
 import './LeadsPage.css';
 
-const STATUS_TONE = {
-  New: 'info',
-  Working: 'purple',
-  Qualified: 'success',
-  Disqualified: 'neutral',
-  Converted: 'success',
+// Status read-out as dot + coloured text (stratos .status-* classes).
+const STATUS_CLASS = {
+  New: 'status-progress',
+  Working: 'status-review',
+  Qualified: 'status-done',
+  Disqualified: 'status-todo',
+  Converted: 'status-done',
 };
 
 const STATUS_FILTERS = [
@@ -53,18 +54,20 @@ export function LeadsPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>{project?.name ?? 'Sales'}</div>
             <h1 className="page-title">Leads</h1>
             <div className="page-subtitle">
               Inbound and outbound prospects. Convert qualified leads into deals on your pipeline.
             </div>
           </div>
-          <div className="row gap-2">
-            <Select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              options={STATUS_FILTERS}
-            />
+          <div className="row gap-3">
+            <div className="leads-filter">
+              <Select
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                options={STATUS_FILTERS}
+                aria-label="Filter by status"
+              />
+            </div>
             <Button size="sm" onClick={() => setCreating(true)}>
               <Plus size={13} aria-hidden="true" /> New lead
             </Button>
@@ -73,36 +76,40 @@ export function LeadsPage() {
       </div>
 
       {!leads ? (
-        <div className="col" style={{ gap: 8 }}>
+        <div className="col gap-3">
           {[0, 1, 2, 3].map((i) => <Skeleton key={i} height={48} />)}
         </div>
       ) : leads.length === 0 ? (
-        <div className="muted" style={{ padding: 24, textAlign: 'center' }}>
-          {filter ? `No ${filter} leads.` : 'No leads yet.'}
-        </div>
+        <EmptyState
+          icon={<UserSquare size={20} aria-hidden="true" />}
+          title={filter ? `No ${filter} leads` : 'No leads yet'}
+          subtitle={filter ? 'Try another status filter.' : 'Add a prospect to start qualifying.'}
+        />
       ) : (
-        <div className="leads-list">
+        <ul className="card leads-list">
           {leads.map((l) => (
-            <div key={l.id} className="leads-row">
+            <li key={l.id} className="leads-row">
               <div className="fill">
                 <div className="leads-name">{l.name}</div>
-                <div className="muted" style={{ fontSize: 12 }}>
+                <div className="leads-meta truncate">
                   {[l.email, l.phone, l.source].filter(Boolean).join(' · ') || '—'}
                 </div>
               </div>
-              <Badge tone={STATUS_TONE[l.status] ?? 'neutral'}>{l.status}</Badge>
-              {l.status !== 'Converted' && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setConverting(l)}
-                >
-                  Convert
-                </Button>
-              )}
-            </div>
+              <span className={`status ${STATUS_CLASS[l.status] ?? 'status-todo'}`}>{l.status}</span>
+              <div className="leads-action">
+                {l.status !== 'Converted' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setConverting(l)}
+                  >
+                    Convert
+                  </Button>
+                )}
+              </div>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
 
       {creating && project && (
@@ -163,14 +170,14 @@ function CreateLeadModal({ projectId, onClose, onCreated }) {
   return (
     <Modal open onClose={onClose} labelledBy="create-lead-title">
       <form onSubmit={submit}>
-        <ModalHeader><h2 id="create-lead-title" style={{ margin: 0, fontSize: 16 }}>New lead</h2></ModalHeader>
+        <ModalHeader><h2 id="create-lead-title" className="modal-title">New lead</h2></ModalHeader>
         <ModalBody>
-          <div className="col" style={{ gap: 12 }}>
+          <div className="col gap-5">
             <Input label="Name" autoFocus value={name} onChange={(e) => setName(e.target.value)} required />
             <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             <Input label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
             <Input label="Source" value={source} onChange={(e) => setSource(e.target.value)} placeholder="Inbound / Referral / …" />
-            {error && <p style={{ color: 'var(--danger)', margin: 0 }}>{error}</p>}
+            {error && <p className="input-help is-error">{error}</p>}
           </div>
         </ModalBody>
         <ModalFooter>
@@ -221,10 +228,10 @@ function ConvertLeadModal({ projectId, lead, onClose, onConverted }) {
     <Modal open onClose={onClose} labelledBy="convert-lead-title">
       <form onSubmit={submit}>
         <ModalHeader>
-          <h2 id="convert-lead-title" style={{ margin: 0, fontSize: 16 }}>Convert lead</h2>
+          <h2 id="convert-lead-title" className="modal-title">Convert lead</h2>
         </ModalHeader>
         <ModalBody>
-          <div className="col" style={{ gap: 12 }}>
+          <div className="col gap-5">
             {!lead.accountId && (
               <Input
                 label="Account name"
@@ -242,7 +249,7 @@ function ConvertLeadModal({ projectId, lead, onClose, onConverted }) {
               options={stages.filter((s) => !s.isTerminalWon && !s.isTerminalLost)
                 .map((s) => ({ value: s.id, label: s.name }))}
             />
-            {error && <p style={{ color: 'var(--danger)', margin: 0 }}>{error}</p>}
+            {error && <p className="input-help is-error">{error}</p>}
           </div>
         </ModalBody>
         <ModalFooter>

@@ -1,19 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import {
-  Calendar,
-  ChevronLeft,
-  Flag,
-  ListChecks,
-  Play,
-  Plus,
-  Rocket,
-  Sparkles,
-  Square,
-  Target,
-  TrendingUp,
-} from 'lucide-react';
-import { AISuggestionCard, Avatar, Badge, Button, Card, useToast } from '@/components/ui';
+import { ChevronLeft, Play, Plus, Sparkles, Square } from 'lucide-react';
+import { AISuggestionCard, Avatar, Button, Priority, Skeleton, useToast } from '@/components/ui';
+import { STATUS_MAP } from '@/components/ui/StatusBadge/constants';
 import { BurndownChart } from '@/components/charts';
 import { TaskDetailDrawer } from '@/components/tasks/TaskDetailDrawer';
 import { projectsApi } from '@/api/projects.api';
@@ -27,7 +16,13 @@ import { useOrgMembers } from '@/hooks/useOrgMembers';
 import { useConfirm } from '@/hooks/useConfirm';
 import './SprintDetailPage.css';
 
-const STATUS_TONE = { Planning: 'neutral', Active: 'info', Closed: 'success' };
+// Sprint status read-out as dot + coloured text (stratos .status-*).
+const STATUS_CLASS = { Planning: 'status-todo', Active: 'status-progress', Closed: 'status-done' };
+
+function groupLabel(g) {
+  if (g.displayName && g.displayName !== g.status) return g.displayName;
+  return STATUS_MAP[g.status]?.label ?? g.status;
+}
 
 function daysBetween(a, b) {
   if (!a || !b) return 0;
@@ -312,7 +307,16 @@ export function SprintDetailPage() {
   }
 
   if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
-  if (!project || !sprint) return <div className="main-inner"><p className="muted">Loading…</p></div>;
+  if (!project || !sprint) {
+    return (
+      <div className="main-inner sprint-detail" aria-busy="true">
+        <div className="page-head"><Skeleton width="30%" height={28} /></div>
+        <div className="grid-4">
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} height={120} radius="lg" />)}
+        </div>
+      </div>
+    );
+  }
 
   const sprintLen = daysBetween(sprint.startDate, sprint.endDate);
   const today =
@@ -347,9 +351,8 @@ export function SprintDetailPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div className="fill">
-            <div className="eyebrow" style={{ marginBottom: 6 }}>{project.name} · Sprint</div>
-            <div className="row gap-3" style={{ flexWrap: 'wrap' }}>
-              <Rocket size={20} aria-hidden="true" className="sprint-detail-head-icon" />
+            <div className="eyebrow">{project.name} · Sprint</div>
+            <div className="sprint-detail-title-row">
               {editingName ? (
                 <input
                   className="sprint-detail-title-input"
@@ -378,28 +381,30 @@ export function SprintDetailPage() {
                   {sprint.name}
                 </button>
               )}
-              <Badge tone={STATUS_TONE[sprint.status] ?? 'neutral'}>{sprint.status}</Badge>
+              <span className={`status ${STATUS_CLASS[sprint.status] ?? 'status-todo'}`}>
+                {sprint.status}
+              </span>
               {sprint.status === 'Active' && (
-                <Badge tone={daysLeft <= 2 ? 'warning' : 'info'}>
+                <span className={['sprint-detail-days', daysLeft <= 2 ? 'is-warning' : ''].filter(Boolean).join(' ')}>
                   {daysLeft} day{daysLeft === 1 ? '' : 's'} left
-                </Badge>
+                </span>
               )}
             </div>
           </div>
           <div className="sprint-detail-actions">
           {sprint.status === 'Planning' && (
             <Button onClick={startSprint}>
-              <Play size={13} aria-hidden="true" /> Start sprint
+              <Play size={14} aria-hidden="true" /> Start sprint
             </Button>
           )}
           {sprint.status === 'Active' && (
             <>
-              <Link to={`/${orgSlug}/projects/${projectSlug}/sprints/${sprint.id}/board`}>
-                <Button variant="secondary">Open board</Button>
-              </Link>
               <Button variant="ghost" onClick={closeSprint}>
-                <Square size={13} aria-hidden="true" /> Close
+                <Square size={14} aria-hidden="true" /> Close sprint
               </Button>
+              <Link to={`/${orgSlug}/projects/${projectSlug}/sprints/${sprint.id}/board`}>
+                <Button>Open board</Button>
+              </Link>
             </>
           )}
           {sprint.status === 'Closed' && (
@@ -409,7 +414,7 @@ export function SprintDetailPage() {
               </Link>
               <Link to={`/${orgSlug}/projects/${projectSlug}/sprints/${sprint.id}/retro`}>
                 <Button variant="ai">
-                  <Sparkles size={13} aria-hidden="true" /> Retrospective
+                  <Sparkles size={14} aria-hidden="true" /> Retrospective
                 </Button>
               </Link>
             </>
@@ -418,35 +423,30 @@ export function SprintDetailPage() {
         </div>
       </div>
 
-      {/* KPI strip */}
-      <div className="sprint-detail-kpis">
-        <Card className="sprint-detail-kpi">
-          <div className="sprint-detail-kpi-label">
-            <ListChecks size={12} aria-hidden="true" /> Tasks
+      {/* KPI strip — one big number per tile, plain label. */}
+      <div className="grid-4 sprint-detail-kpis">
+        <div className="stat">
+          <div className="stat-label">Tasks</div>
+          <div className="stat-value">{sprint.taskCount}</div>
+        </div>
+        <div className="stat">
+          <div className="stat-label">Points done</div>
+          <div className="stat-value">
+            {sprint.donePoints}<span className="sprint-detail-stat-of"> / {sprint.totalPoints}</span>
           </div>
-          <div className="sprint-detail-kpi-value">{sprint.taskCount}</div>
-        </Card>
-        <Card className="sprint-detail-kpi">
-          <div className="sprint-detail-kpi-label">
-            <Target size={12} aria-hidden="true" /> Points
-          </div>
-          <div className="sprint-detail-kpi-value">
-            {sprint.donePoints}<span className="muted"> / {sprint.totalPoints}</span>
-          </div>
-          <div className="sprint-detail-kpi-sub">{pct}% complete</div>
-        </Card>
-        <Card className="sprint-detail-kpi">
-          <div className="sprint-detail-kpi-label">
-            <TrendingUp size={12} aria-hidden="true" /> Velocity target
-          </div>
+          <div className="sprint-detail-stat-sub">{pct}% complete</div>
+        </div>
+        <div className="stat">
+          <label className="stat-label" htmlFor="sprint-velocity-target">Velocity target</label>
           <input
+            id="sprint-velocity-target"
             type="number"
             min={0}
             max={1000}
             defaultValue={sprint.velocityTarget ?? ''}
             key={sprint.velocityTarget ?? 'empty'}
             placeholder="—"
-            className="sprint-detail-kpi-input"
+            className="sprint-detail-velocity-input"
             onBlur={(e) => commitVelocityTarget(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
@@ -454,29 +454,28 @@ export function SprintDetailPage() {
                 e.currentTarget.blur();
               }
             }}
-            aria-label="Velocity target"
+            title="Click to set a velocity target"
           />
-        </Card>
-        <Card className="sprint-detail-kpi">
-          <div className="sprint-detail-kpi-label">
-            <Flag size={12} aria-hidden="true" /> Final velocity
+          <div className="sprint-detail-stat-sub">Points you aim to finish</div>
+        </div>
+        <div className="stat">
+          <div className="stat-label">Final velocity</div>
+          <div className="stat-value">
+            {sprint.finalVelocity ?? <span className="sprint-detail-stat-of">—</span>}
           </div>
-          <div className="sprint-detail-kpi-value">
-            {sprint.finalVelocity ?? <span className="muted">—</span>}
-          </div>
-          <div className="sprint-detail-kpi-sub">
+          <div className="sprint-detail-stat-sub">
             {sprint.status === 'Closed' ? 'Recorded on close' : 'Locks at close'}
           </div>
-        </Card>
+        </div>
       </div>
 
-      <div className="sprint-detail-grid">
-        <section className="sprint-detail-col-wide">
-          <Card className="sprint-detail-card">
-            <div className="row sprint-detail-card-head">
+      <div className="grid-12">
+        <section className="col-8 sprint-detail-col">
+          <div className="card sprint-detail-card">
+            <div className="sprint-detail-card-head">
               <div>
-                <div className="sprint-detail-card-title">Progress</div>
-                <div className="muted sprint-detail-card-sub">
+                <h2 className="sprint-detail-card-title">Progress</h2>
+                <div className="sprint-detail-card-sub">
                   {sprint.status === 'Active'
                     ? `Day ${today} of ${sprintLen} · ${daysLeft} left`
                     : sprint.status === 'Closed'
@@ -495,45 +494,45 @@ export function SprintDetailPage() {
                 height={180}
               />
             </div>
-          </Card>
+          </div>
 
           {sprint.status === 'Planning' && (
-            <Card className="sprint-detail-card">
-              <div className="row sprint-detail-card-head">
-                <div>
-                  <div className="sprint-detail-card-title">
-                    <Sparkles size={12} color="var(--ai-2)" aria-hidden="true" /> AI fill
-                  </div>
-                  <div className="muted sprint-detail-card-sub">
+            <div className="card sprint-detail-card">
+              <div className="sprint-detail-card-head">
+                <div className="fill">
+                  <h2 className="sprint-detail-card-title">
+                    <Sparkles size={14} aria-hidden="true" className="sprint-detail-ai-icon" /> AI fill
+                  </h2>
+                  <div className="sprint-detail-card-sub">
                     Let AI propose which backlog tasks fit a target capacity.
                   </div>
                 </div>
-                <span className="fill" />
-                <input
-                  type="number"
-                  min={20}
-                  max={100}
-                  step={5}
-                  value={aiFillTarget}
-                  onChange={(e) => setAiFillTarget(parseInt(e.target.value, 10) || 80)}
-                  className="sprint-detail-kpi-input"
-                  aria-label="Target capacity percent"
-                  style={{ width: 60 }}
-                />
-                <span className="muted" style={{ fontSize: 12 }}>% capacity</span>
+                <label className="sprint-detail-capacity">
+                  <input
+                    type="number"
+                    min={20}
+                    max={100}
+                    step={5}
+                    value={aiFillTarget}
+                    onChange={(e) => setAiFillTarget(parseInt(e.target.value, 10) || 80)}
+                    className="sprint-detail-capacity-input"
+                    aria-label="Target capacity percent"
+                  />
+                  <span>% capacity</span>
+                </label>
                 <Button
                   variant="ai"
                   size="sm"
                   onClick={requestAiFill}
                   disabled={aiFillLoading}
                 >
-                  <Sparkles size={12} aria-hidden="true" />
+                  <Sparkles size={14} aria-hidden="true" />
                   {aiFillLoading ? ' Thinking…' : ' Suggest fill'}
                 </Button>
               </div>
 
               {aiFillPlan && (
-                <div style={{ marginTop: 'var(--s-5)' }}>
+                <div className="sprint-detail-ai-plan">
                   <AISuggestionCard
                     chipLabel="AI fill"
                     title={`Add ${aiFillPlan.picks.length} tasks (${aiFillPlan.selectedPoints} / ${aiFillPlan.targetCapacityPoints} pts)`}
@@ -547,29 +546,37 @@ export function SprintDetailPage() {
                   />
                 </div>
               )}
-            </Card>
+            </div>
           )}
 
-          <Card className="sprint-detail-card">
-            <div className="sprint-detail-card-title">Tasks ({sprint.taskCount})</div>
+          <div className="card sprint-detail-card">
+            <div className="sprint-detail-card-head">
+              <h2 className="sprint-detail-card-title">Tasks</h2>
+              <span className="sprint-detail-card-count">{sprint.taskCount}</span>
+            </div>
 
             {sprint.status !== 'Closed' && (
               <form className="sprint-detail-create" onSubmit={addTaskToSprint}>
+                <Plus size={16} aria-hidden="true" className="sprint-detail-create-icon" />
                 <input
                   type="text"
                   className="sprint-detail-create-input"
                   placeholder="Add a task to this sprint…"
+                  aria-label="Add a task to this sprint"
                   value={newTaskTitle}
                   onChange={(e) => setNewTaskTitle(e.target.value)}
                   maxLength={200}
                 />
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={creating || newTaskTitle.trim().length < 2}
-                >
-                  <Plus size={14} aria-hidden="true" /> Add
-                </Button>
+                {newTaskTitle.trim().length > 0 && (
+                  <Button
+                    type="submit"
+                    size="sm"
+                    variant="secondary"
+                    disabled={creating || newTaskTitle.trim().length < 2}
+                  >
+                    Add
+                  </Button>
+                )}
               </form>
             )}
 
@@ -580,8 +587,10 @@ export function SprintDetailPage() {
                 {taskGroups.map((g) => (
                   <div key={g.status} className="sprint-detail-task-group">
                     <div className="sprint-detail-group-head">
-                      <span>{g.displayName}</span>
-                      <span className="mono muted">{g.cards.length}</span>
+                      <span className={`status status-${STATUS_MAP[g.status]?.key ?? 'todo'}`}>
+                        {groupLabel(g)}
+                      </span>
+                      <span className="sprint-detail-group-count">{g.cards.length}</span>
                     </div>
                     <ul className="sprint-detail-task-list">
                       {g.cards.map((card) => {
@@ -600,18 +609,18 @@ export function SprintDetailPage() {
                               }
                             }}
                           >
-                            <span className="mono muted sprint-detail-task-key">
+                            <span className="sprint-detail-task-key">
                               {card.key ?? card.taskId.slice(0, 4).toUpperCase()}
                             </span>
                             <span className="sprint-detail-task-title">{card.title}</span>
-                            <Badge tone="info">{card.priority}</Badge>
-                            {card.storyPoints != null && (
-                              <Badge tone="purple">{card.storyPoints} pts</Badge>
-                            )}
+                            <Priority level={card.priority} showLabel />
+                            <span className="sprint-detail-task-pts">
+                              {card.storyPoints != null ? `${card.storyPoints} pts` : ''}
+                            </span>
                             {a ? (
                               <Avatar src={a.avatarUrl} name={a.fullName} size="xs" />
                             ) : (
-                              <span className="sprint-detail-unassigned" title="Unassigned" />
+                              <span className="sprint-detail-unassigned" title="Unassigned" aria-label="Unassigned" />
                             )}
                           </li>
                         );
@@ -621,14 +630,12 @@ export function SprintDetailPage() {
                 ))}
               </div>
             )}
-          </Card>
+          </div>
         </section>
 
-        <section className="sprint-detail-col-narrow">
-          <Card className="sprint-detail-card">
-            <div className="sprint-detail-card-title">
-              <Calendar size={12} aria-hidden="true" /> Dates
-            </div>
+        <section className="col-4 sprint-detail-col">
+          <div className="card sprint-detail-card">
+            <h2 className="sprint-detail-card-title">Dates</h2>
             <ul className="sprint-detail-facts">
               <li>
                 <span>Start (planned)</span>
@@ -672,10 +679,16 @@ export function SprintDetailPage() {
               <li><span>Created</span><span>{fmtDate(sprint.createdAt)}</span></li>
               <li><span>Closed</span><span>{fmtDate(sprint.closedAt)}</span></li>
             </ul>
-          </Card>
+            <p className="sprint-detail-note">
+              <span className="sprint-detail-note-label">Scope baseline</span>
+              {sprint.status === 'Planning'
+                ? 'Baseline locks when the sprint starts.'
+                : 'Baseline captured at start. Scope-delta breakdown lands in Phase 2.'}
+            </p>
+          </div>
 
-          <Card className="sprint-detail-card">
-            <div className="sprint-detail-card-title">Members</div>
+          <div className="card sprint-detail-card">
+            <h2 className="sprint-detail-card-title">Members</h2>
             {assigneeBreakdown.length === 0 ? (
               <p className="sprint-detail-placeholder">No assignees yet.</p>
             ) : (
@@ -692,24 +705,15 @@ export function SprintDetailPage() {
                       <span className="truncate">
                         {m ? m.fullName : 'Unassigned'}
                       </span>
-                      <span className="mono muted sprint-detail-member-stats">
-                        {a.tasks} · {a.points} pts
+                      <span className="sprint-detail-member-stats">
+                        {a.tasks} task{a.tasks === 1 ? '' : 's'} · <strong>{a.points}</strong> pts
                       </span>
                     </li>
                   );
                 })}
               </ul>
             )}
-          </Card>
-
-          <Card className="sprint-detail-card">
-            <div className="sprint-detail-card-title">Scope baseline</div>
-            <p className="sprint-detail-placeholder">
-              {sprint.status === 'Planning'
-                ? 'Baseline locks when the sprint starts.'
-                : 'Baseline captured at start. Scope-delta breakdown lands in Phase 2.'}
-            </p>
-          </Card>
+          </div>
         </section>
       </div>
 

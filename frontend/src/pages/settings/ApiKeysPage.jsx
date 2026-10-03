@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Check, Copy, KeyRound, Plus, Trash2 } from 'lucide-react';
-import { Badge, Button, Input, Select, Skeleton, useToast } from '@/components/ui';
+import { Button, Input, Select, Skeleton, useToast } from '@/components/ui';
 import { apiKeysApi } from '@/api/apiKeys.api';
 import { useOrgRole } from '@/hooks/useOrgRole';
 import './ApiKeysPage.css';
@@ -107,10 +107,11 @@ export function ApiKeysPage() {
     }
   }
 
-  function statusBadge(k) {
-    if (k.revokedAt) return <Badge tone="danger">Revoked</Badge>;
-    if (!k.isActive) return <Badge tone="warning">Expired</Badge>;
-    return <Badge tone="success" dot>Active</Badge>;
+  // Status read-out as dot + coloured text (no capsule).
+  function statusLabel(k) {
+    if (k.revokedAt) return <span className="ak-status is-revoked">Revoked</span>;
+    if (!k.isActive) return <span className="ak-status is-expired">Expired</span>;
+    return <span className="ak-status is-active">Active</span>;
   }
 
   if (!loaded) {
@@ -134,7 +135,7 @@ export function ApiKeysPage() {
   }
 
   return (
-    <div className="main-inner">
+    <div className="main-inner ak">
       <header className="page-head">
         <div className="page-title-row">
           <div>
@@ -149,24 +150,25 @@ export function ApiKeysPage() {
         </div>
       </header>
 
-      <section className="ak-card">
+      <section className="card ak-card" aria-labelledby="ak-create-title">
+        <h2 id="ak-create-title" className="ak-section-title">Create a key</h2>
         <form className="ak-create" onSubmit={create}>
           <Input
-            label="Name"
+            aria-label="Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. CI pipeline"
+            placeholder="Key name, e.g. CI pipeline"
             disabled={creating}
           />
           <Select
-            label="Expiry"
+            aria-label="Expiry"
             value={expiry}
             onChange={(e) => setExpiry(e.target.value)}
             options={EXPIRY_OPTIONS}
             disabled={creating}
           />
           <Button type="submit" variant="primary" disabled={creating || name.trim().length < 2}>
-            <Plus size={13} aria-hidden="true" /> {creating ? 'Creating…' : 'Create key'}
+            <Plus size={14} aria-hidden="true" /> {creating ? 'Creating…' : 'Create key'}
           </Button>
         </form>
 
@@ -192,25 +194,33 @@ export function ApiKeysPage() {
       ) : keys.length === 0 ? (
         <p className="ak-empty">No API keys yet.</p>
       ) : (
-        <ul className="ak-list">
+        <ul className="card ak-list">
           {keys.map((k) => (
             <li key={k.id} className={`ak-row ${k.isActive ? '' : 'is-inactive'}`}>
               <div className="ak-row-main">
                 <span className="ak-name">{k.name}</span>
                 <code className="ak-prefix mono">{k.prefix}…</code>
-                {statusBadge(k)}
               </div>
-              <div className="ak-row-meta muted">
+              <div className="ak-row-meta">
                 <span>by {k.createdByName}</span>
                 <span>· created {new Date(k.createdAt).toLocaleDateString()}</span>
                 {k.lastUsedAt && <span>· last used {new Date(k.lastUsedAt).toLocaleDateString()}</span>}
                 {k.expiresAt && <span>· expires {new Date(k.expiresAt).toLocaleDateString()}</span>}
               </div>
-              {!k.revokedAt && (
-                <Button size="sm" variant="ghost" onClick={() => revoke(k)} disabled={busyId === k.id}>
-                  <Trash2 size={12} aria-hidden="true" /> Revoke
-                </Button>
-              )}
+              <div className="ak-row-status">{statusLabel(k)}</div>
+              <div className="ak-row-action">
+                {!k.revokedAt && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="ak-revoke"
+                    onClick={() => revoke(k)}
+                    disabled={busyId === k.id}
+                  >
+                    <Trash2 size={12} aria-hidden="true" /> Revoke
+                  </Button>
+                )}
+              </div>
             </li>
           ))}
         </ul>

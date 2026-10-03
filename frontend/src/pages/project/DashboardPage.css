@@ -1,5 +1,6 @@
-/* Project dashboard — grid-12 widget layout built on .stat + .card.
-   Chart components live in components/charts/. */
+/* Project dashboard page. Widget chrome + content styles live in
+   components/dashboard/ (DashboardCanvas.css, DashboardWidget.css);
+   charts in components/charts/. */
 
 .dashboard {
   display: flex;
@@ -7,166 +8,17 @@
   min-height: 100%;
 }
 
+/* Typed (non-Engineering) dashboards: an even 2- or 3-up card grid. */
 .dashboard-typed-grid {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: var(--s-6);
-  align-content: start;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-8);
+  align-items: stretch;
 }
+.dashboard-typed-grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.dashboard-typed-grid > .dashboard-widget { grid-column: auto; }
 
-.dashboard-sub {
-  font-size: var(--fs-xs);
-  margin-bottom: var(--s-5);
-}
-
-/* Health gauge group */
-.dashboard-signals {
-  width: 100%;
-  margin-top: var(--s-5);
-}
-.dashboard-signal-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  display: inline-block;
-}
-
-/* Epic progress */
-.dashboard-epic-swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-}
-.dashboard-epic-track {
-  height: 6px;
-  background: var(--surface-2);
-  border-radius: var(--r-pill);
-  overflow: hidden;
-}
-.dashboard-epic-fill {
-  height: 100%;
-  border-radius: inherit;
-  transition: width var(--dur-slow) var(--ease-out);
-}
-
-/* Velocity legend */
-.dashboard-legend-swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  display: inline-block;
-}
-
-/* Weekly insight */
-.dashboard-insight-title {
-  font-size: var(--fs-md);
-  font-weight: var(--fw-semibold);
-  margin-bottom: var(--s-3);
-  line-height: var(--lh-snug);
-}
-.dashboard-insight-body {
-  font-size: var(--fs-sm);
-  line-height: var(--lh-relaxed);
-  margin: 0 0 var(--s-5);
-}
-.dashboard-insight-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-3);
-}
-.dashboard-insight-chip {
-  font-size: var(--fs-2xs);
-  font-weight: var(--fw-medium);
-  color: var(--text-secondary);
-  padding: 2px var(--s-3);
-  background: var(--surface-2);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-pill);
-}
-
-/* Activity feed inside col-12 card */
-.dashboard-activity {
-  padding: var(--s-4) var(--s-7);
-  font-size: var(--fs-sm);
-}
-.dashboard-activity-text {
-  flex: 1;
-  min-width: 0;
-}
-.dashboard-activity-time {
-  font-size: var(--fs-xs);
-}
-
-/* F2-04 — canvas-mode widget chrome. Each widget renders into a flex
-   column so the body can fill remaining vertical space. */
-.dash-card {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: var(--s-5) var(--s-6);
-}
-
-.dash-card__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s-3);
-  margin-bottom: var(--s-4);
-}
-
-.dash-card__body {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-4);
-}
-
-.dash-card__body.center {
-  align-items: center;
-}
-
-/* KPI tile rendered as a single widget. */
-.dash-kpi {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: var(--s-5) var(--s-6);
-  height: 100%;
-}
-
-.dash-kpi__label {
-  font-size: var(--fs-xs);
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wide);
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
-}
-
-.dash-kpi__row {
-  display: flex;
-  align-items: baseline;
-  gap: var(--s-4);
-  margin-top: var(--s-3);
-}
-
-.dash-kpi__value {
-  font-size: var(--fs-3xl);
-  font-weight: var(--fw-bold);
-  color: var(--text);
-}
-
-/* Add-widget dropdown anchored to the header button. */
-.dashboard__menu-wrap {
-  position: relative;
-}
-
-.dashboard__menu {
-  position: absolute;
-  top: calc(100% + var(--s-2));
-  right: 0;
-  z-index: 30;
-  min-width: 220px;
-  max-height: 320px;
-  overflow-y: auto;
+@media (max-width: 900px) {
+  .dashboard-typed-grid,
+  .dashboard-typed-grid.cols-3 { grid-template-columns: minmax(0, 1fr); }
 }

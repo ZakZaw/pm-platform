@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { CheckCircle2, RefreshCw, Sparkles } from 'lucide-react';
-import { Badge, Button, Skeleton, useToast } from '@/components/ui';
+import { ArrowLeft, RefreshCw, Sparkles } from 'lucide-react';
+import { Button, Skeleton, useToast } from '@/components/ui';
 import { meetingsApi } from '@/api/meetings.api';
 import { projectsApi } from '@/api/projects.api';
 import { TaskReflection } from '@/components/meetings/TaskReflection';
@@ -139,9 +139,12 @@ export function MeetingSummaryPage() {
                 : 'Not yet processed.'}
             </p>
           </div>
-          <div className="row gap-2">
-            <Button variant="ghost" onClick={reprocess} disabled={reprocessing}>
-              <RefreshCw size={12} aria-hidden="true" />
+          <div className="row gap-3">
+            <Button variant="ghost" onClick={() => navigate(-1)}>
+              <ArrowLeft size={14} aria-hidden="true" /> Back
+            </Button>
+            <Button variant="secondary" onClick={reprocess} disabled={reprocessing}>
+              <RefreshCw size={14} aria-hidden="true" />
               {reprocessing ? ' Reprocessing…' : ' Re-run AI'}
             </Button>
             <Button
@@ -149,7 +152,7 @@ export function MeetingSummaryPage() {
               onClick={bulkAccept}
               disabled={bulkBusy || selectedIds.size === 0}
             >
-              <Sparkles size={12} aria-hidden="true" />
+              <Sparkles size={14} aria-hidden="true" />
               {bulkBusy
                 ? 'Creating…'
                 : `Accept ${selectedIds.size} task${selectedIds.size === 1 ? '' : 's'}`}
@@ -159,49 +162,26 @@ export function MeetingSummaryPage() {
       </header>
 
       <div className="ms-grid">
-        <section className="ms-card">
-          <h2>TL;DR</h2>
+        <section className="card mtg-section ms-tldr-card">
+          <h2 className="mtg-section-title">TL;DR</h2>
           {hasSummary ? (
             <p className="ms-tldr">{summary.summaryMd}</p>
           ) : (
-            <p className="ms-empty">No summary yet — re-run the AI to generate one.</p>
+            <p className="mtg-empty">No summary yet — re-run the AI to generate one.</p>
           )}
         </section>
 
-        <section className="ms-card">
-          <h2>Decisions</h2>
-          {summary.decisions.length === 0 ? (
-            <p className="ms-empty">None recorded.</p>
-          ) : (
-            <ul className="ms-list">
-              {summary.decisions.map((d, i) => <li key={i}>{d}</li>)}
-            </ul>
-          )}
-
-          <h2 style={{ marginTop: 'var(--s-4)' }}>Open questions</h2>
-          {summary.openQuestions.length === 0 ? (
-            <p className="ms-empty">None.</p>
-          ) : (
-            <ul className="ms-list">
-              {summary.openQuestions.map((q, i) => <li key={i}>{q}</li>)}
-            </ul>
-          )}
-
-          <h2 style={{ marginTop: 'var(--s-4)' }}>Blockers</h2>
-          {summary.blockers.length === 0 ? (
-            <p className="ms-empty">None.</p>
-          ) : (
-            <ul className="ms-list">
-              {summary.blockers.map((b, i) => <li key={i}>{b}</li>)}
-            </ul>
-          )}
+        <section className="card mtg-section">
+          <SummaryList title="Decisions" items={summary.decisions} empty="None recorded." />
+          <SummaryList title="Open questions" items={summary.openQuestions} empty="None." />
+          <SummaryList title="Blockers" items={summary.blockers} empty="None." />
         </section>
 
-        <section className="ms-card" style={{ gridColumn: '1 / -1' }}>
-          <div className="ms-actions-head">
+        <section className="card mtg-section ms-span">
+          <div className="mtg-section-head">
             <div>
-              <h2>Action items</h2>
-              <p className="muted" style={{ fontSize: 'var(--fs-xs)', margin: 0 }}>
+              <h2 className="mtg-section-title">Action items</h2>
+              <p className="mtg-section-sub">
                 {pendingCount} pending · {acceptedCount} accepted
               </p>
             </div>
@@ -223,7 +203,7 @@ export function MeetingSummaryPage() {
           </div>
 
           {actionItems.length === 0 ? (
-            <p className="ms-empty">
+            <p className="mtg-empty">
               No drafts yet. Captions in the meeting room feed the transcript;
               re-running the AI once a transcript exists will populate this list.
             </p>
@@ -249,22 +229,35 @@ export function MeetingSummaryPage() {
               ))}
             </div>
           )}
-          {acceptedCount > 0 && (
-            <p className="muted" style={{ fontSize: 'var(--fs-xs)', marginTop: 'var(--s-3)' }}>
-              <CheckCircle2 size={11} aria-hidden="true" /> Accepted items are
-              linked to tasks on this project — open the board to find them.
-            </p>
-          )}
-          <Badge tone="neutral" style={{ alignSelf: 'flex-start' }}>
-            <span aria-hidden="true">·</span> Bulk accept is atomic — all or
-            nothing, no half-created tasks.
-          </Badge>
+          <p className="mtg-note">
+            {acceptedCount > 0 && (
+              <>
+                Accepted items are linked to tasks on this project — open the
+                board to find them.{' '}
+              </>
+            )}
+            Bulk accept is atomic — all or nothing, no half-created tasks.
+          </p>
         </section>
       </div>
+    </div>
+  );
+}
 
-      <footer className="row" style={{ marginTop: 'var(--s-5)' }}>
-        <Button variant="ghost" onClick={() => navigate(-1)}>Back</Button>
-      </footer>
+function SummaryList({ title, items, empty }) {
+  return (
+    <div className="ms-block">
+      <h3 className="ms-block-title">
+        {title}
+        {items.length > 0 && <span className="ms-block-count">{items.length}</span>}
+      </h3>
+      {items.length === 0 ? (
+        <p className="mtg-empty">{empty}</p>
+      ) : (
+        <ul className="ms-list">
+          {items.map((d, i) => <li key={i}>{d}</li>)}
+        </ul>
+      )}
     </div>
   );
 }

@@ -35,8 +35,8 @@ export function MessageItem({
   }
 
   return (
-    <article className={['msg-row', message.isDeleted && 'is-deleted'].filter(Boolean).join(' ')}>
-      <Avatar src={message.authorAvatarUrl} name={message.authorName || message.authorEmail} size="sm" />
+    <article className={['msg-row', inThread && 'is-thread', message.isDeleted && 'is-deleted'].filter(Boolean).join(' ')}>
+      <Avatar src={message.authorAvatarUrl} name={message.authorName || message.authorEmail} size={inThread ? 'sm' : 'md'} />
       <div className="msg-body">
         <header className="msg-meta">
           <span className="msg-author">{message.authorName || message.authorEmail}</span>
@@ -96,10 +96,10 @@ export function MessageItem({
             className="msg-thread-link"
             onClick={() => onReply?.(message)}
           >
-            <MessageSquare size={11} aria-hidden="true" />
+            <MessageSquare size={13} aria-hidden="true" />
             {message.replyCount} {message.replyCount === 1 ? 'reply' : 'replies'}
             {message.lastReplyAt && (
-              <span className="muted"> · last {formatRelative(message.lastReplyAt)}</span>
+              <span className="msg-thread-last"> · last {formatRelative(message.lastReplyAt)}</span>
             )}
           </button>
         )}
@@ -114,7 +114,7 @@ export function MessageItem({
             aria-label="Add reaction"
             title="Add reaction"
           >
-            <SmilePlus size={12} aria-hidden="true" />
+            <SmilePlus size={15} aria-hidden="true" />
           </button>
           {!inThread && (
             <button
@@ -124,7 +124,7 @@ export function MessageItem({
               aria-label="Reply in thread"
               title="Reply in thread"
             >
-              <MessageSquare size={12} aria-hidden="true" />
+              <MessageSquare size={15} aria-hidden="true" />
             </button>
           )}
           {isAuthor && (
@@ -132,17 +132,17 @@ export function MessageItem({
               align="end"
               trigger={(
                 <button type="button" className="msg-action-btn" aria-label="More actions">
-                  <MoreHorizontal size={12} aria-hidden="true" />
+                  <MoreHorizontal size={15} aria-hidden="true" />
                 </button>
               )}
             >
-              <Dropdown.Item onSelect={startEdit} icon={<Pencil size={11} aria-hidden="true" />}>
+              <Dropdown.Item onSelect={startEdit} icon={<Pencil size={13} aria-hidden="true" />}>
                 Edit
               </Dropdown.Item>
               <Dropdown.Item
                 onSelect={() => onDelete?.(message.id)}
                 danger
-                icon={<Trash2 size={11} aria-hidden="true" />}
+                icon={<Trash2 size={13} aria-hidden="true" />}
               >
                 Delete
               </Dropdown.Item>

@@ -1,74 +1,147 @@
-/* Workflow settings — drag-sortable status rows + add form.
+/* Workflow settings: a calm, column-headed status table + a compact add form.
    Header is the stratos page-head; only domain bits live here. */
 
 .workflow {
-  max-width: 1100px;
+  max-width: 1000px;
+}
+
+/* Page-scoped fix: stratos' `.input-group` centres its children. */
+.workflow .input-group {
+  align-items: stretch;
+  gap: 0;
 }
 
 .workflow-card {
-  padding: var(--s-6);
-  margin-bottom: var(--s-6);
+  margin-bottom: var(--s-9);
+}
+
+.workflow-table {
+  padding: var(--s-5) 0 var(--s-3);
+}
+
+/* Shared column template for header + rows. */
+.workflow-head,
+.workflow-row {
+  display: grid;
+  grid-template-columns: 28px minmax(200px, 1fr) 170px 84px 84px 84px 32px;
+  align-items: center;
+  column-gap: var(--s-5);
+  padding: 0 var(--s-7) 0 var(--s-4);
+}
+
+.workflow-head {
+  padding-bottom: var(--s-4);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--text-muted);
+}
+
+.workflow-head-center {
+  text-align: center;
 }
 
 .workflow-list {
   list-style: none;
   padding: 0;
   margin: 0;
-  display: grid;
-  gap: var(--s-4);
 }
 
 .workflow-row {
-  display: grid;
-  grid-template-columns: auto auto minmax(160px, 1fr) 180px auto auto auto auto auto;
-  align-items: center;
-  gap: var(--s-5);
-  padding: var(--s-5);
+  min-height: 56px;
   background: var(--surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-md);
+  border-top: 1px solid var(--border-subtle);
 }
 
-.workflow-wip {
+/* Name cell: colour dot + borderless inline input. */
+.workflow-name {
+  position: relative;
+  display: flex;
   align-items: center;
+  gap: var(--s-3);
+  min-width: 0;
+}
+
+.workflow-name .input-group {
+  flex: 1;
+  min-width: 0;
+}
+
+.workflow-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: var(--r-pill);
+  flex-shrink: 0;
+  background: var(--text-subtle);
+}
+.workflow-dot.is-info { background: var(--info); }
+.workflow-dot.is-purple { background: var(--violet); }
+.workflow-dot.is-warning { background: var(--warning); }
+.workflow-dot.is-danger { background: var(--danger); }
+.workflow-dot.is-success { background: var(--success); }
+
+/* Inline-edit inputs read as plain text until hovered / focused. */
+.workflow .workflow-name__input,
+.workflow .workflow-color,
+.workflow .workflow-wip__input {
+  border-color: transparent;
+  background-color: transparent;
+  box-shadow: none;
+}
+.workflow .workflow-name__input {
+  font-weight: var(--fw-medium);
+  padding: 0 var(--s-3);
+}
+.workflow .workflow-color {
+  color: var(--text-secondary);
+}
+.workflow-row:hover .workflow-name__input,
+.workflow-row:hover .workflow-color,
+.workflow-row:hover .workflow-wip__input,
+.workflow .workflow-name__input:focus,
+.workflow .workflow-color:focus,
+.workflow .workflow-wip__input:focus {
+  border-color: var(--border);
+  background-color: var(--surface);
+}
+.workflow .workflow-name__input:focus,
+.workflow .workflow-color:focus,
+.workflow .workflow-wip__input:focus {
+  border-color: var(--accent-bright);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+/* Base status enum key: hidden until the row is hovered (also in the
+   name cell's tooltip). */
+.workflow-system {
+  position: absolute;
+  right: var(--s-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-subtle);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.workflow-row:hover .workflow-name:not(:focus-within) .workflow-system {
+  opacity: 1;
+}
+
+.workflow-cell-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
 .workflow-wip__input {
   width: 56px;
+  height: 32px;
   text-align: center;
-  padding: 4px;
+  padding: 0 var(--s-2);
 }
-
-.workflow-delete {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--text-muted);
-  cursor: pointer;
-  border-radius: var(--r-sm);
-}
-
-.workflow-delete:hover {
-  background: var(--danger-soft);
-  color: var(--danger);
-  border-color: var(--danger-border);
-}
-
-.workflow-add {
-  display: grid;
-  grid-template-columns: minmax(160px, 1fr) minmax(180px, 1fr) minmax(120px, 200px) auto;
-  align-items: end;
-  gap: var(--s-5);
-}
-
-@media (max-width: 900px) {
-  .workflow-add {
-    grid-template-columns: 1fr;
-  }
+.workflow-wip__input::placeholder {
+  color: var(--text-subtle);
 }
 
 .workflow-handle {
@@ -79,36 +152,66 @@
   height: 24px;
   background: transparent;
   border: none;
-  color: var(--text-muted);
+  color: var(--text-subtle);
   cursor: grab;
   border-radius: var(--r-sm);
+  opacity: 0.5;
+  transition: opacity var(--dur-fast) var(--ease-out);
 }
-
+.workflow-row:hover .workflow-handle,
+.workflow-handle:focus-visible {
+  opacity: 1;
+}
 .workflow-handle:hover {
   background: var(--surface-hover);
   color: var(--text-secondary);
 }
 
-.workflow-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-3);
-  font-size: var(--fs-xs);
-  color: var(--text-secondary);
-  user-select: none;
-  cursor: pointer;
+/* Delete is revealed on row hover / keyboard focus. */
+.workflow .workflow-delete {
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.workflow-row:hover .workflow-delete,
+.workflow .workflow-delete:focus-visible {
+  opacity: 1;
+}
+.workflow .workflow-delete:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+  box-shadow: none;
 }
 
-.workflow-system {
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  color: var(--text-muted);
-  white-space: nowrap;
+@media (hover: none) {
+  .workflow .workflow-delete,
+  .workflow-handle { opacity: 1; }
+}
+
+/* Add-a-status form. */
+.workflow-add-card {
+  padding: var(--s-8);
+}
+
+.workflow-add {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(180px, 1fr) minmax(120px, 180px) auto;
+  align-items: start;
+  gap: var(--s-5);
+}
+.workflow-add > .btn {
+  margin-top: calc(var(--fs-sm) * 1.5 + var(--s-3));
 }
 
 @media (max-width: 900px) {
-  .workflow-row {
+  .workflow-add {
     grid-template-columns: 1fr;
-    align-items: stretch;
+  }
+  .workflow-add > .btn { margin-top: 0; }
+  .workflow-head { display: none; }
+  .workflow-row {
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+    row-gap: var(--s-3);
+    padding-top: var(--s-4);
+    padding-bottom: var(--s-4);
   }
 }

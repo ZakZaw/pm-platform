@@ -9,13 +9,7 @@ import {
   Smile,
   Sparkles,
 } from 'lucide-react';
-import {
-  Badge,
-  Button,
-  Card,
-  Skeleton,
-  useToast,
-} from '@/components/ui';
+import { Button, Skeleton, useToast } from '@/components/ui';
 import { useConfirm } from '@/hooks/useConfirm';
 import { projectsApi } from '@/api/projects.api';
 import { sprintsApi } from '@/api/sprints.api';
@@ -179,16 +173,15 @@ export function SprintRetroPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>
-              <Link to={`/${orgSlug}/projects/${projectSlug}/sprints/${sprint.id}`}>
+            <div className="eyebrow">
+              <Link className="sprint-retro-crumb" to={`/${orgSlug}/projects/${projectSlug}/sprints/${sprint.id}`}>
                 {project?.name ?? 'Project'} · {sprint?.name}
               </Link>
             </div>
-            <h1 className="page-title row gap-3">
-              <Sparkles size={18} color="var(--ai-2)" aria-hidden="true" />
+            <h1 className="page-title sprint-retro-title">
               Retrospective
               {retro?.appliedAt && (
-                <Badge tone="success" dot>Applied</Badge>
+                <span className="status status-done">Applied</span>
               )}
             </h1>
             <div className="page-subtitle">
@@ -200,7 +193,7 @@ export function SprintRetroPage() {
           <div className="row gap-3">
             {retro && (
               <Button variant="ghost" onClick={regenerate} disabled={generating}>
-                <RefreshCw size={13} aria-hidden="true" />
+                <RefreshCw size={14} aria-hidden="true" />
                 {generating ? ' Regenerating…' : ' Regenerate'}
               </Button>
             )}
@@ -209,57 +202,63 @@ export function SprintRetroPage() {
       </div>
 
       {!retro ? (
-        <Card className="sprint-retro__empty">
-          <Sparkles size={20} color="var(--ai-2)" aria-hidden="true" />
-          <h2>No retrospective yet</h2>
-          <p className="muted">
+        <section className="card sprint-retro-empty">
+          <span className="sprint-retro-empty-icon" aria-hidden="true">
+            <Sparkles size={20} />
+          </span>
+          <h2 className="sprint-retro-empty-title">No retrospective yet</h2>
+          <p className="sprint-retro-empty-text">
             Closing the sprint auto-generates one when AI is on. You can also
             kick one off now.
           </p>
           <Button variant="ai" onClick={generate} disabled={generating}>
-            <Sparkles size={13} aria-hidden="true" />
+            <Sparkles size={14} aria-hidden="true" />
             {generating ? ' Generating…' : ' Generate retrospective'}
           </Button>
-        </Card>
+        </section>
       ) : (
         <>
-          <div className="sprint-retro__sections">
-            {SECTIONS.map(({ key, label, Icon, tone }) => (
-              <Card key={key} className={`sprint-retro__section sprint-retro__section--${tone}`}>
-                <div className="sprint-retro__section-head">
-                  <span className="sprint-retro__section-icon" aria-hidden="true">
-                    <Icon size={14} />
-                  </span>
-                  <h3>{label}</h3>
-                </div>
-                <textarea
-                  className="sprint-retro__textarea"
-                  value={drafts[key]}
-                  onChange={(e) => setDrafts((d) => ({ ...d, [key]: e.target.value }))}
-                  onBlur={() => commitField(key)}
-                  rows={key === 'summary' ? 4 : 3}
-                  placeholder={`AI couldn't say much about "${label.toLowerCase()}".`}
-                />
-              </Card>
-            ))}
+          <div className="sprint-retro-sections">
+            {SECTIONS.map(({ key, label, Icon, tone }) => {
+              const fieldId = `retro-${key}`;
+              return (
+                <section key={key} className={`card sprint-retro-section is-${tone}`}>
+                  <div className="sprint-retro-section-head">
+                    <span className="sprint-retro-section-icon" aria-hidden="true">
+                      <Icon size={16} />
+                    </span>
+                    <label htmlFor={fieldId} className="sprint-retro-section-title">{label}</label>
+                  </div>
+                  <textarea
+                    id={fieldId}
+                    className="sprint-retro-textarea"
+                    value={drafts[key]}
+                    onChange={(e) => setDrafts((d) => ({ ...d, [key]: e.target.value }))}
+                    onBlur={() => commitField(key)}
+                    rows={key === 'summary' ? 4 : 3}
+                    placeholder={`AI couldn't say much about "${label.toLowerCase()}".`}
+                  />
+                </section>
+              );
+            })}
           </div>
 
           {retro.nextSprintDraft && (
-            <Card className="sprint-retro__draft">
-              <div className="sprint-retro__draft-head">
+            <section className="card sprint-retro-draft">
+              <div className="sprint-retro-draft-head">
                 <div>
                   <div className="eyebrow">Next sprint draft</div>
-                  <h2>{retro.nextSprintDraft.name}</h2>
+                  <h2 className="sprint-retro-draft-name">{retro.nextSprintDraft.name}</h2>
                   {retro.nextSprintDraft.goal && (
-                    <p className="muted sprint-retro__draft-goal">
+                    <p className="sprint-retro-draft-goal">
                       Goal: {retro.nextSprintDraft.goal}
                     </p>
                   )}
                 </div>
-                <div className="row gap-3 sprint-retro__draft-actions">
-                  <Badge tone="neutral">
+                <div className="sprint-retro-draft-actions">
+                  <span className="sprint-retro-draft-count">
                     {retro.nextSprintDraft.tasks.length} task{retro.nextSprintDraft.tasks.length === 1 ? '' : 's'} · {totalDraftPoints} pts
-                  </Badge>
+                  </span>
                   {retro.appliedAt ? (
                     <Link to={`/${orgSlug}/projects/${projectSlug}/sprints/${retro.appliedSprintId}`}>
                       <Button variant="ghost">
@@ -272,7 +271,7 @@ export function SprintRetroPage() {
                       onClick={applyDraft}
                       disabled={applying || retro.nextSprintDraft.tasks.length === 0}
                     >
-                      <Check size={13} aria-hidden="true" />
+                      <Check size={14} aria-hidden="true" />
                       {applying ? ' Applying…' : ' Apply next sprint draft'}
                     </Button>
                   )}
@@ -280,22 +279,22 @@ export function SprintRetroPage() {
               </div>
 
               {retro.nextSprintDraft.tasks.length === 0 ? (
-                <p className="muted">No backlog candidates were strong enough to seed a draft.</p>
+                <p className="sprint-retro-muted">No backlog candidates were strong enough to seed a draft.</p>
               ) : (
-                <ul className="sprint-retro__pick-list">
+                <ul className="sprint-retro-pick-list">
                   {retro.nextSprintDraft.tasks.map((pick) => (
-                    <li key={pick.taskId} className="sprint-retro__pick">
-                      <span className="mono muted sprint-retro__pick-key">{pick.key}</span>
-                      <span className="sprint-retro__pick-title truncate">{pick.title}</span>
-                      <span className="sprint-retro__pick-points mono muted">{pick.points}p</span>
+                    <li key={pick.taskId} className="sprint-retro-pick">
+                      <span className="sprint-retro-pick-key">{pick.key}</span>
+                      <span className="sprint-retro-pick-title truncate">{pick.title}</span>
+                      <span className="sprint-retro-pick-points">{pick.points} pts</span>
                       {pick.reasoning && (
-                        <span className="muted sprint-retro__pick-reason truncate">{pick.reasoning}</span>
+                        <span className="sprint-retro-pick-reason truncate" title={pick.reasoning}>{pick.reasoning}</span>
                       )}
                     </li>
                   ))}
                 </ul>
               )}
-            </Card>
+            </section>
           )}
         </>
       )}

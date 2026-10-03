@@ -13,12 +13,8 @@ import {
   Wand2,
 } from 'lucide-react';
 import {
-  AIChip,
   AvatarStack,
-  Badge,
   Button,
-  Card,
-  Chip,
   Skeleton,
 } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
@@ -37,13 +33,12 @@ const TYPE_VOCAB = {
   Generic: { hierarchy: 'List → Task', item: 'Task' },
 };
 
-const TYPE_BADGE_TONE = {
-  Engineering: 'accent',
-  Sales: 'success',
-  Support: 'rose',
-  Marketing: 'warning',
-  Operations: 'violet',
-  Generic: 'neutral',
+// Project AI control mode → short label for the header read-out.
+const AI_MODE_LABEL = {
+  Off: 'Off',
+  AskMeFirst: 'Ask me first',
+  Suggest: 'Suggest',
+  Autopilot: 'Autopilot',
 };
 
 const SPRINT_HEALTH_COPY = {
@@ -63,13 +58,6 @@ const PRIMARY_ACTION_PATH = {
   Operations: 'runbooks',
   Generic: 'lists',
 };
-
-function fmtDate(iso) {
-  if (!iso) return null;
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-}
 
 function daysUntil(iso) {
   if (!iso) return null;
@@ -179,7 +167,6 @@ export function ProjectHomePage() {
   const meta = project ? findProjectType(project.type) : null;
   const typeId = meta?.id ?? 'Engineering';
   const vocab = TYPE_VOCAB[typeId] ?? TYPE_VOCAB.Engineering;
-  const tone = TYPE_BADGE_TONE[typeId] ?? 'neutral';
   const iconClass = `proj-icon proj-icon-${typeId.toLowerCase()}`;
 
   const kpis = useMemo(
@@ -206,17 +193,16 @@ export function ProjectHomePage() {
   if (!project) {
     return (
       <div className="main-inner" aria-busy="true">
-        <div className="page-head">
+        <div className="page-head project-home-skeleton-head">
           <Skeleton width="40%" height={28} />
-          <div style={{ height: 8 }} />
           <Skeleton width="60%" height={14} />
         </div>
-        <div className="grid-4" style={{ marginBottom: 'var(--s-9)' }}>
+        <div className="grid-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} height={92} radius="lg" />
           ))}
         </div>
-        <div className="grid-12">
+        <div className="grid-12 project-home-body">
           <div className="col-8"><Skeleton height={320} radius="lg" /></div>
           <div className="col-4"><Skeleton height={320} radius="lg" /></div>
         </div>
@@ -226,45 +212,40 @@ export function ProjectHomePage() {
 
   const primaryPath = PRIMARY_ACTION_PATH[typeId] ?? 'backlog';
   const leadMember = members[0];
+  const aiMode = AI_MODE_LABEL[project.aiControlMode] ?? 'Suggest';
+  const sampleLabels = kpis.filter((k) => k.sample).map((k) => k.label);
 
   return (
     <div className="main-inner project-home">
       <div className="page-head">
-        <div className="row gap-3" style={{ marginBottom: 'var(--s-4)' }}>
-          <Badge tone={tone}>
-            <span className="badge-dot" />
-            {meta?.label} project
-          </Badge>
-          <Chip>{vocab.hierarchy}</Chip>
-          <AIChip label="AI: Suggest" />
-        </div>
         <div className="page-title-row">
           <div className="row gap-5">
-            <div
-              className={iconClass}
-              style={{ width: 52, height: 52, fontSize: 'var(--fs-xl)', borderRadius: 'var(--r-lg)' }}
-            >
+            <div className={`${iconClass} project-home-icon`}>
               {meta?.short?.[0] ?? <Briefcase size={22} />}
             </div>
             <div>
+              <div className="eyebrow">{meta?.label} project · {vocab.hierarchy}</div>
               <h1 className="page-title">{project.name}</h1>
-              <p className="page-subtitle" style={{ marginTop: 6 }}>
+              <p className="page-subtitle">
                 {leadMember ? `Led by ${leadMember.fullName} · ` : ''}
                 {members.length} member{members.length === 1 ? '' : 's'}
+                {' · '}
+                <Link className="project-home-ai-mode" to={`/${orgSlug}/projects/${projectSlug}/ai`}>
+                  AI: {aiMode}
+                </Link>
               </p>
             </div>
           </div>
           <div className="row gap-3">
             <AvatarStack people={members} max={5} size="sm" />
-            <div className="divider-v" style={{ height: 24 }} />
+            <Button variant="ghost" size="sm" disabled title="Coming in Phase 2">
+              <MessageSquare size={14} aria-hidden="true" /> Discuss
+            </Button>
             <Link to={`/${orgSlug}/projects/${projectSlug}/ai`}>
-              <Button variant="ai" size="sm">
+              <Button variant="secondary" size="sm">
                 <Sparkles size={13} aria-hidden="true" /> Ask AI
               </Button>
             </Link>
-            <Button size="sm" disabled title="Coming in Phase 2">
-              <MessageSquare size={14} aria-hidden="true" /> Discuss
-            </Button>
             <Button
               variant="primary"
               size="sm"
@@ -276,112 +257,99 @@ export function ProjectHomePage() {
         </div>
       </div>
 
-      <div className="grid-4" style={{ marginBottom: 'var(--s-9)' }}>
+      <div className="grid-4">
         {kpis.map((k, i) => (
-          <div key={i} className="stat">
-            <div className="stat-label">
-              {k.label}
-              {k.sample && <span className="project-home-sample">sample</span>}
-            </div>
-            <div className="stat-row">
-              <div className="stat-value">
-                {k.value}
-                {k.sub && (
-                  <span style={{ fontSize: 'var(--fs-md)', color: 'var(--text-muted)', fontWeight: 500 }}>
-                    {' '}
-                    {k.sub}
+          <div key={i} className="stat" title={k.sample ? 'Sample data' : undefined}>
+            <div className="stat-label">{k.label}</div>
+            <div className="stat-value">{k.value}</div>
+            {(k.sub || k.delta) && (
+              <div className="stat-row project-home-stat-sub">
+                {k.sub && <span>{k.sub}</span>}
+                {k.delta && (
+                  <span className={`stat-delta stat-delta-${k.up ? 'up' : 'down'}`}>
+                    {k.up ? <ArrowUp size={10} strokeWidth={3} /> : <ArrowDown size={10} strokeWidth={3} />}
+                    {k.delta}
                   </span>
                 )}
               </div>
-              {k.delta && (
-                <span className={`stat-delta stat-delta-${k.up ? 'up' : 'down'}`}>
-                  {k.up ? <ArrowUp size={10} strokeWidth={3} /> : <ArrowDown size={10} strokeWidth={3} />}
-                  {k.delta}
-                </span>
-              )}
-            </div>
+            )}
           </div>
         ))}
       </div>
+      {sampleLabels.length > 0 && (
+        <p className="muted project-home-note">
+          {sampleLabels.join(', ')} show sample data until per-type analytics ship.
+        </p>
+      )}
 
-      <div className="grid-12">
+      <div className="grid-12 project-home-body">
         <div className="col-8 col">
-          <div className="row between" style={{ marginBottom: 'var(--s-5)' }}>
-            <h3 className="h-card">Activity</h3>
-            <Button variant="ghost" size="sm" disabled title="Coming in Phase 2">
-              <RefreshCw size={12} aria-hidden="true" /> Refresh
-            </Button>
-          </div>
           <div className="card">
-            <div className="col">
-              {PLACEHOLDER_ACTIVITY.map((a, i, list) => (
-                <div
-                  key={i}
-                  className="row gap-4 project-home-activity-row"
-                  style={{ borderBottom: i === list.length - 1 ? 0 : '1px solid var(--divider)' }}
-                >
-                  <div className={`project-home-activity-icon${a.ai ? ' is-ai' : ''}`}>
-                    {a.ai ? <Sparkles size={14} /> : a.kind === 'pr' ? <GitPullRequest size={14} /> : a.kind === 'comment' ? <MessageSquare size={14} /> : <Check size={14} />}
+            <div className="card-header">
+              <h3 className="h-card">Activity</h3>
+              <Button variant="ghost" size="sm" disabled title="Coming in Phase 2">
+                <RefreshCw size={12} aria-hidden="true" /> Refresh
+              </Button>
+            </div>
+            <div className="card-body project-home-activity">
+              {PLACEHOLDER_ACTIVITY.map((a, i) => (
+                <div key={i} className="project-home-activity-row">
+                  <div
+                    className={`project-home-activity-icon${a.ai ? ' is-ai' : ''}`}
+                    title={a.ai ? 'AI action' : undefined}
+                  >
+                    {a.ai ? <Sparkles size={14} aria-label="AI" /> : a.kind === 'pr' ? <GitPullRequest size={14} /> : a.kind === 'comment' ? <MessageSquare size={14} /> : <Check size={14} />}
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div className="row gap-3" style={{ marginBottom: 2 }}>
-                      <strong style={{ fontSize: 'var(--fs-sm)' }}>{a.who}</strong>
-                      {a.ai && <AIChip label="AI" />}
-                      <span className="muted" style={{ fontSize: 'var(--fs-xs)', marginLeft: 'auto' }}>{a.time}</span>
+                  <div className="project-home-activity-main">
+                    <div className="project-home-activity-head">
+                      <strong>{a.who}</strong>
+                      <span className="muted project-home-activity-time">{a.time}</span>
                     </div>
-                    <div className="muted" style={{ fontSize: 'var(--fs-sm)' }}>{a.body}</div>
+                    <div className="muted project-home-activity-body">{a.body}</div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-          <p className="muted project-home-placeholder-note">
+          <p className="muted project-home-note">
             Activity feed shows sample data until the activity-log endpoint ships (Phase 2).
           </p>
         </div>
 
-        <div className="col-4 col gap-5">
+        <div className="col-4 col project-home-side">
           <div className="ai-card">
+            <div className="ai-card-head">
+              <div className="ai-mark"><Sparkles size={14} /></div>
+              <h3 className="h-card">Sprint health</h3>
+            </div>
             <div className="ai-card-body">
-              <div className="row gap-4" style={{ marginBottom: 'var(--s-4)' }}>
-                <div className="ai-mark"><Sparkles size={14} /></div>
-                <strong>Sprint health</strong>
-              </div>
-              <p className="muted" style={{ fontSize: 'var(--fs-sm)', marginBottom: 'var(--s-5)' }}>
-                {SPRINT_HEALTH_COPY[typeId]}
-              </p>
+              <p className="project-home-ai-copy">{SPRINT_HEALTH_COPY[typeId]}</p>
               <div className="row gap-3">
                 <Link to={`/${orgSlug}/projects/${projectSlug}/ai`}>
-                  <Button variant="ai" size="sm">
+                  <Button variant="secondary" size="sm">
                     <Wand2 size={13} aria-hidden="true" /> Open suggestions
                   </Button>
                 </Link>
                 <Link to={`/${orgSlug}/projects/${projectSlug}/ai`}>
-                  <Button size="sm">Ask anything</Button>
+                  <Button variant="ghost" size="sm">Ask anything</Button>
                 </Link>
               </div>
             </div>
           </div>
 
           <div className="card">
-            <div className="card-header"><strong>Upcoming</strong></div>
-            <div className="col project-home-upcoming">
+            <div className="card-header"><h3 className="h-card">Upcoming</h3></div>
+            <div className="card-body project-home-upcoming">
               {upcoming.length === 0 ? (
-                <div className="muted" style={{ padding: 'var(--s-5) var(--s-6)', fontSize: 'var(--fs-sm)' }}>
-                  No upcoming dates.
-                </div>
+                <p className="muted project-home-empty">No upcoming dates.</p>
               ) : (
-                upcoming.map((e, i) => (
-                  <div
-                    key={e.key}
-                    className="row gap-5 project-home-upcoming-row"
-                    style={{ borderBottom: i === upcoming.length - 1 ? 0 : '1px solid var(--divider)' }}
-                  >
-                    <div className="col center project-home-upcoming-date">
+                upcoming.map((e) => (
+                  <div key={e.key} className="project-home-upcoming-row">
+                    <div className="project-home-upcoming-date">
                       <div className="project-home-upcoming-month">{e.m}</div>
                       <div className="project-home-upcoming-day">{e.d}</div>
                     </div>
-                    <div style={{ fontSize: 'var(--fs-sm)' }}>{e.t}</div>
+                    <div className="project-home-upcoming-title">{e.t}</div>
                   </div>
                 ))
               )}

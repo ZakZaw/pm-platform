@@ -1,10 +1,10 @@
 import './EpicProgressBars.css';
 
-// Fallback lane colors when an epic has no explicit color set. Mirrors the
-// palette used elsewhere for epic identity.
+// Fallback lane colors (theme-aware tokens) when an epic has no explicit
+// color set. Mirrors the categorical palette used elsewhere for epic identity.
 const EPIC_COLORS = [
-  '#5B6AF0', '#4FD1E0', '#7A6BFF', '#C77BFF',
-  '#3FB984', '#E0A23A', '#E5484D', '#4F9EFF',
+  'var(--accent)', 'var(--teal)', 'var(--violet)', 'var(--rose)',
+  'var(--success)', 'var(--amber)', 'var(--danger)', 'var(--info)',
 ];
 
 /**
@@ -41,8 +41,8 @@ export function EpicProgressBars({ epics = [], metric = 'points', limit }) {
               <span className="epic-bar-swatch" style={{ background: e.color }} />
               <span className="truncate">{e.name}</span>
             </span>
-            <span className="mono muted epic-bar-count">
-              {e.done}/{e.total}
+            <span className="epic-bar-count" title={`${e.done} of ${e.total} ${metric === 'count' ? 'tasks' : 'points'} done`}>
+              {e.done}<span className="epic-bar-total">/{e.total}</span>
             </span>
           </div>
           <div className="epic-bar-track">

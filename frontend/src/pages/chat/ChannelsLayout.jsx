@@ -3,7 +3,6 @@ import { Link, Outlet, useNavigate, useParams } from 'react-router-dom';
 import {
   Archive,
   AtSign,
-  Bookmark,
   Building2,
   FolderKanban,
   Hash,
@@ -120,31 +119,31 @@ export function ChannelsLayout() {
     <div className="chat-layout">
       <aside className="chat-sidebar" aria-label="Channels">
         <header className="chat-sidebar-head">
-          <div className="chat-sidebar-title">Channels</div>
-          <div className="row gap-2">
+          <h2 className="chat-sidebar-title">Chat</h2>
+          <div className="row gap-1">
             <button
               type="button"
-              className="btn btn-ghost btn-icon-sm"
+              className="icon-btn icon-btn-sm"
               onClick={() => setDmOpen(true)}
               title="New direct message"
               aria-label="New direct message"
             >
-              <MessageSquarePlus size={13} aria-hidden="true" />
+              <MessageSquarePlus size={15} aria-hidden="true" />
             </button>
             <button
               type="button"
-              className="btn btn-ghost btn-icon-sm"
+              className="icon-btn icon-btn-sm"
               onClick={() => setCreateOpen(true)}
               title="New topic channel"
               aria-label="New topic channel"
             >
-              <Plus size={13} aria-hidden="true" />
+              <Plus size={15} aria-hidden="true" />
             </button>
           </div>
         </header>
 
         {loading && <p className="muted chat-sidebar-empty">Loading…</p>}
-        {error && <p className="chat-sidebar-empty" style={{ color: 'var(--danger)' }}>{error}</p>}
+        {error && <p className="chat-sidebar-empty chat-sidebar-error">{error}</p>}
 
         {!loading && !error && (
           <div className="chat-sidebar-scroll">
@@ -164,12 +163,12 @@ export function ChannelsLayout() {
                         className={['chat-sidebar-item', active ? 'is-active' : ''].filter(Boolean).join(' ')}
                         title={c.name}
                       >
-                        <Icon size={13} aria-hidden="true" />
+                        <span className="chat-sidebar-item-icon"><Icon size={14} aria-hidden="true" /></span>
                         <span className="chat-sidebar-item-name truncate">
                           {c.name}
                         </span>
                         {c.archivedAt && (
-                          <Archive size={11} aria-hidden="true" color="var(--text-muted)" />
+                          <Archive size={12} aria-hidden="true" className="chat-sidebar-archived" />
                         )}
                         {!c.archivedAt && c.unreadCount > 0 && (
                           <span className="chat-sidebar-unread" aria-label="Unread" />
@@ -241,10 +240,9 @@ function CreateTopicModal({ open, orgSlug, onClose, onCreated }) {
   return (
     <Modal open={open} onClose={closeAndReset} labelledBy="chat-create-title" size="md">
       <ModalHeader>
-        <Bookmark size={14} aria-hidden="true" />
         <h2 id="chat-create-title" className="modal-title">New topic channel</h2>
       </ModalHeader>
-      <form onSubmit={submit}>
+      <form className="chat-dialog" onSubmit={submit}>
         <ModalBody>
           <Input
             label="Name"
@@ -256,7 +254,7 @@ function CreateTopicModal({ open, orgSlug, onClose, onCreated }) {
             maxLength={120}
             required
           />
-          <p className="muted" style={{ fontSize: 'var(--fs-xs)', marginTop: 'var(--s-3)' }}>
+          <p className="chat-modal-note">
             Project and team channels are auto-created — pick Topic when you want a
             cross-cutting space. Topic channels archive automatically after 30 days
             of silence.
@@ -264,7 +262,7 @@ function CreateTopicModal({ open, orgSlug, onClose, onCreated }) {
         </ModalBody>
         <ModalFooter>
           <Button type="button" variant="ghost" onClick={closeAndReset} disabled={busy}>Cancel</Button>
-          <Button type="submit" variant="ai" disabled={busy || name.trim().length < 2}>
+          <Button type="submit" variant="primary" disabled={busy || name.trim().length < 2}>
             {busy ? 'Creating…' : 'Create channel'}
           </Button>
         </ModalFooter>
@@ -369,10 +367,9 @@ function NewDmModal({ open, orgSlug, onClose, onCreated }) {
   return (
     <Modal open={open} onClose={closeAndReset} labelledBy="chat-dm-title" size="md">
       <ModalHeader>
-        <AtSign size={14} aria-hidden="true" />
         <h2 id="chat-dm-title" className="modal-title">New direct message</h2>
       </ModalHeader>
-      <form onSubmit={submit}>
+      <form className="chat-dialog" onSubmit={submit}>
         <ModalBody>
           {picked.length > 0 && (
             <div className="dm-chip-row">
@@ -412,7 +409,7 @@ function NewDmModal({ open, orgSlug, onClose, onCreated }) {
                     onClick={() => pick(m)}
                   >
                     <Avatar src={m.avatarUrl} name={m.fullName || m.email} size="sm" />
-                    <div className="col" style={{ gap: 1, minWidth: 0, flex: 1 }}>
+                    <div className="dm-result-meta">
                       <div className="dm-result-name truncate">{m.fullName}</div>
                       <div className="dm-result-mail truncate">{m.email}</div>
                     </div>
@@ -422,18 +419,18 @@ function NewDmModal({ open, orgSlug, onClose, onCreated }) {
             </ul>
           )}
           {!searching && search.trim().length > 0 && results.length === 0 && (
-            <p className="muted" style={{ fontSize: 'var(--fs-xs)', marginTop: 'var(--s-3)' }}>
+            <p className="chat-modal-note">
               No matching members.
             </p>
           )}
-          <p className="muted" style={{ fontSize: 'var(--fs-xs)', marginTop: 'var(--s-3)' }}>
+          <p className="chat-modal-note">
             Direct messages can include up to 8 people. Picking the same set
             twice opens the existing conversation.
           </p>
         </ModalBody>
         <ModalFooter>
           <Button type="button" variant="ghost" onClick={closeAndReset} disabled={busy}>Cancel</Button>
-          <Button type="submit" variant="ai" disabled={busy || picked.length === 0}>
+          <Button type="submit" variant="primary" disabled={busy || picked.length === 0}>
             {busy ? 'Opening…' : picked.length > 1 ? 'Open group DM' : 'Open DM'}
           </Button>
         </ModalFooter>

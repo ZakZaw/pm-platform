@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useOutletContext, useParams } from 'react-router-dom';
-import { Archive, AtSign, Hash, Link2 } from 'lucide-react';
-import { Avatar, Badge, Button, useToast } from '@/components/ui';
+import { Archive, AtSign, Hash, Link2, MoreHorizontal } from 'lucide-react';
+import { Avatar, Dropdown, useToast } from '@/components/ui';
 import { chatApi } from '@/api/chat.api';
 import { MessageList } from '@/components/chat/MessageList';
 
-const TYPE_TONES = {
-  OrgWide: 'info',
-  Project: 'purple',
-  Team: 'success',
-  Topic: 'neutral',
-  Dm: 'info',
+const TYPE_LABELS = {
+  OrgWide: 'Organisation channel',
+  Project: 'Project channel',
+  Team: 'Team channel',
+  Topic: 'Topic channel',
+  Dm: 'Direct message',
 };
 
 const TYPE_ICONS = {
@@ -105,37 +105,64 @@ export function ChannelPage() {
   if (!channel) {
     return (
       <div className="chat-pane chat-pane-empty">
-        <Hash size={20} aria-hidden="true" color="var(--text-muted)" />
+        <span className="chat-pane-empty-icon"><Hash size={20} aria-hidden="true" /></span>
         <p className="muted">Select a channel to start.</p>
       </div>
     );
   }
 
   const HeaderIcon = TYPE_ICONS[channel.type] ?? Hash;
+  const canArchive = channel.type === 'Topic' && !channel.archivedAt;
+  const memberCount = channel.members.length;
 
   return (
     <div className="chat-pane">
       <header className="chat-pane-head">
-        <div className="row gap-3" style={{ alignItems: 'center' }}>
-          <HeaderIcon size={16} aria-hidden="true" color="var(--text-muted)" />
-          <h1 className="chat-pane-title">{channel.name}</h1>
-          <Badge tone={TYPE_TONES[channel.type] ?? 'neutral'}>{channel.type}</Badge>
-          {channel.epicId && channel.epicTitle && (
-            <Badge tone="purple">
-              <Link2 size={10} aria-hidden="true" /> Linked epic · {channel.epicTitle}
-            </Badge>
-          )}
-          {channel.archivedAt && (
-            <Badge tone="neutral">
-              <Archive size={10} aria-hidden="true" /> Archived
-            </Badge>
-          )}
+        <div className="chat-pane-ident">
+          <span className="chat-pane-icon"><HeaderIcon size={18} aria-hidden="true" /></span>
+          <div className="truncate">
+            <h1 className="chat-pane-title truncate">{channel.name}</h1>
+            <p className="chat-pane-sub">
+              <span className="chat-pane-sub-item">{TYPE_LABELS[channel.type] ?? channel.type}</span>
+              <span className="chat-pane-sub-item">
+                {memberCount} {memberCount === 1 ? 'member' : 'members'}
+              </span>
+              {channel.epicId && channel.epicTitle && (
+                <span className="chat-pane-sub-item chat-pane-sub-epic">
+                  <Link2 size={12} aria-hidden="true" /> Linked epic · {channel.epicTitle}
+                </span>
+              )}
+              {channel.archivedAt && (
+                <span className="chat-pane-sub-item">
+                  <Archive size={12} aria-hidden="true" /> Archived
+                </span>
+              )}
+            </p>
+          </div>
         </div>
-        {channel.type === 'Topic' && !channel.archivedAt && (
-          <Button variant="ghost" size="sm" onClick={onArchive} disabled={archiving}>
-            <Archive size={11} aria-hidden="true" />
-            {archiving ? ' Archiving…' : ' Archive'}
-          </Button>
+        {canArchive && (
+          <Dropdown
+            align="end"
+            trigger={(
+              <button
+                type="button"
+                className="icon-btn"
+                aria-label="Channel actions"
+                title="Channel actions"
+                disabled={archiving}
+              >
+                <MoreHorizontal size={18} aria-hidden="true" />
+              </button>
+            )}
+          >
+            <Dropdown.Item
+              onSelect={onArchive}
+              disabled={archiving}
+              icon={<Archive size={13} aria-hidden="true" />}
+            >
+              {archiving ? 'Archiving…' : 'Archive channel'}
+            </Dropdown.Item>
+          </Dropdown>
         )}
       </header>
 
@@ -154,20 +181,20 @@ export function ChannelPage() {
 
       <aside className="chat-pane-members" aria-label="Channel members">
         <div className="chat-pane-members-head">
-          Members · {channel.members.length}
+          Members <span className="chat-pane-members-count">{memberCount}</span>
         </div>
         <ul className="chat-members-list">
           {channel.members.map((m) => (
             <li key={m.userId} className="chat-member-row">
-              <Avatar src={m.avatarUrl} name={m.fullName || m.email} size="sm" />
-              <div className="col" style={{ gap: 1, minWidth: 0, flex: 1 }}>
+              <Avatar src={m.avatarUrl} name={m.fullName || m.email} size="md" />
+              <div className="chat-member-meta">
                 <div className="chat-member-name truncate">{m.fullName}</div>
                 <div className="chat-member-mail truncate">{m.email}</div>
               </div>
             </li>
           ))}
-          {channel.members.length === 0 && (
-            <li className="muted" style={{ fontSize: 'var(--fs-xs)' }}>No members yet.</li>
+          {memberCount === 0 && (
+            <li className="chat-members-empty">No members yet.</li>
           )}
         </ul>
       </aside>

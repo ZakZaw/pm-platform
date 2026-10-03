@@ -1,7 +1,6 @@
 import {
   BarChart3,
   Briefcase,
-  Calendar,
   CheckCircle2,
   CheckSquare,
   Layers,
@@ -11,7 +10,6 @@ import {
   Repeat,
   Workflow as WorkflowIcon,
 } from 'lucide-react';
-import { Badge } from '@/components/ui';
 import './TypedGenerationPreview.css';
 
 // F1.5-07: read-only preview for non-Engineering AI drafts. Engineering
@@ -71,6 +69,12 @@ export function typedDraftTotals(preview) {
   }
 }
 
+// Plain muted tag (no capsule) for secondary read-outs like stage %,
+// priority, channel, SLA.
+function Tag({ children }) {
+  return <span className="typed-preview__tag">{children}</span>;
+}
+
 function SectionRow({ icon, title, badges = [], meta }) {
   return (
     <div className="typed-preview__row">
@@ -79,7 +83,7 @@ function SectionRow({ icon, title, badges = [], meta }) {
       {badges.map((b, i) => (
         <span key={i}>{b}</span>
       ))}
-      {meta && <span className="muted typed-preview__row-meta">{meta}</span>}
+      {meta && <span className="typed-preview__row-meta">{meta}</span>}
     </div>
   );
 }
@@ -88,8 +92,8 @@ function SubSection({ label, children, count }) {
   return (
     <div className="typed-preview__section">
       <div className="typed-preview__section-head">
-        <span className="subsection-eyebrow">{label}</span>
-        {count != null && <span className="muted mono">{count}</span>}
+        <span className="typed-preview__section-title">{label}</span>
+        {count != null && <span className="typed-preview__count">{count}</span>}
       </div>
       <div className="typed-preview__section-body">{children}</div>
     </div>
@@ -114,7 +118,7 @@ function SalesPreview({ draft }) {
             key={`stage-${s.order}-${s.name}`}
             icon={<Layers size={13} aria-hidden="true" />}
             title={s.name}
-            badges={[<Badge key="p" tone="neutral">{s.defaultProbability}%</Badge>]}
+            badges={[<Tag key="p">{s.defaultProbability}%</Tag>]}
             meta={`${dealsByStage.get(s.name)?.length ?? 0} deals`}
           />
         ))}
@@ -136,7 +140,7 @@ function SalesPreview({ draft }) {
             icon={<BarChart3 size={13} aria-hidden="true" />}
             title={d.name}
             badges={[
-              <Badge key="s" tone="info">{d.stageName ?? 'Stage?'}</Badge>,
+              <Tag key="s">{d.stageName ?? 'Stage?'}</Tag>,
             ]}
             meta={[
               accountByName.get((d.accountName ?? '').toLowerCase())?.name ?? d.accountName,
@@ -174,7 +178,7 @@ function SupportPreview({ draft }) {
             key={q.name}
             icon={<LifeBuoy size={13} aria-hidden="true" />}
             title={q.name}
-            badges={[<Badge key="s" tone="neutral">SLA {q.slaMinutes}m</Badge>]}
+            badges={[<Tag key="s">SLA {q.slaMinutes}m</Tag>]}
           />
         ))}
       </SubSection>
@@ -184,7 +188,7 @@ function SupportPreview({ draft }) {
             key={c.name}
             icon={<Briefcase size={13} aria-hidden="true" />}
             title={c.name}
-            badges={c.tier ? [<Badge key="t" tone="purple">{c.tier}</Badge>] : []}
+            badges={c.tier ? [<Tag key="t">{c.tier}</Tag>] : []}
             meta={[c.company, c.email].filter(Boolean).join(' · ') || undefined}
           />
         ))}
@@ -196,10 +200,10 @@ function SupportPreview({ draft }) {
             icon={<CheckSquare size={13} aria-hidden="true" />}
             title={t.subject}
             badges={[
-              <Badge key="p" tone="info">{t.priority ?? 'Medium'}</Badge>,
-              <Badge key="q" tone="neutral">
+              <Tag key="p">{t.priority ?? 'Medium'}</Tag>,
+              <Tag key="q">
                 {queueByName.get((t.queueName ?? '').toLowerCase())?.name ?? t.queueName}
-              </Badge>,
+              </Tag>,
             ]}
             meta={t.customerName ?? undefined}
           />
@@ -220,7 +224,7 @@ function MarketingPreview({ draft }) {
             <SectionRow
               icon={<Megaphone size={13} aria-hidden="true" />}
               title={c.name}
-              badges={[<Badge key="ch" tone="info">{c.channel}</Badge>]}
+              badges={[<Tag key="ch">{c.channel}</Tag>]}
               meta={[c.startDate?.slice(0, 10), c.endDate?.slice(0, 10)].filter(Boolean).join(' → ') || undefined}
             />
             {c.assets.length > 0 && (
@@ -229,7 +233,7 @@ function MarketingPreview({ draft }) {
                   <li key={a.title}>
                     <CheckCircle2 size={11} aria-hidden="true" />
                     <span>{a.title}</span>
-                    <Badge tone="neutral">{a.type}</Badge>
+                    <Tag>{a.type}</Tag>
                     {a.publishDate && (
                       <span className="muted">{new Date(a.publishDate).toLocaleDateString()}</span>
                     )}
@@ -243,7 +247,7 @@ function MarketingPreview({ draft }) {
                   <li key={`${t.title}-${ti}`}>
                     <CheckSquare size={11} aria-hidden="true" />
                     <span>{t.title}</span>
-                    {t.assetTitle && <Badge tone="neutral">{t.assetTitle}</Badge>}
+                    {t.assetTitle && <Tag>{t.assetTitle}</Tag>}
                     {t.dueDate && (
                       <span className="muted">due {new Date(t.dueDate).toLocaleDateString()}</span>
                     )}
@@ -270,9 +274,9 @@ function OperationsPreview({ draft }) {
               icon={<WorkflowIcon size={13} aria-hidden="true" />}
               title={w.name}
               badges={[
-                <Badge key="r" tone="neutral">
+                <Tag key="r">
                   <Repeat size={11} aria-hidden="true" /> {w.recurrenceRule || 'No recurrence'}
-                </Badge>,
+                </Tag>,
               ]}
               meta={w.description || undefined}
             />
@@ -281,7 +285,7 @@ function OperationsPreview({ draft }) {
                 <li key={`${item.title}-${ci}`}>
                   <CheckSquare size={11} aria-hidden="true" />
                   <span>{item.title}</span>
-                  {item.sequential && <Badge tone="neutral">sequential</Badge>}
+                  {item.sequential && <Tag>sequential</Tag>}
                 </li>
               ))}
             </ul>
@@ -310,7 +314,7 @@ function GenericPreview({ draft }) {
                 <li key={`${t.title}-${ti}`}>
                   <CheckSquare size={11} aria-hidden="true" />
                   <span>{t.title}</span>
-                  {t.priority && <Badge tone="info">{t.priority}</Badge>}
+                  {t.priority && <Tag>{t.priority}</Tag>}
                 </li>
               ))}
             </ul>

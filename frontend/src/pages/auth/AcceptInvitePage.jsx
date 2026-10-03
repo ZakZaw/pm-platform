@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Card } from '@/components/ui';
+import { Button } from '@/components/ui';
 import { invitationsApi } from '@/api/invitations.api';
 import { useAuthStore } from '@/store/authStore';
 import { useOrgStore } from '@/store/orgStore';
+import { AuthLayout } from './AuthLayout';
 import './AcceptInvitePage.css';
 
 export function AcceptInvitePage() {
@@ -73,7 +74,7 @@ export function AcceptInvitePage() {
     return (
       <Shell title="Already accepted">
         <p>This invitation has already been used.</p>
-        <Button onClick={() => navigate('/login')} block>Sign in</Button>
+        <Button onClick={() => navigate('/login')} size="lg" block>Sign in</Button>
       </Shell>
     );
   }
@@ -94,6 +95,7 @@ export function AcceptInvitePage() {
         <div className="invite__actions">
           <Button
             block
+            size="lg"
             onClick={() =>
               navigate(`/register?invite=${encodeURIComponent(token)}&email=${encodeURIComponent(preview.email)}`)
             }
@@ -102,6 +104,7 @@ export function AcceptInvitePage() {
           </Button>
           <Button
             block
+            size="lg"
             variant="ghost"
             onClick={() => navigate(`/login?invite=${encodeURIComponent(token)}`)}
           >
@@ -132,7 +135,7 @@ export function AcceptInvitePage() {
       {isAuthenticated && emailMatch && (
         <div className="invite__actions">
           {acceptError && <p className="invite__error">{acceptError}</p>}
-          <Button block onClick={onAccept} disabled={accepting}>
+          <Button block size="lg" onClick={onAccept} disabled={accepting}>
             {accepting ? 'Joining…' : `Accept invitation`}
           </Button>
         </div>
@@ -143,11 +146,9 @@ export function AcceptInvitePage() {
 
 function Shell({ title, children }) {
   return (
-    <div className="invite">
-      <Card title={title} className="invite__card">
-        {children}
-      </Card>
-    </div>
+    <AuthLayout title={title}>
+      <div className="invite">{children}</div>
+    </AuthLayout>
   );
 }
 

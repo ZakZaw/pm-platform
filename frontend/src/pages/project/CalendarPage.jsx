@@ -228,9 +228,9 @@ function TaskCalendarView({ project }) {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>{project.name} · Calendar</div>
-            <h1 className="page-title" style={{ fontSize: 'var(--fs-2xl)' }}>{periodLabel}</h1>
-            <p className="page-subtitle" style={{ marginTop: 6 }}>
+            <div className="eyebrow">{project.name} · Calendar</div>
+            <h1 className="page-title">{periodLabel}</h1>
+            <p className="page-subtitle">
               Drag a task to reschedule its due date.
             </p>
           </div>
@@ -244,17 +244,17 @@ function TaskCalendarView({ project }) {
               ]}
               ariaLabel="Calendar view"
             />
-            <div className="row gap-1">
-              <Button size="sm" onClick={() => movePeriod(-1)} aria-label="Previous">
-                <ChevronLeft size={14} aria-hidden="true" />
-              </Button>
-              <Button size="sm" onClick={goToday}>Today</Button>
-              <Button size="sm" onClick={() => movePeriod(1)} aria-label="Next">
-                <ChevronRight size={14} aria-hidden="true" />
-              </Button>
+            <div className="row gap-1 calendar-page__nav">
+              <button type="button" className="icon-btn icon-btn-sm" onClick={() => movePeriod(-1)} aria-label="Previous" title="Previous">
+                <ChevronLeft size={16} aria-hidden="true" />
+              </button>
+              <Button variant="secondary" size="sm" onClick={goToday}>Today</Button>
+              <button type="button" className="icon-btn icon-btn-sm" onClick={() => movePeriod(1)} aria-label="Next" title="Next">
+                <ChevronRight size={16} aria-hidden="true" />
+              </button>
             </div>
-            <Button size="sm" onClick={downloadIcal}>
-              <Download size={13} aria-hidden="true" /> .ics
+            <Button variant="ghost" size="sm" onClick={downloadIcal} title="Download as .ics">
+              <Download size={14} aria-hidden="true" /> .ics
             </Button>
           </div>
         </div>
@@ -263,9 +263,9 @@ function TaskCalendarView({ project }) {
       {sprints.length > 0 && (
         <div className="calendar-page__legend">
           {sprints.slice(0, SPRINT_TONES.length).map((s, i) => (
-            <span key={s.id} className="row gap-2 center">
+            <span key={s.id} className="row gap-3 center">
               <span className={`calendar-page__swatch ${SPRINT_TONES[i]}`} />
-              <span className="muted">{s.name}</span>
+              <span>{s.name}</span>
             </span>
           ))}
           {sprints.length > SPRINT_TONES.length && (
@@ -318,7 +318,7 @@ function DayCell({ cell, tasks, sprint, view }) {
   ].filter(Boolean).join(' ');
   return (
     <div ref={setNodeRef} className={classes}>
-      <div className="row between center" style={{ marginBottom: 4 }}>
+      <div className="row between center calendar-page__cell-head">
         <span className="cal-date">{cell.date.getDate()}</span>
         {sprint && view === 'week' && (
           <span className="calendar-page__sprint-label muted truncate">{sprint.name}</span>
@@ -329,7 +329,7 @@ function DayCell({ cell, tasks, sprint, view }) {
           <DraggableTaskChip key={t.id} task={t} />
         ))}
         {tasks.length > (view === 'week' ? 12 : 3) && (
-          <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>
+          <span className="muted calendar-page__more">
             +{tasks.length - (view === 'week' ? 12 : 3)} more
           </span>
         )}

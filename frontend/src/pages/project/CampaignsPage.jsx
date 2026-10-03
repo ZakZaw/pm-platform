@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Megaphone, Plus } from 'lucide-react';
 import {
-  Badge,
   Button,
   EmptyState,
   Input,
@@ -16,12 +15,10 @@ import {
 } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { marketingApi } from '@/api/marketing.api';
-import {
-  CAMPAIGN_STATUS_TONE,
-  MARKETING_CHANNELS,
-  channelTokens,
-} from '@/constants/projectTypes';
+import { MARKETING_CHANNELS } from '@/constants/projectTypes';
 import { CampaignDetailDrawer } from '@/components/marketing/CampaignDetailDrawer';
+import { CAMPAIGN_STATUS_CLASS, channelClass } from '@/components/marketing/channel';
+import '@/components/marketing/channel.css';
 import './CampaignsPage.css';
 
 function fmtDateRange(start, end) {
@@ -83,12 +80,11 @@ export function CampaignsPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>{project?.name ?? 'Marketing'}</div>
-            <h1 className="page-title row gap-3">
-              Campaigns
-              {campaigns && <Badge tone="neutral">{campaigns.length}</Badge>}
-            </h1>
+            <h1 className="page-title">Campaigns</h1>
             <div className="page-subtitle">
+              {campaigns?.length
+                ? `${campaigns.length} campaign${campaigns.length === 1 ? '' : 's'} · `
+                : ''}
               Group assets, tasks, and budget under a campaign. Track progress per channel.
             </div>
           </div>
@@ -99,8 +95,8 @@ export function CampaignsPage() {
       </div>
 
       {!campaigns ? (
-        <div className="col" style={{ gap: 8 }}>
-          {[0, 1, 2].map((i) => <Skeleton key={i} height={72} />)}
+        <div className="campaigns-page-grid">
+          {[0, 1, 2].map((i) => <Skeleton key={i} height={168} radius="lg" />)}
         </div>
       ) : campaigns.length === 0 ? (
         <EmptyState
@@ -108,19 +104,18 @@ export function CampaignsPage() {
           title="No campaigns yet"
           subtitle="Group your assets and tasks under a campaign — by channel, season, or launch."
         >
-          <Button onClick={() => setCreating(true)}>Create a campaign</Button>
+          <Button variant="secondary" onClick={() => setCreating(true)}>Create a campaign</Button>
         </EmptyState>
       ) : (
-        <div className="campaigns-page-list">
+        <div className="campaigns-page-grid">
           {campaigns.map((c) => {
-            const tokens = channelTokens(c.channel);
             const pct = c.assetCount === 0 ? 0
               : Math.round((c.publishedAssetCount / c.assetCount) * 100);
             const budget = fmtBudget(c.budgetAmount, c.budgetCurrency);
             return (
               <div
                 key={c.id}
-                className="campaign-card"
+                className={`card campaign-card ${channelClass(c.channel)}`}
                 role="button"
                 tabIndex={0}
                 onClick={() => setOpenCampaignId(c.id)}
@@ -131,29 +126,24 @@ export function CampaignsPage() {
                   }
                 }}
               >
-                <div className="campaign-card-channel-bar" style={{ background: tokens.fg }} aria-hidden="true" />
-                <div className="campaign-card-head">
-                  <span className="campaign-card-title">{c.name}</span>
-                  <div className="campaign-card-meta">
-                    <Badge
-                      style={{ background: tokens.bg, color: tokens.fg, borderColor: 'transparent' }}
-                    >
-                      {c.channel}
-                    </Badge>
-                    <Badge tone={CAMPAIGN_STATUS_TONE[c.status] ?? 'neutral'}>
-                      {c.status}
-                    </Badge>
-                    <span>{fmtDateRange(c.startDate, c.endDate)}</span>
-                    {budget && <span className="mono">{budget}</span>}
-                  </div>
+                <div className="campaign-card-top">
+                  <span className="mkt-ch-label">{c.channel}</span>
+                  <span className={`status ${CAMPAIGN_STATUS_CLASS[c.status] ?? 'status-todo'}`}>
+                    {c.status}
+                  </span>
+                </div>
+                <div className="campaign-card-title">{c.name}</div>
+                <div className="campaign-card-meta">
+                  <span>{fmtDateRange(c.startDate, c.endDate)}</span>
+                  {budget && <span>{budget}</span>}
                 </div>
                 <div className="campaign-card-progress">
-                  <span className="muted" style={{ fontSize: 11 }}>
+                  <div className="bar">
+                    <div className="bar-fill campaign-card-bar-fill" style={{ width: `${pct}%` }} />
+                  </div>
+                  <span className="campaign-card-counts">
                     {c.publishedAssetCount}/{c.assetCount} assets · {c.doneTaskCount}/{c.taskCount} tasks
                   </span>
-                  <div className="campaign-card-bar">
-                    <div className="campaign-card-bar-fill" style={{ width: `${pct}%` }} />
-                  </div>
                 </div>
               </div>
             );
@@ -218,10 +208,10 @@ function CreateCampaignModal({ projectId, onClose, onCreated }) {
     <Modal open onClose={onClose} labelledBy="create-campaign-title">
       <form onSubmit={submit}>
         <ModalHeader>
-          <h2 id="create-campaign-title" style={{ margin: 0, fontSize: 16 }}>New campaign</h2>
+          <h2 id="create-campaign-title" className="modal-title">New campaign</h2>
         </ModalHeader>
         <ModalBody>
-          <div className="col" style={{ gap: 12 }}>
+          <div className="col gap-5">
             <Input
               label="Name"
               autoFocus
@@ -236,7 +226,7 @@ function CreateCampaignModal({ projectId, onClose, onCreated }) {
               onChange={(e) => setChannel(e.target.value)}
               options={MARKETING_CHANNELS.map((c) => ({ value: c, label: c }))}
             />
-            <div className="grid-2" style={{ gap: 12 }}>
+            <div className="grid-2">
               <Input
                 label="Start"
                 type="date"
@@ -256,7 +246,7 @@ function CreateCampaignModal({ projectId, onClose, onCreated }) {
               onChange={(e) => setGoal(e.target.value)}
               placeholder="e.g. 200 trial signups"
             />
-            {error && <p style={{ color: 'var(--danger)', margin: 0 }}>{error}</p>}
+            {error && <p className="input-help is-error">{error}</p>}
           </div>
         </ModalBody>
         <ModalFooter>

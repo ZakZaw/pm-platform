@@ -38,7 +38,11 @@ export function Dropdown({ trigger, children, align = 'start', className = '' })
       if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
     }
     function onKey(e) {
-      if (e.key === 'Escape') setOpen(false);
+      if (e.key !== 'Escape') return;
+      // Swallow it so a drawer/modal listening on `window` doesn't also
+      // close — first Escape closes the menu, the next one the container.
+      e.stopPropagation();
+      setOpen(false);
     }
     document.addEventListener('mousedown', onDocClick);
     document.addEventListener('keydown', onKey);

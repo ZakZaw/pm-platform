@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   ChevronDown,
@@ -30,6 +30,16 @@ function projectAccent(type) {
 
 function projectInitial(name) {
   return (name?.trim()?.[0] ?? '·').toUpperCase();
+}
+
+function ProjectNavLink({ item, base, className }) {
+  const Icon = item.icon;
+  return (
+    <NavLink to={`${base}/${item.path}`} className={className} title={item.label}>
+      <span className="nav-icon"><Icon size={14} aria-hidden="true" /></span>
+      <span>{item.label}</span>
+    </NavLink>
+  );
 }
 
 export function Sidebar() {
@@ -77,6 +87,20 @@ export function Sidebar() {
   const activeProject = projects.find((p) => p.slug === projectSlug) ?? null;
   const otherProjects = projects.filter((p) => p.slug !== projectSlug).slice(0, 4);
 
+  const projectBase = activeProject ? `/${slug}/projects/${activeProject.slug}` : '';
+  const projectNav = useMemo(() => {
+    const items = activeProject ? navItemsForType(activeProject.type ?? DEFAULT_PROJECT_TYPE_ID) : [];
+    return {
+      main: items.filter((i) => i.group !== 'settings'),
+      settings: items.filter((i) => i.group === 'settings'),
+    };
+  }, [activeProject]);
+  const settingsActive = Boolean(projectBase) && location.pathname.startsWith(`${projectBase}/settings/`);
+  // The group is always open while a settings route is active (deep links
+  // included); otherwise the user's toggle decides.
+  const [settingsToggled, setSettingsOpen] = useState(false);
+  const settingsOpen = settingsActive || settingsToggled;
+
   const navCls = ({ isActive }) =>
     ['nav-item', isActive ? 'is-active' : ''].filter(Boolean).join(' ');
 
@@ -105,8 +129,7 @@ export function Sidebar() {
           <div className="sidebar-section">
             <button
               type="button"
-              className="btn btn-ai btn-block"
-              style={{ height: 36 }}
+              className="btn btn-block sidebar-ai-cta"
               onClick={() => navigate(`/${slug}/projects/new`)}
             >
               <Sparkles size={14} strokeWidth={2.4} aria-hidden="true" />
@@ -174,19 +197,35 @@ export function Sidebar() {
               </div>
             </div>
             <div className="sidebar-section">
-              {navItemsForType(activeProject.type ?? DEFAULT_PROJECT_TYPE_ID).map((item) => {
-                const Icon = item.icon;
-                return (
-                  <NavLink
-                    key={item.key}
-                    to={`/${slug}/projects/${activeProject.slug}/${item.path}`}
-                    className={navCls}
+              {projectNav.main.map((item) => (
+                <ProjectNavLink key={item.key} item={item} base={projectBase} className={navCls} />
+              ))}
+              {projectNav.settings.length > 0 && (
+                <>
+                  <button
+                    type="button"
+                    className={['nav-item', 'nav-group-toggle', settingsActive ? 'is-current' : ''].filter(Boolean).join(' ')}
+                    aria-expanded={settingsOpen}
+                    onClick={() => setSettingsOpen((v) => !v)}
+                    title="Project settings"
                   >
-                    <span className="nav-icon"><Icon size={14} aria-hidden="true" /></span>
-                    <span>{item.label}</span>
-                  </NavLink>
-                );
-              })}
+                    <span className="nav-icon"><Settings size={14} aria-hidden="true" /></span>
+                    <span>Settings</span>
+                    <ChevronDown
+                      size={14}
+                      aria-hidden="true"
+                      className={['nav-group-caret', settingsOpen ? 'is-open' : ''].filter(Boolean).join(' ')}
+                    />
+                  </button>
+                  {settingsOpen && (
+                    <div className="nav-group">
+                      {projectNav.settings.map((item) => (
+                        <ProjectNavLink key={item.key} item={item} base={projectBase} className={navCls} />
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </>
         )}
@@ -215,7 +254,7 @@ export function Sidebar() {
               >
                 <div
                   className={`proj-icon proj-icon-${projectAccent(p.type)}`}
-                  style={{ width: 18, height: 18, fontSize: 9, borderRadius: 4 }}
+                  style={{ width: 20, height: 20, fontSize: 9 }}
                 >
                   {projectInitial(p.name)}
                 </div>

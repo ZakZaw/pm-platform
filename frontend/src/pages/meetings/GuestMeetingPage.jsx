@@ -10,8 +10,8 @@ import {
 } from '@livekit/components-react';
 import '@livekit/components-styles';
 import { Track } from 'livekit-client';
-import { Circle, Video } from 'lucide-react';
-import { Badge, Button, Input } from '@/components/ui';
+import { Video } from 'lucide-react';
+import { Button, Input } from '@/components/ui';
 import { meetingsApi } from '@/api/meetings.api';
 import './meetingRoom.css';
 
@@ -53,13 +53,11 @@ export function GuestMeetingPage() {
       <div className="mr-shell">
         <header className="mr-head">
           <div>
-            <p className="mr-eyebrow">Guest · in session</p>
+            <p className="mr-eyebrow"><span className="mr-live-dot" aria-hidden="true" /> Guest · in session</p>
             <h1 className="mr-title">{join.meetingTitle}</h1>
           </div>
           {join.recordingActive && (
-            <Badge tone="danger">
-              <Circle size={9} fill="currentColor" aria-hidden="true" /> Recording
-            </Badge>
+            <span className="mr-recording">Recording</span>
           )}
         </header>
         <div className="mr-body">
@@ -84,19 +82,13 @@ export function GuestMeetingPage() {
 
   return (
     <div className="mr-shell mr-shell-error">
-      <div style={{
-        maxWidth: 420, width: '100%',
-        background: 'var(--surface)',
-        padding: 'var(--s-6)',
-        borderRadius: 'var(--r-lg)',
-        border: '1px solid var(--border)',
-      }}>
-        <header style={{ marginBottom: 'var(--s-4)' }}>
-          <Video size={20} aria-hidden="true" color="var(--accent)" />
+      <div className="card mr-panel mr-guest">
+        <header className="mr-guest-head">
+          <span className="mr-panel-icon"><Video size={22} aria-hidden="true" /></span>
           <h1 className="mr-error-title">Join meeting as guest</h1>
           <p className="muted">Your camera and mic will start when you join.</p>
         </header>
-        <form onSubmit={handleJoin}>
+        <form className="mr-guest-form" onSubmit={handleJoin}>
           <Input
             label="Your name"
             value={displayName}
@@ -105,12 +97,10 @@ export function GuestMeetingPage() {
             autoFocus
           />
           {error && (
-            <p style={{ color: 'var(--danger)', fontSize: 'var(--fs-sm)', marginTop: 'var(--s-3)' }}>
-              {error}
-            </p>
+            <p className="mr-guest-error">{error}</p>
           )}
-          <div className="row gap-2" style={{ marginTop: 'var(--s-4)', justifyContent: 'flex-end' }}>
-            <Button type="submit" variant="primary" disabled={busy}>
+          <div className="mr-guest-actions">
+            <Button type="submit" variant="primary" block disabled={busy}>
               {busy ? 'Joining…' : 'Join meeting'}
             </Button>
           </div>

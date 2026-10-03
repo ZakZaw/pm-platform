@@ -12,7 +12,6 @@
   width: min(820px, 100vw);
   height: 100vh;
   background: var(--surface);
-  border-left: 1px solid var(--border);
   box-shadow: var(--shadow-xl);
   overflow: hidden;
   animation: task-drawer-slide var(--dur-base) var(--ease-out);

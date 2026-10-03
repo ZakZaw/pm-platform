@@ -16,7 +16,6 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Plus, Trash2, X } from 'lucide-react';
 import {
-  Badge,
   Button,
   Card,
   Input,
@@ -152,22 +151,22 @@ export function CustomFieldsPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>{project?.name ?? 'Project'} · Settings</div>
+            <div className="eyebrow">{project?.name ?? 'Project'} · Settings</div>
             <h1 className="page-title">Custom fields</h1>
-            <p className="page-subtitle" style={{ marginTop: 6 }}>
-              Add project-specific fields that appear on every task. Soft-delete keeps historical values
-              while removing the field from the task UI.
+            <p className="page-subtitle">
+              Project-specific fields that appear on every task. Deleting a field hides it from tasks
+              but keeps historical values.
             </p>
           </div>
-          <Button variant="primary" size="sm" onClick={() => setAddOpen(true)}>
-            <Plus size={13} aria-hidden="true" /> Add field
+          <Button variant="primary" onClick={() => setAddOpen(true)}>
+            <Plus size={14} aria-hidden="true" /> Add field
           </Button>
         </div>
       </div>
 
       <Card className="cf-card">
         {fields.length === 0 ? (
-          <p className="muted cf-empty">No custom fields yet. Add one to get started.</p>
+          <p className="cf-empty">No custom fields yet. Add one to get started.</p>
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleReorder}>
             <SortableContext items={fields.map((f) => f.id)} strategy={verticalListSortingStrategy}>
@@ -217,22 +216,26 @@ function FieldRow({ field, onEdit, onDelete }) {
         <GripVertical size={14} aria-hidden="true" />
       </button>
       <div className="cf-row__main">
-        <div className="cf-row__name">
-          {field.name}
-          {field.required && <Badge tone="warning">Required</Badge>}
-        </div>
+        <div className="cf-row__name">{field.name}</div>
         <div className="cf-row__meta">
           <span>{TYPE_LABEL[field.fieldType] ?? field.fieldType}</span>
           {field.options && field.options.length > 0 && (
-            <span className="muted">· {field.options.join(', ')}</span>
+            <span className="cf-row__options">· {field.options.join(', ')}</span>
           )}
         </div>
       </div>
-      <div className="row gap-2">
+      {field.required ? <span className="cf-required">Required</span> : <span />}
+      <div className="cf-row__actions">
         <Button size="sm" variant="ghost" onClick={onEdit}>Edit</Button>
-        <Button size="sm" variant="ghost" onClick={onDelete} aria-label={`Delete ${field.name}`}>
-          <Trash2 size={13} aria-hidden="true" />
-        </Button>
+        <button
+          type="button"
+          className="icon-btn icon-btn-sm cf-row__delete"
+          onClick={onDelete}
+          aria-label={`Delete ${field.name}`}
+          title="Delete field"
+        >
+          <Trash2 size={14} aria-hidden="true" />
+        </button>
       </div>
     </li>
   );
@@ -300,7 +303,7 @@ function FieldFormModal({ open, title, initial, onClose, onSubmit }) {
           <h3 id="cf-modal-title" className="modal-title">{title}</h3>
         </ModalHeader>
         <ModalBody>
-          <div className="col gap-4">
+          <div className="col gap-4 cf-form">
             <Input
               label="Name"
               value={name}
@@ -318,13 +321,13 @@ function FieldFormModal({ open, title, initial, onClose, onSubmit }) {
             )}
             {isEdit && (
               <div className="col gap-1">
-                <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>Type</span>
+                <span className="cf-label">Type</span>
                 <span>{TYPE_LABEL[fieldType] ?? fieldType} <span className="muted">(can't change after creation)</span></span>
               </div>
             )}
             {isSelect && (
               <div className="col gap-2">
-                <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>Options</span>
+                <span className="cf-label">Options</span>
                 <div className="row gap-2 wrap">
                   {options.map((opt) => (
                     <span key={opt} className="chip is-active cf-option-chip">
@@ -347,7 +350,7 @@ function FieldFormModal({ open, title, initial, onClose, onSubmit }) {
                     }}
                     maxLength={120}
                   />
-                  <Button type="button" size="sm" onClick={addOption} disabled={!optionDraft.trim()}>
+                  <Button type="button" variant="secondary" onClick={addOption} disabled={!optionDraft.trim()}>
                     Add
                   </Button>
                 </div>

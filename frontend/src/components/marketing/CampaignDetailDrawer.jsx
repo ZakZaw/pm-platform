@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Plus, Trash2, X } from 'lucide-react';
 import {
-  Badge,
   Button,
   Input,
   Modal,
@@ -15,16 +14,22 @@ import {
 import { marketingApi } from '@/api/marketing.api';
 import {
   ASSET_STATUSES,
-  ASSET_STATUS_TONE,
   ASSET_TYPES,
   CAMPAIGN_STATUSES,
-  CAMPAIGN_STATUS_TONE,
   MARKETING_CHANNELS,
-  channelTokens,
 } from '@/constants/projectTypes';
+import { CAMPAIGN_STATUS_CLASS, channelClass } from './channel';
+import './channel.css';
 import './CampaignDetailDrawer.css';
 
-const TASK_STATUSES = ['ToDo', 'InProgress', 'Done', 'Cancelled'];
+const TASK_STATUS_CLASS = {
+  ToDo: 'status-todo',
+  InProgress: 'status-progress',
+  Done: 'status-done',
+  Cancelled: 'status-todo',
+};
+
+const TASK_STATUS_LABEL = { ToDo: 'To do', InProgress: 'In progress' };
 
 function fmtDate(d) {
   if (!d) return '—';
@@ -148,7 +153,6 @@ export function CampaignDetailDrawer({ campaignId, onClose, onChanged }) {
   }
 
   const campaign = detail?.campaign;
-  const channelToks = campaign ? channelTokens(campaign.channel) : null;
 
   return createPortal(
     <div className="campaign-drawer__backdrop" onClick={onClose}>
@@ -159,16 +163,16 @@ export function CampaignDetailDrawer({ campaignId, onClose, onChanged }) {
         onClick={(e) => e.stopPropagation()}
       >
         <header className="campaign-drawer__head">
-          <div className="hstack" style={{ gap: 8 }}>
-            {campaign && channelToks && (
-              <Badge style={{ background: channelToks.bg, color: channelToks.fg, borderColor: 'transparent' }}>
+          <div className="campaign-drawer__head-meta">
+            {campaign && (
+              <span className={`mkt-ch-label ${channelClass(campaign.channel)}`}>
                 {campaign.channel}
-              </Badge>
+              </span>
             )}
             {campaign && (
-              <Badge tone={CAMPAIGN_STATUS_TONE[campaign.status] ?? 'neutral'}>
+              <span className={`status ${CAMPAIGN_STATUS_CLASS[campaign.status] ?? 'status-todo'}`}>
                 {campaign.status}
-              </Badge>
+              </span>
             )}
           </div>
           <button
@@ -229,95 +233,109 @@ export function CampaignDetailDrawer({ campaignId, onClose, onChanged }) {
             </div>
 
             {campaign.goalMd && (
-              <div>
-                <div className="subsection-eyebrow">Goal</div>
-                <p style={{ margin: 0, color: 'var(--text-secondary)' }}>{campaign.goalMd}</p>
-              </div>
+              <Field label="Goal">
+                <p className="campaign-drawer__goal">{campaign.goalMd}</p>
+              </Field>
             )}
 
-            <div className="subsection">
-              <div className="hstack" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                <div className="subsection-eyebrow">
-                  Assets · {detail.assets.length}
-                </div>
-                <span className="muted" style={{ fontSize: 11 }}>
+            <section className="campaign-drawer__section">
+              <div className="campaign-drawer__section-head">
+                <h3 className="campaign-drawer__section-title">
+                  Assets <span className="campaign-drawer__count">{detail.assets.length}</span>
+                </h3>
+                <span className="campaign-drawer__hint">
                   Draft → Review → Approved → Published
                 </span>
               </div>
-              {detail.assets.map((a) => (
-                <div key={a.id} className="asset-row">
-                  <div>
-                    <div className="asset-row__title">{a.title}</div>
-                    <div className="asset-row__meta">{a.type}</div>
-                    {a.rejectionReason && a.status === 'Draft' && (
-                      <div className="campaign-drawer__reason" style={{ marginTop: 4 }}>
-                        <strong>Rejected:</strong> {a.rejectionReason}
+              <ul className="campaign-drawer__list">
+                {detail.assets.map((a) => (
+                  <li key={a.id} className="asset-row">
+                    <div className="asset-row__main">
+                      <div className="asset-row__title">{a.title}</div>
+                      <div className="asset-row__meta">
+                        <span>{a.type}</span>
+
+                        <span>{fmtDate(a.publishDate)}</span>
                       </div>
-                    )}
-                  </div>
-                  <Select
-                    value={a.status}
-                    onChange={(e) => changeAssetStatus(a, e.target.value)}
-                    options={ASSET_STATUSES.map((s) => ({ value: s, label: s }))}
-                  />
-                  <span className="asset-row__date">{fmtDate(a.publishDate)}</span>
-                  <button
-                    type="button"
-                    className="icon-btn icon-btn-sm"
-                    onClick={() => deleteAsset(a)}
-                    aria-label="Delete asset"
-                    title="Delete asset"
-                  >
-                    <Trash2 size={13} aria-hidden="true" />
-                  </button>
-                </div>
-              ))}
+                      {a.rejectionReason && a.status === 'Draft' && (
+                        <div className="campaign-drawer__reason">
+                          <strong>Rejected:</strong> {a.rejectionReason}
+                        </div>
+                      )}
+                    </div>
+                    <Select
+                      aria-label={`Status of ${a.title}`}
+                      value={a.status}
+                      onChange={(e) => changeAssetStatus(a, e.target.value)}
+                      options={ASSET_STATUSES.map((s) => ({ value: s, label: s }))}
+                    />
+                    <button
+                      type="button"
+                      className="icon-btn icon-btn-sm campaign-drawer__row-action"
+                      onClick={() => deleteAsset(a)}
+                      aria-label="Delete asset"
+                      title="Delete asset"
+                    >
+                      <Trash2 size={13} aria-hidden="true" />
+                    </button>
+                  </li>
+                ))}
+                {detail.assets.length === 0 && (
+                  <li className="campaign-drawer__empty">No assets yet.</li>
+                )}
+              </ul>
               <CreateAssetInline
                 campaignId={campaign.id}
                 onCreated={async () => { await load(); onChanged?.(); }}
               />
-            </div>
+            </section>
 
-            <div className="subsection">
-              <div className="subsection-eyebrow">
-                Tasks · {detail.tasks.length}
+            <section className="campaign-drawer__section">
+              <div className="campaign-drawer__section-head">
+                <h3 className="campaign-drawer__section-title">
+                  Tasks <span className="campaign-drawer__count">{detail.tasks.length}</span>
+                </h3>
               </div>
-              {detail.tasks.map((t) => (
-                <div key={t.id} className={`mtask-row${t.status === 'Done' ? ' is-done' : ''}`}>
-                  <input
-                    type="checkbox"
-                    checked={t.status === 'Done'}
-                    onChange={() => toggleTask(t)}
-                    aria-label={t.status === 'Done' ? 'Mark not done' : 'Mark done'}
-                  />
-                  <div className="mtask-row__title">
-                    {t.title}
-                    {t.assetTitle && (
-                      <span className="muted" style={{ fontSize: 11, marginLeft: 6 }}>
-                        → {t.assetTitle}
-                      </span>
-                    )}
-                  </div>
-                  <Badge tone={t.status === 'Done' ? 'success' : t.status === 'InProgress' ? 'info' : 'neutral'}>
-                    {t.status}
-                  </Badge>
-                  <button
-                    type="button"
-                    className="icon-btn icon-btn-sm"
-                    onClick={() => deleteTask(t)}
-                    aria-label="Delete task"
-                    title="Delete task"
-                  >
-                    <Trash2 size={13} aria-hidden="true" />
-                  </button>
-                </div>
-              ))}
+              <ul className="campaign-drawer__list">
+                {detail.tasks.map((t) => (
+                  <li key={t.id} className={`mtask-row${t.status === 'Done' ? ' is-done' : ''}`}>
+                    <input
+                      type="checkbox"
+                      className="cb"
+                      checked={t.status === 'Done'}
+                      onChange={() => toggleTask(t)}
+                      aria-label={t.status === 'Done' ? 'Mark not done' : 'Mark done'}
+                    />
+                    <div className="asset-row__main">
+                      <div className="mtask-row__title">{t.title}</div>
+                      {t.assetTitle && (
+                        <div className="asset-row__meta">→ {t.assetTitle}</div>
+                      )}
+                    </div>
+                    <span className={`status ${TASK_STATUS_CLASS[t.status] ?? 'status-todo'}`}>
+                      {TASK_STATUS_LABEL[t.status] ?? t.status}
+                    </span>
+                    <button
+                      type="button"
+                      className="icon-btn icon-btn-sm campaign-drawer__row-action"
+                      onClick={() => deleteTask(t)}
+                      aria-label="Delete task"
+                      title="Delete task"
+                    >
+                      <Trash2 size={13} aria-hidden="true" />
+                    </button>
+                  </li>
+                ))}
+                {detail.tasks.length === 0 && (
+                  <li className="campaign-drawer__empty">No tasks yet.</li>
+                )}
+              </ul>
               <CreateTaskInline
                 campaignId={campaign.id}
                 assets={detail.assets}
                 onCreated={async () => { await load(); onChanged?.(); }}
               />
-            </div>
+            </section>
           </div>
         )}
 
@@ -341,7 +359,7 @@ export function CampaignDetailDrawer({ campaignId, onClose, onChanged }) {
 function Field({ label, children }) {
   return (
     <div className="campaign-drawer__field">
-      <div className="subsection-eyebrow">{label}</div>
+      <div className="campaign-drawer__label">{label}</div>
       {children}
     </div>
   );
@@ -384,18 +402,21 @@ function CreateAssetInline({ campaignId, onCreated }) {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="New asset title…"
+        aria-label="New asset title"
       />
       <Select
+        aria-label="Asset type"
         value={type}
         onChange={(e) => setType(e.target.value)}
         options={ASSET_TYPES.map((t) => ({ value: t, label: t }))}
       />
       <Input
         type="date"
+        aria-label="Publish date"
         value={publishDate}
         onChange={(e) => setPublishDate(e.target.value)}
       />
-      <Button type="submit" size="sm" disabled={busy || !title.trim()}>
+      <Button type="submit" variant="secondary" size="sm" disabled={busy || !title.trim()}>
         <Plus size={13} aria-hidden="true" /> Add
       </Button>
     </form>
@@ -442,13 +463,15 @@ function CreateTaskInline({ campaignId, assets, onCreated }) {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="New task title…"
+        aria-label="New task title"
       />
       <Select
+        aria-label="Linked asset"
         value={assetId}
         onChange={(e) => setAssetId(e.target.value)}
         options={assetOptions}
       />
-      <Button type="submit" size="sm" disabled={busy || !title.trim()}>
+      <Button type="submit" variant="secondary" size="sm" disabled={busy || !title.trim()}>
         <Plus size={13} aria-hidden="true" /> Add
       </Button>
     </form>
@@ -474,10 +497,10 @@ function RejectionReasonModal({ asset, onCancel, onConfirm }) {
     <Modal open onClose={onCancel} labelledBy="reject-asset-title">
       <form onSubmit={submit}>
         <ModalHeader>
-          <h2 id="reject-asset-title" style={{ margin: 0, fontSize: 16 }}>Send back to Draft</h2>
+          <h2 id="reject-asset-title" className="modal-title">Send back to Draft</h2>
         </ModalHeader>
         <ModalBody>
-          <p style={{ marginTop: 0, color: 'var(--text-secondary)' }}>
+          <p className="campaign-drawer__lead">
             Tell the asset's owner why <strong>{asset.title}</strong> needs more work.
           </p>
           <Input

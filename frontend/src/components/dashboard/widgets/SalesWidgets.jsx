@@ -1,4 +1,4 @@
-import { DashboardWidget, MetricRow, StackedBar, SEGMENT_TOKENS } from '../DashboardWidget';
+import { DashboardWidget, MetricRow, ProgressBar, StackedBar, WidgetRows, SEGMENT_TOKENS } from '../DashboardWidget';
 
 // polish D: Sales widgets read the server-computed `/analytics/sales`
 // aggregate (passed down by TypedDashboard) instead of re-deriving pipeline
@@ -25,13 +25,14 @@ export function SalesPipelineValueWidget({ data, loading }) {
   return (
     <DashboardWidget
       title="Pipeline value by stage"
-      eyebrow="Sales"
       loading={loading}
       empty={!loading && segments.length === 0}
       emptyText="No open deals yet."
     >
       <MetricRow label="Total open pipeline" value={formatMoney(data?.openPipelineValue, currency)} />
-      {segments.length > 0 && <StackedBar segments={segments} />}
+      {segments.length > 0 && (
+        <StackedBar segments={segments} format={(v) => formatMoney(v, currency)} />
+      )}
     </DashboardWidget>
   );
 }
@@ -42,7 +43,6 @@ export function SalesForecastWidget({ data, loading }) {
   return (
     <DashboardWidget
       title="Weighted forecast"
-      eyebrow="Sales"
       loading={loading}
       empty={!loading && !data}
       emptyText="No pipeline to forecast yet."
@@ -60,7 +60,7 @@ export function SalesForecastWidget({ data, loading }) {
             ? `${data?.wonCount ?? 0} won · ${data?.lostCount ?? 0} lost`
             : `${winRate}% win rate · ${data?.wonCount ?? 0} won / ${data?.lostCount ?? 0} lost`
         }
-        accent={winRate != null && winRate >= 50 ? 'var(--success)' : undefined}
+        tone={winRate != null && winRate >= 50 ? 'success' : undefined}
       />
     </DashboardWidget>
   );
@@ -71,27 +71,20 @@ export function SalesConversionWidget({ data, loading }) {
   return (
     <DashboardWidget
       title="Conversion funnel"
-      eyebrow="Sales"
       loading={loading}
       empty={!loading && funnel.every((s) => s.count === 0)}
       emptyText="Deals will appear here once added."
     >
-      <ul className="dashboard-widget__rows">
+      <ul className="dashboard-widget__funnel">
         {funnel.map((s) => (
-          <li key={s.name} className="dashboard-widget__row" style={{ position: 'relative' }}>
-            <span style={{ position: 'relative', zIndex: 1 }}>{s.name}</span>
-            <span className="mono dim" style={{ position: 'relative', zIndex: 1 }}>
-              {s.count} · {Math.round(s.conversionPct)}%
-            </span>
-            <span
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: `linear-gradient(to right, var(--accent-soft) 0%, var(--accent-soft) ${s.conversionPct}%, transparent ${s.conversionPct}%)`,
-                borderRadius: 'var(--r-sm)',
-              }}
-            />
+          <li key={s.name}>
+            <div className="dashboard-widget__row">
+              <span className="truncate">{s.name}</span>
+              <span className="dashboard-widget__row-meta">
+                {s.count} · {Math.round(s.conversionPct)}%
+              </span>
+            </div>
+            <ProgressBar pct={s.conversionPct} />
           </li>
         ))}
       </ul>
@@ -104,20 +97,14 @@ export function SalesDealsAtRiskWidget({ data, loading }) {
   return (
     <DashboardWidget
       title="Deals at risk"
-      eyebrow="Sales"
       loading={loading}
       empty={!loading && atRisk.length === 0}
       emptyText="No at-risk deals — low probability with close in the next 14 days."
     >
-      <MetricRow label="Flagged" value={atRisk.length} accent={atRisk.length > 0 ? 'var(--danger)' : undefined} />
-      <ul className="dashboard-widget__rows">
-        {atRisk.map((d) => (
-          <li key={d.id} className="dashboard-widget__row">
-            <span className="truncate">{d.name}</span>
-            <span className="mono dim">{d.probability}% · {d.stageName}</span>
-          </li>
-        ))}
-      </ul>
+      <MetricRow label="Flagged" value={atRisk.length} tone={atRisk.length > 0 ? 'danger' : undefined} />
+      <WidgetRows
+        rows={atRisk.map((d) => ({ key: d.id, label: d.name, meta: `${d.probability}% · ${d.stageName}` }))}
+      />
     </DashboardWidget>
   );
 }

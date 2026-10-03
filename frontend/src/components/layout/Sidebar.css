@@ -4,7 +4,37 @@
 
 .sidebar-org { width: 100%; }
 
-/* Active project highlight already provided by .nav-item.is-active */
+/* "New project with AI" — soft AI tint instead of the loud gradient fill. */
+.sidebar-ai-cta {
+  height: 40px;
+  justify-content: flex-start;
+  gap: var(--s-4);
+  padding: 0 var(--s-5);
+  background: var(--ai-gradient-soft);
+  color: var(--ai-text);
+  border-color: transparent;
+}
+.sidebar-ai-cta:hover {
+  background: var(--ai-gradient-mid);
+  border-color: transparent;
+}
+
+/* Collapsible "Settings" group under the active project. */
+.nav-group-toggle .nav-group-caret {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--text-subtle);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.nav-group-toggle .nav-group-caret.is-open { transform: rotate(180deg); }
+.nav-group-toggle.is-current { color: var(--text); }
+.nav-group {
+  display: flex; flex-direction: column; gap: var(--s-1);
+  margin-left: var(--s-7);
+  padding-left: var(--s-3);
+  border-left: 1px solid var(--divider);
+}
+.nav-group .nav-item { min-height: 34px; font-size: var(--fs-md); }
 
 .app.is-collapsed .sidebar .sidebar-org-name,
 .app.is-collapsed .sidebar .sidebar-org-slug,
@@ -14,9 +44,13 @@
 .app.is-collapsed .sidebar .proj-card-type,
 .app.is-collapsed .sidebar .sidebar-foot-name,
 .app.is-collapsed .sidebar .sidebar-foot-mail,
-.app.is-collapsed .sidebar .nav-count {
+.app.is-collapsed .sidebar .nav-count,
+.app.is-collapsed .sidebar .nav-group-caret,
+.app.is-collapsed .sidebar .sidebar-ai-cta > span {
   display: none;
 }
+.app.is-collapsed .sidebar .nav-group { margin-left: 0; padding-left: 0; border-left: 0; }
+.app.is-collapsed .sidebar .sidebar-ai-cta { justify-content: center; padding: 0; }
 .app.is-collapsed .sidebar .nav-item {
   justify-content: center;
 }

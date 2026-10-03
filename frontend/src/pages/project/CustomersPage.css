@@ -1,38 +1,47 @@
+/* Customers — search pill + plain .card/.tbl (stratos). */
 .customers-page-search {
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: var(--text-muted);
-}
-
-.customers-page-table {
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-md);
+  gap: var(--s-4);
+  height: 34px;
+  min-width: 260px;
+  padding: 0 var(--s-5);
   background: var(--surface);
-  overflow: hidden;
-}
-
-.customers-page-row {
-  display: grid;
-  grid-template-columns: 1.5fr 1.5fr 1.3fr 0.9fr 1fr;
-  gap: var(--s-5);
-  padding: var(--s-5) var(--s-6);
-  font-size: var(--fs-md);
-  border-bottom: 1px solid var(--border-subtle);
-  align-items: center;
-}
-
-.customers-page-row:last-child { border-bottom: none; }
-
-.customers-page-row-head {
-  font-size: var(--fs-xs);
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow-xs);
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  background: var(--surface-2);
+  cursor: text;
 }
+.customers-page-search:focus-within { box-shadow: var(--shadow-focus); }
+.customers-page-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-md);
+}
+.customers-page-search input::placeholder { color: var(--text-subtle); }
+
+.customers-page-card { overflow: hidden; }
 
 .customers-page-name {
   font-weight: var(--fw-semibold);
   color: var(--text);
 }
+
+.customers-page-tier { color: var(--text-secondary); }
+
+.customers-page-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.customers-page-card .tbl th.customers-page-num { text-align: right; }
+
+.customers-page-open {
+  font-weight: var(--fw-semibold);
+  color: var(--accent);
+}
+

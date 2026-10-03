@@ -65,11 +65,13 @@ export function InstantMeetingModal({ project, members, meId, onClose, onStarted
   return (
     <Modal open onClose={busy ? undefined : onClose} labelledBy="instant-meeting-title" size="md">
       <ModalHeader>
-        <h2 id="instant-meeting-title" className="row gap-2" style={{ margin: 0 }}>
-          <Zap size={16} aria-hidden="true" /> Start an instant meeting
+        <h2 id="instant-meeting-title" className="modal-title mtg-modal-title">
+          <span className="mtg-modal-icon"><Zap size={16} aria-hidden="true" /></span>
+          Start an instant meeting
         </h2>
       </ModalHeader>
       <ModalBody>
+        <div className="mtg-form">
         <Input
           label="Title"
           autoFocus
@@ -80,25 +82,27 @@ export function InstantMeetingModal({ project, members, meId, onClose, onStarted
           onKeyDown={(e) => { if (e.key === 'Enter') start(); }}
         />
 
-        <div className="meeting-form-section" style={{ marginTop: 'var(--s-4)' }}>
-          <h2>Invite members</h2>
-          <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-xs)' }}>
-            You join automatically as organiser. Invitees get an email; you can
-            also share a guest link once you're in the room.
-          </p>
-          <div className="meeting-attendees">
+        <div className="mtg-modal-section">
+          <div>
+            <h3 className="mtg-section-title">Invite members</h3>
+            <p className="mtg-section-sub">
+              You join automatically as organiser. Invitees get an email; you can
+              also share a guest link once you're in the room.
+            </p>
+          </div>
+          <div className="mtg-people">
             {invitable.map((m) => {
               const isPicked = picked.includes(m.userId);
               return (
                 <div
                   key={m.userId}
-                  className={['meeting-attendee-row', isPicked && 'is-organiser']
+                  className={['mtg-person', isPicked && 'is-picked']
                     .filter(Boolean).join(' ')}
                 >
-                  <Avatar src={m.avatarUrl} name={m.fullName || m.email} size="sm" />
-                  <div className="meeting-attendee-meta">
-                    <div className="meeting-attendee-name truncate">{m.fullName}</div>
-                    <div className="meeting-attendee-mail truncate">{m.email}</div>
+                  <Avatar src={m.avatarUrl} name={m.fullName || m.email} size="md" />
+                  <div className="mtg-person-meta">
+                    <div className="mtg-person-name truncate">{m.fullName}</div>
+                    <div className="mtg-person-mail truncate">{m.email}</div>
                   </div>
                   <Button
                     type="button"
@@ -112,12 +116,13 @@ export function InstantMeetingModal({ project, members, meId, onClose, onStarted
               );
             })}
             {invitable.length === 0 && (
-              <p className="muted" style={{ fontSize: 'var(--fs-sm)' }}>
+              <p className="mtg-note">
                 No other members on this project yet — you can start solo and
                 share a guest link from the room.
               </p>
             )}
           </div>
+        </div>
         </div>
       </ModalBody>
       <ModalFooter>
@@ -125,7 +130,7 @@ export function InstantMeetingModal({ project, members, meId, onClose, onStarted
           Cancel
         </Button>
         <Button type="button" variant="primary" onClick={start} disabled={busy}>
-          <Video size={12} aria-hidden="true" />
+          <Video size={14} aria-hidden="true" />
           {busy ? ' Starting…' : ' Start meeting'}
         </Button>
       </ModalFooter>

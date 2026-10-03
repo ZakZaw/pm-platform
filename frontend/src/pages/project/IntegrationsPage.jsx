@@ -3,7 +3,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import {
   CircleCheck, CircleAlert, ExternalLink, GitBranch, Plug, Trash2,
 } from 'lucide-react';
-import { Badge, Button, Input, Skeleton, useToast } from '@/components/ui';
+import { Button, Input, Skeleton, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { integrationsApi } from '@/api/integrations.api';
 import './IntegrationsPage.css';
@@ -118,7 +118,7 @@ export function IntegrationsPage() {
   }
 
   return (
-    <div className="main-inner">
+    <div className="main-inner intg">
       <header className="page-head">
         <div className="page-title-row">
           <div>
@@ -134,10 +134,19 @@ export function IntegrationsPage() {
         </div>
       </header>
 
-      <section className="intg-card">
+      <section className="card intg-card">
         <div className="intg-card-head">
-          <GitBranch size={16} aria-hidden="true" />
-          <h2>GitHub</h2>
+          <span className="intg-icon" aria-hidden="true">
+            <GitBranch size={18} />
+          </span>
+          <div>
+            <h2>GitHub</h2>
+            <p className="intg-card-sub">
+              {integrations.length === 0
+                ? 'No repositories connected yet.'
+                : `${integrations.length} ${integrations.length === 1 ? 'repository' : 'repositories'} connected`}
+            </p>
+          </div>
         </div>
 
         {canEdit ? (
@@ -150,52 +159,55 @@ export function IntegrationsPage() {
               disabled={connecting}
             />
             <Button type="submit" variant="primary" disabled={connecting || !repo.trim()}>
-              <Plug size={13} aria-hidden="true" />
+              <Plug size={14} aria-hidden="true" />
               {connecting ? ' Redirecting…' : ' Connect repository'}
             </Button>
           </form>
         ) : (
-          <p className="muted intg-readonly">Only a project manager can connect repositories.</p>
+          <p className="intg-readonly">Only a project manager can connect repositories.</p>
         )}
 
-        {integrations.length === 0 ? (
-          <p className="intg-empty">No repositories connected yet.</p>
-        ) : (
+        {integrations.length > 0 && (
           <ul className="intg-list">
             {integrations.map((i) => (
               <li key={i.id} className="intg-row">
-                <a className="intg-repo" href={i.repoUrl} target="_blank" rel="noreferrer">
-                  <GitBranch size={14} aria-hidden="true" />
-                  <span className="mono">{i.repoFullName}</span>
-                  <ExternalLink size={12} aria-hidden="true" />
-                </a>
-                <div className="intg-meta">
-                  <Badge tone={HEALTH_TONE[i.health] ?? 'neutral'} dot title={i.healthError ?? ''}>
-                    {HEALTH_LABEL[i.health] ?? 'Unknown'}
-                  </Badge>
-                  {i.webhookActive ? (
-                    <Badge tone="success" dot>Webhook active</Badge>
-                  ) : (
-                    <Badge tone="warning" dot>Webhook pending</Badge>
-                  )}
-                  <span className="muted intg-by">
-                    Connected by {i.connectedByName}
-                  </span>
-                  {i.lastEventAt && (
-                    <span className="muted intg-by">
-                      · last event {new Date(i.lastEventAt).toLocaleDateString([], {
-                        month: 'short', day: 'numeric',
-                      })}
-                    </span>
-                  )}
+                <div className="intg-row-main">
+                  <a className="intg-repo" href={i.repoUrl} target="_blank" rel="noreferrer">
+                    <span className="mono">{i.repoFullName}</span>
+                    <ExternalLink size={12} aria-hidden="true" />
+                  </a>
+                  <div className="intg-meta">
+                    <span>Connected by {i.connectedByName}</span>
+                    {i.lastEventAt && (
+                      <span>
+                        · last event {new Date(i.lastEventAt).toLocaleDateString([], {
+                          month: 'short', day: 'numeric',
+                        })}
+                      </span>
+                    )}
+                  </div>
                   {i.healthError && (i.health === 'Failed' || i.health === 'Degraded') && (
                     <span className="intg-health-error">{i.healthError}</span>
+                  )}
+                </div>
+                <div className="intg-statuses">
+                  <span
+                    className={`intg-status is-${HEALTH_TONE[i.health] ?? 'neutral'}`}
+                    title={i.healthError ?? ''}
+                  >
+                    {HEALTH_LABEL[i.health] ?? 'Unknown'}
+                  </span>
+                  {i.webhookActive ? (
+                    <span className="intg-status is-success">Webhook active</span>
+                  ) : (
+                    <span className="intg-status is-warning">Webhook pending</span>
                   )}
                 </div>
                 {canEdit && (
                   <Button
                     size="sm"
                     variant="ghost"
+                    className="intg-disconnect"
                     onClick={() => disconnect(i)}
                     disabled={busyId === i.id}
                   >
@@ -208,7 +220,7 @@ export function IntegrationsPage() {
         )}
       </section>
 
-      <section className="intg-hint">
+      <section className="intg-hint" aria-label="How it works">
         <div className="intg-hint-row">
           <CircleCheck size={14} aria-hidden="true" className="intg-ok" />
           <span>A new branch like <span className="mono">feat/{project?.key ?? 'AT'}-123-…</span> moves that task to In&nbsp;Progress.</span>

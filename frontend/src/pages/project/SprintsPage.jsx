@@ -1,13 +1,24 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Rocket } from 'lucide-react';
-import { Badge, Button, Card, EmptyState, Input, Skeleton, useToast } from '@/components/ui';
+import { Plus, Rocket } from 'lucide-react';
+import { Button, Card, EmptyState, Input, Skeleton, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { sprintsApi } from '@/api/sprints.api';
 import { useConfirm } from '@/hooks/useConfirm';
 import './SprintsPage.css';
 
-const STATUS_TONE = { Planning: 'neutral', Active: 'info', Closed: 'success' };
+// Status read-out as dot + coloured text (stratos .status-*).
+const STATUS_CLASS = { Planning: 'status-todo', Active: 'status-progress', Closed: 'status-done' };
+
+function fmtRange(start, end) {
+  if (!start || !end) return '';
+  const s = new Date(start);
+  const e = new Date(end);
+  const sameYear = s.getFullYear() === e.getFullYear();
+  const short = { month: 'short', day: 'numeric' };
+  const long = { month: 'short', day: 'numeric', year: 'numeric' };
+  return `${s.toLocaleDateString(undefined, sameYear ? short : long)} – ${e.toLocaleDateString(undefined, long)}`;
+}
 
 export function SprintsPage() {
   const { slug: orgSlug, projectSlug } = useParams();
@@ -23,6 +34,8 @@ export function SprintsPage() {
   const [startDate, setStartDate] = useState(today());
   const [endDate, setEndDate] = useState(addDays(today(), 14));
   const [creating, setCreating] = useState(false);
+  // The create form folds behind a "New sprint" button once sprints exist.
+  const [createOpen, setCreateOpen] = useState(false);
 
   const refresh = useCallback(async (projectId) => {
     const list = await sprintsApi.listForProject(projectId);
@@ -56,6 +69,7 @@ export function SprintsPage() {
       });
       toast.show({ tone: 'success', message: 'Sprint created.' });
       setName('');
+      setCreateOpen(false);
       await refresh(project.id);
     } catch (err) {
       toast.show({ tone: 'danger', message: err.response?.data?.detail ?? 'Could not create sprint.' });
@@ -107,51 +121,67 @@ export function SprintsPage() {
     );
   }
 
+  // No sprints yet → keep the form open so there's an obvious first step.
+  const showCreate = createOpen || sprints.length === 0;
+
   return (
     <div className="main-inner sprints-page">
       {dialog}
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>{project.name}</div>
+            <div className="eyebrow">{project.name}</div>
             <h1 className="page-title">Sprint planning</h1>
             <div className="page-subtitle">
               Time-box scope into sprints, then add work from the backlog. Sprints record velocity on close.
             </div>
           </div>
+          {!showCreate && (
+            <Button onClick={() => setCreateOpen(true)}>
+              <Plus size={14} aria-hidden="true" /> New sprint
+            </Button>
+          )}
         </div>
       </div>
 
-      <Card className="sprints-page-create" title="New sprint">
-        <form className="sprints-page-form" onSubmit={createSprint}>
-          <Input
-            label="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            placeholder="e.g. Sprint 12"
-          />
-          <Input
-            label="Start"
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            required
-          />
-          <Input
-            label="End"
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            required
-          />
-          <div className="sprints-page-form-submit">
+      {showCreate && (
+        <section className="card sprints-page-create" aria-labelledby="sprints-new-title">
+          <div className="sprints-page-create-head">
+            <h2 id="sprints-new-title" className="sprints-page-create-title">New sprint</h2>
+            {sprints.length > 0 && (
+              <Button variant="ghost" size="sm" onClick={() => setCreateOpen(false)}>
+                Cancel
+              </Button>
+            )}
+          </div>
+          <form className="sprints-page-form" onSubmit={createSprint}>
+            <Input
+              label="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              placeholder="e.g. Sprint 12"
+            />
+            <Input
+              label="Start"
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              required
+            />
+            <Input
+              label="End"
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              required
+            />
             <Button type="submit" disabled={creating || name.trim().length < 2}>
               {creating ? 'Creating…' : 'Create sprint'}
             </Button>
-          </div>
-        </form>
-      </Card>
+          </form>
+        </section>
+      )}
 
       {sprints.length === 0 ? (
         <EmptyState
@@ -160,11 +190,12 @@ export function SprintsPage() {
           subtitle="Create your first sprint above. Sprints time-box scope; you can add tasks from the backlog once the sprint exists."
         />
       ) : (
-        <Card>
+        <section className="card sprints-page-card">
           <ul className="sprints-page-list">
             {sprints.map((s) => {
               const detailHref = `/${orgSlug}/projects/${projectSlug}/sprints/${s.id}`;
               const open = () => navigate(detailHref);
+              const pct = s.totalPoints > 0 ? Math.round((s.donePoints / s.totalPoints) * 100) : 0;
               return (
                 <li
                   key={s.id}
@@ -179,25 +210,30 @@ export function SprintsPage() {
                     }
                   }}
                 >
-                  <div className="sprints-page-cell">
+                  <div className="sprints-page-main">
                     <div className="sprints-page-name">{s.name}</div>
+                    <div className="sprints-page-dates">{fmtRange(s.startDate, s.endDate)}</div>
                   </div>
-                  <div className="sprints-page-cell">
-                    <Badge tone={STATUS_TONE[s.status]}>{s.status}</Badge>
-                  </div>
-                  <div className="sprints-page-cell sprints-page-cell-meta">
-                    {new Date(s.startDate).toLocaleDateString()} →{' '}
-                    {new Date(s.endDate).toLocaleDateString()}
-                  </div>
-                  <div className="sprints-page-cell sprints-page-cell-meta">
-                    {s.taskCount} tasks · {s.donePoints}/{s.totalPoints} pts
+                  <span className={`status ${STATUS_CLASS[s.status] ?? 'status-todo'}`}>{s.status}</span>
+                  <div className="sprints-page-progress">
+                    <div className="sprints-page-progress-text">
+                      <span><strong>{s.donePoints}</strong> / {s.totalPoints} pts</span>
+                      <span>{s.taskCount} task{s.taskCount === 1 ? '' : 's'}</span>
+                    </div>
+                    <div className="bar sprints-page-bar" aria-hidden="true">
+                      {/* Width is data-driven, so it stays inline. */}
+                      <div
+                        className={`bar-fill ${s.status === 'Closed' ? 'bar-fill-success' : ''}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
                   </div>
                   <div
-                    className="sprints-page-cell sprints-page-actions"
+                    className="sprints-page-actions"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {s.status === 'Planning' && (
-                      <Button size="sm" onClick={() => startSprint(s)}>Start</Button>
+                      <Button size="sm" variant="secondary" onClick={() => startSprint(s)}>Start</Button>
                     )}
                     {s.status === 'Active' && (
                       <>
@@ -212,7 +248,7 @@ export function SprintsPage() {
               );
             })}
           </ul>
-        </Card>
+        </section>
       )}
     </div>
   );

@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Filter, Plus, Share2 } from 'lucide-react';
 import {
-  Badge,
   Button,
   Modal,
   ModalBody,
@@ -19,15 +18,6 @@ import { RoadmapView } from '@/components/roadmap/RoadmapView';
 import { ShareLinkModal } from '@/components/roadmap/ShareLinkModal';
 import { findProjectType } from '@/constants/projectTypes';
 import './RoadmapPage.css';
-
-const TYPE_TONE = {
-  Engineering: 'accent',
-  Sales: 'success',
-  Support: 'rose',
-  Marketing: 'warning',
-  Operations: 'violet',
-  Generic: 'neutral',
-};
 
 const EDIT_ROLES = new Set(['PM', 'TeamLead']);
 
@@ -46,6 +36,20 @@ export function RoadmapPage() {
   const [pendingCascade, setPendingCascade] = useState(null);
   const [milestoneMenu, setMilestoneMenu] = useState(null);
   const [shareOpen, setShareOpen] = useState(false);
+  const filterRef = useRef(null);
+
+  // Close the filter menu on outside click / Escape.
+  useEffect(() => {
+    if (!filterOpen) return undefined;
+    const onDoc = (e) => { if (!filterRef.current?.contains(e.target)) setFilterOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape') setFilterOpen(false); };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [filterOpen]);
 
   const reload = useCallback(async (proj) => {
     const adapter = adapterForType(proj.type);
@@ -73,7 +77,6 @@ export function RoadmapPage() {
   }, [orgSlug, projectSlug, reload]);
 
   const meta = project ? findProjectType(project.type) : null;
-  const tone = TYPE_TONE[meta?.id] ?? 'neutral';
   const canEdit = EDIT_ROLES.has(project?.myRole ?? '');
 
   // Filter bars + points after the adapter — keeps adapter logic clean.
@@ -166,21 +169,19 @@ export function RoadmapPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>
-              {project?.name ?? '…'} · Timeline
-            </div>
-            <h1 className="page-title" style={{ fontSize: 'var(--fs-2xl)' }}>Roadmap</h1>
+            <div className="eyebrow">{project?.name ?? '…'}</div>
+            <h1 className="page-title">Roadmap</h1>
             {meta && (
-              <p className="page-subtitle" style={{ marginTop: 6 }}>
+              <p className="page-subtitle">
                 {meta.label} project · {canEdit ? 'drag bar edges to shift dates.' : 'read-only.'}
               </p>
             )}
           </div>
           <div className="row gap-3">
-            {meta && <Badge tone={tone} dot>{meta.label}</Badge>}
             <Segmented
               value={zoom}
               onChange={setZoom}
+              size="sm"
               options={[
                 { value: 'w', label: 'Week' },
                 { value: 'm', label: 'Month' },
@@ -188,9 +189,15 @@ export function RoadmapPage() {
               ]}
               ariaLabel="Timeline scale"
             />
-            <div className="roadmap-page__filter-wrap">
-              <Button size="sm" onClick={() => setFilterOpen((v) => !v)}>
-                <Filter size={13} aria-hidden="true" /> Filter
+            <div className="roadmap-page__filter-wrap" ref={filterRef}>
+              <Button
+                variant="secondary"
+                size="sm"
+                aria-haspopup="menu"
+                aria-expanded={filterOpen}
+                onClick={() => setFilterOpen((v) => !v)}
+              >
+                <Filter size={14} aria-hidden="true" /> Filter
                 {(filter.ownerId || filter.status || filter.riskOnly) && (
                   <span className="roadmap-page__filter-dot" aria-label="active" />
                 )}
@@ -211,7 +218,7 @@ export function RoadmapPage() {
                 onClick={() => setShareOpen(true)}
                 title="Generate a public read-only link"
               >
-                <Share2 size={13} aria-hidden="true" /> Share
+                <Share2 size={14} aria-hidden="true" /> Share
               </Button>
             )}
             {canEdit && (
@@ -242,7 +249,7 @@ export function RoadmapPage() {
         )}
         {data?.undated?.length > 0 && (
           <div className="roadmap-page__undated">
-            <span className="eyebrow">Not yet placed</span>
+            <h2 className="roadmap-page__undated-title">Not yet placed</h2>
             <ul>
               {data.undated.map((e) => (
                 <li key={e.id} className="muted">{e.title}</li>
@@ -478,7 +485,7 @@ function MilestoneCreateModal({ open, onClose, onCreate, epics }) {
                 type="color"
                 value={color}
                 onChange={(e) => setColor(e.target.value)}
-                style={{ width: 40, height: 38, padding: 2, border: '1px solid var(--border)', borderRadius: 'var(--r-sm)' }}
+                className="roadmap-page__color-input"
               />
             </label>
           </div>

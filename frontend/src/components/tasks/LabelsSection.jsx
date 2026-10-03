@@ -105,7 +105,7 @@ export function LabelsSection({ taskId, projectId, initial = [], onChange }) {
 
   return (
     <div className="labels-section" ref={wrapRef}>
-      <div className="row gap-2 labels-section__chips" style={{ alignItems: 'center', flexWrap: 'wrap' }}>
+      <div className="row gap-2 labels-section__chips">
         {labels.map((l) => (
           <span key={l.id} className={`badge badge-${l.color} labels-section__chip`}>
             <Tag size={9} aria-hidden="true" /> {l.name}
@@ -124,7 +124,7 @@ export function LabelsSection({ taskId, projectId, initial = [], onChange }) {
           className="labels-section__add"
           onClick={() => setPickerOpen((v) => !v)}
         >
-          <Plus size={11} aria-hidden="true" /> Label
+          <Plus size={12} aria-hidden="true" /> Add label
         </button>
       </div>
 
@@ -132,7 +132,7 @@ export function LabelsSection({ taskId, projectId, initial = [], onChange }) {
         <div className="menu labels-section__menu" role="menu">
           <div className="menu-label">Project labels</div>
           {available.length === 0 ? (
-            <p className="muted" style={{ padding: 'var(--s-3) var(--s-4)' }}>
+            <p className="muted labels-section__empty">
               No labels yet — create one below.
             </p>
           ) : (

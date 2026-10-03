@@ -1,0 +1,57 @@
+/* Shared SVG chart vocabulary — muted marks, one accent series, soft
+   gridlines, sans-serif labels. Every chart in this folder imports it. */
+
+.chart { display: block; max-width: 100%; overflow: visible; }
+
+.chart-grid { stroke: var(--divider); stroke-width: 1; }
+.chart-axis {
+  font-family: var(--font-sans);
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-medium);
+  fill: var(--text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Goal / ideal / average lines: dashed and quiet. */
+.chart-goal {
+  fill: none;
+  stroke: var(--text-subtle);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+  stroke-linecap: round;
+}
+
+/* Key series. */
+.chart-line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.chart-area-stop { stop-color: var(--accent); }
+.chart-point { fill: var(--surface); stroke: var(--accent); stroke-width: 2.5; }
+.chart-today { stroke: var(--accent); stroke-opacity: 0.25; stroke-width: 1; stroke-dasharray: 2 4; }
+
+/* Bars: muted background series, key series in the accent. */
+.chart-bar-muted { fill: var(--surface-active); }
+.chart-bar { fill: color-mix(in srgb, var(--accent) 38%, var(--surface)); }
+.chart-bar.is-key { fill: var(--accent); }
+
+/* Health gauge */
+.chart-gauge-track { fill: none; stroke: var(--surface-active); }
+.chart-gauge-arc { fill: none; stroke-linecap: round; transition: stroke-dashoffset var(--dur-slow) var(--ease-out); }
+.chart-gauge-arc.is-success { stroke: var(--success); }
+.chart-gauge-arc.is-warning { stroke: var(--warning); }
+.chart-gauge-arc.is-danger  { stroke: var(--danger); }
+.chart-gauge-value {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-bold);
+  fill: var(--text);
+  letter-spacing: var(--tracking-tight);
+}
+.chart-gauge-sub {
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  fill: var(--text-muted);
+}

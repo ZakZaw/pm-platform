@@ -170,17 +170,16 @@ export function CreateMeetingPage() {
             <p className="eyebrow">{project.name} · Meetings</p>
             <h1 className="page-title">Schedule a meeting</h1>
             <p className="page-subtitle">
-              Invites go out by email with an .ics calendar attachment.
-              Recurring meetings keep a single series link so edits propagate.
+              Invites go out by email with an .ics attachment. Recurring meetings stay one series.
             </p>
           </div>
         </div>
       </header>
 
-      <form onSubmit={submit}>
-        <div className="meeting-form-grid">
-          <section className="meeting-form-section">
-            <h2>Basics</h2>
+      <form className="mtg-form" onSubmit={submit}>
+        <div className="mtg-form-grid">
+          <section className="card mtg-section">
+            <h2 className="mtg-section-title">Basics</h2>
             <Input
               label="Title"
               autoFocus
@@ -202,7 +201,7 @@ export function CreateMeetingPage() {
               onChange={(e) => setType(e.target.value)}
               options={TYPES}
             />
-            <div className="meeting-form-row">
+            <div className="mtg-form-row">
               <Input
                 type="datetime-local"
                 label="When"
@@ -224,12 +223,14 @@ export function CreateMeetingPage() {
             />
           </section>
 
-          <section className="meeting-form-section">
-            <h2>Attendees</h2>
-            <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-xs)' }}>
-              You're added automatically as organiser.
-            </p>
-            <div className="meeting-attendees">
+          <section className="card mtg-section">
+            <div>
+              <h2 className="mtg-section-title">Attendees</h2>
+              <p className="mtg-section-sub">
+                You're added automatically as organiser{picked.length > 0 ? ` · ${picked.length} invited` : ''}.
+              </p>
+            </div>
+            <div className="mtg-people">
               {members
                 .filter((m) => m.userId !== me?.id)
                 .map((m) => {
@@ -238,18 +239,19 @@ export function CreateMeetingPage() {
                   return (
                     <div
                       key={m.userId}
-                      className={['meeting-attendee-row', isPicked && 'is-organiser']
+                      className={['mtg-person', isPicked && 'is-picked']
                         .filter(Boolean).join(' ')}
                     >
-                      <Avatar src={m.avatarUrl} name={m.fullName || m.email} size="sm" />
-                      <div className="meeting-attendee-meta">
-                        <div className="meeting-attendee-name truncate">{m.fullName}</div>
-                        <div className="meeting-attendee-mail truncate">{m.email}</div>
+                      <Avatar src={m.avatarUrl} name={m.fullName || m.email} size="md" />
+                      <div className="mtg-person-meta">
+                        <div className="mtg-person-name truncate">{m.fullName}</div>
+                        <div className="mtg-person-mail truncate">{m.email}</div>
                       </div>
                       {isPicked && (
-                        <label style={{ display: 'inline-flex', gap: 4, alignItems: 'center', fontSize: 'var(--fs-xs)' }}>
+                        <label className="mtg-required">
                           <input
                             type="checkbox"
+                            className="cb"
                             checked={required}
                             onChange={() => toggleRequired(m.userId)}
                           /> Required
@@ -267,16 +269,16 @@ export function CreateMeetingPage() {
                   );
                 })}
               {members.length <= 1 && (
-                <p className="muted" style={{ fontSize: 'var(--fs-sm)' }}>
+                <p className="mtg-note">
                   Add members to this project first.
                 </p>
               )}
             </div>
           </section>
 
-          <section className="meeting-form-section" style={{ gridColumn: '1 / -1' }}>
-            <div className="meeting-agenda-head">
-              <h2>Agenda</h2>
+          <section className="card mtg-section mtg-span">
+            <div className="mtg-section-head">
+              <h2 className="mtg-section-title">Agenda</h2>
               <div className="row gap-2">
                 {agendaMd && (
                   <Button
@@ -285,7 +287,7 @@ export function CreateMeetingPage() {
                     variant="ghost"
                     onClick={() => { setAgendaMd(''); setAgendaFromAi(false); }}
                   >
-                    <X size={11} aria-hidden="true" /> Clear
+                    <X size={13} aria-hidden="true" /> Clear
                   </Button>
                 )}
                 <Button
@@ -295,13 +297,13 @@ export function CreateMeetingPage() {
                   onClick={generateAgenda}
                   disabled={generatingAgenda}
                 >
-                  <Sparkles size={11} aria-hidden="true" />
+                  <Sparkles size={13} aria-hidden="true" />
                   {generatingAgenda ? 'Drafting…' : 'AI draft'}
                 </Button>
               </div>
             </div>
             <textarea
-              className="meeting-agenda-textarea"
+              className="mtg-textarea"
               value={agendaMd}
               onChange={(e) => {
                 setAgendaMd(e.target.value);
@@ -309,7 +311,7 @@ export function CreateMeetingPage() {
               }}
               placeholder="- Topic 1 (~5 min)&#10;- Topic 2 (~10 min)&#10;- Open questions"
             />
-            <p className="muted" style={{ fontSize: 'var(--fs-xs)', margin: 0 }}>
+            <p className="mtg-note">
               {agendaFromAi
                 ? 'AI-drafted agenda. Edit freely — the "AI draft" flag is dropped on any change.'
                 : 'Optional. Markdown is supported. You can keep editing up until the meeting starts.'}
@@ -317,7 +319,7 @@ export function CreateMeetingPage() {
           </section>
         </div>
 
-        <footer className="row between" style={{ marginTop: 'var(--s-5)' }}>
+        <footer className="mtg-form-foot">
           <Button
             type="button"
             variant="ghost"
@@ -326,7 +328,7 @@ export function CreateMeetingPage() {
             Cancel
           </Button>
           <Button type="submit" variant="primary" disabled={busy}>
-            <Calendar size={11} aria-hidden="true" />
+            <Calendar size={14} aria-hidden="true" />
             {busy ? 'Scheduling…' : 'Schedule meeting'}
           </Button>
         </footer>

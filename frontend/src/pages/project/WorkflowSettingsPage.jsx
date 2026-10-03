@@ -15,7 +15,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Plus, Trash2 } from 'lucide-react';
-import { Badge, Button, Card, Input, Select, useToast } from '@/components/ui';
+import { Button, Card, Input, Select, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { workflowApi } from '@/api/workflow.api';
 import { useConfirm } from '@/hooks/useConfirm';
@@ -29,6 +29,16 @@ const COLOR_OPTIONS = [
   { value: 'danger', label: 'Danger (red)' },
   { value: 'success', label: 'Success (green)' },
 ];
+
+const BASE_LABEL = {
+  Backlog: 'Backlog',
+  ToDo: 'To do',
+  InProgress: 'In progress',
+  InReview: 'In review',
+  Blocked: 'Blocked',
+  Done: 'Done',
+  WontDo: "Won't do",
+};
 
 const BASE_STATUS_OPTIONS = [
   { value: 'Backlog', label: 'Backlog (waiting)' },
@@ -149,7 +159,7 @@ export function WorkflowSettingsPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>{project?.name ?? 'Project'} · Settings</div>
+            <div className="eyebrow">{project?.name ?? 'Project'} · Settings</div>
             <h1 className="page-title">Workflow statuses</h1>
             <div className="page-subtitle">
               Rename, recolor, reorder, and hide the columns that appear on this project's board.
@@ -158,7 +168,16 @@ export function WorkflowSettingsPage() {
         </div>
       </div>
 
-      <Card className="workflow-card">
+      <Card className="workflow-card workflow-table">
+        <div className="workflow-head" aria-hidden="true">
+          <span />
+          <span>Status</span>
+          <span>Color</span>
+          <span className="workflow-head-center">On board</span>
+          <span className="workflow-head-center">Done state</span>
+          <span className="workflow-head-center" title="WIP limit (blank = no limit)">WIP limit</span>
+          <span />
+        </div>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleReorder}>
           <SortableContext
             items={configs.map((c) => c.id)}
@@ -202,7 +221,7 @@ function AddStatusCard({ onAdd }) {
   }
 
   return (
-    <Card className="workflow-card" title="Add a status">
+    <Card className="workflow-card workflow-add-card" title="Add a status">
       <form className="workflow-add" onSubmit={submit}>
         <Input
           label="Display name"
@@ -262,11 +281,11 @@ function WipLimitInput({ cfg, onPatch }) {
   }
 
   return (
-    <label className="workflow-toggle workflow-wip" title="WIP limit (blank = no limit)">
-      <span className="muted">WIP</span>
+    <label className="workflow-cell-center" title="WIP limit (blank = no limit)">
       <input
         type="number"
         min={1}
+        placeholder="–"
         className="input workflow-wip__input"
         value={value}
         onChange={(e) => setValue(e.target.value)}
@@ -307,6 +326,8 @@ function RowInner({ cfg, onPatch, onDelete }) {
     onPatch({ displayName: trimmed });
   };
 
+  const baseLabel = BASE_LABEL[cfg.status] ?? cfg.status;
+
   return (
     <li ref={setNodeRef} style={style} className="workflow-row">
       <button
@@ -319,53 +340,59 @@ function RowInner({ cfg, onPatch, onDelete }) {
         <GripVertical size={14} aria-hidden="true" />
       </button>
 
-      <Badge tone={cfg.color}>{cfg.displayName}</Badge>
-
-      <Input
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        onBlur={commitName}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            commitName();
-          }
-        }}
-        aria-label={`Display name for ${cfg.status}`}
-      />
+      {/* Colour dot + editable name. The underlying base status (enum key) is
+          de-emphasised into a tooltip on the dot and a hover hint. */}
+      <div className="workflow-name" title={`Behaves like ${baseLabel} (${cfg.status})`}>
+        <span className={`workflow-dot is-${cfg.color}`} aria-hidden="true" />
+        <Input
+          className="workflow-name__input"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onBlur={commitName}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              commitName();
+            }
+          }}
+          aria-label={`Display name for ${cfg.status}`}
+        />
+        <span className="workflow-system">{cfg.status}</span>
+      </div>
 
       <Select
+        className="workflow-color"
         options={COLOR_OPTIONS}
         value={cfg.color}
         onChange={(e) => onPatch({ color: e.target.value })}
         aria-label={`Color for ${cfg.displayName}`}
       />
 
-      <label className="workflow-toggle">
+      <label className="workflow-cell-center">
         <input
           type="checkbox"
+          className="cb"
           checked={cfg.isVisible}
           onChange={(e) => onPatch({ isVisible: e.target.checked })}
+          aria-label={`Show ${cfg.displayName} on board`}
         />
-        <span>Show on board</span>
       </label>
 
-      <label className="workflow-toggle">
+      <label className="workflow-cell-center">
         <input
           type="checkbox"
+          className="cb"
           checked={cfg.isDoneState}
           onChange={(e) => onPatch({ isDoneState: e.target.checked })}
+          aria-label={`${cfg.displayName} is a done state`}
         />
-        <span>Done state</span>
       </label>
 
       <WipLimitInput cfg={cfg} onPatch={onPatch} />
 
-      <span className="workflow-system">{cfg.status}</span>
-
       <button
         type="button"
-        className="workflow-delete"
+        className="icon-btn icon-btn-sm workflow-delete"
         onClick={onDelete}
         aria-label={`Delete ${cfg.displayName}`}
         title="Delete this column"

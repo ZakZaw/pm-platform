@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Plus, Sparkles, Workflow as WorkflowIcon } from 'lucide-react';
+import { MoreHorizontal, Plus, Sparkles, Workflow as WorkflowIcon } from 'lucide-react';
 import {
-  Badge,
   Button,
+  Dropdown,
   EmptyState,
   Skeleton,
   useToast,
@@ -13,10 +13,11 @@ import { operationsApi, describeRecurrence } from '@/api/operations.api';
 import { WorkflowEditorModal } from '@/components/operations/WorkflowEditorModal';
 import './RunbooksPage.css';
 
-const STATUS_TONE = {
-  Active: 'success',
-  Paused: 'warning',
-  Archived: 'neutral',
+// Workflow status read-out as dot + coloured text (stratos .status-*).
+const STATUS_CLASS = {
+  Active: 'status-done',
+  Paused: 'status-review',
+  Archived: 'status-todo',
 };
 
 function fmtRel(iso) {
@@ -89,17 +90,25 @@ export function RunbooksPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>{project.name} · Runbooks</div>
-            <h1 className="page-title" style={{ fontSize: 'var(--fs-2xl)' }}>Workflows</h1>
-            <p className="page-subtitle" style={{ marginTop: 6 }}>
+            <h1 className="page-title">Runbooks</h1>
+            <p className="page-subtitle">
               {workflows.length} workflow{workflows.length === 1 ? '' : 's'}
-              {overdueTotal > 0 && <> · <span style={{ color: 'var(--danger)' }}>{overdueTotal} overdue</span></>}
+              {overdueTotal > 0 && <> · <span className="runbooks-overdue">{overdueTotal} overdue</span></>}
             </p>
           </div>
           <div className="row gap-3">
-            <Button variant="ai" size="sm" disabled title="Coming in Phase 2">
-              <Sparkles size={13} aria-hidden="true" /> Author from template
-            </Button>
+            <Dropdown
+              align="end"
+              trigger={(
+                <button type="button" className="icon-btn" aria-label="More actions" title="More actions">
+                  <MoreHorizontal size={16} aria-hidden="true" />
+                </button>
+              )}
+            >
+              <Dropdown.Item icon={<Sparkles size={13} aria-hidden="true" />} disabled>
+                Author from template (coming in Phase 2)
+              </Dropdown.Item>
+            </Dropdown>
             <Button variant="primary" size="sm" onClick={() => setEditing('new')}>
               <Plus size={14} aria-hidden="true" /> New workflow
             </Button>
@@ -113,45 +122,54 @@ export function RunbooksPage() {
           title="No runbooks yet"
           subtitle="A workflow is a recurring procedure with a checklist — monthly compliance review, weekly stand-up notes, daily on-call check."
         >
-          <Button onClick={() => setEditing('new')}>Create your first workflow</Button>
+          <Button variant="secondary" onClick={() => setEditing('new')}>Create your first workflow</Button>
         </EmptyState>
       ) : (
         <div className="card runbooks-card">
           <table className="tbl">
             <thead>
               <tr>
-                <th style={{ width: 70 }}>ID</th>
                 <th>Workflow</th>
-                <th style={{ width: 140 }}>Recurrence</th>
-                <th style={{ width: 110 }}>Last run</th>
-                <th style={{ width: 90 }}>Steps</th>
-                <th style={{ width: 110 }}>Next</th>
-                <th style={{ width: 120 }}>Status</th>
+                <th className="runbooks-col-recur">Recurrence</th>
+                <th className="runbooks-col-date">Last run</th>
+                <th className="runbooks-col-date">Next</th>
+                <th className="runbooks-col-steps">Steps</th>
+                <th className="runbooks-col-status">Status</th>
               </tr>
             </thead>
             <tbody>
-              {workflows.map((w, i) => {
+              {workflows.map((w) => {
                 const overdue = (w.overdueRunCount ?? 0) > 0;
                 return (
-                  <tr key={w.id} onClick={() => setEditing(w.id)} style={{ cursor: 'pointer' }}>
-                    <td className="mono muted" style={{ fontSize: 'var(--fs-xs)' }}>WF-{String(i + 1).padStart(2, '0')}</td>
+                  <tr
+                    key={w.id}
+                    className="runbooks-row"
+                    tabIndex={0}
+                    onClick={() => setEditing(w.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setEditing(w.id);
+                      }
+                    }}
+                  >
                     <td>
-                      <div className="col" style={{ gap: 2 }}>
-                        <span style={{ fontWeight: 500 }}>{w.name}</span>
-                        {w.description && (
-                          <span className="muted truncate" style={{ fontSize: 'var(--fs-xs)', maxWidth: 360 }}>{w.description}</span>
-                        )}
-                      </div>
+                      <div className="runbooks-name">{w.name}</div>
+                      {w.description && (
+                        <div className="runbooks-desc truncate">{w.description}</div>
+                      )}
                     </td>
-                    <td>{describeRecurrence(w.recurrenceRule)}</td>
-                    <td className="muted" style={{ fontSize: 'var(--fs-xs)' }}>{fmtRel(w.lastCompletedAt)}</td>
-                    <td className="mono" style={{ fontSize: 'var(--fs-xs)', fontWeight: 600 }}>{w.template?.length ?? 0}</td>
-                    <td className="muted" style={{ fontSize: 'var(--fs-xs)' }}>{fmtAbs(w.nextRunAt)}</td>
+                    <td className="runbooks-secondary">{describeRecurrence(w.recurrenceRule)}</td>
+                    <td className="muted">{fmtRel(w.lastCompletedAt)}</td>
+                    <td className="muted">{fmtAbs(w.nextRunAt)}</td>
+                    <td className="runbooks-col-steps">{w.template?.length ?? 0}</td>
                     <td>
                       {overdue ? (
-                        <Badge tone="danger">{w.overdueRunCount} overdue</Badge>
+                        <span className="status status-blocked">{w.overdueRunCount} overdue</span>
                       ) : (
-                        <Badge tone={STATUS_TONE[w.status] ?? 'success'}>{w.status ?? 'Active'}</Badge>
+                        <span className={`status ${STATUS_CLASS[w.status] ?? 'status-done'}`}>
+                          {w.status ?? 'Active'}
+                        </span>
                       )}
                     </td>
                   </tr>

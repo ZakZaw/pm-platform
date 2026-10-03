@@ -1,37 +1,71 @@
+/* Create-organization onboarding — one calm, centred card. */
+
 .create-org {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: var(--s-8);
+  display: flex;
+  justify-content: center;
+  padding-top: var(--s-12);
 }
 
-.create-org__card {
+.create-org-card {
   width: 100%;
   max-width: 480px;
+  padding: var(--s-10);
+  text-align: left;
 }
 
-.create-org__form {
+.create-org-head { margin-bottom: var(--s-8); }
+.create-org-title {
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--lh-tight);
+  color: var(--text);
+}
+.create-org-sub {
+  font-size: var(--fs-base);
+  margin-top: var(--s-3);
+  line-height: var(--lh-relaxed);
+}
+
+.create-org-form {
   display: flex;
   flex-direction: column;
-  gap: var(--s-7);
+  gap: var(--s-8);
 }
 
-.create-org__logo-row {
+/* stratos .input-group (icon-input row) sets align-items:center, which centres
+   the Input primitive's label — keep the field left-aligned here. */
+.create-org-form .input-group { align-items: stretch; gap: 0; }
+
+.create-org-logo-row {
   display: flex;
   align-items: center;
-  gap: var(--s-6);
+  gap: var(--s-7);
 }
+.create-org-logo {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.create-org-logo:hover { opacity: 0.85; }
 
-.create-org__logo-help {
-  font-size: var(--fs-xs);
+.create-org-logo-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-3);
+}
+.create-org-logo-help {
+  font-size: var(--fs-sm);
   color: var(--text-muted);
 }
 
-.create-org__file-input {
-  display: none;
-}
+.create-org-file-input { display: none; }
 
-.create-org__error {
-  font-size: var(--fs-xs);
+.create-org-error {
+  font-size: var(--fs-sm);
   color: var(--danger);
 }

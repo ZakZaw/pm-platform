@@ -90,7 +90,7 @@ export function AITaskBreakdownModal({ open, taskId, currentTitle, onClose, onAp
         {result && !loading && (
           <>
             <div className="ai-draft__breakdown-section">
-              <label className="ai-draft__breakdown-label hstack" style={{ gap: 6 }}>
+              <label className="ai-draft__breakdown-label hstack ai-draft__gap-sm">
                 <input
                   type="checkbox"
                   checked={applyDesc}
@@ -104,7 +104,7 @@ export function AITaskBreakdownModal({ open, taskId, currentTitle, onClose, onAp
             </div>
 
             <div className="ai-draft__breakdown-section">
-              <label className="ai-draft__breakdown-label hstack" style={{ gap: 6 }}>
+              <label className="ai-draft__breakdown-label hstack ai-draft__gap-sm">
                 <input
                   type="checkbox"
                   checked={applyAc}
@@ -121,7 +121,7 @@ export function AITaskBreakdownModal({ open, taskId, currentTitle, onClose, onAp
 
             {result.suggestedStoryPoints != null && (
               <div className="ai-draft__breakdown-section">
-                <label className="ai-draft__breakdown-label hstack" style={{ gap: 6 }}>
+                <label className="ai-draft__breakdown-label hstack ai-draft__gap-sm">
                   <input
                     type="checkbox"
                     checked={applyPts}

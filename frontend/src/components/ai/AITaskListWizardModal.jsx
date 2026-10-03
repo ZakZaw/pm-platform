@@ -180,7 +180,7 @@ export function AITaskListWizardModal({
           <div className="ai-draft__plan">
             <div className="ai-draft__list-meta">
               <Sparkles size={13} color="var(--ai-2)" aria-hidden="true" />
-              <span style={{ fontWeight: 600, color: 'var(--text)' }}>
+              <span className="ai-draft__plan-title">
                 {preview.tasks.length} tasks · {totalPts} points
               </span>
               {preview.epicTitle && (

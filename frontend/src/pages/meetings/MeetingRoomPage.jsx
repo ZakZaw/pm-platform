@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ControlBar,
@@ -10,8 +10,8 @@ import {
 } from '@livekit/components-react';
 import '@livekit/components-styles';
 import { Track } from 'livekit-client';
-import { Circle, MessageSquare, X } from 'lucide-react';
-import { Badge, Button, Skeleton, useToast } from '@/components/ui';
+import { FileText, MessageSquare, VideoOff, X } from 'lucide-react';
+import { Button, Skeleton, useToast } from '@/components/ui';
 import { meetingsApi } from '@/api/meetings.api';
 import { TranscriptPanel } from '@/components/meetings/TranscriptPanel';
 import './meetingRoom.css';
@@ -68,9 +68,12 @@ export function MeetingRoomPage() {
   if (error || !join) {
     return (
       <div className="mr-shell mr-shell-error">
-        <h1 className="mr-error-title">Can't enter the room</h1>
-        <p className="muted">{error ?? 'No token returned.'}</p>
-        <Button variant="primary" onClick={leave}>Back to meeting</Button>
+        <div className="card mr-panel">
+          <span className="mr-panel-icon"><VideoOff size={22} aria-hidden="true" /></span>
+          <h1 className="mr-error-title">Can't enter the room</h1>
+          <p className="muted">{error ?? 'No token returned.'}</p>
+          <Button variant="primary" onClick={leave}>Back to meeting</Button>
+        </div>
       </div>
     );
   }
@@ -91,28 +94,30 @@ function MeetingRoomInner({ join, sidePanel, onSidePanelChange, onLeave, onToast
     <div className="mr-shell">
       <header className="mr-head">
         <div>
-          <p className="mr-eyebrow">In session</p>
+          <p className="mr-eyebrow"><span className="mr-live-dot" aria-hidden="true" /> In session</p>
           <h1 className="mr-title">{join.meetingTitle}</h1>
         </div>
-        <div className="row gap-2" style={{ alignItems: 'center' }}>
+        <div className="mr-head-actions">
           {join.recordingActive && (
-            <Badge tone="danger">
-              <Circle size={9} fill="currentColor" aria-hidden="true" /> Recording
-            </Badge>
+            <span className="mr-recording">Recording</span>
           )}
           <Button
-            variant={sidePanel === 'chat' ? 'primary' : 'ghost'}
+            variant={sidePanel === 'chat' ? 'secondary' : 'ghost'}
             size="sm"
+            className={sidePanel === 'chat' ? 'is-active' : ''}
+            aria-pressed={sidePanel === 'chat'}
             onClick={() => onSidePanelChange(sidePanel === 'chat' ? 'none' : 'chat')}
           >
-            <MessageSquare size={12} aria-hidden="true" /> Chat
+            <MessageSquare size={14} aria-hidden="true" /> Chat
           </Button>
           <Button
-            variant={sidePanel === 'transcript' ? 'primary' : 'ghost'}
+            variant={sidePanel === 'transcript' ? 'secondary' : 'ghost'}
             size="sm"
+            className={sidePanel === 'transcript' ? 'is-active' : ''}
+            aria-pressed={sidePanel === 'transcript'}
             onClick={() => onSidePanelChange(sidePanel === 'transcript' ? 'none' : 'transcript')}
           >
-            Transcript
+            <FileText size={14} aria-hidden="true" /> Transcript
           </Button>
         </div>
       </header>
@@ -151,11 +156,11 @@ function MeetingRoomInner({ join, sidePanel, onSidePanelChange, onLeave, onToast
               </h2>
               <button
                 type="button"
-                className="mr-aside-close"
+                className="icon-btn icon-btn-sm"
                 onClick={() => onSidePanelChange('none')}
                 aria-label="Close side panel"
               >
-                <X size={12} aria-hidden="true" />
+                <X size={16} aria-hidden="true" />
               </button>
             </header>
             <div className="mr-aside-body">

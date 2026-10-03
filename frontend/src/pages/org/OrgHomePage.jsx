@@ -7,15 +7,14 @@ import {
   Calendar,
   Camera,
   Filter,
+  Info,
   Pencil,
   Plus,
   Sparkles,
 } from 'lucide-react';
 import {
-  AIChip,
   Avatar,
   AvatarStack,
-  Badge,
   Button,
   Segmented,
   Skeleton,
@@ -33,21 +32,12 @@ const PLACEHOLDER_VELOCITY = [22, 24, 26, 25, 28, 30, 28, 32, 30, 33, 34];
 const PLACEHOLDER_PIPELINE = [800, 820, 810, 900, 950, 1000, 1050, 1100, 1150, 1180, 1260];
 const PLACEHOLDER_TICKETS = [40, 38, 36, 35, 32, 30, 32, 30, 28, 29, 28];
 
-const TYPE_TONE = {
-  Engineering: 'accent',
-  Sales: 'success',
-  Support: 'rose',
-  Marketing: 'warning',
-  Operations: 'violet',
-  Generic: 'neutral',
-};
-
-const ROLE_TONE = {
-  Owner: 'violet',
-  Admin: 'info',
-  Member: 'neutral',
-  Guest: 'neutral',
-};
+function formatDate(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (!Number.isFinite(d.getTime())) return String(iso);
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
 
 function HealthRing({ value, size = 32 }) {
   const stroke = 4;
@@ -78,7 +68,7 @@ function HealthRing({ value, size = 32 }) {
 export function OrgHomePage() {
   const { slug } = useParams();
   const toast = useToast();
-  const { isAdminOrAbove } = useOrgRole(slug);
+  const { role: myRole, isAdminOrAbove } = useOrgRole(slug);
   const refreshOrgs = useOrgStore((s) => s.refresh);
   const [org, setOrg] = useState(null);
   const [projects, setProjects] = useState([]);
@@ -168,9 +158,8 @@ export function OrgHomePage() {
   if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
   if (!org) {
     return (
-      <div className="main-inner" aria-busy="true">
+      <div className="main-inner org-home-loading" aria-busy="true">
         <Skeleton width="40%" height={28} />
-        <div style={{ height: 20 }} />
         <div className="grid-4">
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} height={92} radius="lg" />)}
         </div>
@@ -178,11 +167,18 @@ export function OrgHomePage() {
     );
   }
 
+  const role = org.role ?? myRole;
+  const metaLine = [
+    role,
+    `${projects.length} project${projects.length === 1 ? '' : 's'} (${activeProjects} active)`,
+    `${memberSummary.total} member${memberSummary.total === 1 ? '' : 's'}`,
+  ].filter(Boolean).join(' · ');
+
   return (
     <div className="main-inner org-home">
       <div className="page-head">
         <div className="page-title-row">
-          <div className="row gap-5">
+          <div className="row gap-6">
             <label
               className={['org-home-logo', isAdminOrAbove ? 'is-editable' : '', uploadingLogo ? 'is-busy' : ''].filter(Boolean).join(' ')}
               title={isAdminOrAbove ? 'Click to upload a new logo' : undefined}
@@ -205,177 +201,172 @@ export function OrgHomePage() {
               )}
             </label>
             <div>
-              <div className="eyebrow" style={{ marginBottom: 6 }}>Workspace</div>
-              <div className="row gap-3" style={{ alignItems: 'center' }}>
-                {editingName ? (
-                  <input
-                    className="org-home-title-input"
-                    value={nameDraft}
-                    autoFocus
-                    maxLength={80}
-                    onChange={(e) => setNameDraft(e.target.value)}
-                    onBlur={commitName}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') { e.preventDefault(); commitName(); }
-                      else if (e.key === 'Escape') { setNameDraft(org.name); setEditingName(false); }
-                    }}
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    className={['org-home-title', isAdminOrAbove ? 'is-editable' : ''].filter(Boolean).join(' ')}
-                    onClick={() => { if (!isAdminOrAbove) return; setNameDraft(org.name); setEditingName(true); }}
-                    title={isAdminOrAbove ? 'Click to rename' : undefined}
-                  >
-                    <h1 className="page-title">{org.name}</h1>
-                    {isAdminOrAbove && <Pencil size={14} className="org-home-title-icon" aria-hidden="true" />}
-                  </button>
-                )}
-                <Badge tone={ROLE_TONE[org.role] ?? 'neutral'}>{org.role}</Badge>
-              </div>
-              <p className="page-subtitle" style={{ marginTop: 8 }}>
-                {projects.length} project{projects.length === 1 ? '' : 's'} ({activeProjects} active) · {memberSummary.total} member{memberSummary.total === 1 ? '' : 's'}
-              </p>
+              <div className="eyebrow org-home-eyebrow">Workspace</div>
+              {editingName ? (
+                <input
+                  className="org-home-title-input"
+                  value={nameDraft}
+                  autoFocus
+                  maxLength={80}
+                  onChange={(e) => setNameDraft(e.target.value)}
+                  onBlur={commitName}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') { e.preventDefault(); commitName(); }
+                    else if (e.key === 'Escape') { setNameDraft(org.name); setEditingName(false); }
+                  }}
+                />
+              ) : (
+                <button
+                  type="button"
+                  className={['org-home-title', isAdminOrAbove ? 'is-editable' : ''].filter(Boolean).join(' ')}
+                  onClick={() => { if (!isAdminOrAbove) return; setNameDraft(org.name); setEditingName(true); }}
+                  title={isAdminOrAbove ? 'Click to rename' : undefined}
+                >
+                  <h1 className="page-title">{org.name}</h1>
+                  {isAdminOrAbove && <Pencil size={14} className="org-home-title-icon" aria-hidden="true" />}
+                </button>
+              )}
+              <p className="page-subtitle">{metaLine}</p>
             </div>
           </div>
           <div className="row gap-3">
-            <Button size="sm" disabled title="Coming in Phase 2">
-              <Filter size={13} aria-hidden="true" /> Filter
+            <Button variant="ghost" size="md" disabled title="Coming in Phase 2">
+              <Filter size={14} aria-hidden="true" /> Filter
             </Button>
             <Link to={`/${slug}/projects/new`}>
-              <Button variant="ai" size="sm">
-                <Sparkles size={13} aria-hidden="true" /> New project
+              <Button variant="primary" size="md">
+                <Sparkles size={14} aria-hidden="true" /> New project
               </Button>
             </Link>
           </div>
         </div>
       </div>
 
-      <div className="grid-4" style={{ marginBottom: 'var(--s-9)' }}>
-        <div className="stat">
-          <div className="stat-label">Portfolio health<span className="org-home-sample">sample</span></div>
-          <div className="stat-row">
-            <div className="stat-value">82</div>
-            <HealthRing value={82} size={32} />
+      {/* KPI strip — placeholder figures until org analytics ship; flagged once, quietly. */}
+      <section className="org-home-section" aria-label="At a glance">
+        <p className="org-home-sample-note">
+          <Info size={13} aria-hidden="true" />
+          <span>
+            Sample figures — org-wide trends are in progress.{' '}
+            <Link to={`/${slug}/portfolio`} className="org-home-inline-link">
+              Live project health is in Portfolio
+            </Link>
+            .
+          </span>
+        </p>
+        <div className="grid-4">
+          <div className="stat">
+            <div className="stat-label">Portfolio health</div>
+            <div className="stat-row">
+              <div className="stat-value">82</div>
+              <HealthRing value={82} size={32} />
+            </div>
+            <div className="org-home-stat-foot">across {projects.length} projects · daily snapshot</div>
           </div>
-          <div className="muted" style={{ fontSize: 'var(--fs-xs)' }}>across {projects.length} projects · daily snapshot</div>
-        </div>
-        <div className="stat">
-          <div className="stat-label">Velocity<span className="org-home-sample">sample</span></div>
-          <div className="stat-row">
-            <div className="stat-value">34<span style={{ fontSize: 'var(--fs-md)', color: 'var(--text-muted)', fontWeight: 500 }}> pts/wk</span></div>
-            <span className="stat-delta stat-delta-up"><ArrowUp size={10} strokeWidth={3} />8%</span>
+          <div className="stat">
+            <div className="stat-label">Velocity</div>
+            <div className="stat-row">
+              <div className="stat-value">34<span className="org-home-unit">pts/wk</span></div>
+              <span className="stat-delta stat-delta-up"><ArrowUp size={10} strokeWidth={3} />8%</span>
+            </div>
+            <Sparkline points={PLACEHOLDER_VELOCITY} stroke="var(--accent)" className="org-home-spark" />
           </div>
-          <Sparkline points={PLACEHOLDER_VELOCITY} stroke="var(--accent)" />
-        </div>
-        <div className="stat">
-          <div className="stat-label">Pipeline value<span className="org-home-sample">sample</span></div>
-          <div className="stat-row">
-            <div className="stat-value mono">$1.26m</div>
-            <span className="stat-delta stat-delta-up"><ArrowUp size={10} strokeWidth={3} />12%</span>
+          <div className="stat">
+            <div className="stat-label">Pipeline value</div>
+            <div className="stat-row">
+              <div className="stat-value">$1.26m</div>
+              <span className="stat-delta stat-delta-up"><ArrowUp size={10} strokeWidth={3} />12%</span>
+            </div>
+            <Sparkline points={PLACEHOLDER_PIPELINE} stroke="var(--text-subtle)" className="org-home-spark" />
           </div>
-          <Sparkline points={PLACEHOLDER_PIPELINE} stroke="var(--success)" />
-        </div>
-        <div className="stat">
-          <div className="stat-label">Open tickets · SLA<span className="org-home-sample">sample</span></div>
-          <div className="stat-row">
-            <div className="stat-value">28<span style={{ fontSize: 'var(--fs-md)', color: 'var(--text-muted)', fontWeight: 500 }}> open</span></div>
-            <span className="stat-delta stat-delta-up">94%</span>
+          <div className="stat">
+            <div className="stat-label">Open tickets</div>
+            <div className="stat-row">
+              <div className="stat-value">28<span className="org-home-unit">open</span></div>
+              <span className="stat-delta stat-delta-up">94% SLA</span>
+            </div>
+            <Sparkline points={PLACEHOLDER_TICKETS} stroke="var(--text-subtle)" className="org-home-spark" />
           </div>
-          <Sparkline points={PLACEHOLDER_TICKETS} stroke="var(--violet)" />
         </div>
-      </div>
+      </section>
 
       {/* AI suggestions ribbon */}
-      <div className="ai-card" style={{ marginBottom: 'var(--s-9)' }}>
-        <div className="ai-card-head">
-          <div className="ai-mark"><Sparkles size={14} /></div>
-          <div className="col" style={{ gap: 2, flex: 1 }}>
-            <strong style={{ fontSize: 'var(--fs-md)' }}>
-              AI suggestions waiting for your call
-            </strong>
-            <span className="muted" style={{ fontSize: 'var(--fs-sm)' }}>
-              Open the AI inbox in any project to review.
-            </span>
-          </div>
+      <div className="ai-card org-home-ai">
+        <div className="ai-mark"><Sparkles size={14} /></div>
+        <div className="col org-home-ai-text">
+          <strong>AI suggestions waiting for your call</strong>
+          <span className="muted">Open the AI inbox in any project to review.</span>
         </div>
       </div>
 
       {/* Projects */}
-      <div className="between" style={{ marginBottom: 'var(--s-6)' }}>
-        <h2 className="h-card" style={{ fontSize: 'var(--fs-lg)' }}>Projects</h2>
-        <Segmented value={filter} onChange={setFilter} options={typeFilters} />
-      </div>
+      <section className="org-home-section">
+        <div className="between org-home-section-head">
+          <h2 className="h-card">Projects</h2>
+          <Segmented value={filter} onChange={setFilter} options={typeFilters} ariaLabel="Filter projects by type" />
+        </div>
 
-      <div className="org-home-project-grid">
-        {filteredProjects.length === 0 ? (
-          <div className="card org-home-empty">
-            <Briefcase size={32} aria-hidden="true" />
-            <p>No projects in this filter.</p>
-            <Link to={`/${slug}/projects/new`}>
-              <Button>Create project</Button>
-            </Link>
-          </div>
-        ) : (
-          filteredProjects.map((p) => {
-            const meta = findProjectType(p.type);
-            const accent = (meta?.id ?? 'generic').toLowerCase();
-            const tone = TYPE_TONE[meta?.id] ?? 'neutral';
-            return (
-              <Link key={p.id} to={`/${slug}/projects/${p.slug}`} className="card card-hover org-home-project-card">
-                <div className="row gap-4" style={{ marginBottom: 'var(--s-5)' }}>
-                  <div className={`proj-icon proj-icon-${accent}`} style={{ width: 36, height: 36, fontSize: 'var(--fs-md)' }}>
-                    {meta?.short?.[0] ?? '·'}
-                  </div>
-                  <div className="col" style={{ gap: 2, flex: 1, minWidth: 0 }}>
-                    <div className="row between gap-3">
-                      <Badge tone={tone}>
-                        <span className="badge-dot" />
-                        {meta?.label}
-                      </Badge>
-                      <AIChip label="Suggest" />
-                    </div>
-                  </div>
-                </div>
-                <div className="h-card" style={{ marginBottom: 'var(--s-3)', lineHeight: 1.25 }}>{p.name}</div>
-                <div className="muted" style={{ fontSize: 'var(--fs-xs)', marginBottom: 'var(--s-5)' }}>
-                  /{p.slug}
-                </div>
-                <div className="row between" style={{ marginTop: 'auto' }}>
-                  <Badge tone={p.status === 'Active' ? 'success' : 'neutral'}>{p.status}</Badge>
-                  <div className="row gap-3 muted" style={{ fontSize: 'var(--fs-xs)' }}>
-                    <Calendar size={12} />
-                    <span>{p.due ?? '—'}</span>
-                  </div>
-                </div>
+        <div className="org-home-project-grid">
+          {filteredProjects.length === 0 ? (
+            <div className="card org-home-empty">
+              <Briefcase size={32} aria-hidden="true" />
+              <p>No projects in this filter.</p>
+              <Link to={`/${slug}/projects/new`}>
+                <Button variant="secondary">Create project</Button>
               </Link>
-            );
-          })
-        )}
+            </div>
+          ) : (
+            filteredProjects.map((p) => {
+              const meta = findProjectType(p.type);
+              const tint = (meta?.id ?? 'generic').toLowerCase();
+              const due = formatDate(p.targetDate ?? p.due);
+              return (
+                <Link key={p.id} to={`/${slug}/projects/${p.slug}`} className="card card-hover org-home-project-card">
+                  <div className="row gap-4">
+                    <div className={`proj-icon proj-icon-${tint}`} aria-hidden="true">
+                      {meta?.short?.[0] ?? '·'}
+                    </div>
+                    <span className={`org-home-type is-${tint}`}>{meta?.label ?? p.type}</span>
+                  </div>
+                  <div className="org-home-project-name">{p.name}</div>
+                  <div className="org-home-project-slug">/{p.slug}</div>
+                  <div className="between org-home-project-foot">
+                    <span className={`status ${p.status === 'Active' ? 'status-done' : 'status-todo'}`}>{p.status}</span>
+                    <span className="row gap-4 org-home-project-meta">
+                      {p.aiControlMode && (
+                        <span className="row gap-2" title="AI control mode">
+                          <Sparkles size={12} aria-hidden="true" />{p.aiControlMode}
+                        </span>
+                      )}
+                      {due && (
+                        <span className="row gap-2" title="Target date">
+                          <Calendar size={12} aria-hidden="true" />{due}
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                </Link>
+              );
+            })
+          )}
 
-        {/* New project tile */}
-        <Link to={`/${slug}/projects/new`} className="card card-hover org-home-new-tile">
-          <div className="ai-mark" style={{ width: 36, height: 36, borderRadius: 'var(--r-md)' }}>
-            <Plus size={18} strokeWidth={2.4} />
-          </div>
-          <div className="h-card">Start a new project</div>
-          <div className="muted" style={{ fontSize: 'var(--fs-sm)', textAlign: 'center', padding: '0 var(--s-7)' }}>
-            Describe what you want to ship. AI will pick the right type and scaffold the work.
-          </div>
-        </Link>
-      </div>
-
-      {/* Members rail */}
-      <div className="org-home-members">
-        <div className="row between" style={{ marginBottom: 'var(--s-4)' }}>
-          <h3 className="h-card">Members</h3>
-          <Link to={`/${slug}/settings/members`} className="muted org-home-members-link">
-            Manage <ArrowRight size={10} />
+          {/* New project tile */}
+          <Link to={`/${slug}/projects/new`} className="org-home-new-tile">
+            <span className="org-home-new-icon"><Plus size={18} strokeWidth={2.4} /></span>
+            <div className="h-card">Start a new project</div>
+            <div className="muted org-home-new-desc">
+              Describe what you want to ship. AI will pick the right type and scaffold the work.
+            </div>
           </Link>
         </div>
-        <div className="card" style={{ padding: 'var(--s-6) var(--s-7)' }}>
+      </section>
+
+      {/* Members */}
+      <section className="card org-home-members">
+        <div className="col gap-4">
+          <h2 className="h-card">Members</h2>
           {memberSummary.items.length === 0 ? (
-            <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-sm)' }}>No members loaded.</p>
+            <p className="muted org-home-members-empty">No members loaded.</p>
           ) : (
             <div className="row gap-4">
               <AvatarStack
@@ -383,13 +374,14 @@ export function OrgHomePage() {
                 max={8}
                 size="sm"
               />
-              <span className="muted" style={{ fontSize: 'var(--fs-sm)' }}>
-                {memberSummary.total} total
-              </span>
+              <span className="muted org-home-members-total">{memberSummary.total} total</span>
             </div>
           )}
         </div>
-      </div>
+        <Link to={`/${slug}/settings/members`} className="org-home-members-link">
+          Manage <ArrowRight size={12} aria-hidden="true" />
+        </Link>
+      </section>
     </div>
   );
 }

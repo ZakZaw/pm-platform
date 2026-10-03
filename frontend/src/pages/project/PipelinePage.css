@@ -1,7 +1,8 @@
-/* Base .pipeline / .pipe-col / .deal-card live in stratos.css. */
+/* Base .pipeline / .pipe-col / .deal-card live in stratos.css.
+   Page-scoped refinements: stage read-out as dot + name, one big sans
+   amount per column, quiet deal cards. */
 
 .pipeline-page {
-  padding: var(--s-7) var(--s-9);
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
@@ -10,18 +11,82 @@
 .pipeline-page .pipeline {
   flex: 1 1 auto;
   min-height: 0;
+  padding-bottom: var(--s-4);
 }
 
-.pipe-col.is-over { background: var(--accent-soft); }
+/* Columns stretch to the tallest and keep a generous floor so short
+   stages remain easy drop targets. */
+.pipeline-page .pipe-col {
+  min-height: 420px;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.pipeline-page .pipe-col.is-over { background: var(--accent-soft); }
+.pipe-col-skeleton { padding: var(--s-5); gap: var(--s-5); }
+
+.pipeline-page .pipe-col-head {
+  padding: var(--s-6) var(--s-6) var(--s-4);
+  gap: var(--s-2);
+}
+
+/* Stage name with a coloured dot (accent for open, success/danger for terminal). */
+.pipeline-page .pipe-col-name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  color: var(--text-secondary);
+  font-weight: var(--fw-semibold);
+}
+.pipeline-page .pipe-col-name::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  flex-shrink: 0;
+}
+.pipeline-page .pipe-col-name.is-won::before { background: var(--success); }
+.pipeline-page .pipe-col-name.is-lost::before { background: var(--danger); }
+
+.pipeline-page .pipe-col-amount {
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  margin-top: var(--s-2);
+}
+
+.pipeline-page .pipe-col-sub { justify-content: flex-start; gap: var(--s-3); }
+.pipeline-page .pipe-col-sub > span + span::before {
+  content: "·";
+  margin-right: var(--s-3);
+}
+
+.pipeline-page .pipe-col-body { padding: var(--s-3) var(--s-4) var(--s-5); gap: var(--s-4); }
 
 .pipe-col-empty {
-  padding: var(--s-6) var(--s-5);
+  padding: var(--s-7) var(--s-5);
   text-align: center;
-  color: var(--text-muted);
-  font-size: var(--fs-xs);
-  border: 1px dashed var(--border-subtle);
-  border-radius: var(--r-md);
+  color: var(--text-subtle);
+  font-size: var(--fs-sm);
 }
 
+/* Deal cards: name, account, amount — probability as a quiet trailing read-out. */
 .deal-card { user-select: none; cursor: grab; }
 .deal-card:active { cursor: grabbing; }
+.deal-card.is-overlay { box-shadow: var(--shadow-lg); }
+.deal-card .deal-name { margin-bottom: var(--s-1); }
+.deal-card .deal-company { margin-bottom: var(--s-5); }
+.deal-card .deal-amt {
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  font-variant-numeric: tabular-nums;
+}
+.deal-card .deal-meta { margin-top: 0; }
+.deal-prob {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useToast } from '@/components/ui';
 import { customFieldsApi } from '@/api/customFields.api';
+import { TaskSection } from './TaskSection';
 import './CustomFieldsSection.css';
 
 /**
@@ -94,9 +95,14 @@ export function CustomFieldsSection({ taskId, projectId }) {
     queueSave(def.id, raw);
   };
 
+  const filled = visibleDefs.filter((d) => {
+    const v = values[d.id];
+    return v != null && v !== '' && !(Array.isArray(v) && v.length === 0);
+  }).length;
+
   return (
+    <TaskSection title="Custom fields" meta={`${filled} of ${visibleDefs.length} set`}>
     <div className="cf-section">
-      <div className="cf-section__title label-key">Fields</div>
       <div className="cf-section__grid">
         {visibleDefs.map((def) => (
           <div key={def.id} className="drawer-prop cf-section__row">
@@ -109,6 +115,7 @@ export function CustomFieldsSection({ taskId, projectId }) {
         ))}
       </div>
     </div>
+    </TaskSection>
   );
 }
 

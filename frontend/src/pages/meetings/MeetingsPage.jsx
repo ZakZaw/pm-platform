@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { CalendarPlus, Repeat, Users, Zap } from 'lucide-react';
+import { CalendarDays, CalendarPlus, Repeat, Zap } from 'lucide-react';
 import {
-  Badge,
   Button,
   Segmented,
   Skeleton,
@@ -14,20 +13,20 @@ import { describeRecurrence } from '@/components/meetings/recurrence';
 import { InstantMeetingModal } from '@/components/meetings/InstantMeetingModal';
 import '@/components/meetings/meetings.css';
 
-const TYPE_TONES = {
-  Standup: 'info',
-  Planning: 'purple',
-  Review: 'success',
-  Retrospective: 'warning',
-  OneOnOne: 'neutral',
-  Other: 'neutral',
+const TYPE_LABELS = {
+  Standup: 'Standup',
+  Planning: 'Planning',
+  Review: 'Review',
+  Retrospective: 'Retrospective',
+  OneOnOne: '1:1',
+  Other: 'Meeting',
 };
 
-const STATUS_TONES = {
-  Scheduled: 'info',
-  InProgress: 'warning',
-  Completed: 'success',
-  Cancelled: 'danger',
+// Status read-outs are dot + coloured text (see .mtg-dot in meetings.css).
+const STATUS_LABELS = {
+  InProgress: 'Live now',
+  Completed: 'Completed',
+  Cancelled: 'Cancelled',
 };
 
 const RSVP_LABELS = {
@@ -104,8 +103,7 @@ export function MeetingsPage() {
             <p className="eyebrow">{project.name}</p>
             <h1 className="page-title">Meetings</h1>
             <p className="page-subtitle">
-              Schedule a meeting and invitees get an .ics in their inbox.
-              Recurring meetings live as a single series.
+              Invitees get an .ics in their inbox; recurring meetings stay one series.
             </p>
           </div>
           <div className="row gap-2">
@@ -113,13 +111,13 @@ export function MeetingsPage() {
               variant="secondary"
               onClick={() => setInstantOpen(true)}
             >
-              <Zap size={12} aria-hidden="true" /> Start instant meeting
+              <Zap size={14} aria-hidden="true" /> Start instant meeting
             </Button>
             <Button
               variant="primary"
               onClick={() => navigate(`/${orgSlug}/projects/${projectSlug}/meetings/new`)}
             >
-              <CalendarPlus size={12} aria-hidden="true" /> New meeting
+              <CalendarPlus size={14} aria-hidden="true" /> New meeting
             </Button>
           </div>
         </div>
@@ -150,55 +148,68 @@ export function MeetingsPage() {
       </div>
 
       {upcomingByScope.length === 0 ? (
-        <p className="muted">No meetings to show.</p>
+        <div className="card">
+          <div className="empty">
+            <span className="empty-icon"><CalendarDays size={22} aria-hidden="true" /></span>
+            <p className="empty-title">No meetings to show</p>
+            <p className="empty-desc">
+              {scope === 'upcoming'
+                ? 'Nothing on the calendar yet. Schedule one, or start an instant meeting.'
+                : 'Try another view to see more meetings.'}
+            </p>
+          </div>
+        </div>
       ) : (
-        <div className="meetings-list">
+        <div className="card mtg-list">
           {upcomingByScope.map((m) => {
             const start = new Date(m.scheduledAt);
             const isPast = start.getTime() + m.durationMinutes * 60_000 < renderedNow;
             const recurrenceLabel = describeRecurrence(m.recurrenceRule);
+            const statusLabel = STATUS_LABELS[m.status];
             return (
               <Link
                 key={m.id}
                 to={`/${orgSlug}/projects/${projectSlug}/meetings/${m.id}`}
                 className={[
-                  'meeting-card',
+                  'mtg-row',
                   isPast && 'is-past',
                   m.status === 'Cancelled' && 'is-cancelled',
                 ].filter(Boolean).join(' ')}
               >
-                <div className="meeting-card-when">
-                  <span className="meeting-card-day">{start.toLocaleDateString([], { month: 'short' })}</span>
-                  <span className="meeting-card-date">{start.getDate()}</span>
-                  <span className="meeting-card-time">
-                    {start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-                  </span>
+                <div className="mtg-date" aria-hidden="true">
+                  <span className="mtg-date-month">{start.toLocaleDateString([], { month: 'short' })}</span>
+                  <span className="mtg-date-day">{start.getDate()}</span>
                 </div>
-                <div className="meeting-card-main">
-                  <h2 className="meeting-card-title">{m.title}</h2>
-                  <div className="meeting-card-meta">
-                    <Badge tone={TYPE_TONES[m.type] ?? 'neutral'}>{m.type}</Badge>
-                    {m.status !== 'Scheduled' && (
-                      <Badge tone={STATUS_TONES[m.status] ?? 'neutral'}>{m.status}</Badge>
-                    )}
-                    <span>· {m.durationMinutes} min</span>
-                    <span>· Organised by {m.organizerFullName}</span>
+                <div className="mtg-row-main">
+                  <h2 className="mtg-row-title truncate">{m.title}</h2>
+                  <p className="mtg-row-meta">
+                    <span>
+                      {start.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
+                      {' · '}
+                      {start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                    </span>
+                    <span>{m.durationMinutes} min</span>
+                    <span>{TYPE_LABELS[m.type] ?? m.type}</span>
+                    <span>Organised by {m.organizerFullName}</span>
                     {m.isRecurring && (
-                      <span>
-                        · <Repeat size={11} aria-hidden="true" /> {recurrenceLabel ?? 'Repeats'}
+                      <span className="mtg-row-repeat">
+                        <Repeat size={12} aria-hidden="true" /> {recurrenceLabel ?? 'Repeats'}
                       </span>
                     )}
-                  </div>
+                  </p>
                 </div>
-                <div className="meeting-card-aside">
-                  <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>
-                    <Users size={11} aria-hidden="true" /> {m.acceptedCount}/{m.attendeeCount}
-                  </span>
-                  {m.myResponse && (
-                    <Badge tone={m.myResponse === 'Accepted' ? 'success' : 'neutral'}>
-                      {RSVP_LABELS[m.myResponse] ?? m.myResponse}
-                    </Badge>
+                <div className="mtg-row-aside">
+                  {statusLabel && (
+                    <span className={`mtg-dot mtg-dot-${m.status.toLowerCase()}`}>{statusLabel}</span>
                   )}
+                  {m.myResponse && (
+                    <span className={`mtg-dot mtg-dot-rsvp-${m.myResponse.toLowerCase()}`}>
+                      {RSVP_LABELS[m.myResponse] ?? m.myResponse}
+                    </span>
+                  )}
+                  <span className="mtg-row-count" title="Accepted / invited">
+                    <strong>{m.acceptedCount}</strong>/{m.attendeeCount} going
+                  </span>
                 </div>
               </Link>
             );

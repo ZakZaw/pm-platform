@@ -2,9 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { listsApi } from '@/api/lists.api';
 import { useOrgMembers } from '@/hooks/useOrgMembers';
 import { useParams } from 'react-router-dom';
-import { DashboardWidget, MetricRow, StackedBar } from '../DashboardWidget';
-
-const PALETTE = ['#5B6AF0', '#4FD1E0', '#7A6BFF', '#C77BFF', '#3FB984', '#E0A23A', '#E5484D', '#4F9EFF'];
+import { DashboardWidget, MetricRow, ProgressBar, StackedBar, SEGMENT_TOKENS } from '../DashboardWidget';
 
 function useView(projectId) {
   const [view, setView] = useState(null);
@@ -34,7 +32,6 @@ export function GenericOpenTasksWidget({ project }) {
   return (
     <DashboardWidget
       title="Open tasks"
-      eyebrow="Generic"
       loading={loading}
       empty={!loading && tasks.length === 0}
       emptyText="No tasks yet."
@@ -68,14 +65,13 @@ export function GenericByAssigneeWidget({ project }) {
     .map(([key, count], i) => ({
       label: key === '__unassigned__' ? 'Unassigned' : (memberById[key]?.fullName ?? 'Unknown'),
       value: count,
-      color: PALETTE[i % PALETTE.length],
+      color: SEGMENT_TOKENS[i % SEGMENT_TOKENS.length],
     }))
     .sort((a, b) => b.value - a.value);
 
   return (
     <DashboardWidget
       title="By assignee"
-      eyebrow="Generic"
       loading={loading}
       empty={!loading && segments.length === 0}
       emptyText="Assign tasks to see this breakdown."
@@ -93,7 +89,6 @@ export function GenericCompletionRateWidget({ project }) {
   return (
     <DashboardWidget
       title="Completion rate"
-      eyebrow="Generic"
       loading={loading}
       empty={!loading && tasks.length === 0}
       emptyText="Complete a task to see this fill in."
@@ -103,12 +98,7 @@ export function GenericCompletionRateWidget({ project }) {
         value={`${pct}%`}
         sublabel={`${done} of ${tasks.length} tasks complete`}
       />
-      <div className="dashboard-widget__bar" aria-hidden="true">
-        <span
-          className="dashboard-widget__bar-seg"
-          style={{ width: `${pct}%`, background: 'var(--success)' }}
-        />
-      </div>
+      <ProgressBar pct={pct} tone="success" />
     </DashboardWidget>
   );
 }

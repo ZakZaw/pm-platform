@@ -1,16 +1,23 @@
 /* Epics — collapsible card rows + linked tasks table.
    See screens/epics.jsx for the source layout. */
 
-.epics-page-card {
-  overflow: hidden;
+.epics-page-toolbar { margin-bottom: var(--s-6); }
+
+.epics-page-archived {
+  font-size: var(--fs-sm);
+  cursor: pointer;
 }
+
+.epics-page-list { gap: var(--s-5); }
+
+.epics-page-card { overflow: hidden; }
 
 .epics-page-row {
   display: grid;
-  grid-template-columns: 40px 1fr 220px 100px 64px 24px;
-  gap: var(--s-6);
+  grid-template-columns: var(--s-10) minmax(0, 1fr) 240px 96px 56px var(--s-7);
+  gap: var(--s-7);
   align-items: center;
-  padding: var(--s-6) var(--s-7);
+  padding: var(--s-7) var(--s-8);
   width: 100%;
   background: transparent;
   border: 0;
@@ -20,49 +27,78 @@
   font: inherit;
   transition: background var(--dur-fast);
 }
-.epics-page-row:hover { background: var(--surface-2); }
-.epics-page-row:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: -2px; }
+.epics-page-row:hover { background: var(--surface-hover); }
+.epics-page-row:focus-visible { outline: 2px solid var(--accent-border); outline-offset: -2px; }
 
+/* Round tinted badge carrying the epic's own colour. */
 .epics-page-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--r-md);
+  width: var(--s-10);
+  height: var(--s-10);
+  border-radius: var(--r-pill);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  color: var(--epic-color);
+  background: color-mix(in srgb, var(--epic-color) 14%, transparent);
 }
 
-.epics-page-title { min-width: 0; }
+.epics-page-title { min-width: 0; display: flex; flex-direction: column; gap: var(--s-2); }
 .epics-page-title h3 { margin: 0; font-size: var(--fs-lg); }
-.epics-page-desc {
+.epics-page-sub { min-width: 0; align-items: center; }
+.epics-page-desc { font-size: var(--fs-sm); min-width: 0; }
+
+/* Status read-out: dot + coloured text. */
+.epics-page-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
   font-size: var(--fs-sm);
-  line-height: 1.45;
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+  color: var(--text-secondary);
 }
+.epics-page-status::before {
+  content: "";
+  width: var(--s-3);
+  height: var(--s-3);
+  border-radius: var(--r-pill);
+  background: currentColor;
+}
+.epics-page-status.tone-info { color: var(--accent); }
+.epics-page-status.tone-warning { color: var(--warning); }
+.epics-page-status.tone-success { color: var(--success); }
+.epics-page-status.tone-neutral { color: var(--text-muted); }
+
+.epics-page-progress { gap: var(--s-3); }
+.epics-page-pct {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  color: var(--text);
+  letter-spacing: var(--tracking-tight);
+}
+.epics-page-pts { font-size: var(--fs-sm); align-self: flex-end; }
 
 .epics-page-counts {
-  font-size: var(--fs-2xs);
+  font-size: var(--fs-xs);
   color: var(--text-muted);
-  margin-top: 2px;
 }
-.epics-page-count-done    { font-weight: 600; color: var(--success); }
-.epics-page-count-active  { font-weight: 600; color: var(--accent); }
-.epics-page-count-blocked { font-weight: 600; color: var(--danger); }
+.epics-page-count-done    { font-weight: var(--fw-semibold); color: var(--success); }
+.epics-page-count-active  { font-weight: var(--fw-semibold); color: var(--accent); }
+.epics-page-count-blocked { font-weight: var(--fw-semibold); color: var(--danger); }
 
-.epics-page-target-label {
-  font-size: var(--fs-2xs);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wide);
-  font-weight: var(--fw-semibold);
-}
+.epics-page-target { gap: var(--s-1); }
+.epics-page-target-label { font-size: var(--fs-xs); }
+.epics-page-target-date { font-size: var(--fs-sm); font-weight: var(--fw-medium); }
 
 .epics-page-open {
-  font-size: var(--fs-xs);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--text-muted);
   text-decoration: none;
 }
-.epics-page-open:hover { color: var(--text); }
+.epics-page-open:hover { color: var(--accent); }
 
 .epics-page-chev {
   color: var(--text-muted);
@@ -70,17 +106,30 @@
 }
 .epics-page-chev.is-open { transform: rotate(90deg); }
 
-.epics-page-tasks {
-  border-top: 1px solid var(--divider);
+.epics-page-tasks { padding: 0 var(--s-5) var(--s-5); }
+
+.epics-page-tasks-empty {
+  padding: var(--s-3) var(--s-6) var(--s-4);
+  margin: 0;
+  font-size: var(--fs-sm);
 }
 
-.epics-page-form-card {
-  margin-bottom: var(--s-6);
-}
+.epics-page-col-key { width: 80px; }
+.epics-page-col-status { width: 130px; }
+.epics-page-col-pri { width: 110px; }
+.epics-page-col-pts { width: 70px; }
+.epics-page-col-owner { width: 60px; }
+
+.epics-page-task-row { cursor: pointer; }
+.epics-page-key { font-size: var(--fs-xs); }
+.epics-page-task-title { font-weight: var(--fw-medium); }
+.epics-page-task-pts { font-size: var(--fs-sm); font-weight: var(--fw-semibold); }
+
+.epics-page-form-card { margin-bottom: var(--s-6); }
 
 @media (max-width: 1100px) {
   .epics-page-row {
-    grid-template-columns: 36px 1fr 32px 24px;
+    grid-template-columns: var(--s-10) minmax(0, 1fr) 56px var(--s-7);
     row-gap: var(--s-4);
   }
   .epics-page-row > :nth-child(3),

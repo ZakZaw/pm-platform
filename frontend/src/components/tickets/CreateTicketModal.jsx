@@ -79,10 +79,10 @@ export function CreateTicketModal({ projectId, queues, onClose, onCreated }) {
     <Modal open onClose={onClose} labelledBy="create-ticket-title" size="md">
       <form onSubmit={submit}>
         <ModalHeader>
-          <h2 id="create-ticket-title" style={{ margin: 0, fontSize: 16 }}>New ticket</h2>
+          <h2 id="create-ticket-title" className="modal-title">New ticket</h2>
         </ModalHeader>
         <ModalBody>
-          <div className="vstack" style={{ gap: 12 }}>
+          <div className="col gap-5">
             <Select
               label="Customer"
               value={customerId}
@@ -92,12 +92,15 @@ export function CreateTicketModal({ projectId, queues, onClose, onCreated }) {
                 label: c.tier ? `${c.name} · ${c.tier}` : c.name,
               }))}
             />
-            <div className="hstack" style={{ gap: 6 }}>
-              <Input
-                value={newCustomerName}
-                onChange={(e) => setNewCustomerName(e.target.value)}
-                placeholder="…or create a new customer"
-              />
+            <div className="row gap-3">
+              <div className="fill">
+                <Input
+                  value={newCustomerName}
+                  onChange={(e) => setNewCustomerName(e.target.value)}
+                  placeholder="…or create a new customer"
+                  aria-label="Or create a new customer"
+                />
+              </div>
               <Button
                 type="button"
                 variant="secondary"
@@ -117,16 +120,17 @@ export function CreateTicketModal({ projectId, queues, onClose, onCreated }) {
               autoFocus
             />
             <div>
-              <label className="input-label">Description</label>
+              <label className="input-label" htmlFor="create-ticket-body">Description</label>
               <textarea
-                className="input"
+                id="create-ticket-body"
+                className="textarea"
                 rows={4}
                 value={bodyMd}
                 onChange={(e) => setBodyMd(e.target.value)}
                 placeholder="What's the customer reporting?"
               />
             </div>
-            <div className="grid-2" style={{ gap: 12 }}>
+            <div className="grid-2">
               <Select
                 label="Queue"
                 value={queueId}
@@ -145,7 +149,7 @@ export function CreateTicketModal({ projectId, queues, onClose, onCreated }) {
                 ]}
               />
             </div>
-            {error && <p style={{ color: 'var(--danger)', margin: 0 }}>{error}</p>}
+            {error && <p className="input-help is-error">{error}</p>}
           </div>
         </ModalBody>
         <ModalFooter>

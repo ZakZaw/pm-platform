@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Plus, RotateCcw, Settings2 } from 'lucide-react';
+import { Check, Plus, RotateCcw, Settings2 } from 'lucide-react';
 import {
-  Badge,
   Button,
-  Icon,
+  Dropdown,
   Skeleton,
   useToast,
 } from '@/components/ui';
@@ -62,11 +61,12 @@ export function DashboardPage() {
   if (!project) {
     return (
       <div className="main-inner dashboard" aria-busy="true">
-        <Skeleton width={200} height={20} />
-        <div style={{ height: 16 }} />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+        <div className="page-head">
+          <Skeleton width={200} height={28} />
+        </div>
+        <div className="grid-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} height={88} radius="md" />
+            <Skeleton key={i} height={120} radius="lg" />
           ))}
         </div>
       </div>
@@ -105,15 +105,13 @@ function TypedDashboard({ project, config }) {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>{project.name}</div>
-            <h1 className="page-title row gap-3">
-              <Icon name="bar-chart-3" size={18} /> Dashboard
-              <Badge tone="neutral">{meta?.label ?? project.type}</Badge>
-            </h1>
+            <div className="eyebrow">{project.name} · {meta?.label ?? project.type}</div>
+            <h1 className="page-title">Dashboard</h1>
+            <p className="page-subtitle">Live snapshot of this project.</p>
           </div>
         </div>
       </div>
-      <div className="dashboard-typed-grid">
+      <div className={`dashboard-typed-grid cols-${widgets.length % 3 === 0 ? 3 : 2}`}>
         {widgets.map((Widget, i) => (
           <Widget key={i} project={project} data={data} loading={loading} />
         ))}
@@ -134,7 +132,6 @@ function EngineeringDashboard({ project }) {
   const [layout, setLayout] = useState(() => defaultLayout(ENGINEERING_WIDGETS));
   const [layoutLoaded, setLayoutLoaded] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [addOpen, setAddOpen] = useState(false);
   const [error, setError] = useState(null);
   // Bumps whenever realtime tells us a project event fired, so widgets that
   // own their own data (currently the activity feed) can re-fetch.
@@ -258,7 +255,6 @@ function EngineeringDashboard({ project }) {
     // visible without users having to scroll up.
     const maxY = layout.reduce((m, it) => Math.max(m, it.y + it.h), 0);
     setLayout((l) => [...l, { i: id, x: 0, y: maxY, w: w.defaults.w, h: w.defaults.h, minW: w.defaults.minW, minH: w.defaults.minH }]);
-    setAddOpen(false);
   };
 
   const resetLayout = () => setLayout(defaultLayout(ENGINEERING_WIDGETS));
@@ -273,50 +269,46 @@ function EngineeringDashboard({ project }) {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>{project.name} · Insights</div>
+            <div className="eyebrow">{project.name}</div>
             <h1 className="page-title">Dashboard</h1>
-            <p className="page-subtitle" style={{ marginTop: 8 }}>
-              Live snapshot · last 30 days
+            <p className="page-subtitle">
+              {editing ? 'Drag to rearrange, resize from the corner, or remove widgets.' : 'Live snapshot · last 30 days'}
             </p>
           </div>
-          <div className="row gap-3">
-            <div className="dashboard__menu-wrap">
-              <Button
-                size="sm"
-                onClick={() => setAddOpen((v) => !v)}
-                disabled={available.length === 0}
-                title={available.length === 0 ? 'All widgets are already on the canvas' : undefined}
+          {editing ? (
+            <div className="row gap-3">
+              <Dropdown
+                align="end"
+                trigger={(
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled={available.length === 0}
+                    title={available.length === 0 ? 'All widgets are already on the canvas' : undefined}
+                  >
+                    <Plus size={13} aria-hidden="true" /> Add widget
+                  </Button>
+                )}
               >
-                <Plus size={13} aria-hidden="true" /> Add widget
+                <Dropdown.Section>Available widgets</Dropdown.Section>
+                {available.map((w) => (
+                  <Dropdown.Item key={w.id} onSelect={() => addWidget(w.id)}>
+                    {w.title}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown>
+              <Button variant="ghost" size="sm" onClick={resetLayout} title="Reset to default layout">
+                <RotateCcw size={13} aria-hidden="true" /> Reset
               </Button>
-              {addOpen && available.length > 0 && (
-                <div className="menu dashboard__menu" role="menu">
-                  <div className="menu-label">Available widgets</div>
-                  {available.map((w) => (
-                    <button
-                      key={w.id}
-                      type="button"
-                      className="menu-item"
-                      onClick={() => addWidget(w.id)}
-                    >
-                      {w.title}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <Button variant="primary" size="sm" onClick={() => setEditing(false)}>
+                <Check size={13} aria-hidden="true" /> Done editing
+              </Button>
             </div>
-            <Button size="sm" onClick={resetLayout} title="Reset to default layout">
-              <RotateCcw size={13} aria-hidden="true" /> Reset
+          ) : (
+            <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>
+              <Settings2 size={13} aria-hidden="true" /> Customize
             </Button>
-            <Button
-              variant={editing ? 'primary' : 'secondary'}
-              size="sm"
-              onClick={() => setEditing((v) => !v)}
-            >
-              <Settings2 size={13} aria-hidden="true" />
-              {editing ? 'Done editing' : 'Edit'}
-            </Button>
-          </div>
+          )}
         </div>
       </div>
 

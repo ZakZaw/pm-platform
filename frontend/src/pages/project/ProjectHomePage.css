@@ -1,25 +1,61 @@
-/* Project home — built on stratos shell + .stat / .ai-card / .grid-12.
+/* Project home — built on stratos shell + .stat / .card / .ai-card / .grid-12.
    Only the page-specific bits live here. */
 
-.project-home-sample {
-  text-transform: none;
-  font-weight: var(--fw-medium);
-  font-size: var(--fs-2xs);
+.project-home-icon {
+  width: var(--s-11);
+  height: var(--s-11);
+  font-size: var(--fs-xl);
+  flex-shrink: 0;
+}
+
+.project-home-ai-mode {
+  color: var(--text-link);
+  text-decoration: none;
+}
+.project-home-ai-mode:hover { text-decoration: underline; }
+
+.project-home-skeleton-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+/* KPI tiles: big number, then a quiet sub-line with the delta. */
+.project-home-stat-sub {
+  font-size: var(--fs-sm);
   color: var(--text-muted);
-  padding: 1px var(--s-3);
-  background: var(--surface-2);
-  border-radius: var(--r-pill);
-  letter-spacing: 0;
+}
+
+.project-home-note {
+  font-size: var(--fs-xs);
+  margin: var(--s-4) 0 0 var(--s-2);
+}
+
+.project-home-body {
+  margin-top: var(--s-9);
+}
+
+.project-home-side {
+  gap: var(--s-8);
+}
+
+/* Activity */
+.project-home-activity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-7);
 }
 
 .project-home-activity-row {
-  padding: var(--s-5) var(--s-7);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-5);
 }
 
 .project-home-activity-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--r-md);
+  width: var(--s-9);
+  height: var(--s-9);
+  border-radius: var(--r-pill);
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
@@ -28,36 +64,80 @@
   color: var(--text-muted);
 }
 .project-home-activity-icon.is-ai {
-  background: var(--ai-gradient);
-  color: white;
+  background: var(--ai-gradient-soft);
+  color: var(--ai-text);
 }
 
-.project-home-placeholder-note {
+.project-home-activity-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.project-home-activity-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-4);
+  font-size: var(--fs-md);
+  margin-bottom: var(--s-1);
+}
+
+.project-home-activity-time {
+  margin-left: auto;
   font-size: var(--fs-xs);
-  margin: var(--s-4) 0 0 var(--s-3);
+  white-space: nowrap;
 }
 
+.project-home-activity-body {
+  font-size: var(--fs-md);
+  line-height: var(--lh-normal);
+}
+
+/* Sprint health (AI card) */
+.project-home-ai-copy {
+  margin: 0 0 var(--s-6);
+  font-size: var(--fs-md);
+  line-height: var(--lh-relaxed);
+  color: var(--text-secondary);
+}
+
+/* Upcoming */
 .project-home-upcoming {
-  padding: var(--s-4) var(--s-6) var(--s-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
 }
 .project-home-upcoming-row {
-  padding: var(--s-4) 0;
+  display: flex;
+  align-items: center;
+  gap: var(--s-5);
 }
 .project-home-upcoming-date {
-  min-width: 40px;
-  padding: var(--s-2) var(--s-3);
-  background: var(--surface-2);
-  border-radius: var(--r-sm);
-  gap: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: var(--s-10);
+  height: var(--s-10);
+  flex-shrink: 0;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: var(--r-md);
 }
 .project-home-upcoming-month {
   font-size: var(--fs-2xs);
-  color: var(--text-muted);
-  text-transform: uppercase;
   font-weight: var(--fw-semibold);
+  line-height: 1;
 }
 .project-home-upcoming-day {
   font-size: var(--fs-lg);
   font-weight: var(--fw-bold);
-  line-height: 1;
+  line-height: 1.1;
+}
+.project-home-upcoming-title {
+  font-size: var(--fs-md);
+  color: var(--text);
+}
+.project-home-empty {
+  margin: 0;
+  font-size: var(--fs-md);
 }

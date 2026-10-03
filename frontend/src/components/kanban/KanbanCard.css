@@ -1,34 +1,91 @@
-/* Base .card-task / .card-task-head / .card-task-title / .card-task-meta /
-   .card-task-id / .card-task-est live in stratos.css. */
+/* Base .card-task / .card-task-id live in stratos.css.
+   This file calms the card: epic as dot + small text, one strong title,
+   quiet meta row. */
 
 .card-task { cursor: grab; user-select: none; }
 .card-task:active { cursor: grabbing; }
 .card-task:focus-visible {
   outline: none;
-  border-color: var(--accent-bright);
   box-shadow: var(--shadow-focus);
 }
+.card-task.is-overlay {
+  cursor: grabbing;
+  box-shadow: var(--shadow-lg);
+}
 
-.card-task-epic-badge { height: 18px; padding: 0 6px; font-size: var(--fs-2xs); }
+.kanban-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
 
-.card-task-blocker {
+.kanban-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  min-width: 0;
+}
+
+.kanban-card-epic {
   display: inline-flex;
   align-items: center;
   gap: var(--s-3);
-  padding: 2px var(--s-3);
-  background: var(--danger-soft);
-  border: 1px solid var(--danger-border);
-  border-radius: var(--r-sm);
+  min-width: 0;
   font-size: var(--fs-xs);
-  color: var(--danger);
-  margin-bottom: var(--s-3);
+  font-weight: var(--fw-medium);
+  color: var(--text-muted);
+}
+.kanban-card-epic::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-pill);
+  background: var(--epic-color, var(--text-subtle));
+  flex-shrink: 0;
 }
 
-.card-task-unassigned {
+.kanban-card-title {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-snug);
+  color: var(--text);
+}
+
+.kanban-card-blocker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--danger);
+}
+
+.kanban-card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+.kanban-card-count {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.kanban-card-pts {
+  color: var(--text-secondary);
+  font-weight: var(--fw-medium);
+  font-variant-numeric: tabular-nums;
+}
+
+.kanban-card-unassigned {
   display: inline-block;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 1px dashed var(--border);
+  width: 20px;
+  height: 20px;
+  border-radius: var(--r-pill);
+  border: 1px dashed var(--border-strong);
   flex-shrink: 0;
 }

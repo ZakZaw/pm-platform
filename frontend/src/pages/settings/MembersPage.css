@@ -1,39 +1,52 @@
+/* Org members: invite row + directory table. Chrome comes from stratos
+   (.main-inner / .page-head); only the page's own layout lives here. */
+
 .members {
   max-width: 960px;
 }
 
-.members__title {
-  font-size: var(--fs-2xl);
+/* Page-scoped fix: stratos' `.input-group` centres its children, which
+   centres every Input/Select label. Stretch them back to full width. */
+.members .input-group {
+  align-items: stretch;
+  gap: 0;
+}
+
+.members__invite-card {
+  padding: var(--s-8);
+  margin-bottom: var(--s-9);
+}
+
+.members__section-title {
+  font-size: var(--fs-base);
   font-weight: var(--fw-semibold);
-  letter-spacing: -0.01em;
-  margin: 0 0 var(--s-8);
+  color: var(--text);
+  margin: 0 0 var(--s-6);
 }
 
-.members__card {
-  margin-bottom: var(--s-8);
-}
-
-.members__form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-6);
+.members__invite {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px auto;
+  gap: var(--s-4);
+  align-items: center;
 }
 
 .members__filters {
   display: grid;
-  grid-template-columns: 1fr 200px;
-  gap: var(--s-6);
+  grid-template-columns: minmax(0, 1fr) 180px;
+  gap: var(--s-4);
   margin-bottom: var(--s-6);
-}
-
-.members__table {
-  margin-top: var(--s-4);
 }
 
 .members__person {
   display: flex;
   align-items: center;
   gap: var(--s-5);
+  min-width: 0;
+}
+
+.members__person-text {
+  min-width: 0;
 }
 
 .members__person-name {
@@ -42,19 +55,54 @@
 }
 
 .members__person-email {
-  font-size: var(--fs-xs);
+  font-size: var(--fs-sm);
   color: var(--text-muted);
 }
 
-.members__row-actions {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-4);
-  justify-content: flex-end;
+/* Role select reads as plain text until hovered/focused. */
+.members .members__role-select {
+  width: 140px;
+  border-color: transparent;
+  background-color: transparent;
+}
+.members__table .table__row:hover .members__role-select,
+.members .members__role-select:focus {
+  border-color: var(--border);
+  background-color: var(--surface);
 }
 
-.members__row-actions .select {
-  width: 130px;
+.members__role {
+  display: inline-block;
+  padding: 0 var(--s-5);
+  color: var(--text-secondary);
+  font-weight: var(--fw-medium);
+}
+
+.members__joined {
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Row action appears on hover / keyboard focus. */
+.members__remove {
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.members__table .table__row:hover .members__remove,
+.members__remove:focus-visible {
+  opacity: 1;
+}
+.members__remove:hover {
+  color: var(--danger);
+}
+
+.members__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .members__pager {
@@ -65,27 +113,35 @@
 }
 
 .members__pager-info {
-  font-size: var(--fs-xs);
+  font-size: var(--fs-sm);
   color: var(--text-muted);
 }
 
 .members__error {
   color: var(--danger);
   font-size: var(--fs-md);
-  margin: 0 0 var(--s-5);
+  margin: var(--s-5) 0 0;
 }
 
 .members__success {
   color: var(--success);
   font-size: var(--fs-md);
-  margin: 0;
+  margin: var(--s-5) 0 0;
 }
 
 .members__placeholder {
   color: var(--text-muted);
   font-size: var(--fs-md);
+  padding: var(--s-8) 0;
 }
 
-.members__dim {
-  color: var(--text-muted);
+@media (hover: none) {
+  .members__remove { opacity: 1; }
+}
+
+@media (max-width: 760px) {
+  .members__invite,
+  .members__filters {
+    grid-template-columns: 1fr;
+  }
 }

@@ -6,53 +6,88 @@
   gap: var(--s-5);
 }
 
-.list-page__columns-wrap {
-  position: relative;
-}
+.list-page .page-head { margin-bottom: var(--s-4); }
 
-.list-page__menu {
-  position: absolute;
-  top: calc(100% + var(--s-2));
-  right: 0;
-  z-index: 30;
-  min-width: 220px;
-}
-
+/* Toolbar: search + three filter menus + include-done, no box. */
 .list-page__filters {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--s-3);
-  padding: var(--s-4) var(--s-5);
-  background: var(--surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-md);
+  gap: var(--s-3) var(--s-4);
 }
 
 .list-page__search {
   display: flex;
   align-items: center;
-  gap: var(--s-2);
-  flex: 1;
+  gap: var(--s-3);
+  flex: 0 1 320px;
   min-width: 200px;
+  height: var(--s-10);
+  padding: 0 var(--s-5);
+  background: var(--surface);
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow-xs);
+  color: var(--text-muted);
 }
+.list-page__search:focus-within { box-shadow: var(--shadow-focus); }
 
-.list-page__search input {
-  width: 100%;
-}
-
-/* Filter chips are <button>s so they need button reset, and toggle into
-   an accent-tinted state when selected. */
-.list-page__filters button.chip {
-  cursor: pointer;
+.list-page__search-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
   font: inherit;
-  font-size: var(--fs-xs);
+  font-size: var(--fs-md);
 }
+.list-page__search-input:focus { outline: none; }
 
-.list-page__filters button.chip.is-active {
-  background: var(--accent-soft);
+.list-page__menu-wrap { position: relative; }
+
+.list-page__menu-wrap .btn.is-active {
   color: var(--accent);
   border-color: var(--accent-border);
+}
+
+.list-page__menu-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--s-7);
+  height: var(--s-7);
+  padding: 0 var(--s-2);
+  border-radius: var(--r-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+}
+
+.list-page__menu {
+  position: absolute;
+  top: calc(100% + var(--s-2));
+  z-index: 30;
+  min-width: 220px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+.list-page__menu.is-start { left: 0; }
+.list-page__menu.is-end { right: 0; }
+
+.list-page__check-item.is-checked { color: var(--text); }
+.list-page__check-item:disabled { color: var(--text-muted); cursor: default; }
+.list-page__check-mark {
+  display: inline-flex;
+  width: var(--s-6);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.list-page__done-toggle {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  align-items: center;
 }
 
 .list-page__bulkbar {
@@ -60,26 +95,36 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--s-4);
-  padding: var(--s-3) var(--s-5);
+  padding: var(--s-3) var(--s-3) var(--s-3) var(--s-6);
   background: var(--accent-soft);
-  border: 1px solid var(--accent-border);
-  border-radius: var(--r-md);
+  border-radius: var(--r-pill);
   font-size: var(--fs-sm);
+  color: var(--on-accent-soft, var(--accent));
 }
+.list-page__bulk-delete { color: var(--danger); }
+.list-page__bulk-delete:hover { color: var(--danger); background: var(--danger-soft); }
+
+.list-page__hint { font-size: var(--fs-xs); }
 
 .list-page__table-wrap {
   overflow-x: auto;
   background: var(--surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-md);
+  border: 1px solid var(--card-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-card);
 }
 
 .list-page__table {
   min-width: 1100px;
 }
 
+/* Title is the column people read — give it the room, not the date picker. */
+.list-page__title-cell { min-width: 240px; }
+.list-page__title-cell .list-page__cell-input { width: 100%; }
+.list-page__table td > select { min-width: 112px; }
+
 .list-page__table thead th {
-  background: var(--surface-2);
+  background: var(--surface);
   position: sticky;
   top: 0;
   z-index: 2;
@@ -152,7 +197,7 @@
 
 .list-page__status--Backlog,
 .list-page__status--ToDo { color: var(--text-secondary); }
-.list-page__status--InProgress { color: var(--info); }
+.list-page__status--InProgress { color: var(--accent); }
 .list-page__status--InReview { color: var(--violet); }
 .list-page__status--Blocked { color: var(--danger); }
 .list-page__status--Done { color: var(--success); }

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Button, Card, Input } from '@/components/ui';
+import { Button, Input } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
-import './AuthPage.css';
+import { AuthLayout } from './AuthLayout';
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -35,43 +35,42 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="auth-page">
-      <Card title="Create your account" subtitle="Start managing projects" className="auth-page__card">
-        <form className="auth-page__form" onSubmit={onSubmit}>
-          <Input
-            label="Full name"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-            autoComplete="name"
-          />
-          <Input
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            autoComplete="email"
-            readOnly={Boolean(inviteToken)}
-          />
-          <Input
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={8}
-            autoComplete="new-password"
-          />
-          {error && <p className="auth-page__error">{error}</p>}
-          <Button type="submit" block disabled={submitting}>
-            {submitting ? 'Creating account…' : 'Create account'}
-          </Button>
-        </form>
-        <p className="auth-page__footer">
-          Already have an account? <Link to="/login">Sign in</Link>
-        </p>
-      </Card>
-    </div>
+    <AuthLayout
+      title="Create your account"
+      subtitle="Start managing projects"
+      footer={<>Already have an account? <Link to="/login">Sign in</Link></>}
+    >
+      <form className="auth-page__form" onSubmit={onSubmit}>
+        <Input
+          label="Full name"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          required
+          autoComplete="name"
+        />
+        <Input
+          label="Email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          autoComplete="email"
+          readOnly={Boolean(inviteToken)}
+        />
+        <Input
+          label="Password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          minLength={8}
+          autoComplete="new-password"
+        />
+        {error && <p className="auth-page__error">{error}</p>}
+        <Button type="submit" size="lg" block disabled={submitting} className="auth-page__submit">
+          {submitting ? 'Creating account…' : 'Create account'}
+        </Button>
+      </form>
+    </AuthLayout>
   );
 }

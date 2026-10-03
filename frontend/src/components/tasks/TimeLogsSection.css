@@ -4,11 +4,6 @@
   gap: var(--s-3);
 }
 
-.timelogs-section__head {
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
-}
 
 .timelogs-section__form {
   display: flex;
@@ -39,10 +34,9 @@
   gap: var(--s-3);
   padding: var(--s-2) var(--s-3);
   font-size: var(--fs-sm);
-  border: 1px solid var(--border);
   border-radius: var(--r-sm);
-  background: var(--surface);
 }
+.timelogs-section__row:hover { background: var(--surface-hover); }
 
 .timelogs-section__minutes {
   font-variant-numeric: tabular-nums;

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Avatar, Badge, Icon, Skeleton } from '@/components/ui';
+import { Avatar, Icon, Segmented, Skeleton } from '@/components/ui';
 import { orgsApi } from '@/api/orgs.api';
 import { PROJECT_TYPES, findProjectType } from '@/constants/projectTypes';
 import './OrgPortfolioPage.css';
@@ -19,27 +19,32 @@ function HealthBar({ health, band }) {
   const tone = BAND_TONE[band] ?? 'neutral';
   return (
     <div className="portfolio-health" title={`Health ${health} · ${band}`}>
-      <div className="portfolio-health-track">
+      <div className="bar portfolio-health-track">
         <div
-          className={`portfolio-health-fill is-${tone}`}
+          className={`bar-fill portfolio-health-fill is-${tone}`}
           style={{ width: `${Math.max(4, health)}%` }}
         />
       </div>
-      <Badge tone={tone}>{band}</Badge>
+      <span className={`portfolio-band is-${tone}`}>
+        {band} <span className="portfolio-band-score">{health}</span>
+      </span>
     </div>
   );
 }
 
 function ResourceConflicts({ conflicts, slug, projectsBySlug }) {
   return (
-    <section className="portfolio-conflicts">
+    <section className="card portfolio-conflicts">
       <header className="portfolio-conflicts-head">
-        <strong className="row gap-3">
-          <Icon name="users" size={15} /> Resource conflicts
-        </strong>
-        <span className="muted portfolio-conflicts-sub">
-          People carrying open work across multiple projects, most-split first.
+        <span className="portfolio-icon-badge" aria-hidden="true">
+          <Icon name="users" size={16} />
         </span>
+        <div>
+          <h2 className="h-card">Resource conflicts</h2>
+          <p className="muted portfolio-conflicts-sub">
+            People carrying open work across multiple projects, most-split first.
+          </p>
+        </div>
       </header>
       <ul className="portfolio-conflicts-list">
         {conflicts.map((c) => (
@@ -48,11 +53,11 @@ function ResourceConflicts({ conflicts, slug, projectsBySlug }) {
             <div className="portfolio-conflict-body">
               <div className="portfolio-conflict-top">
                 <span className="portfolio-conflict-name">{c.name}</span>
-                <Badge tone={c.projectCount >= 3 ? 'danger' : 'warning'}>
+                <span className={`portfolio-conflict-count is-${c.projectCount >= 3 ? 'danger' : 'warning'}`}>
                   {c.projectCount} projects
-                </Badge>
+                </span>
                 <span className="muted portfolio-conflict-total">
-                  {c.totalOpenItems} open item{c.totalOpenItems === 1 ? '' : 's'}
+                  · {c.totalOpenItems} open item{c.totalOpenItems === 1 ? '' : 's'}
                 </span>
               </div>
               <div className="portfolio-conflict-allocs">
@@ -61,7 +66,7 @@ function ResourceConflicts({ conflicts, slug, projectsBySlug }) {
                   const chip = (
                     <>
                       <span className="portfolio-alloc-name">{a.projectName}</span>
-                      <span className="mono portfolio-alloc-count">{a.openItems}</span>
+                      <span className="portfolio-alloc-count">{a.openItems}</span>
                     </>
                   );
                   return ps ? (
@@ -116,6 +121,14 @@ export function OrgPortfolioPage() {
     return PROJECT_TYPES.filter((t) => set.has(t.id));
   }, [projects]);
 
+  const filterOptions = useMemo(
+    () => [
+      { value: 'All', label: 'All' },
+      ...typesPresent.map((t) => ({ value: t.id, label: t.label })),
+    ],
+    [typesPresent],
+  );
+
   const filtered = activeFilter === 'All'
     ? projects
     : projects.filter((p) => p.type === activeFilter);
@@ -127,28 +140,27 @@ export function OrgPortfolioPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>Organisation</div>
-            <h1 className="page-title row gap-3">
-              <Icon name="briefcase" size={18} />
-              Portfolio
-              {rollup && <Badge tone="neutral">{rollup.projectCount}</Badge>}
-            </h1>
-            <div className="page-subtitle">
+            <div className="eyebrow portfolio-eyebrow">Organisation</div>
+            <h1 className="page-title">Portfolio</h1>
+            <p className="page-subtitle">
               Every project in this organisation, rolled up by health and shared load.
-            </div>
+            </p>
           </div>
         </div>
       </div>
 
       {loading ? (
-        <div className="portfolio-rollup">
+        <div className="grid-4">
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} height={68} radius="md" />)}
         </div>
       ) : !rollup || rollup.projectCount === 0 ? (
-        <p className="muted" style={{ padding: 'var(--s-7)' }}>No projects in this organisation yet.</p>
+        <div className="card empty">
+          <div className="empty-title">No projects yet</div>
+          <p className="empty-desc">No projects in this organisation yet.</p>
+        </div>
       ) : (
         <>
-          <div className="portfolio-rollup">
+          <div className="grid-4 portfolio-rollup">
             <div className="stat">
               <div className="stat-label">Projects</div>
               <div className="stat-value">{rollup.projectCount}</div>
@@ -175,66 +187,56 @@ export function OrgPortfolioPage() {
             <ResourceConflicts conflicts={conflicts} slug={slug} projectsBySlug={projectsBySlug} />
           )}
 
-          {typesPresent.length > 1 && (
-            <div className="portfolio-page-filters">
-              <span className="muted portfolio-page-filter-label">Project type</span>
-              <button
-                type="button"
-                onClick={() => setActiveFilter('All')}
-                className={['portfolio-page-chip', activeFilter === 'All' ? 'is-active' : ''].filter(Boolean).join(' ')}
-              >All</button>
-              {typesPresent.map((t) => {
-                const TypeIcon = t.icon;
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setActiveFilter(t.id)}
-                    className={['portfolio-page-chip', activeFilter === t.id ? 'is-active' : ''].filter(Boolean).join(' ')}
-                  >
-                    <TypeIcon size={11} aria-hidden="true" />
-                    {t.label}
-                  </button>
-                );
-              })}
-            </div>
-          )}
+          <div className="between portfolio-section-head">
+            <h2 className="h-card">Projects</h2>
+            {typesPresent.length > 1 && (
+              <Segmented
+                value={activeFilter}
+                onChange={setActiveFilter}
+                options={filterOptions}
+                ariaLabel="Project type"
+              />
+            )}
+          </div>
 
           <ul className="portfolio-page-grid">
             {filtered.map((p) => {
               const meta = findProjectType(p.type);
-              const TypeIcon = meta?.icon;
+              const tint = (meta?.id ?? 'generic').toLowerCase();
               return (
-                <li key={p.id} className="portfolio-card">
+                <li key={p.id} className="card portfolio-card">
                   <Link
                     to={`/${slug}/projects/${p.slug}/dashboard`}
                     className="portfolio-card-head"
                   >
-                    <span className="row" style={{ gap: 6, minWidth: 0 }}>
-                      {TypeIcon && <TypeIcon size={12} aria-hidden="true" />}
-                      <span className="portfolio-card-title">{p.name}</span>
+                    <span className={`proj-icon proj-icon-${tint}`} aria-hidden="true">
+                      {meta?.short?.[0] ?? '·'}
                     </span>
-                    <span className="mono muted portfolio-card-key">{p.key}</span>
+                    <span className="portfolio-card-titles">
+                      <span className="portfolio-card-title">{p.name}</span>
+                      <span className="portfolio-card-sub">
+                        <span className="mono">{p.key}</span> · {meta?.label ?? p.type}
+                      </span>
+                    </span>
                   </Link>
-
-                  <HealthBar health={p.health} band={p.band} />
 
                   <div className="portfolio-card-headline">
                     <span className="portfolio-card-headline-value">{p.headlineValue}</span>
                     <span className="muted portfolio-card-headline-label">{p.headlineLabel}</span>
                   </div>
 
+                  <HealthBar health={p.health} band={p.band} />
+
                   <div className="portfolio-card-counts">
                     {p.overdue > 0 && (
-                      <span className="portfolio-count is-warning">{p.overdue} overdue</span>
+                      <span className="status portfolio-count is-warning">{p.overdue} overdue</span>
                     )}
                     {p.atRisk > 0 && (
-                      <span className="portfolio-count is-danger">{p.atRisk} at risk</span>
+                      <span className="status status-blocked">{p.atRisk} at risk</span>
                     )}
                     {p.overdue === 0 && p.atRisk === 0 && (
-                      <span className="portfolio-count is-ok">On track</span>
+                      <span className="status status-done">On track</span>
                     )}
-                    <Badge tone="neutral">{meta?.label ?? p.type}</Badge>
                   </div>
                 </li>
               );

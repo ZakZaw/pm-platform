@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Eye, Power, ShieldQuestion, Sparkles } from 'lucide-react';
-import { AISuggestionCard, Badge, Button, Segmented, useToast } from '@/components/ui';
+import { Sparkles } from 'lucide-react';
+import { AISuggestionCard, Button, EmptyState, Segmented, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { aiApi } from '@/api/ai.api';
 import { describeAiError } from '@/components/ai/aiErrors';
@@ -16,16 +16,6 @@ const REPLAN_OPTION_LABELS = {
   ShiftMilestone: 'Shift milestone',
 };
 
-// F1.5-08 — colour tokens per project type for inbox card chips. Reuses
-// the status-* / accent-* tone families so the chips are theme-aware.
-const TYPE_TONE = {
-  Engineering: 'info',
-  Sales: 'purple',
-  Support: 'danger',
-  Marketing: 'success',
-  Operations: 'warning',
-  Generic: 'neutral',
-};
 
 // Suggestion kind → category for the second filter chip row. New
 // generators register a new prefix here; everything else groups as "Other".
@@ -209,52 +199,44 @@ export function AIInboxPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>{project?.name ?? 'Project'}</div>
-            <h1 className="page-title row gap-3">
-              <Sparkles size={18} color="var(--ai-2)" aria-hidden="true" />
-              AI Inbox
-              {project?.aiControlMode && (
-                <AiModeChip mode={project.aiControlMode} orgSlug={orgSlug} projectSlug={projectSlug} />
-              )}
-            </h1>
-            <div className="page-subtitle">
+            <div className="eyebrow">{project?.name ?? 'Project'}</div>
+            <h1 className="page-title">AI Inbox</h1>
+            <p className="page-subtitle">
               Durable AI insights for {project?.name ?? 'this project'}. Accept what's useful, dismiss the rest.
-            </div>
+              {project?.aiControlMode && (
+                <>
+                  {' '}
+                  <AiModeLink mode={project.aiControlMode} orgSlug={orgSlug} projectSlug={projectSlug} />
+                </>
+              )}
+            </p>
           </div>
-          <div className="row gap-3">
-            <label className="ai-inbox-toggle">
-              <input
-                type="checkbox"
-                checked={includeActed}
-                onChange={(e) => setIncludeActed(e.target.checked)}
-              />
-              Show acted-on
-            </label>
-            <Button variant="ai" onClick={generateSprintHealth} disabled={generating}>
-              <Sparkles size={13} aria-hidden="true" />
-              {generating ? ' Asking…' : ' Diagnose active sprint'}
-            </Button>
-          </div>
+          <Button variant="primary" onClick={generateSprintHealth} disabled={generating}>
+            <Sparkles size={13} aria-hidden="true" />
+            {generating ? ' Asking…' : ' Diagnose active sprint'}
+          </Button>
         </div>
       </div>
 
-      {!loading && suggestions.length > 0 && categoriesPresent.length > 1 && (
-        <div className="row gap-3" style={{ marginBottom: 'var(--s-6)' }}>
-          <Segmented
-            value={activeCategoryFilter}
-            onChange={setActiveCategoryFilter}
-            options={[
-              { value: 'All', label: 'All', count: suggestions.length },
-              ...categoriesPresent.map((c) => ({
-                value: c,
-                label: c,
-                count: suggestions.filter((s) => categoryForKind(s.kind) === c).length,
-              })),
-            ]}
-            ariaLabel="Filter by suggestion category"
-          />
-          <div style={{ flex: 1 }} />
-          {typesPresent.length > 1 && (
+      {!loading && (
+        <div className="ai-inbox-toolbar">
+          {suggestions.length > 0 && categoriesPresent.length > 1 && (
+            <Segmented
+              value={activeCategoryFilter}
+              onChange={setActiveCategoryFilter}
+              options={[
+                { value: 'All', label: 'All', count: suggestions.length },
+                ...categoriesPresent.map((c) => ({
+                  value: c,
+                  label: c,
+                  count: suggestions.filter((s) => categoryForKind(s.kind) === c).length,
+                })),
+              ]}
+              ariaLabel="Filter by suggestion category"
+            />
+          )}
+          <div className="fill" />
+          {suggestions.length > 0 && typesPresent.length > 1 && (
             <Segmented
               value={activeTypeFilter}
               onChange={setActiveTypeFilter}
@@ -266,19 +248,28 @@ export function AIInboxPage() {
               ariaLabel="Filter by project type"
             />
           )}
+          <Segmented
+            value={includeActed ? 'all' : 'open'}
+            onChange={(v) => setIncludeActed(v === 'all')}
+            options={[
+              { value: 'open', label: 'Open' },
+              { value: 'all', label: 'Show acted-on' },
+            ]}
+            size="sm"
+            ariaLabel="Show acted-on suggestions"
+          />
         </div>
       )}
 
       {loading ? (
         <p className="muted">Loading…</p>
       ) : suggestions.length === 0 ? (
-        <div className="ai-inbox-empty">
-          <Sparkles size={20} color="var(--ai-2)" aria-hidden="true" />
-          <p className="ai-inbox-empty-title">No open insights</p>
-          <p className="ai-inbox-empty-sub">
-            Try diagnosing the active sprint to see what AI surfaces.
-          </p>
-        </div>
+        <EmptyState
+          className="card ai-inbox-empty"
+          icon={<Sparkles size={20} aria-hidden="true" />}
+          title="No open insights"
+          subtitle="Try diagnosing the active sprint to see what AI surfaces."
+        />
       ) : filtered.length === 0 ? (
         <p className="muted">No insights match these filters.</p>
       ) : (
@@ -395,19 +386,12 @@ function SuggestionListItem({
     <li className="ai-inbox-row">
       <AISuggestionCard
         chipLabel={
-          <span className="row" style={{ gap: 4 }}>
+          <span className="ai-inbox-chip-label">
             {TypeIcon && <TypeIcon size={11} aria-hidden="true" />}
             <span>{typeMeta?.label ?? 'AI insight'}</span>
           </span>
         }
-        scope={
-          <span className="row" style={{ gap: 6 }}>
-            <Badge tone={TYPE_TONE[suggestion.projectType] ?? 'neutral'}>
-              {categoryForKind(suggestion.kind)}
-            </Badge>
-            <span>{timeAgo(suggestion.createdAt)}</span>
-          </span>
-        }
+        scope={`${categoryForKind(suggestion.kind)} · ${timeAgo(suggestion.createdAt)}`}
         title={suggestion.title}
         body={
           isReassign && reassign ? (
@@ -584,28 +568,25 @@ function timeAgo(iso) {
   return `${d}d ago`;
 }
 
-// F2-08 — small chip surfacing the project's AI control mode in the inbox
-// header. Doubles as a deep-link to the settings page so PMs can flip it
-// from where they see suggestions.
+// F2-08 — the project's AI control mode, surfaced in the inbox header as a
+// dot + text link to the settings page so PMs can flip it from where they see
+// suggestions.
 const MODE_PRESENTATION = {
-  Off:        { tone: 'neutral', Icon: Power,          label: 'AI off' },
-  AskMeFirst: { tone: 'warning', Icon: ShieldQuestion, label: 'Ask me first' },
-  Suggest:    { tone: 'info',    Icon: Eye,            label: 'Suggest' },
-  Autopilot:  { tone: 'purple',  Icon: Sparkles,       label: 'Autopilot' },
+  Off:        { tone: 'neutral', label: 'AI off' },
+  AskMeFirst: { tone: 'warning', label: 'Ask me first' },
+  Suggest:    { tone: 'info',    label: 'Suggest' },
+  Autopilot:  { tone: 'violet',  label: 'Autopilot' },
 };
 
-function AiModeChip({ mode, orgSlug, projectSlug }) {
+function AiModeLink({ mode, orgSlug, projectSlug }) {
   const pres = MODE_PRESENTATION[mode] ?? MODE_PRESENTATION.Suggest;
-  const Icon = pres.Icon;
   return (
     <Link
       to={`/${orgSlug}/projects/${projectSlug}/settings/ai`}
-      className="ai-inbox-mode-chip"
+      className={`ai-inbox-mode is-${pres.tone}`}
       title="Change AI mode in project settings"
     >
-      <Badge tone={pres.tone}>
-        <Icon size={10} aria-hidden="true" /> {pres.label}
-      </Badge>
+      Mode: {pres.label}
     </Link>
   );
 }

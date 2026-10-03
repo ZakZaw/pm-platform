@@ -1,45 +1,57 @@
-/* F2-24 — API keys settings page. */
+/* F2-24 API keys settings page. */
+
+.ak {
+  max-width: 960px;
+}
+
+/* Page-scoped fix: stratos' `.input-group` centres its children. */
+.ak .input-group {
+  align-items: stretch;
+  gap: 0;
+}
 
 .ak-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  padding: var(--s-8);
+  margin-bottom: var(--s-9);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-6);
+}
+
+.ak-section-title {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+  margin: 0;
+}
+
+.ak-create {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 190px auto;
+  gap: var(--s-4);
+  align-items: center;
+}
+
+.ak-secret {
+  background: var(--accent-soft);
   border-radius: var(--r-lg);
-  padding: var(--s-5);
-  margin-bottom: var(--s-5);
+  padding: var(--s-6);
   display: flex;
   flex-direction: column;
   gap: var(--s-4);
 }
-
-.ak-create {
-  display: flex;
-  gap: var(--s-3);
-  align-items: flex-end;
-  flex-wrap: wrap;
-}
-.ak-create > :first-child { flex: 1; min-width: 220px; }
-
-.ak-secret {
-  border: 1px solid var(--accent-border);
-  background: var(--accent-soft);
-  border-radius: var(--r-md);
-  padding: var(--s-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-2);
-}
 .ak-secret-head {
   display: flex;
   align-items: center;
-  gap: var(--s-2);
-  font-size: var(--fs-sm);
+  gap: var(--s-3);
+  font-size: var(--fs-md);
   font-weight: var(--fw-medium);
   color: var(--text);
 }
 .ak-secret-row {
   display: flex;
   align-items: center;
-  gap: var(--s-3);
+  gap: var(--s-4);
 }
 .ak-secret-value {
   flex: 1;
@@ -47,50 +59,108 @@
   font-size: var(--fs-sm);
   color: var(--text);
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
-  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-md);
+  padding: var(--s-3) var(--s-4);
   overflow-x: auto;
   white-space: nowrap;
 }
 
 .ak-empty {
   color: var(--text-muted);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-md);
+  padding: var(--s-8) 0;
 }
 
 .ak-list {
   list-style: none;
   margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-2);
+  padding: var(--s-3) 0;
 }
 .ak-row {
   display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-areas: "main action" "meta action";
-  gap: var(--s-1) var(--s-3);
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas: "main status action" "meta status action";
+  gap: var(--s-2) var(--s-7);
   align-items: center;
-  padding: var(--s-3) var(--s-4);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  background: var(--surface);
+  padding: var(--s-6) var(--s-8);
 }
-.ak-row.is-inactive { opacity: 0.7; }
+.ak-row + .ak-row {
+  border-top: 1px solid var(--border-subtle);
+}
+.ak-row.is-inactive .ak-row-main,
+.ak-row.is-inactive .ak-row-meta {
+  opacity: 0.6;
+}
 .ak-row-main {
   grid-area: main;
   display: flex;
-  align-items: center;
-  gap: var(--s-3);
+  align-items: baseline;
+  gap: var(--s-4);
+  min-width: 0;
 }
-.ak-name { font-weight: var(--fw-medium); color: var(--text); }
-.ak-prefix { font-size: var(--fs-xs); color: var(--text-secondary); }
+.ak-name {
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+}
+.ak-prefix {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
 .ak-row-meta {
   grid-area: meta;
   display: flex;
   flex-wrap: wrap;
   gap: var(--s-2);
-  font-size: var(--fs-xs);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+.ak-row-status { grid-area: status; }
+.ak-row-action {
+  grid-area: action;
+  min-width: 88px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Status as dot + coloured text. */
+.ak-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+}
+.ak-status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-pill);
+  background: currentColor;
+}
+.ak-status.is-active { color: var(--success); }
+.ak-status.is-expired { color: var(--warning); }
+.ak-status.is-revoked { color: var(--danger); }
+
+/* Revoke is revealed on row hover / keyboard focus. */
+.ak-revoke {
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.ak-row:hover .ak-revoke,
+.ak-revoke:focus-visible {
+  opacity: 1;
+}
+.ak-revoke:hover { color: var(--danger); }
+
+@media (hover: none) {
+  .ak-revoke { opacity: 1; }
+}
+
+@media (max-width: 760px) {
+  .ak-create { grid-template-columns: 1fr; }
+  .ak-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "main action" "meta action" "status action";
+  }
 }

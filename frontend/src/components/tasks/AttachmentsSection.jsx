@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Download, File as FileIcon, Image as ImageIcon, Paperclip, Trash2, UploadCloud } from 'lucide-react';
+import { Download, File as FileIcon, Image as ImageIcon, Trash2, UploadCloud } from 'lucide-react';
 import { Button, useToast } from '@/components/ui';
 import { attachmentsApi } from '@/api/attachments.api';
+import { TaskSection } from './TaskSection';
 import './AttachmentsSection.css';
 
 const MAX_BYTES = 50 * 1024 * 1024;
@@ -86,11 +87,8 @@ export function AttachmentsSection({ taskId }) {
   }
 
   return (
+    <TaskSection title="Attachments" meta={items.length > 0 ? items.length : 'None'}>
     <div className="attachments-section">
-      <div className="eyebrow attachments-section__head">
-        <Paperclip size={11} aria-hidden="true" /> Attachments
-        {items.length > 0 && <span className="muted">{items.length}</span>}
-      </div>
 
       <div
         className={`attachments-section__drop ${dragging ? 'is-active' : ''}`}
@@ -129,7 +127,7 @@ export function AttachmentsSection({ taskId }) {
                   <FileIcon size={14} />
                 )}
               </div>
-              <div className="col fill" style={{ minWidth: 0 }}>
+              <div className="col fill attachments-section__info">
                 <a
                   href={a.url}
                   target="_blank"
@@ -169,5 +167,6 @@ export function AttachmentsSection({ taskId }) {
         </ul>
       )}
     </div>
+    </TaskSection>
   );
 }

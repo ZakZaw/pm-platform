@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Download, Mic, MicOff } from 'lucide-react';
-import { Badge, Button, useToast } from '@/components/ui';
+import { Button, useToast } from '@/components/ui';
 import { meetingsApi } from '@/api/meetings.api';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useMeetingRealtime } from '@/hooks/useMeetingRealtime';
-import { useAuthStore } from '@/store/authStore';
 import './transcriptPanel.css';
 
 /**
@@ -20,7 +19,6 @@ import './transcriptPanel.css';
  */
 export function TranscriptPanel({ meetingId, isGuest = false }) {
   const toast = useToast();
-  const me = useAuthStore((s) => s.user);
 
   const [segments, setSegments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -117,8 +115,8 @@ export function TranscriptPanel({ meetingId, isGuest = false }) {
       <header className="tp-head">
         <div className="row gap-2">
           {listening
-            ? <Badge tone="success"><Mic size={10} aria-hidden="true" /> Listening</Badge>
-            : <Badge tone="neutral"><MicOff size={10} aria-hidden="true" /> Off</Badge>}
+            ? <span className="tp-state is-on"><Mic size={13} aria-hidden="true" /> Listening</span>
+            : <span className="tp-state"><MicOff size={13} aria-hidden="true" /> Captions off</span>}
         </div>
         <div className="row gap-2">
           {!isGuest && supported && (
@@ -160,10 +158,10 @@ export function TranscriptPanel({ meetingId, isGuest = false }) {
 
       <footer className="tp-foot">
         <Button size="sm" variant="ghost" onClick={() => download('txt')} disabled={downloading}>
-          <Download size={11} aria-hidden="true" /> .txt
+          <Download size={13} aria-hidden="true" /> .txt
         </Button>
         <Button size="sm" variant="ghost" onClick={() => download('vtt')} disabled={downloading}>
-          <Download size={11} aria-hidden="true" /> .vtt
+          <Download size={13} aria-hidden="true" /> .vtt
         </Button>
         {!supported && !isGuest && (
           <span className="muted tp-warning">

@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { ChevronDown, ChevronUp, Columns3, Download, Search, X } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Columns3, Download, Search, X } from 'lucide-react';
 import {
   Button,
   Modal,
@@ -212,40 +212,35 @@ export function ProjectListPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>{project.name} · Spreadsheet</div>
-            <h1 className="page-title" style={{ fontSize: 'var(--fs-2xl)' }}>List</h1>
-            <p className="page-subtitle" style={{ marginTop: 6 }}>
+            <div className="eyebrow">{project.name}</div>
+            <h1 className="page-title">List</h1>
+            <p className="page-subtitle">
               {tasks.length} task{tasks.length === 1 ? '' : 's'}
               {selection.size > 0 && ` · ${selection.size} selected`}
             </p>
           </div>
           <div className="row gap-3">
-            <Button size="sm" onClick={exportCsv} disabled={tasks.length === 0}>
-              <Download size={13} aria-hidden="true" /> Export CSV
+            <Button variant="ghost" size="sm" onClick={exportCsv} disabled={tasks.length === 0}>
+              <Download size={14} aria-hidden="true" /> Export CSV
             </Button>
-            <div className="list-page__columns-wrap">
-              <Button size="sm" onClick={() => setColumnsOpen((v) => !v)}>
-                <Columns3 size={13} aria-hidden="true" /> Columns
-              </Button>
-              {columnsOpen && (
-                <div className="menu list-page__menu" role="menu">
-                  <div className="menu-label">Visible columns</div>
-                  {ALL_COLUMNS.map((c) => (
-                    <button
-                      key={c.key}
-                      type="button"
-                      role="menuitemcheckbox"
-                      aria-checked={visibleCols.has(c.key)}
-                      disabled={c.key === 'title'}
-                      className={`menu-item ${visibleCols.has(c.key) ? 'is-selected' : ''}`}
-                      onClick={() => toggleColumn(c.key)}
-                    >
-                      {c.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <MenuButton
+              label={<><Columns3 size={14} aria-hidden="true" /> Columns</>}
+              align="end"
+              open={columnsOpen}
+              onOpenChange={setColumnsOpen}
+            >
+              <div className="menu-label">Visible columns</div>
+              {ALL_COLUMNS.map((c) => (
+                <CheckItem
+                  key={c.key}
+                  checked={visibleCols.has(c.key)}
+                  disabled={c.key === 'title'}
+                  onToggle={() => toggleColumn(c.key)}
+                >
+                  {c.label}
+                </CheckItem>
+              ))}
+            </MenuButton>
           </div>
         </div>
       </div>
@@ -368,60 +363,57 @@ function FilterBar({ filter, onChange, members }) {
         : [...filter[key], value],
     });
   };
+  const assignee = filter.assigneeId ? members.find((m) => m.userId === filter.assigneeId) : null;
 
   return (
     <div className="list-page__filters">
       <div className="list-page__search">
-        <Search size={13} aria-hidden="true" />
+        <Search size={14} aria-hidden="true" />
         <input
           type="search"
-          className="input"
+          className="list-page__search-input"
           placeholder="Search title…"
+          aria-label="Search title"
           value={filter.search}
           onChange={(e) => onChange({ ...filter, search: e.target.value })}
         />
       </div>
-      <div className="row gap-2 wrap">
+      <MenuButton label="Status" count={filter.status.length}>
         {TASK_STATUSES.map((s) => (
-          <button
-            key={s}
-            type="button"
-            className={`chip ${filter.status.includes(s) ? 'is-active' : ''}`}
-            onClick={() => toggleMulti('status', s)}
-          >
+          <CheckItem key={s} checked={filter.status.includes(s)} onToggle={() => toggleMulti('status', s)}>
             {STATUS_LABELS[s] ?? s}
-          </button>
+          </CheckItem>
         ))}
-      </div>
-      <div className="row gap-2 wrap">
+      </MenuButton>
+      <MenuButton label="Priority" count={filter.priority.length}>
         {PRIORITIES.map((p) => (
-          <button
-            key={p}
-            type="button"
-            className={`chip ${filter.priority.includes(p) ? 'is-active' : ''}`}
-            onClick={() => toggleMulti('priority', p)}
-          >
+          <CheckItem key={p} checked={filter.priority.includes(p)} onToggle={() => toggleMulti('priority', p)}>
             {p}
-          </button>
+          </CheckItem>
         ))}
-      </div>
-      <select
-        className="input"
-        value={filter.assigneeId ?? ''}
-        onChange={(e) => onChange({ ...filter, assigneeId: e.target.value || null })}
-      >
-        <option value="">Any assignee</option>
+      </MenuButton>
+      <MenuButton label={assignee ? assignee.fullName : 'Assignee'} count={assignee ? 1 : 0} closeOnSelect>
+        <CheckItem checked={!filter.assigneeId} onToggle={() => onChange({ ...filter, assigneeId: null })}>
+          Any assignee
+        </CheckItem>
         {members.map((m) => (
-          <option key={m.userId} value={m.userId}>{m.fullName}</option>
+          <CheckItem
+            key={m.userId}
+            checked={filter.assigneeId === m.userId}
+            onToggle={() => onChange({ ...filter, assigneeId: m.userId })}
+          >
+            {m.fullName}
+          </CheckItem>
         ))}
-      </select>
-      <label className="row gap-2 center">
+      </MenuButton>
+      <label className="row gap-3 list-page__done-toggle">
         <input
           type="checkbox"
+          className="cb"
           checked={filter.includeDone}
           onChange={(e) => onChange({ ...filter, includeDone: e.target.checked })}
         />
-        <span className="muted">Include done</span>
+        <span>Include done</span>
       </label>
       {(filter.status.length > 0 || filter.priority.length > 0 || filter.assigneeId || filter.search) && (
         <Button
@@ -429,10 +421,78 @@ function FilterBar({ filter, onChange, members }) {
           variant="ghost"
           onClick={() => onChange({ status: [], priority: [], assigneeId: null, search: '', includeDone: filter.includeDone })}
         >
-          <X size={12} aria-hidden="true" /> Clear
+          <X size={14} aria-hidden="true" /> Clear
         </Button>
       )}
     </div>
+  );
+}
+
+/**
+ * Secondary button that opens a .menu which stays open while toggling
+ * checkable items (multi-select filters, visible columns). Closes on
+ * outside click / Escape. Controlled via open/onOpenChange if passed.
+ */
+function MenuButton({ label, count = 0, align = 'start', closeOnSelect = false, open: openProp, onOpenChange, children }) {
+  const [openState, setOpenState] = useState(false);
+  const open = openProp ?? openState;
+  const setOpen = onOpenChange ?? setOpenState;
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDoc = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open, setOpen]);
+
+  return (
+    <div className="list-page__menu-wrap" ref={ref}>
+      <Button
+        variant="secondary"
+        size="sm"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className={count > 0 ? 'is-active' : undefined}
+        onClick={() => setOpen(!open)}
+      >
+        {label}
+        {count > 0 && <span className="list-page__menu-count">{count}</span>}
+        <ChevronDown size={14} aria-hidden="true" />
+      </Button>
+      {open && (
+        <div
+          className={`menu list-page__menu is-${align}`}
+          role="menu"
+          onClick={closeOnSelect ? (e) => { if (e.target.closest('.menu-item')) setOpen(false); } : undefined}
+        >
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CheckItem({ checked, disabled, onToggle, children }) {
+  return (
+    <button
+      type="button"
+      role="menuitemcheckbox"
+      aria-checked={checked}
+      disabled={disabled}
+      className={`menu-item list-page__check-item ${checked ? 'is-checked' : ''}`}
+      onClick={onToggle}
+    >
+      <span className="list-page__check-mark" aria-hidden="true">
+        {checked && <Check size={14} />}
+      </span>
+      {children}
+    </button>
   );
 }
 
@@ -441,9 +501,9 @@ function BulkBar({ count, onClear, onAction }) {
     <div className="list-page__bulkbar">
       <span><strong>{count}</strong> selected</span>
       <div className="row gap-2">
-        <Button size="sm" onClick={() => onAction('status')}>Change status</Button>
-        <Button size="sm" onClick={() => onAction('assignee')}>Change assignee</Button>
-        <Button size="sm" variant="danger" onClick={() => onAction('delete')}>Delete</Button>
+        <Button size="sm" variant="secondary" onClick={() => onAction('status')}>Change status</Button>
+        <Button size="sm" variant="secondary" onClick={() => onAction('assignee')}>Change assignee</Button>
+        <Button size="sm" variant="ghost" className="list-page__bulk-delete" onClick={() => onAction('delete')}>Delete</Button>
         <Button size="sm" variant="ghost" onClick={onClear}>Clear</Button>
       </div>
     </div>
@@ -462,7 +522,7 @@ function TaskRow({ task, visible, selected, onToggleSelect, onUpdate, epics, spr
         </td>
       )}
       {visible.has('title') && (
-        <td>
+        <td className="list-page__title-cell">
           <EditableText
             value={task.title}
             placeholder="Untitled"
@@ -636,7 +696,7 @@ function BulkActionModal({ op, count, members, onClose, onConfirm }) {
                 <input className="input" value={reason} onChange={(e) => setReason(e.target.value)} />
               </label>
             )}
-            <p className="muted" style={{ fontSize: 'var(--fs-xs)' }}>
+            <p className="muted list-page__hint">
               Each task is validated individually. Invalid transitions are reported but don't abort the batch.
             </p>
           </div>

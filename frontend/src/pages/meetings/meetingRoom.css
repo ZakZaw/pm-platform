@@ -1,58 +1,132 @@
-/* F2-20 — meeting room layout. Full-bleed video stage + slide-in
-   side panel for the chat / transcript. */
+/* Meeting room â€” full-bleed video stage with a slide-in side panel for
+   chat / transcript. LiveKit behaviour is untouched; only the chrome
+   around it is styled here. */
 
 .mr-shell {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - var(--topbar-h, 56px));
-  background: var(--bg-subtle);
+  height: calc(100vh - var(--topbar-h));
+  background: var(--bg);
 }
 
 .mr-shell-loading,
 .mr-shell-error {
   align-items: center;
   justify-content: center;
-  padding: var(--s-7);
-  gap: var(--s-3);
+  padding: var(--s-8);
+  gap: var(--s-4);
+}
+
+/* Centered card for the error state and the guest join form. */
+.mr-panel {
+  width: 100%;
+  max-width: 440px;
+  padding: var(--s-9) var(--s-8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-4);
+  text-align: center;
+}
+.mr-panel p { margin: 0; }
+.mr-panel-icon {
+  width: 52px;
+  height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--s-2);
+  border-radius: var(--r-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 .mr-error-title {
   margin: 0;
   font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
   color: var(--text);
 }
+
+.mr-guest { align-items: stretch; text-align: left; }
+.mr-guest-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
+  text-align: center;
+}
+.mr-guest-form .input-group { align-items: stretch; }
+.mr-guest-error {
+  margin: var(--s-4) 0 0;
+  color: var(--danger);
+  font-size: var(--fs-sm);
+}
+.mr-guest-actions { margin-top: var(--s-6); }
 
 .mr-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--s-3) var(--s-5);
-  border-bottom: 1px solid var(--divider);
-  background: var(--surface);
+  gap: var(--s-5);
+  padding: var(--s-5) var(--s-8);
+}
+.mr-head-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
 }
 .mr-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
   margin: 0;
-  font-size: var(--fs-2xs);
-  text-transform: uppercase;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
   color: var(--text-muted);
-  letter-spacing: var(--tracking-wide);
+}
+.mr-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-pill);
+  background: var(--success);
 }
 .mr-title {
-  margin: 0;
-  font-size: var(--fs-md);
-  font-weight: var(--fw-semibold);
+  margin: var(--s-1) 0 0;
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
   color: var(--text);
+}
+.mr-recording {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-right: var(--s-3);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--danger);
+}
+.mr-recording::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: currentColor;
 }
 
 .mr-body {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-6);
+  padding: 0 var(--s-8) var(--s-8);
 }
 .mr-body-with-aside {
-  grid-template-columns: 1fr 360px;
+  grid-template-columns: minmax(0, 1fr) 360px;
 }
 @media (max-width: 760px) {
+  .mr-body { padding: 0 var(--s-4) var(--s-4); }
   .mr-body-with-aside { grid-template-columns: 1fr; }
 }
 
@@ -60,15 +134,32 @@
    We override the surface tones to match the app theme so the room
    doesn't look like a foreign element. */
 .mr-livekit {
-  --lk-bg: var(--bg-subtle);
+  --lk-bg: var(--surface);
   --lk-fg: var(--text);
   --lk-accent-bg: var(--accent);
   --lk-accent-fg: var(--text-on-accent);
   --lk-border-color: var(--border);
+  /* LiveKit's default theme is dark; map its control surfaces onto our
+     theme-aware tokens so the control bar reads in light and dark. */
+  --lk-bg2: var(--surface-2);
+  --lk-bg3: var(--surface-hover);
+  --lk-bg4: var(--surface-active);
+  --lk-bg5: var(--border-strong);
+  --lk-control-bg: var(--surface-2);
+  --lk-control-hover-bg: var(--surface-hover);
+  --lk-control-active-bg: var(--accent-soft);
+  --lk-control-active-hover-bg: var(--accent-soft-2);
+  --lk-control-fg: var(--text);
+  --lk-border-radius: var(--r-lg);
+  --lk-danger: var(--danger);
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--bg-subtle);
+  min-height: 0;
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
 }
 
 .mr-grid {
@@ -81,37 +172,26 @@
   flex-direction: column;
   min-height: 0;
   background: var(--surface);
-  border-left: 1px solid var(--divider);
+  border: 1px solid var(--card-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
 }
 .mr-aside-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--s-3) var(--s-4);
-  border-bottom: 1px solid var(--divider);
+  padding: var(--s-5) var(--s-5) var(--s-3) var(--s-7);
 }
 .mr-aside-title {
   margin: 0;
-  font-size: var(--fs-md);
+  font-size: var(--fs-base);
   font-weight: var(--fw-semibold);
   color: var(--text);
 }
-.mr-aside-close {
-  width: 26px;
-  height: 26px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: 0;
-  border-radius: var(--r-sm);
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-.mr-aside-close:hover { background: var(--surface-hover); }
 .mr-aside-body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: var(--s-4);
+  padding: var(--s-3) var(--s-7) var(--s-6);
 }

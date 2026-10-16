@@ -55,7 +55,7 @@ export function DashboardCanvas({
       containerPadding={[0, 0]}
       isDraggable={editing}
       isResizable={editing}
-      draggableHandle=".dash-canvas-widget__drag"
+      draggableHandle=".dash-canvas-widget-drag"
       onLayoutChange={(next) => onLayoutChange(next)}
       compactType="vertical"
     >

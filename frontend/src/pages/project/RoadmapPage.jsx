@@ -204,7 +204,7 @@ export function RoadmapPage() {
               ]}
               ariaLabel="Timeline scale"
             />
-            <div className="roadmap-page__filter-wrap" ref={filterRef}>
+            <div className="roadmap-page-filter-wrap" ref={filterRef}>
               <Button
                 variant="secondary"
                 size="sm"
@@ -214,7 +214,7 @@ export function RoadmapPage() {
               >
                 <Filter size={14} aria-hidden="true" /> Filter
                 {(filter.ownerId || filter.status || filter.riskOnly) && (
-                  <span className="roadmap-page__filter-dot" aria-label="active" />
+                  <span className="roadmap-page-filter-dot" aria-label="active" />
                 )}
               </Button>
               {filterOpen && (
@@ -263,14 +263,14 @@ export function RoadmapPage() {
           />
         )}
         {data?.undated?.length > 0 && (
-          <div className="roadmap-page__undated">
-            <h2 className="roadmap-page__undated-title">{data.undatedTitle ?? 'Not yet placed'}</h2>
+          <div className="roadmap-page-undated">
+            <h2 className="roadmap-page-undated-title">{data.undatedTitle ?? 'Not yet placed'}</h2>
             <ul>
               {data.undated.map((e) => (
                 <li key={e.id} className="muted">{e.title}</li>
               ))}
             </ul>
-            <p className="muted roadmap-page__hint">
+            <p className="muted roadmap-page-hint">
               {data.undatedHint ?? 'Open an epic and set its start & end dates to add it to the timeline.'}
             </p>
           </div>
@@ -355,7 +355,7 @@ function CascadeConfirmModal({ cascade, onClose, onConfirm }) {
           Confirm to shift the whole chain, or cancel to leave dependents in place
           (they'll overlap the prerequisite).
         </p>
-        <ul className="roadmap-page__cascade-list">
+        <ul className="roadmap-page-cascade-list">
           {cascade?.affected.map((a) => (
             <li key={a.epicId}>
               <strong>{a.title}</strong>
@@ -378,7 +378,7 @@ function CascadeConfirmModal({ cascade, onClose, onConfirm }) {
 
 function FilterMenu({ options, value, onChange, onClose }) {
   return (
-    <div className="menu roadmap-page__menu" role="menu">
+    <div className="menu roadmap-page-menu" role="menu">
       <div className="menu-section">
         <div className="menu-label">Owner</div>
         <button
@@ -500,7 +500,7 @@ function MilestoneCreateModal({ open, onClose, onCreate, epics }) {
                 type="color"
                 value={color}
                 onChange={(e) => setColor(e.target.value)}
-                className="roadmap-page__color-input"
+                className="roadmap-page-color-input"
               />
             </label>
           </div>

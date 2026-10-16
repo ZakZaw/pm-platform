@@ -1,25 +1,25 @@
-.share-modal__intro {
+.share-modal-intro {
   margin-bottom: var(--s-5);
   font-size: var(--fs-sm);
 }
 
-.share-modal__create {
+.share-modal-create {
   border-radius: var(--r-lg);
   padding: var(--s-6);
   background: var(--bg-subtle);
 }
 
-.share-modal__create-actions {
+.share-modal-create-actions {
   justify-content: flex-end;
   margin-top: var(--s-5);
 }
 
-.share-modal__gap { height: var(--s-8); }
+.share-modal-gap { height: var(--s-8); }
 
-.share-modal__link-info { min-width: 0; }
+.share-modal-link-info { min-width: 0; }
 
 /* Link state read-out: dot + coloured text. */
-.share-modal__flag {
+.share-modal-flag {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
@@ -28,26 +28,26 @@
   color: var(--text-muted);
   white-space: nowrap;
 }
-.share-modal__flag::before {
+.share-modal-flag::before {
   content: "";
   width: var(--s-3);
   height: var(--s-3);
   border-radius: var(--r-pill);
   background: currentColor;
 }
-.share-modal__flag.is-danger { color: var(--danger); }
-.share-modal__flag.is-warning { color: var(--warning); }
+.share-modal-flag.is-danger { color: var(--danger); }
+.share-modal-flag.is-warning { color: var(--warning); }
 
-.share-modal__row {
+.share-modal-row {
   margin-top: var(--s-3);
 }
 
-.share-modal__toggles {
+.share-modal-toggles {
   margin-top: var(--s-4);
   align-items: center;
 }
 
-.share-modal__list {
+.share-modal-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -55,7 +55,7 @@
   gap: var(--s-3);
 }
 
-.share-modal__row {
+.share-modal-row {
   display: flex;
   gap: var(--s-5);
   align-items: center;
@@ -64,16 +64,16 @@
   background: var(--bg-subtle);
 }
 
-.share-modal__row.is-disabled {
+.share-modal-row.is-disabled {
   opacity: 0.55;
 }
 
-.share-modal__url {
+.share-modal-url {
   align-items: center;
   font-size: var(--fs-sm);
 }
 
-.share-modal__url code {
+.share-modal-url code {
   background: var(--surface);
   padding: var(--s-1) var(--s-3);
   border-radius: var(--r-sm);
@@ -81,6 +81,6 @@
   display: inline-block;
 }
 
-.share-modal__meta {
+.share-modal-meta {
   font-size: var(--fs-xs);
 }

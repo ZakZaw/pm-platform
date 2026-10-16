@@ -49,14 +49,14 @@ export function AISuggestionCard({
   const toneClass = tone ? `ai-suggest-tone is-${tone}` : '';
   if (compact) {
     return (
-      <div className={['card-ai', 'ai-suggest', 'ai-suggest--compact', className].filter(Boolean).join(' ')}>
-        <div className="hstack ai-suggest__compact-row">
+      <div className={['card-ai', 'ai-suggest', 'ai-suggest-compact', className].filter(Boolean).join(' ')}>
+        <div className="hstack ai-suggest-compact-row">
           <AIChip label={chipLabel} variant="gradient" />
-          <span className="ai-suggest__compact-msg">{message}</span>
+          <span className="ai-suggest-compact-msg">{message}</span>
           {actionLabel && onAction && (
             <button
               type="button"
-              className="ai-suggest__compact-action"
+              className="ai-suggest-compact-action"
               onClick={onAction}
             >
               {actionLabel}
@@ -75,15 +75,15 @@ export function AISuggestionCard({
 
   return (
     <div className={['card-ai', 'ai-suggest', toneClass, className].filter(Boolean).join(' ')}>
-      <div className="ai-suggest__header hstack">
+      <div className="ai-suggest-header hstack">
         <AIChip label={chipLabel} variant="gradient" />
         {badge}
-        {scope && <span className="ai-suggest__scope">· {scope}</span>}
+        {scope && <span className="ai-suggest-scope">· {scope}</span>}
         <span className="grow" />
         {onDismiss && (
           <button
             type="button"
-            className="ai-suggest__close"
+            className="ai-suggest-close"
             onClick={onDismiss}
             aria-label="Dismiss"
           >
@@ -92,11 +92,11 @@ export function AISuggestionCard({
         )}
       </div>
 
-      {title && <div className="ai-suggest__title">{title}</div>}
-      {body && <div className="ai-suggest__body">{body}</div>}
+      {title && <div className="ai-suggest-title">{title}</div>}
+      {body && <div className="ai-suggest-body">{body}</div>}
 
       {options && options.length > 0 && (
-        <div className="ai-suggest__options vstack">
+        <div className="ai-suggest-options vstack">
           {options.map((opt, i) => {
             const selected = selectedOptionIndex === i;
             return (
@@ -104,21 +104,21 @@ export function AISuggestionCard({
                 type="button"
                 key={i}
                 className={[
-                  'ai-suggest__option',
+                  'ai-suggest-option',
                   selected ? 'is-selected' : '',
                   opt.recommended ? 'is-recommended' : '',
                 ].filter(Boolean).join(' ')}
                 onClick={() => onSelect?.(i)}
               >
                 <span
-                  className={['ai-suggest__radio', selected ? 'is-selected' : ''].filter(Boolean).join(' ')}
+                  className={['ai-suggest-radio', selected ? 'is-selected' : ''].filter(Boolean).join(' ')}
                   aria-hidden="true"
                 >
-                  {selected && <span className="ai-suggest__radio-dot" />}
+                  {selected && <span className="ai-suggest-radio-dot" />}
                 </span>
-                <span className="ai-suggest__option-label">{opt.label}</span>
+                <span className="ai-suggest-option-label">{opt.label}</span>
                 {opt.recommended && (
-                  <span className="ai-suggest__recommended">Recommended</span>
+                  <span className="ai-suggest-recommended">Recommended</span>
                 )}
               </button>
             );
@@ -127,11 +127,11 @@ export function AISuggestionCard({
       )}
 
       {variant === 'auto' && (
-        <div className="ai-suggest__undo hstack">
+        <div className="ai-suggest-undo hstack">
           <Check size={14} color="var(--success)" aria-hidden="true" />
           <div className="grow">
-            {undoMessage && <div className="ai-suggest__undo-title">{undoMessage}</div>}
-            {undoSubtext && <div className="ai-suggest__undo-sub">{undoSubtext}</div>}
+            {undoMessage && <div className="ai-suggest-undo-title">{undoMessage}</div>}
+            {undoSubtext && <div className="ai-suggest-undo-sub">{undoSubtext}</div>}
           </div>
           {onUndo && (
             <Button variant="ghost" size="sm" onClick={onUndo}>
@@ -142,9 +142,9 @@ export function AISuggestionCard({
       )}
 
       {variant !== 'auto' && (onApply || onEdit || footer) && (
-        <div className="ai-suggest__footer hstack">
+        <div className="ai-suggest-footer hstack">
           {footer && (
-            <span className="ai-suggest__footer-note">
+            <span className="ai-suggest-footer-note">
               <Info size={11} aria-hidden="true" /> {footer}
             </span>
           )}

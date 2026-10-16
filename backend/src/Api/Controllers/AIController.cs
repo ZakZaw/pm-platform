@@ -241,9 +241,9 @@ public class AIController(ISender mediator) : ControllerBase
     // F2-13 — manual trigger that fans out the same "member
     // unavailable" notification the org-removal / OOO / capacity-zero
     // soft triggers use. Useful for previewing the reassignment card
-    // without actually marking someone OOO. Authorization mirrors the
-    // org-member read endpoints (auth-only; handler reads org/project
-    // membership inline).
+    // without actually marking someone OOO. L4: org_id is required and
+    // the caller must be an org Admin+; the handler checks the target
+    // user belongs to that org.
     [HttpPost("api/v1/users/{userId:guid}/ai/reassignment")]
     [RequireOrgRole(OrgRole.Admin, OrgScope.Organization, "org_id")]
     public async Task<IActionResult> GenerateReassignmentSuggestion(
@@ -288,6 +288,7 @@ public class AIController(ISender mediator) : ControllerBase
         {
             "Auth.NotAuthenticated" => StatusCodes.Status401Unauthorized,
             "Org.NotFound" => StatusCodes.Status404NotFound,
+            "Org.MemberNotFound" => StatusCodes.Status404NotFound,
             "Task.NotFound" => StatusCodes.Status404NotFound,
             "Sprint.NotFound" => StatusCodes.Status404NotFound,
             "Sprint.NotActive" => StatusCodes.Status422UnprocessableEntity,

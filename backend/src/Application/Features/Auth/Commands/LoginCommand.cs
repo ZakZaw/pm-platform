@@ -25,6 +25,11 @@ public class LoginCommandHandler(
     ILoginAttemptStore attempts)
     : IRequestHandler<LoginCommand, Result<AuthResponse>>
 {
+    private static string? _dummyHash;
+
+    /// <summary>A real hash of a random secret, computed once per process.</summary>
+    private string DummyHash() => _dummyHash ??= hasher.Hash(Guid.NewGuid().ToString("N"));
+
     public async Task<Result<AuthResponse>> Handle(LoginCommand request, CancellationToken ct)
     {
         var normalized = request.Email.Trim().ToLowerInvariant();
@@ -36,7 +41,12 @@ public class LoginCommandHandler(
             return Result.Failure<AuthResponse>(AuthErrors.AccountLocked);
 
         var user = await db.Users.FirstOrDefaultAsync(u => u.Email == normalized, ct);
-        if (user is null || !hasher.Verify(user.PasswordHash, request.Password))
+
+        // L7 - always run one password verification, against a dummy hash
+        // when the account doesn't exist, so response time doesn't reveal
+        // which emails are registered.
+        var passwordOk = hasher.Verify(user?.PasswordHash ?? DummyHash(), request.Password);
+        if (user is null || !passwordOk)
         {
             attempts.Set(normalized, LoginLockoutPolicy.RecordFailure(attempts.Get(normalized), now));
             return Result.Failure<AuthResponse>(AuthErrors.InvalidCredentials);

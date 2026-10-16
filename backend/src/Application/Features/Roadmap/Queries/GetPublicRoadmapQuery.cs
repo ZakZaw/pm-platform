@@ -70,17 +70,31 @@ public class GetPublicRoadmapQueryHandler(IAppDbContext db, IPasswordHasher pass
 
             if (!passwords.Verify(hash, request.Password))
             {
-                (link.FailedPasswordAttempts, link.PasswordLockedUntil) =
-                    ShareLinkPasswordPolicy.RegisterFailure(link.FailedPasswordAttempts, now);
-                await db.SaveChangesAsync(ct);
+                // Count the failure in one UPDATE (Postgres row-locks and
+                // re-reads the row), not read-modify-write on the tracked
+                // entity: parallel guesses all read the same count and
+                // overwrote each other, so the lockout never triggered.
+                // Same transition as ShareLinkPasswordPolicy.RegisterFailure.
+                var max = ShareLinkPasswordPolicy.MaxFailures;
+                DateTime? lockUntil = now + ShareLinkPasswordPolicy.LockoutDuration;
+                await db.RoadmapShareLinks
+                    .Where(l => l.Id == link.Id)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(l => l.PasswordLockedUntil,
+                            l => l.FailedPasswordAttempts + 1 >= max ? lockUntil : l.PasswordLockedUntil)
+                        .SetProperty(l => l.FailedPasswordAttempts,
+                            l => l.FailedPasswordAttempts + 1 >= max ? 0 : l.FailedPasswordAttempts + 1), ct);
                 return Result.Failure<PublicRoadmapDto>(RoadmapShareErrors.InvalidPassword);
             }
 
             if (link.FailedPasswordAttempts != 0 || link.PasswordLockedUntil is not null)
             {
-                link.FailedPasswordAttempts = 0;
-                link.PasswordLockedUntil = null;
-                await db.SaveChangesAsync(ct);
+                // Don't clear a lock that parallel wrong guesses set after we read the row.
+                await db.RoadmapShareLinks
+                    .Where(l => l.Id == link.Id && (l.PasswordLockedUntil == null || l.PasswordLockedUntil <= now))
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(l => l.FailedPasswordAttempts, 0)
+                        .SetProperty(l => l.PasswordLockedUntil, (DateTime?)null), ct);
             }
         }
 

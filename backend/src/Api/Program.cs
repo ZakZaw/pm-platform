@@ -1,3 +1,4 @@
+using Api.Configuration;
 using System.Text;
 using Api.Middleware;
 using Application;
@@ -19,6 +20,11 @@ using Microsoft.OpenApi;
 Env.TraversePath().Load();
 
 var builder = WebApplication.CreateBuilder(args);
+
+// M2 — JWT_SECRET / DATABASE_URL (the names .env and the deployment docs
+// use) feed Jwt:SigningKey / ConnectionStrings:DefaultConnection.
+SecretsConfiguration.BridgeEnvironment(
+    builder.Configuration, builder.Environment.IsDevelopment(), Environment.GetEnvironmentVariable);
 
 // .env exposes GEMINI_API_KEY as a flat env var, but our config reads it
 // from AI:GeminiApiKey. Bridge the two here so devs don't have to learn
@@ -112,7 +118,10 @@ builder.Services.AddSwaggerGen(opt =>
 
 var jwtIssuer = builder.Configuration["Jwt:Issuer"]!;
 var jwtAudience = builder.Configuration["Jwt:Audience"]!;
-var jwtKey = builder.Configuration["Jwt:SigningKey"]!;
+// M2 — refuse to boot outside Development with a missing, short or
+// publicly committed signing key.
+var jwtKey = SecretsConfiguration.ValidateSigningKey(
+    builder.Configuration["Jwt:SigningKey"], builder.Environment.IsDevelopment());
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

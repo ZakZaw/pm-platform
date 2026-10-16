@@ -111,6 +111,11 @@ public class AcceptActionItemCommandHandler(
         item.AcceptedTaskId = linkedTaskId;
         item.AcceptedByUserId = userId;
 
+        // M6 - accepting an AI-drafted action item is an AI write: audit it.
+        db.AIAuditLogs.Add(ActionItemAudit.Build(
+            item.Meeting.ProjectId, userId, item.MeetingId,
+            [(item.Id, item.Title, linkedTaskId, request.ExistingTaskId is not null)]));
+
         await db.SaveChangesAsync(ct);
 
         return Result.Success(await BuildDtoAsync(db, item.Id, ct));

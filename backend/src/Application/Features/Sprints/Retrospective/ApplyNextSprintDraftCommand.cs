@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Application.Common;
 using Application.Features.Sprints;
 using Application.Interfaces;
@@ -22,6 +23,8 @@ public class ApplyNextSprintDraftCommandHandler(
     IAppDbContext db, ICurrentUser currentUser)
     : IRequestHandler<ApplyNextSprintDraftCommand, Result<SprintDto>>
 {
+    private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
+
     public async Task<Result<SprintDto>> Handle(
         ApplyNextSprintDraftCommand request, CancellationToken ct)
     {
@@ -71,6 +74,29 @@ public class ApplyNextSprintDraftCommandHandler(
         retro.AppliedByUserId = userId;
         retro.AppliedAt = DateTime.UtcNow;
         retro.AppliedSprintId = newSprint.Id;
+
+        // M6 - every applied AI write is audit-logged with before/after.
+        db.AIAuditLogs.Add(new AIAuditLog
+        {
+            ActionType = "sprint.retro.apply_next",
+            ProjectId = sprint.ProjectId,
+            UserId = userId,
+            Prompt = JsonSerializer.Serialize(new { retrospectiveId = retro.Id, closedSprintId = sprint.Id }, JsonOpts),
+            BeforeStateJson = JsonSerializer.Serialize(new
+            {
+                tasks = eligible.Select(t => new { t.Id, sprintId = (Guid?)null }),
+            }, JsonOpts),
+            AfterStateJson = JsonSerializer.Serialize(new
+            {
+                sprint = new { newSprint.Id, newSprint.Name, newSprint.StartDate, newSprint.EndDate },
+                tasks = eligible.Select(t => new { t.Id, sprintId = newSprint.Id }),
+                skippedTaskIds = ids.Except(eligible.Select(t => t.Id)),
+            }, JsonOpts),
+            Provider = retro.Provider,
+            Model = retro.Model,
+            Applied = true,
+            AppliedAt = DateTime.UtcNow,
+        });
 
         await db.SaveChangesAsync(ct);
 

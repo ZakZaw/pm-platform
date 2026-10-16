@@ -76,6 +76,11 @@ public class AcceptActionItemsBulkCommandHandler(
             item.AcceptedByUserId = userId;
         }
 
+        // M6 - accepting AI-drafted action items is an AI write: audit it.
+        db.AIAuditLogs.Add(ActionItemAudit.Build(
+            meeting.ProjectId, userId, meeting.Id,
+            items.Select(i => (i.Id, i.Title, i.AcceptedTaskId!.Value, false)).ToList()));
+
         await db.SaveChangesAsync(ct);
 
         // Return the freshly-accepted DTOs in order.

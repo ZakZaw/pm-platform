@@ -185,6 +185,7 @@ public class TasksController(ISender mediator, IOptions<FrontendSettings> fronte
             "Task.InvalidTransition" => StatusCodes.Status422UnprocessableEntity,
             "Task.NoOpTransition" => StatusCodes.Status422UnprocessableEntity,
             "Task.ReasonRequired" => StatusCodes.Status422UnprocessableEntity,
+            "Task.InvalidPrUrl" => StatusCodes.Status422UnprocessableEntity,
             "Task.PersonalAssigneeLocked" => StatusCodes.Status403Forbidden,
             "Task.DependencyCycle" => StatusCodes.Status409Conflict,
             "Task.DependencyNotInProject" => StatusCodes.Status422UnprocessableEntity,

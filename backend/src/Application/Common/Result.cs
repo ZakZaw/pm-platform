@@ -248,6 +248,9 @@ public static class TaskErrors
     public static Error ReasonRequired(string to) =>
         new("Task.ReasonRequired", $"Moving a task to {to} requires a reason.");
 
+    public static readonly Error InvalidPrUrl =
+        new("Task.InvalidPrUrl", "PR link must be an http(s) URL of at most 512 characters.");
+
     public static readonly Error NoOpTransition =
         new("Task.NoOpTransition", "Task is already in that status.");
 

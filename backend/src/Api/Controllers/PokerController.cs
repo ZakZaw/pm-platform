@@ -1,3 +1,6 @@
+using Domain.Enums;
+using Application.Authorization;
+using Api.Authorization;
 using Application.Common;
 using Application.Features.Poker;
 using MediatR;
@@ -11,6 +14,7 @@ namespace Api.Controllers;
 public class PokerController(ISender mediator) : ControllerBase
 {
     [HttpGet("api/v1/tasks/{taskId:guid}/poker")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<PokerSessionDto?>> GetActive(Guid taskId, CancellationToken ct)
     {
         var result = await mediator.Send(new GetActivePokerSessionQuery(taskId), ct);
@@ -18,6 +22,7 @@ public class PokerController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/tasks/{taskId:guid}/poker")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<PokerSessionDto>> Start(Guid taskId, CancellationToken ct)
     {
         var result = await mediator.Send(new StartPokerSessionCommand(taskId), ct);
@@ -25,6 +30,7 @@ public class PokerController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/poker/{sessionId:guid}/votes")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.PokerSession, "sessionId")]
     public async Task<ActionResult<PokerSessionDto>> Vote(
         Guid sessionId, [FromBody] CastVoteBodyDto body, CancellationToken ct)
     {
@@ -33,6 +39,7 @@ public class PokerController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/poker/{sessionId:guid}/reveal")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.PokerSession, "sessionId")]
     public async Task<ActionResult<PokerSessionDto>> Reveal(Guid sessionId, CancellationToken ct)
     {
         var result = await mediator.Send(new RevealPokerSessionCommand(sessionId), ct);
@@ -40,6 +47,7 @@ public class PokerController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/poker/{sessionId:guid}/close")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.PokerSession, "sessionId")]
     public async Task<ActionResult<PokerSessionDto>> Close(
         Guid sessionId, [FromBody] ClosePokerBodyDto body, CancellationToken ct)
     {

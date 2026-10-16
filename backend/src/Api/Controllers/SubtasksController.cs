@@ -1,3 +1,6 @@
+using Domain.Enums;
+using Application.Authorization;
+using Api.Authorization;
 using Application.Common;
 using Application.Features.Subtasks;
 using Application.Features.Subtasks.Commands;
@@ -13,6 +16,7 @@ namespace Api.Controllers;
 public class SubtasksController(ISender mediator) : ControllerBase
 {
     [HttpGet("api/v1/tasks/{taskId:guid}/subtasks")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<IReadOnlyList<SubtaskDto>>> List(Guid taskId, CancellationToken ct)
     {
         var result = await mediator.Send(new ListTaskSubtasksQuery(taskId), ct);
@@ -20,6 +24,7 @@ public class SubtasksController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/tasks/{taskId:guid}/subtasks")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<SubtaskDto>> Create(
         Guid taskId,
         [FromBody] CreateSubtaskBodyDto body,
@@ -30,6 +35,7 @@ public class SubtasksController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("api/v1/subtasks/{id:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Subtask, "id")]
     public async Task<ActionResult<SubtaskDto>> Update(
         Guid id,
         [FromBody] UpdateSubtaskBodyDto body,
@@ -40,6 +46,7 @@ public class SubtasksController(ISender mediator) : ControllerBase
     }
 
     [HttpDelete("api/v1/subtasks/{id:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Subtask, "id")]
     public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new DeleteSubtaskCommand(id), ct);

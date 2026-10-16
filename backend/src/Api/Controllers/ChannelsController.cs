@@ -1,3 +1,6 @@
+using Domain.Enums;
+using Application.Authorization;
+using Api.Authorization;
 using Application.Common;
 using Application.Features.Channels;
 using Application.Features.Channels.Commands;
@@ -13,6 +16,7 @@ namespace Api.Controllers;
 public class ChannelsController(ISender mediator) : ControllerBase
 {
     [HttpGet("api/v1/orgs/{slug}/channels")]
+    [RequireOrgRole(OrgRole.Guest)]
     public async Task<ActionResult<IReadOnlyList<ChannelListItemDto>>> List(
         string slug,
         [FromQuery(Name = "include_archived")] bool includeArchived = false,
@@ -24,6 +28,7 @@ public class ChannelsController(ISender mediator) : ControllerBase
     }
 
     [HttpGet("api/v1/channels/{id:guid}")]
+    [RequireOrgRole(OrgRole.Guest, OrgScope.Channel, "id")]
     public async Task<ActionResult<ChannelDetailDto>> Get(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new GetChannelQuery(id), ct);
@@ -31,6 +36,7 @@ public class ChannelsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/orgs/{slug}/channels")]
+    [RequireOrgRole(OrgRole.Guest)]
     public async Task<ActionResult<ChannelDetailDto>> CreateTopic(
         string slug, [FromBody] CreateTopicChannelBodyDto body, CancellationToken ct)
     {
@@ -43,6 +49,7 @@ public class ChannelsController(ISender mediator) : ControllerBase
     // command: posting the same member set twice returns the existing
     // channel.
     [HttpPost("api/v1/orgs/{slug}/dms")]
+    [RequireOrgRole(OrgRole.Guest)]
     public async Task<ActionResult<ChannelDetailDto>> CreateDm(
         string slug, [FromBody] CreateDmChannelBodyDto body, CancellationToken ct)
     {
@@ -52,6 +59,7 @@ public class ChannelsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/channels/{id:guid}/members")]
+    [RequireOrgRole(OrgRole.Guest, OrgScope.Channel, "id")]
     public async Task<ActionResult<ChannelMemberDto>> AddMember(
         Guid id, [FromBody] AddChannelMemberBodyDto body, CancellationToken ct)
     {
@@ -62,6 +70,7 @@ public class ChannelsController(ISender mediator) : ControllerBase
     }
 
     [HttpDelete("api/v1/channels/{id:guid}/members/{userId:guid}")]
+    [RequireOrgRole(OrgRole.Guest, OrgScope.Channel, "id")]
     public async Task<IActionResult> Leave(Guid id, Guid userId, CancellationToken ct)
     {
         var result = await mediator.Send(new LeaveChannelCommand(id, userId), ct);
@@ -69,6 +78,7 @@ public class ChannelsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/channels/{id:guid}/read")]
+    [RequireOrgRole(OrgRole.Guest, OrgScope.Channel, "id")]
     public async Task<IActionResult> MarkRead(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new MarkChannelReadCommand(id), ct);
@@ -76,6 +86,7 @@ public class ChannelsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/channels/{id:guid}/archive")]
+    [RequireOrgRole(OrgRole.Guest, OrgScope.Channel, "id")]
     public async Task<IActionResult> Archive(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new ArchiveTopicChannelCommand(id), ct);

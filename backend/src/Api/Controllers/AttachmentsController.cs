@@ -1,3 +1,6 @@
+using Domain.Enums;
+using Application.Authorization;
+using Api.Authorization;
 using Application.Common;
 using Application.Features.Attachments.Commands;
 using Application.Features.Attachments.Queries;
@@ -12,6 +15,7 @@ namespace Api.Controllers;
 public class AttachmentsController(ISender mediator) : ControllerBase
 {
     [HttpGet("api/v1/tasks/{taskId:guid}/attachments")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<IReadOnlyList<AttachmentDto>>> List(Guid taskId, CancellationToken ct)
     {
         var result = await mediator.Send(new ListTaskAttachmentsQuery(taskId), ct);
@@ -19,6 +23,7 @@ public class AttachmentsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/tasks/{taskId:guid}/attachments")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "taskId")]
     [RequestSizeLimit(60 * 1024 * 1024)]
     public async Task<ActionResult<AttachmentDto>> Upload(
         Guid taskId,
@@ -38,6 +43,7 @@ public class AttachmentsController(ISender mediator) : ControllerBase
     }
 
     [HttpDelete("api/v1/attachments/{attachmentId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Attachment, "attachmentId")]
     public async Task<ActionResult> Delete(Guid attachmentId, CancellationToken ct)
     {
         var result = await mediator.Send(new DeleteAttachmentCommand(attachmentId), ct);

@@ -1,3 +1,6 @@
+using Domain.Enums;
+using Application.Authorization;
+using Api.Authorization;
 using Application.Common;
 using Application.Features.Labels;
 using MediatR;
@@ -11,6 +14,7 @@ namespace Api.Controllers;
 public class LabelsController(ISender mediator) : ControllerBase
 {
     [HttpGet("api/v1/projects/{projectId:guid}/labels")]
+    [RequireProjectRole(ProjectRole.Viewer)]
     public async Task<ActionResult<IReadOnlyList<LabelDto>>> List(Guid projectId, CancellationToken ct)
     {
         var result = await mediator.Send(new ListProjectLabelsQuery(projectId), ct);
@@ -18,6 +22,7 @@ public class LabelsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/projects/{projectId:guid}/labels")]
+    [RequireProjectRole(ProjectRole.Contributor)]
     public async Task<ActionResult<LabelDto>> Create(
         Guid projectId, [FromBody] CreateLabelBodyDto body, CancellationToken ct)
     {
@@ -26,6 +31,7 @@ public class LabelsController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("api/v1/labels/{labelId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Label, "labelId")]
     public async Task<ActionResult<LabelDto>> Update(
         Guid labelId, [FromBody] UpdateLabelBodyDto body, CancellationToken ct)
     {
@@ -34,6 +40,7 @@ public class LabelsController(ISender mediator) : ControllerBase
     }
 
     [HttpDelete("api/v1/labels/{labelId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Label, "labelId")]
     public async Task<ActionResult> Delete(Guid labelId, CancellationToken ct)
     {
         var result = await mediator.Send(new DeleteLabelCommand(labelId), ct);
@@ -41,6 +48,7 @@ public class LabelsController(ISender mediator) : ControllerBase
     }
 
     [HttpGet("api/v1/tasks/{taskId:guid}/labels")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<IReadOnlyList<LabelDto>>> ListForTask(
         Guid taskId, CancellationToken ct)
     {
@@ -49,6 +57,7 @@ public class LabelsController(ISender mediator) : ControllerBase
     }
 
     [HttpPut("api/v1/tasks/{taskId:guid}/labels")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<IReadOnlyList<LabelDto>>> SetForTask(
         Guid taskId, [FromBody] SetTaskLabelsBodyDto body, CancellationToken ct)
     {

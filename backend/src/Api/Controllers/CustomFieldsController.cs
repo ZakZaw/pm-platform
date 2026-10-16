@@ -1,3 +1,4 @@
+using Application.Authorization;
 using System.Text.Json;
 using Api.Authorization;
 using Application.Common;
@@ -61,6 +62,7 @@ public class CustomFieldsController(ISender mediator) : ControllerBase
     // -------- Per-task values --------
 
     [HttpGet("api/v1/tasks/{taskId:guid}/custom-fields")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<IReadOnlyList<CustomFieldValueDto>>> GetValues(
         Guid taskId, CancellationToken ct)
     {
@@ -69,6 +71,7 @@ public class CustomFieldsController(ISender mediator) : ControllerBase
     }
 
     [HttpPut("api/v1/tasks/{taskId:guid}/custom-fields")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<IReadOnlyList<CustomFieldValueDto>>> SetValues(
         Guid taskId,
         [FromBody] SetCustomFieldValuesBodyDto body,

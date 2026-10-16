@@ -26,6 +26,28 @@ public class ApiKeyAuthenticationHandler(
 {
     public const string SchemeName = "ApiKey";
     public const string HeaderName = "X-Api-Key";
+    public const string OrgIdClaim = "org_id";
+    public const string AuthMethodClaim = "auth_method";
+    public const string AuthMethodApiKey = "api_key";
+
+    /// <summary>
+    /// The org an API-key principal is confined to, or null for a normal
+    /// user (JWT) principal. Only principals issued by this handler carry
+    /// the claim pair, so a JWT can't smuggle one in.
+    /// </summary>
+    public static Guid? GetApiKeyOrgId(ClaimsPrincipal? user)
+    {
+        // When a request carries both a JWT and an API key the merged
+        // principal holds both identities; treat it as the (narrower)
+        // API-key principal.
+        var identity = user?.Identities.FirstOrDefault(i =>
+            i.IsAuthenticated && i.AuthenticationType == SchemeName);
+        if (identity is null || identity.FindFirst(AuthMethodClaim)?.Value != AuthMethodApiKey)
+            return null;
+        return Guid.TryParse(identity.FindFirst(OrgIdClaim)?.Value, out var orgId) ? orgId : null;
+    }
+
+    public static bool IsApiKeyPrincipal(ClaimsPrincipal? user) => GetApiKeyOrgId(user) is not null;
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
@@ -56,8 +78,8 @@ public class ApiKeyAuthenticationHandler(
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, key.CreatedByUserId.ToString()),
-            new Claim("org_id", key.OrganizationId.ToString()),
-            new Claim("auth_method", "api_key"),
+            new Claim(OrgIdClaim, key.OrganizationId.ToString()),
+            new Claim(AuthMethodClaim, AuthMethodApiKey),
         };
         var identity = new ClaimsIdentity(claims, SchemeName);
         var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), SchemeName);

@@ -1,3 +1,6 @@
+using Domain.Enums;
+using Application.Authorization;
+using Api.Authorization;
 using Application.Common;
 using Application.Features.ApiKeys;
 using MediatR;
@@ -16,6 +19,7 @@ namespace Api.Controllers;
 public class ApiKeysController(ISender mediator) : ControllerBase
 {
     [HttpGet("api/v1/orgs/{slug}/api-keys")]
+    [RequireOrgRole(OrgRole.Admin)]
     public async Task<ActionResult<IReadOnlyList<ApiKeyDto>>> List(string slug, CancellationToken ct)
     {
         var result = await mediator.Send(new ListApiKeysQuery(slug), ct);
@@ -23,6 +27,7 @@ public class ApiKeysController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/orgs/{slug}/api-keys")]
+    [RequireOrgRole(OrgRole.Admin)]
     public async Task<ActionResult<CreatedApiKeyDto>> Create(
         string slug, [FromBody] CreateApiKeyBodyDto body, CancellationToken ct)
     {
@@ -32,6 +37,7 @@ public class ApiKeysController(ISender mediator) : ControllerBase
     }
 
     [HttpDelete("api/v1/api-keys/{id:guid}")]
+    [RequireOrgRole(OrgRole.Admin, OrgScope.ApiKey, "id")]
     public async Task<IActionResult> Revoke(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new RevokeApiKeyCommand(id), ct);

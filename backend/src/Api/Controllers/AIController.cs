@@ -1,3 +1,4 @@
+using Application.Authorization;
 using Api.Authorization;
 using Application.Common;
 using Application.Features.AI;
@@ -29,6 +30,7 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/orgs/{slug}/ai/generate-project")]
+    [RequireOrgRole(OrgRole.Member)]
     public async Task<ActionResult<AIGenerationPreviewDto>> GenerateProject(
         string slug,
         [FromBody] GenerateProjectBodyDto body,
@@ -43,6 +45,7 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/ai/generate-project/{requestId:guid}/apply")]
+    [RequireOrgRole(OrgRole.Member, OrgScope.AIGenerationRequest, "requestId")]
     public async Task<ActionResult<ProjectDto>> ApplyGeneratedProject(
         Guid requestId,
         [FromBody] ApplyGenerationBodyDto body,
@@ -60,6 +63,7 @@ public class AIController(ISender mediator) : ControllerBase
     // stays canonical on the server (stored in AIGenerationRequest.PreviewJson),
     // so the wizard only needs to send the chosen project name.
     [HttpPost("api/v1/ai/generate-typed-project/{requestId:guid}/apply")]
+    [RequireOrgRole(OrgRole.Member, OrgScope.AIGenerationRequest, "requestId")]
     public async Task<ActionResult<ProjectDto>> ApplyTypedGeneratedProject(
         Guid requestId,
         [FromBody] ApplyTypedGenerationBodyDto body,
@@ -71,6 +75,7 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/tasks/{taskId:guid}/estimate")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<TaskEstimateDto>> Estimate(
         Guid taskId, CancellationToken ct)
     {
@@ -79,6 +84,7 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/tasks/{taskId:guid}/ai/breakdown")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<TaskBreakdownDto>> BreakdownTask(
         Guid taskId, CancellationToken ct)
     {
@@ -143,6 +149,7 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/sprints/{sprintId:guid}/ai-fill")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Sprint, "sprintId")]
     public async Task<ActionResult<SprintFillPlanDto>> AiFillSprint(
         Guid sprintId,
         [FromQuery(Name = "target")] int? target,
@@ -189,6 +196,7 @@ public class AIController(ISender mediator) : ControllerBase
     // endpoints (Auth-only on the route, handler validates via the AI
     // gate + sprint state).
     [HttpPost("api/v1/sprints/{sprintId:guid}/ai/replan")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Sprint, "sprintId")]
     public async Task<ActionResult<AISuggestionDto>> GenerateVelocityReplan(
         Guid sprintId, CancellationToken ct)
     {
@@ -197,6 +205,7 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/ai/suggestions/{id:guid}/apply-replan")]
+    [RequireProjectRole(ProjectRole.TeamLead, ProjectScope.AISuggestion, "id")]
     public async Task<ActionResult<AISuggestionDto>> ApplyVelocityReplan(
         Guid id, [FromBody] ApplyReplanBodyDto body, CancellationToken ct)
     {
@@ -214,6 +223,7 @@ public class AIController(ISender mediator) : ControllerBase
     // org-member read endpoints (auth-only; handler reads org/project
     // membership inline).
     [HttpPost("api/v1/users/{userId:guid}/ai/reassignment")]
+    [RequireOrgRole(OrgRole.Admin, OrgScope.Organization, "org_id")]
     public async Task<IActionResult> GenerateReassignmentSuggestion(
         Guid userId,
         [FromQuery(Name = "org_id")] Guid? orgId,
@@ -225,6 +235,7 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/ai/suggestions/{id:guid}/apply-reassignments")]
+    [RequireProjectRole(ProjectRole.TeamLead, ProjectScope.AISuggestion, "id")]
     public async Task<ActionResult<AISuggestionDto>> ApplyReassignments(
         Guid id, [FromBody] ApplyReassignmentsBodyDto body, CancellationToken ct)
     {
@@ -234,6 +245,7 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/ai/suggestions/{id:guid}/dismiss")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.AISuggestion, "id")]
     public async Task<IActionResult> DismissSuggestion(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new DismissSuggestionCommand(id), ct);
@@ -241,6 +253,7 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/ai/suggestions/{id:guid}/accept")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.AISuggestion, "id")]
     public async Task<IActionResult> AcceptSuggestion(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new AcceptSuggestionCommand(id), ct);

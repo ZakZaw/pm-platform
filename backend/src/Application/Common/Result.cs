@@ -79,6 +79,12 @@ public static class OrgErrors
 
     public static readonly Error LastOwner =
         new("Org.LastOwner", "An organization must have at least one Owner.");
+
+    public static readonly Error NotAMember =
+        new("Org.NotAMember", "You do not have access to this organization.");
+
+    public static readonly Error InsufficientRole =
+        new("Org.InsufficientRole", "Your organization role does not allow this action.");
 }
 
 public static class UserErrors

@@ -12,10 +12,10 @@
 .topbar-user__trigger {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--s-2);
   background: transparent;
   border: 0;
-  padding: 2px 4px;
+  padding: var(--s-1) var(--s-2);
   border-radius: var(--r-md);
   color: var(--text);
   cursor: pointer;

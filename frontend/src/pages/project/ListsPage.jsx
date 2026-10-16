@@ -247,7 +247,7 @@ export function ListsPage() {
           title="No lists yet"
           subtitle="Group tasks by phase, area, or status — whatever fits this project."
         >
-          <Button onClick={() => setCreatingList(true)}>Create your first list</Button>
+          <Button variant="secondary" onClick={() => setCreatingList(true)}>Create your first list</Button>
         </EmptyState>
       ) : (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>

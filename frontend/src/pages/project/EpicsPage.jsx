@@ -193,7 +193,7 @@ export function EpicsPage() {
           <Button variant="secondary" onClick={() => setAiOpen(true)}>
             <Sparkles size={14} aria-hidden="true" /> Draft with AI
           </Button>
-          <Button variant="primary" onClick={() => setCreating(true)}>
+          <Button variant="secondary" onClick={() => setCreating(true)}>
             New epic
           </Button>
         </EmptyState>

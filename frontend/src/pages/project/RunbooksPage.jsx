@@ -90,6 +90,7 @@ export function RunbooksPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
+            {project && <div className="eyebrow">{project.name}</div>}
             <h1 className="page-title">Runbooks</h1>
             <p className="page-subtitle">
               {workflows.length} workflow{workflows.length === 1 ? '' : 's'}

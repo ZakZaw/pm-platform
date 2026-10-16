@@ -116,7 +116,7 @@ export function Sidebar() {
           title={currentOrg.name}
         >
           <div className="sidebar-logo" aria-hidden="true"><span>{orgInitial}</span></div>
-          <div className="col" style={{ gap: 1, flex: 1, minWidth: 0 }}>
+          <div className="col sidebar-meta">
             <div className="sidebar-org-name truncate">{currentOrg.name}</div>
             <div className="sidebar-org-slug truncate">/{currentOrg.slug}</div>
           </div>
@@ -191,7 +191,7 @@ export function Sidebar() {
               <div className={`proj-icon proj-icon-${projectAccent(activeProject.type)}`}>
                 {projectInitial(activeProject.name)}
               </div>
-              <div className="col" style={{ gap: 1, flex: 1, minWidth: 0 }}>
+              <div className="col sidebar-meta">
                 <div className="proj-card-name truncate">{activeProject.name}</div>
                 <div className="proj-card-type">{activeProject.type ?? 'Project'}</div>
               </div>
@@ -252,17 +252,14 @@ export function Sidebar() {
                 end
                 title={p.name}
               >
-                <div
-                  className={`proj-icon proj-icon-${projectAccent(p.type)}`}
-                  style={{ width: 20, height: 20, fontSize: 9 }}
-                >
+                <div className={`proj-icon proj-icon-xs proj-icon-${projectAccent(p.type)}`}>
                   {projectInitial(p.name)}
                 </div>
                 <span className="truncate">{p.name}</span>
               </NavLink>
             ))}
             {projects.length === 0 && (
-              <div className="nav-item" style={{ color: 'var(--text-muted)', cursor: 'default' }}>
+              <div className="nav-item is-empty">
                 <span>No projects yet</span>
               </div>
             )}
@@ -276,7 +273,7 @@ export function Sidebar() {
           name={user?.fullName || user?.email}
           size="md"
         />
-        <div className="col" style={{ gap: 1, flex: 1, minWidth: 0 }}>
+        <div className="col sidebar-meta">
           <div className="sidebar-foot-name truncate">{user?.fullName ?? 'You'}</div>
           <div className="sidebar-foot-mail truncate">{user?.email}</div>
         </div>

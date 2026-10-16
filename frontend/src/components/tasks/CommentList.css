@@ -76,7 +76,7 @@
 .comment__mention {
   background: var(--accent-soft);
   color: var(--accent);
-  padding: 0 4px;
+  padding: 0 var(--s-2);
   border-radius: var(--r-sm);
   font-weight: var(--fw-medium);
 }

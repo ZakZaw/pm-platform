@@ -46,6 +46,7 @@ export function AccountsPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
+            {project && <div className="eyebrow">{project.name}</div>}
             <h1 className="page-title">Accounts</h1>
             <div className="page-subtitle">
               Companies you're working with, with their open deals and pipeline value.

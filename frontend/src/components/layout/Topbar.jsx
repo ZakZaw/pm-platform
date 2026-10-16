@@ -176,7 +176,7 @@ export function Topbar() {
       </button>
 
       <Button
-        variant="primary"
+        variant="secondary"
         size="sm"
         onClick={() => openQuickCreate?.()}
         aria-label="Create task"

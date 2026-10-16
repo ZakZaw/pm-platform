@@ -208,6 +208,7 @@ export function PipelinePage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
+            {project && <div className="eyebrow">{project.name}</div>}
             <h1 className="page-title">Pipeline</h1>
             <div className="page-subtitle">
               {totalOpenCount} open deals · {fmtCurrency(totalOpenValue, 'USD')} in flight

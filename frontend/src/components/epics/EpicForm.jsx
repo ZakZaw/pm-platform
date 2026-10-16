@@ -34,10 +34,10 @@ export function EpicForm({ initial, onSubmit, onCancel, submitLabel = 'Create' }
         autoComplete="off"
         required
       />
-      <label className="epic-form__field">
-        <span className="epic-form__label">Description</span>
+      <label className="epic-form-field">
+        <span className="epic-form-label">Description</span>
         <textarea
-          className="epic-form__textarea"
+          className="epic-form-textarea"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
@@ -45,14 +45,14 @@ export function EpicForm({ initial, onSubmit, onCancel, submitLabel = 'Create' }
         />
       </label>
 
-      <div className="epic-form__field">
-        <span className="epic-form__label">Color</span>
-        <div className="epic-form__colors">
+      <div className="epic-form-field">
+        <span className="epic-form-label">Color</span>
+        <div className="epic-form-colors">
           {COLORS.map((c) => (
             <button
               key={c}
               type="button"
-              className={['epic-form__color', color === c ? 'is-active' : ''].filter(Boolean).join(' ')}
+              className={['epic-form-color', color === c ? 'is-active' : ''].filter(Boolean).join(' ')}
               style={{ background: c }}
               onClick={() => setColor(c)}
               aria-label={`Color ${c}`}
@@ -61,9 +61,9 @@ export function EpicForm({ initial, onSubmit, onCancel, submitLabel = 'Create' }
         </div>
       </div>
 
-      {error && <p className="epic-form__error">{error}</p>}
+      {error && <p className="epic-form-error">{error}</p>}
 
-      <div className="epic-form__actions">
+      <div className="epic-form-actions">
         {onCancel && (
           <Button type="button" variant="ghost" onClick={onCancel}>
             Cancel

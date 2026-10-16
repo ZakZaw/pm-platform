@@ -11,22 +11,22 @@
   gap: var(--s-2);
 }
 
-.assignee-picker__label {
+.assignee-picker-label {
   font-size: var(--fs-xs);
   font-weight: var(--fw-medium);
   color: var(--text-secondary);
 }
 
-.assignee-picker__dropdown {
+.assignee-picker-dropdown {
   display: block;
   width: 100%;
 }
 
-.assignee-picker__trigger {
+.assignee-picker-trigger {
   display: inline-flex;
   align-items: center;
   gap: var(--s-4);
-  padding: 4px 8px 4px 4px;
+  padding: var(--s-2) var(--s-4) var(--s-2) var(--s-2);
   background: transparent;
   border: 1px dashed var(--border);
   border-radius: var(--r-pill);
@@ -40,38 +40,38 @@
   max-width: 100%;
 }
 
-.assignee-picker__trigger:hover:not(.is-disabled) {
+.assignee-picker-trigger:hover:not(.is-disabled) {
   background: var(--surface-hover);
   border-color: var(--border-strong);
 }
 
-.assignee-picker__trigger:focus-visible {
+.assignee-picker-trigger:focus-visible {
   outline: none;
   border-color: var(--accent-bright);
   box-shadow: var(--shadow-focus);
 }
 
-.assignee-picker__trigger.is-sm {
-  padding: 2px 6px 2px 2px;
+.assignee-picker-trigger.is-sm {
+  padding: var(--s-1) var(--s-3) var(--s-1) var(--s-1);
   font-size: var(--fs-xs);
 }
 
-.assignee-picker__trigger.is-disabled {
+.assignee-picker-trigger.is-disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }
 
-.assignee-picker__name {
+.assignee-picker-name {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.assignee-picker__name.is-muted {
+.assignee-picker-name.is-muted {
   color: var(--text-muted);
 }
 
-.assignee-picker__empty-dot {
+.assignee-picker-empty-dot {
   width: 18px;
   height: 18px;
   border-radius: 50%;
@@ -79,23 +79,23 @@
   flex-shrink: 0;
 }
 
-.assignee-picker__search {
+.assignee-picker-search {
   padding: var(--s-4);
   border-bottom: 1px solid var(--border-subtle);
 }
 
-.assignee-picker__search-input {
+.assignee-picker-search-input {
   width: 100%;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
   color: var(--text);
-  padding: 4px var(--s-4);
+  padding: var(--s-2) var(--s-4);
   font: inherit;
   font-size: var(--fs-xs);
 }
 
-.assignee-picker__search-input:focus {
+.assignee-picker-search-input:focus {
   outline: none;
   border-color: var(--accent-bright);
   box-shadow: var(--shadow-focus);

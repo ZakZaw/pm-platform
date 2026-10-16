@@ -155,15 +155,15 @@ export function CampaignDetailDrawer({ campaignId, onClose, onChanged }) {
   const campaign = detail?.campaign;
 
   return createPortal(
-    <div className="campaign-drawer__backdrop" onClick={onClose}>
+    <div className="campaign-drawer-backdrop" onClick={onClose}>
       <aside
         className="campaign-drawer"
         role="dialog"
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="campaign-drawer__head">
-          <div className="campaign-drawer__head-meta">
+        <header className="campaign-drawer-head">
+          <div className="campaign-drawer-head-meta">
             {campaign && (
               <span className={`mkt-ch-label ${channelClass(campaign.channel)}`}>
                 {campaign.channel}
@@ -186,14 +186,14 @@ export function CampaignDetailDrawer({ campaignId, onClose, onChanged }) {
           </button>
         </header>
 
-        {error && <p className="campaign-drawer__error">{error}</p>}
-        {!campaign && !error && <p className="campaign-drawer__placeholder">Loading…</p>}
+        {error && <p className="campaign-drawer-error">{error}</p>}
+        {!campaign && !error && <p className="campaign-drawer-placeholder">Loading…</p>}
 
         {campaign && (
-          <div className="campaign-drawer__body">
-            <h2 className="campaign-drawer__title">{campaign.name}</h2>
+          <div className="campaign-drawer-body">
+            <h2 className="campaign-drawer-title">{campaign.name}</h2>
 
-            <div className="grid-2 campaign-drawer__fields">
+            <div className="grid-2 campaign-drawer-fields">
               <Field label="Channel">
                 <Select
                   value={campaign.channel}
@@ -234,31 +234,31 @@ export function CampaignDetailDrawer({ campaignId, onClose, onChanged }) {
 
             {campaign.goalMd && (
               <Field label="Goal">
-                <p className="campaign-drawer__goal">{campaign.goalMd}</p>
+                <p className="campaign-drawer-goal">{campaign.goalMd}</p>
               </Field>
             )}
 
-            <section className="campaign-drawer__section">
-              <div className="campaign-drawer__section-head">
-                <h3 className="campaign-drawer__section-title">
-                  Assets <span className="campaign-drawer__count">{detail.assets.length}</span>
+            <section className="campaign-drawer-section">
+              <div className="campaign-drawer-section-head">
+                <h3 className="campaign-drawer-section-title">
+                  Assets <span className="campaign-drawer-count">{detail.assets.length}</span>
                 </h3>
-                <span className="campaign-drawer__hint">
+                <span className="campaign-drawer-hint">
                   Draft → Review → Approved → Published
                 </span>
               </div>
-              <ul className="campaign-drawer__list">
+              <ul className="campaign-drawer-list">
                 {detail.assets.map((a) => (
                   <li key={a.id} className="asset-row">
-                    <div className="asset-row__main">
-                      <div className="asset-row__title">{a.title}</div>
-                      <div className="asset-row__meta">
+                    <div className="asset-row-main">
+                      <div className="asset-row-title">{a.title}</div>
+                      <div className="asset-row-meta">
                         <span>{a.type}</span>
 
                         <span>{fmtDate(a.publishDate)}</span>
                       </div>
                       {a.rejectionReason && a.status === 'Draft' && (
-                        <div className="campaign-drawer__reason">
+                        <div className="campaign-drawer-reason">
                           <strong>Rejected:</strong> {a.rejectionReason}
                         </div>
                       )}
@@ -271,7 +271,7 @@ export function CampaignDetailDrawer({ campaignId, onClose, onChanged }) {
                     />
                     <button
                       type="button"
-                      className="icon-btn icon-btn-sm campaign-drawer__row-action"
+                      className="icon-btn icon-btn-sm campaign-drawer-row-action"
                       onClick={() => deleteAsset(a)}
                       aria-label="Delete asset"
                       title="Delete asset"
@@ -281,7 +281,7 @@ export function CampaignDetailDrawer({ campaignId, onClose, onChanged }) {
                   </li>
                 ))}
                 {detail.assets.length === 0 && (
-                  <li className="campaign-drawer__empty">No assets yet.</li>
+                  <li className="campaign-drawer-empty">No assets yet.</li>
                 )}
               </ul>
               <CreateAssetInline
@@ -290,13 +290,13 @@ export function CampaignDetailDrawer({ campaignId, onClose, onChanged }) {
               />
             </section>
 
-            <section className="campaign-drawer__section">
-              <div className="campaign-drawer__section-head">
-                <h3 className="campaign-drawer__section-title">
-                  Tasks <span className="campaign-drawer__count">{detail.tasks.length}</span>
+            <section className="campaign-drawer-section">
+              <div className="campaign-drawer-section-head">
+                <h3 className="campaign-drawer-section-title">
+                  Tasks <span className="campaign-drawer-count">{detail.tasks.length}</span>
                 </h3>
               </div>
-              <ul className="campaign-drawer__list">
+              <ul className="campaign-drawer-list">
                 {detail.tasks.map((t) => (
                   <li key={t.id} className={`mtask-row${t.status === 'Done' ? ' is-done' : ''}`}>
                     <input
@@ -306,10 +306,10 @@ export function CampaignDetailDrawer({ campaignId, onClose, onChanged }) {
                       onChange={() => toggleTask(t)}
                       aria-label={t.status === 'Done' ? 'Mark not done' : 'Mark done'}
                     />
-                    <div className="asset-row__main">
-                      <div className="mtask-row__title">{t.title}</div>
+                    <div className="asset-row-main">
+                      <div className="mtask-row-title">{t.title}</div>
                       {t.assetTitle && (
-                        <div className="asset-row__meta">→ {t.assetTitle}</div>
+                        <div className="asset-row-meta">→ {t.assetTitle}</div>
                       )}
                     </div>
                     <span className={`status ${TASK_STATUS_CLASS[t.status] ?? 'status-todo'}`}>
@@ -317,7 +317,7 @@ export function CampaignDetailDrawer({ campaignId, onClose, onChanged }) {
                     </span>
                     <button
                       type="button"
-                      className="icon-btn icon-btn-sm campaign-drawer__row-action"
+                      className="icon-btn icon-btn-sm campaign-drawer-row-action"
                       onClick={() => deleteTask(t)}
                       aria-label="Delete task"
                       title="Delete task"
@@ -327,7 +327,7 @@ export function CampaignDetailDrawer({ campaignId, onClose, onChanged }) {
                   </li>
                 ))}
                 {detail.tasks.length === 0 && (
-                  <li className="campaign-drawer__empty">No tasks yet.</li>
+                  <li className="campaign-drawer-empty">No tasks yet.</li>
                 )}
               </ul>
               <CreateTaskInline
@@ -358,8 +358,8 @@ export function CampaignDetailDrawer({ campaignId, onClose, onChanged }) {
 
 function Field({ label, children }) {
   return (
-    <div className="campaign-drawer__field">
-      <div className="campaign-drawer__label">{label}</div>
+    <div className="campaign-drawer-field">
+      <div className="campaign-drawer-label">{label}</div>
       {children}
     </div>
   );
@@ -397,7 +397,7 @@ function CreateAssetInline({ campaignId, onCreated }) {
   }
 
   return (
-    <form className="campaign-drawer__asset-form" onSubmit={submit}>
+    <form className="campaign-drawer-asset-form" onSubmit={submit}>
       <Input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -458,7 +458,7 @@ function CreateTaskInline({ campaignId, assets, onCreated }) {
   ];
 
   return (
-    <form className="campaign-drawer__inline-form" onSubmit={submit}>
+    <form className="campaign-drawer-inline-form" onSubmit={submit}>
       <Input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -500,7 +500,7 @@ function RejectionReasonModal({ asset, onCancel, onConfirm }) {
           <h2 id="reject-asset-title" className="modal-title">Send back to Draft</h2>
         </ModalHeader>
         <ModalBody>
-          <p className="campaign-drawer__lead">
+          <p className="campaign-drawer-lead">
             Tell the asset's owner why <strong>{asset.title}</strong> needs more work.
           </p>
           <Input

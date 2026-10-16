@@ -186,14 +186,14 @@ export function ProfilePage() {
   if (loadError) {
     return (
       <div className="main-inner profile">
-        <p className="profile__placeholder">{loadError}</p>
+        <p className="profile-placeholder">{loadError}</p>
       </div>
     );
   }
   if (!profile) {
     return (
       <div className="main-inner profile">
-        <p className="profile__placeholder">Loading…</p>
+        <p className="profile-placeholder">Loading…</p>
       </div>
     );
   }
@@ -212,13 +212,13 @@ export function ProfilePage() {
         </div>
       </header>
 
-      <section className="card profile__card" aria-label="Identity">
-        <div className="profile__avatar-row">
+      <section className="card profile-card" aria-label="Identity">
+        <div className="profile-avatar-row">
           <Avatar src={displayAvatar} name={fullName || profile.email} size="xl" />
-          <div className="profile__identity">
-            <div className="profile__name">{fullName || profile.email}</div>
-            <div className="profile__email">{profile.email}</div>
-            <div className="profile__avatar-actions">
+          <div className="profile-identity">
+            <div className="profile-name">{fullName || profile.email}</div>
+            <div className="profile-email">{profile.email}</div>
+            <div className="profile-avatar-actions">
               <Button
                 type="button"
                 variant="secondary"
@@ -239,21 +239,21 @@ export function ProfilePage() {
                   Reset to default
                 </Button>
               )}
-              <span className="profile__hint">PNG, JPEG, or WebP. Max 2 MB.</span>
+              <span className="profile-hint">PNG, JPEG, or WebP. Max 2 MB.</span>
             </div>
             <input
               ref={fileInputRef}
-              className="profile__file-input"
+              className="profile-file-input"
               type="file"
               accept="image/png,image/jpeg,image/webp"
               onChange={onPickAvatar}
             />
-            {avatarError && <p className="profile__error">{avatarError}</p>}
+            {avatarError && <p className="profile-error">{avatarError}</p>}
           </div>
         </div>
 
-        <form className="profile__form" onSubmit={onSubmit} aria-label="Details">
-          <div className="profile__grid">
+        <form className="profile-form" onSubmit={onSubmit} aria-label="Details">
+          <div className="profile-grid">
             <Input
               label="Full name"
               value={fullName}
@@ -292,7 +292,7 @@ export function ProfilePage() {
 
           <div>
             <label className="input-label" htmlFor="profile-skill-input">Skill tags</label>
-            <div className="profile__chips">
+            <div className="profile-chips">
               {tags.map((t) => (
                 <Chip key={t} onRemove={() => setTags(tags.filter((x) => x !== t))}>
                   {t}
@@ -300,7 +300,7 @@ export function ProfilePage() {
               ))}
               <input
                 id="profile-skill-input"
-                className="profile__tag-input"
+                className="profile-tag-input"
                 type="text"
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
@@ -315,10 +315,10 @@ export function ProfilePage() {
             </p>
           </div>
 
-          <div className="profile__footer">
-            <div className="profile__status" aria-live="polite">
-              {saveError && <p className="profile__error">{saveError}</p>}
-              {saveSuccess && <p className="profile__success">Profile saved.</p>}
+          <div className="profile-footer">
+            <div className="profile-status" aria-live="polite">
+              {saveError && <p className="profile-error">{saveError}</p>}
+              {saveSuccess && <p className="profile-success">Profile saved.</p>}
             </div>
             <Button type="submit" disabled={submitting}>
               {submitting ? 'Saving…' : 'Save changes'}

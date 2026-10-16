@@ -133,15 +133,15 @@ export function DealDetailDrawer({ dealId, stages, onClose, onChanged }) {
   }
 
   return createPortal(
-    <div className="deal-drawer__backdrop" onClick={onClose}>
+    <div className="deal-drawer-backdrop" onClick={onClose}>
       <aside
         className="deal-drawer"
         role="dialog"
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="deal-drawer__head">
-          <div className="deal-drawer__head-meta">
+        <header className="deal-drawer-head">
+          <div className="deal-drawer-head-meta">
             <span className={`status ${STATUS_CLASS[deal?.status] ?? 'status-progress'}`}>
               {deal?.status ?? '…'}
             </span>
@@ -158,16 +158,16 @@ export function DealDetailDrawer({ dealId, stages, onClose, onChanged }) {
           </button>
         </header>
 
-        {error && <p className="deal-drawer__error">{error}</p>}
-        {!deal && !error && <p className="deal-drawer__placeholder">Loading…</p>}
+        {error && <p className="deal-drawer-error">{error}</p>}
+        {!deal && !error && <p className="deal-drawer-placeholder">Loading…</p>}
 
         {deal && (
-          <div className="deal-drawer__body">
-            <h2 className="deal-drawer__title">{deal.name}</h2>
+          <div className="deal-drawer-body">
+            <h2 className="deal-drawer-title">{deal.name}</h2>
 
-            <div className="grid-2 deal-drawer__fields">
+            <div className="grid-2 deal-drawer-fields">
               <Field label="Value">
-                <span className="deal-drawer__value">
+                <span className="deal-drawer-value">
                   {fmtCurrency(deal.value, deal.currency)}
                 </span>
               </Field>
@@ -207,19 +207,19 @@ export function DealDetailDrawer({ dealId, stages, onClose, onChanged }) {
             </div>
 
             {deal.lostReason && (
-              <div className="deal-drawer__reason">
+              <div className="deal-drawer-reason">
                 <strong>Lost reason:</strong> {deal.lostReason}
               </div>
             )}
             {deal.wonNote && (
-              <div className="deal-drawer__reason is-won">
+              <div className="deal-drawer-reason is-won">
                 <strong>Won note:</strong> {deal.wonNote}
               </div>
             )}
 
-            <section className="deal-drawer__section">
-              <h3 className="deal-drawer__section-title">Activity</h3>
-              <form className="deal-drawer__activity-form" onSubmit={logActivity}>
+            <section className="deal-drawer-section">
+              <h3 className="deal-drawer-section-title">Activity</h3>
+              <form className="deal-drawer-activity-form" onSubmit={logActivity}>
                 <Select
                   value={activityType}
                   onChange={(e) => setActivityType(e.target.value)}
@@ -241,17 +241,17 @@ export function DealDetailDrawer({ dealId, stages, onClose, onChanged }) {
                 </Button>
               </form>
 
-              <ul className="deal-drawer__activity-list">
+              <ul className="deal-drawer-activity-list">
                 {activities.map((a) => {
                   const Icon = ACTIVITY_ICONS[a.type] ?? MessageSquare;
                   return (
-                    <li key={a.id} className="deal-drawer__activity">
-                      <span className="deal-drawer__activity-icon">
+                    <li key={a.id} className="deal-drawer-activity">
+                      <span className="deal-drawer-activity-icon">
                         <Icon size={13} aria-hidden="true" />
                       </span>
                       <div className="grow">
                         <div>{a.summary}</div>
-                        <div className="deal-drawer__activity-meta">
+                        <div className="deal-drawer-activity-meta">
                           {a.type} · {new Date(a.occurredAt).toLocaleString()}
                         </div>
                       </div>
@@ -259,7 +259,7 @@ export function DealDetailDrawer({ dealId, stages, onClose, onChanged }) {
                   );
                 })}
                 {activities.length === 0 && (
-                  <li className="deal-drawer__empty">No activity yet.</li>
+                  <li className="deal-drawer-empty">No activity yet.</li>
                 )}
               </ul>
             </section>
@@ -286,8 +286,8 @@ export function DealDetailDrawer({ dealId, stages, onClose, onChanged }) {
 
 function Field({ label, children }) {
   return (
-    <div className="deal-drawer__field">
-      <div className="deal-drawer__label">{label}</div>
+    <div className="deal-drawer-field">
+      <div className="deal-drawer-label">{label}</div>
       {children}
     </div>
   );

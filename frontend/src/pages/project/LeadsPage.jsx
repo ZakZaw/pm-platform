@@ -54,6 +54,7 @@ export function LeadsPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
+            {project && <div className="eyebrow">{project.name}</div>}
             <h1 className="page-title">Leads</h1>
             <div className="page-subtitle">
               Inbound and outbound prospects. Convert qualified leads into deals on your pipeline.

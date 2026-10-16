@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Priority,
-  Segmented,
   Select,
   Skeleton,
   StatusBadge,
@@ -61,13 +60,6 @@ const SECTIONS = [
   { id: 'later', label: 'Later', tone: 'neutral' },
 ];
 
-const KIND_FILTERS = [
-  { value: 'all', label: 'All' },
-  { value: 'task', label: 'Tasks' },
-  { value: 'deal', label: 'Deals', disabled: true },
-  { value: 'ticket', label: 'Tickets', disabled: true },
-];
-
 export function MyWorkPage() {
   const user = useAuthStore((s) => s.user);
   const orgs = useOrgStore((s) => s.orgs);
@@ -83,7 +75,6 @@ export function MyWorkPage() {
 
   const [projectFilter, setProjectFilter] = useState(ALL);
   const [sprintFilter, setSprintFilter] = useState(ALL);
-  const [kindFilter, setKindFilter] = useState('all');
   const [opened, setOpened] = useState(null);
 
   useEffect(() => {
@@ -201,12 +192,6 @@ export function MyWorkPage() {
       </div>
 
       <div className="mywork-toolbar">
-        <Segmented
-          value={kindFilter}
-          onChange={setKindFilter}
-          options={KIND_FILTERS}
-          ariaLabel="Filter by item kind"
-        />
         <div className="mywork-filters">
           <Select
             value={projectFilter}

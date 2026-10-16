@@ -103,7 +103,7 @@ export function RunDetailPage() {
   return (
     <div className="main-inner run-detail-page">
       <div className="page-head">
-        <Link to={`/${orgSlug}/projects/${projectSlug}/runbooks`} className="run-detail-page__back-link">
+        <Link to={`/${orgSlug}/projects/${projectSlug}/runbooks`} className="run-detail-page-back-link">
           <ArrowLeft size={13} aria-hidden="true" /> Runbooks
         </Link>
         <div className="page-title-row">
@@ -114,7 +114,7 @@ export function RunDetailPage() {
               {new Date(run.scheduledFor).toLocaleString(undefined, {
                 dateStyle: 'medium', timeStyle: 'short',
               })}
-              {run.isOverdue && <> · <span className="run-detail-page__overdue">Overdue</span></>}
+              {run.isOverdue && <> · <span className="run-detail-page-overdue">Overdue</span></>}
             </p>
           </div>
           <div className="row gap-4">
@@ -134,15 +134,15 @@ export function RunDetailPage() {
       </div>
 
       {run.status === 'Skipped' && run.skippedReason && (
-        <Card className="run-detail-page__skipped">
+        <Card className="run-detail-page-skipped">
           <strong>Skipped:</strong> {run.skippedReason}
         </Card>
       )}
 
-      <Card className="run-detail-page__checklist">
+      <Card className="run-detail-page-checklist">
         {items.length > 0 && (
-          <div className="run-detail-page__progress">
-            <div className="run-detail-page__progress-label">
+          <div className="run-detail-page-progress">
+            <div className="run-detail-page-progress-label">
               <span className="h-card">Checklist</span>
               <span className="muted">{doneCount} of {items.length} done</span>
             </div>
@@ -157,18 +157,18 @@ export function RunDetailPage() {
         {items.length === 0 ? (
           <p className="muted">This run has no checklist items.</p>
         ) : (
-          <ul className="run-detail-page__items">
+          <ul className="run-detail-page-items">
             {items.map((item) => {
               const earlierIncomplete = item.sequential && items.some(
                 (i) => i.order < item.order && !i.completed,
               );
               const locked = (!item.completed && earlierIncomplete) || terminal;
               return (
-                <li key={item.id} className="run-detail-page__item">
+                <li key={item.id} className="run-detail-page-item">
                   <button
                     type="button"
                     className={[
-                      'run-detail-page__check',
+                      'run-detail-page-check',
                       item.completed ? 'is-checked' : '',
                       locked ? 'is-locked' : '',
                     ].filter(Boolean).join(' ')}
@@ -184,14 +184,14 @@ export function RunDetailPage() {
                   </button>
                   <span
                     className={[
-                      'run-detail-page__item-title',
+                      'run-detail-page-item-title',
                       item.completed ? 'is-completed' : '',
                     ].filter(Boolean).join(' ')}
                   >
                     {item.title}
                   </span>
                   {item.sequential && (
-                    <span className="run-detail-page__seq">Sequential</span>
+                    <span className="run-detail-page-seq">Sequential</span>
                   )}
                 </li>
               );
@@ -199,7 +199,7 @@ export function RunDetailPage() {
           </ul>
         )}
         {allDone && run.status === 'Completed' && (
-          <p className="muted run-detail-page__done-note">
+          <p className="muted run-detail-page-done-note">
             Completed{' '}
             {run.completedAt && new Date(run.completedAt).toLocaleString(undefined, {
               dateStyle: 'medium', timeStyle: 'short',

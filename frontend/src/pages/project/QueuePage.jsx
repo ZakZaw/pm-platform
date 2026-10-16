@@ -122,6 +122,7 @@ export function QueuePage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
+            {project && <div className="eyebrow">{project.name}</div>}
             <h1 className="page-title">Queue</h1>
             <div className="page-subtitle">
               {counts.All} ticket{counts.All === 1 ? '' : 's'}

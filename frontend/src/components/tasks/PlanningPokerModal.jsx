@@ -147,7 +147,7 @@ export function PlanningPokerModal({ open, task, projectId, onClose, onClosedWit
     <Modal open={open} onClose={onClose} labelledBy="poker-title" size="lg">
       <ModalHeader>
         <h3 id="poker-title" className="modal-title">
-          <Sparkles size={14} aria-hidden="true" className="poker__title-icon" />
+          <Sparkles size={14} aria-hidden="true" className="poker-title-icon" />
           Planning poker
         </h3>
       </ModalHeader>
@@ -155,7 +155,7 @@ export function PlanningPokerModal({ open, task, projectId, onClose, onClosedWit
         {loading ? (
           <Skeleton height={180} />
         ) : !session ? (
-          <div className="poker__empty">
+          <div className="poker-empty">
             <p className="muted">
               Start a round to estimate this task as a group. Members drop
               hidden votes; you reveal to compare.
@@ -166,14 +166,14 @@ export function PlanningPokerModal({ open, task, projectId, onClose, onClosedWit
           </div>
         ) : (
           <div className="poker">
-            <div className="poker__cards">
+            <div className="poker-cards">
               {CARDS.map((c) => {
                 const isMine = myVote?.value === c;
                 return (
                   <button
                     key={c}
                     type="button"
-                    className={`poker__card ${isMine ? 'is-mine' : ''}`}
+                    className={`poker-card ${isMine ? 'is-mine' : ''}`}
                     onClick={() => vote(c)}
                     disabled={busy || isRevealed || isClosed}
                     aria-pressed={isMine}
@@ -184,7 +184,7 @@ export function PlanningPokerModal({ open, task, projectId, onClose, onClosedWit
               })}
             </div>
 
-            <div className="eyebrow poker__voters-head">
+            <div className="eyebrow poker-voters-head">
               {isRevealed ? 'Votes' : `Voted (${session.votes.length})`}
               {isRevealed && session.average != null && (
                 <span className="muted">
@@ -192,14 +192,14 @@ export function PlanningPokerModal({ open, task, projectId, onClose, onClosedWit
                 </span>
               )}
             </div>
-            <ul className="poker__voters">
+            <ul className="poker-voters">
               {session.votes.length === 0 ? (
-                <li className="muted poker__voter-empty">No votes yet.</li>
+                <li className="muted poker-voter-empty">No votes yet.</li>
               ) : (
                 session.votes.map((v) => (
-                  <li key={v.userId} className="poker__voter">
+                  <li key={v.userId} className="poker-voter">
                     <span className="truncate">{v.userName ?? '—'}</span>
-                    <span className={`poker__voter-card ${isRevealed ? 'is-shown' : ''}`}>
+                    <span className={`poker-voter-card ${isRevealed ? 'is-shown' : ''}`}>
                       {isRevealed ? <CardFace value={v.value ?? '—'} /> : '✓'}
                     </span>
                   </li>

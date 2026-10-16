@@ -1,4 +1,4 @@
-.field-picker__trigger {
+.field-picker-trigger {
   display: inline-flex;
   align-items: center;
   gap: var(--s-3);
@@ -13,20 +13,20 @@
   max-width: 100%;
   min-width: 0;
 }
-.field-picker__trigger:hover:not(:disabled) { background: var(--surface-hover); }
-.field-picker__trigger:disabled { opacity: 0.6; cursor: not-allowed; }
+.field-picker-trigger:hover:not(:disabled) { background: var(--surface-hover); }
+.field-picker-trigger:disabled { opacity: 0.6; cursor: not-allowed; }
 
-.field-picker__label {
+.field-picker-label {
   font-size: var(--fs-sm);
   min-width: 0;
   max-width: 160px;
 }
 
-.field-picker__placeholder {
+.field-picker-placeholder {
   color: var(--text-muted);
 }
 
-.field-picker__swatch {
+.field-picker-swatch {
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -34,24 +34,24 @@
   display: inline-block;
 }
 
-.field-picker__status-dot {
+.field-picker-status-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: var(--text-muted);
   display: inline-block;
 }
-.field-picker__status-dot[data-status="Active"] { background: var(--success); }
-.field-picker__status-dot[data-status="Planning"] { background: var(--info); }
-.field-picker__status-dot[data-status="Closed"] { background: var(--text-muted); }
+.field-picker-status-dot[data-status="Active"] { background: var(--success); }
+.field-picker-status-dot[data-status="Planning"] { background: var(--info); }
+.field-picker-status-dot[data-status="Closed"] { background: var(--text-muted); }
 
-.field-picker__hint {
+.field-picker-hint {
   margin-left: var(--s-4);
   color: var(--text-muted);
   font-size: var(--fs-xs);
 }
 
-.field-picker__empty {
+.field-picker-empty {
   padding: var(--s-4) var(--s-5);
   color: var(--text-muted);
   font-size: var(--fs-md);

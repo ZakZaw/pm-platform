@@ -33,22 +33,22 @@ export function DashboardWidget({
   return (
     <Card
       data-testid={testid}
-      className={`dashboard-widget dashboard-widget--span-${span}`}
+      className={`dashboard-widget dashboard-widget-span-${span}`}
     >
-      <header className="dashboard-widget__head">
-        <h3 className="dashboard-widget__title">{title}</h3>
+      <header className="dashboard-widget-head">
+        <h3 className="dashboard-widget-title">{title}</h3>
         {action}
       </header>
       {loading ? (
-        <div className="dashboard-widget__body">
+        <div className="dashboard-widget-body">
           <Skeleton height={80} radius="md" />
         </div>
       ) : empty ? (
-        <div className="dashboard-widget__body">
-          <p className="dashboard-widget__empty">{emptyText}</p>
+        <div className="dashboard-widget-body">
+          <p className="dashboard-widget-empty">{emptyText}</p>
         </div>
       ) : (
-        <div className="dashboard-widget__body">{children}</div>
+        <div className="dashboard-widget-body">{children}</div>
       )}
     </Card>
   );
@@ -62,10 +62,10 @@ export function DashboardWidget({
 export function MetricRow({ label, value, sublabel, tone }) {
   const toneClass = tone ? ` dash-tone dash-tone-${tone}` : '';
   return (
-    <div className="dashboard-widget__metric">
-      <div className="dashboard-widget__metric-value">{value}</div>
-      <div className={`dashboard-widget__metric-label${sublabel ? '' : toneClass}`}>{label}</div>
-      {sublabel && <div className={`dashboard-widget__metric-sub${toneClass}`}>{sublabel}</div>}
+    <div className="dashboard-widget-metric">
+      <div className="dashboard-widget-metric-value">{value}</div>
+      <div className={`dashboard-widget-metric-label${sublabel ? '' : toneClass}`}>{label}</div>
+      {sublabel && <div className={`dashboard-widget-metric-sub${toneClass}`}>{sublabel}</div>}
     </div>
   );
 }
@@ -83,11 +83,11 @@ export function ProgressBar({ pct, tone }) {
 /** Label + value list (deal / ticket / run rows). */
 export function WidgetRows({ rows }) {
   return (
-    <ul className="dashboard-widget__rows">
+    <ul className="dashboard-widget-rows">
       {rows.map((r) => (
-        <li key={r.key} className="dashboard-widget__row">
+        <li key={r.key} className="dashboard-widget-row">
           <span className="truncate">{r.label}</span>
-          <span className="dashboard-widget__row-meta">{r.meta}</span>
+          <span className="dashboard-widget-row-meta">{r.meta}</span>
         </li>
       ))}
     </ul>
@@ -101,11 +101,11 @@ export function StackedBar({ segments, format = (v) => v }) {
   if (total <= 0) return null;
   return (
     <>
-      <div className="dashboard-widget__bar">
+      <div className="dashboard-widget-bar">
         {segments.map((s) => (
           <span
             key={s.label}
-            className="dashboard-widget__bar-seg"
+            className="dashboard-widget-bar-seg"
             style={{
               width: `${(s.value / total) * 100}%`,
               background: s.color,
@@ -114,12 +114,12 @@ export function StackedBar({ segments, format = (v) => v }) {
           />
         ))}
       </div>
-      <ul className="dashboard-widget__legend">
+      <ul className="dashboard-widget-legend">
         {segments.map((s) => (
           <li key={s.label}>
-            <span className="dashboard-widget__legend-swatch" style={{ background: s.color }} />
+            <span className="dashboard-widget-legend-swatch" style={{ background: s.color }} />
             <span className="truncate">{s.label}</span>
-            <span className="dashboard-widget__legend-value">{format(s.value)}</span>
+            <span className="dashboard-widget-legend-value">{format(s.value)}</span>
           </li>
         ))}
       </ul>

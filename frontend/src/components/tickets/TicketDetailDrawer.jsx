@@ -104,15 +104,15 @@ export function TicketDetailDrawer({ ticketId, onClose, onChanged }) {
   }
 
   return createPortal(
-    <div className="ticket-drawer__backdrop" onClick={onClose}>
+    <div className="ticket-drawer-backdrop" onClick={onClose}>
       <aside
         className="ticket-drawer"
         role="dialog"
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="ticket-drawer__head">
-          <div className="ticket-drawer__head-meta">
+        <header className="ticket-drawer-head">
+          <div className="ticket-drawer-head-meta">
             <span className={`status ${TICKET_STATUS_CLASS[data?.ticket.status] ?? 'status-todo'}`}>
               {data?.ticket.status ?? '…'}
             </span>
@@ -132,17 +132,17 @@ export function TicketDetailDrawer({ ticketId, onClose, onChanged }) {
           </button>
         </header>
 
-        {error && <p className="ticket-drawer__error">{error}</p>}
-        {!data && !error && <p className="ticket-drawer__placeholder">Loading…</p>}
+        {error && <p className="ticket-drawer-error">{error}</p>}
+        {!data && !error && <p className="ticket-drawer-placeholder">Loading…</p>}
 
         {data && (
-          <div className="ticket-drawer__body">
-            <h2 className="ticket-drawer__title">{data.ticket.subject}</h2>
+          <div className="ticket-drawer-body">
+            <h2 className="ticket-drawer-title">{data.ticket.subject}</h2>
 
-            <div className="ticket-drawer__meta">
+            <div className="ticket-drawer-meta">
               <span
                 className={[
-                  'ticket-drawer__sla',
+                  'ticket-drawer-sla',
                   data.ticket.isBreached ? 'is-danger'
                     : data.ticket.status === 'Resolved' || data.ticket.status === 'Closed' ? 'is-ok'
                       : '',
@@ -161,44 +161,44 @@ export function TicketDetailDrawer({ ticketId, onClose, onChanged }) {
             </div>
 
             {data.ticket.bodyMd && (
-              <div className="ticket-drawer__body-md">{data.ticket.bodyMd}</div>
+              <div className="ticket-drawer-body-md">{data.ticket.bodyMd}</div>
             )}
 
-            <section className="ticket-drawer__section">
-              <h3 className="ticket-drawer__section-title">Replies</h3>
-              <ul className="ticket-drawer__replies">
+            <section className="ticket-drawer-section">
+              <h3 className="ticket-drawer-section-title">Replies</h3>
+              <ul className="ticket-drawer-replies">
                 {data.replies.length === 0 && (
-                  <li className="ticket-drawer__empty">No replies yet.</li>
+                  <li className="ticket-drawer-empty">No replies yet.</li>
                 )}
                 {data.replies.map((r) => (
                   <li
                     key={r.id}
                     className={[
-                      'ticket-drawer__reply',
+                      'ticket-drawer-reply',
                       r.isInternal ? 'is-internal' : '',
                     ].filter(Boolean).join(' ')}
                   >
-                    <div className="ticket-drawer__reply-head">
+                    <div className="ticket-drawer-reply-head">
                       {r.isInternal ? (
-                        <span className="ticket-drawer__reply-kind is-internal">
+                        <span className="ticket-drawer-reply-kind is-internal">
                           <Lock size={12} aria-hidden="true" /> Internal note
                         </span>
                       ) : (
-                        <span className="ticket-drawer__reply-kind">
+                        <span className="ticket-drawer-reply-kind">
                           <Eye size={12} aria-hidden="true" /> Public reply
                         </span>
                       )}
                       <span className="grow" />
-                      <span className="ticket-drawer__reply-time">
+                      <span className="ticket-drawer-reply-time">
                         {new Date(r.createdAt).toLocaleString()}
                       </span>
                     </div>
-                    <div className="ticket-drawer__reply-body">{r.bodyMd}</div>
+                    <div className="ticket-drawer-reply-body">{r.bodyMd}</div>
                   </li>
                 ))}
               </ul>
 
-              <form className="ticket-drawer__reply-form" onSubmit={submitReply}>
+              <form className="ticket-drawer-reply-form" onSubmit={submitReply}>
                 <textarea
                   className="textarea"
                   rows={4}
@@ -206,8 +206,8 @@ export function TicketDetailDrawer({ ticketId, onClose, onChanged }) {
                   onChange={(e) => setBody(e.target.value)}
                   placeholder={isInternal ? 'Note visible only to your team…' : 'Reply to the customer…'}
                 />
-                <div className="ticket-drawer__reply-actions">
-                  <label className="ticket-drawer__internal-toggle">
+                <div className="ticket-drawer-reply-actions">
+                  <label className="ticket-drawer-internal-toggle">
                     <input
                       type="checkbox"
                       checked={isInternal}

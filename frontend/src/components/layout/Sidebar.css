@@ -4,6 +4,13 @@
 
 .sidebar-org { width: 100%; }
 
+/* Name + secondary line stack used by the org button, project card and footer. */
+.sidebar-meta { gap: var(--s-1); flex: 1; min-width: 0; }
+
+/* Non-interactive "No projects yet" row in the projects list. */
+.nav-item.is-empty,
+.nav-item.is-empty:hover { color: var(--text-muted); background: transparent; cursor: default; }
+
 /* "New project with AI" — soft AI tint instead of the loud gradient fill. */
 .sidebar-ai-cta {
   height: 40px;

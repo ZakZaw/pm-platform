@@ -8,7 +8,7 @@
   background: var(--bg);
 }
 
-.auth-page__inner {
+.auth-page-inner {
   width: 100%;
   max-width: 420px;
   display: flex;
@@ -24,7 +24,7 @@
   gap: var(--s-4);
 }
 
-.auth-brand__mark {
+.auth-brand-mark {
   position: relative;
   overflow: hidden;
   width: 40px;
@@ -39,34 +39,34 @@
   font-size: var(--fs-lg);
   box-shadow: var(--shadow-accent);
 }
-.auth-brand__mark::before {
+.auth-brand-mark::before {
   content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, transparent 30%, var(--ai-2) 100%);
 }
-.auth-brand__mark span {
+.auth-brand-mark span {
   position: relative;
   letter-spacing: var(--tracking-tight);
 }
 
-.auth-brand__name {
+.auth-brand-name {
   font-size: var(--fs-lg);
   font-weight: var(--fw-bold);
   letter-spacing: var(--tracking-snug);
   color: var(--text);
 }
 
-.auth-page__card {
+.auth-page-card {
   padding: var(--s-10) var(--s-9);
 }
 
-.auth-page__head {
+.auth-page-head {
   margin-bottom: var(--s-9);
   text-align: center;
 }
 
-.auth-page__title {
+.auth-page-title {
   margin: 0;
   font-size: var(--fs-2xl);
   font-weight: var(--fw-bold);
@@ -74,13 +74,13 @@
   color: var(--text);
 }
 
-.auth-page__subtitle {
+.auth-page-subtitle {
   margin: var(--s-3) 0 0;
   font-size: var(--fs-md);
   color: var(--text-muted);
 }
 
-.auth-page__form {
+.auth-page-form {
   display: flex;
   flex-direction: column;
   gap: var(--s-7);
@@ -97,33 +97,33 @@
   height: 42px;
 }
 
-.auth-page__submit {
+.auth-page-submit {
   margin-top: var(--s-3);
 }
 
-.auth-page__error {
+.auth-page-error {
   margin: 0;
   font-size: var(--fs-sm);
   color: var(--danger);
 }
 
-.auth-page__footer {
+.auth-page-footer {
   margin: 0;
   font-size: var(--fs-md);
   color: var(--text-muted);
   text-align: center;
 }
 
-.auth-page__footer a {
+.auth-page-footer a {
   color: var(--accent);
   font-weight: var(--fw-semibold);
   text-decoration: none;
 }
 
-.auth-page__footer a:hover {
+.auth-page-footer a:hover {
   text-decoration: underline;
 }
 
 @media (max-width: 480px) {
-  .auth-page__card { padding: var(--s-8) var(--s-6); }
+  .auth-page-card { padding: var(--s-8) var(--s-6); }
 }

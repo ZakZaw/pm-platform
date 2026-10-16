@@ -259,11 +259,11 @@ export function ProjectListPage() {
         />
       )}
 
-      <div className="list-page__table-wrap">
-        <table className="tbl tbl-clean list-page__table">
+      <div className="list-page-table-wrap">
+        <table className="tbl tbl-clean list-page-table">
           <thead>
             <tr>
-              <th className="list-page__check-col">
+              <th className="list-page-check-col">
                 <input
                   type="checkbox"
                   ref={(el) => { if (el) el.indeterminate = someSelected; }}
@@ -275,7 +275,7 @@ export function ProjectListPage() {
               {ALL_COLUMNS.filter((c) => visibleCols.has(c.key)).map((c) => (
                 <th
                   key={c.key}
-                  className={`list-page__th ${c.sortable ? 'is-sortable' : ''}`}
+                  className={`list-page-th ${c.sortable ? 'is-sortable' : ''}`}
                   onClick={c.sortable ? () => toggleSort(c.key) : undefined}
                 >
                   <span className="row gap-1 center">
@@ -291,7 +291,7 @@ export function ProjectListPage() {
           <tbody>
             {tasks.length === 0 && !loading && (
               <tr>
-                <td colSpan={visibleCols.size + 1} className="list-page__empty">
+                <td colSpan={visibleCols.size + 1} className="list-page-empty">
                   No tasks match the current filters.
                 </td>
               </tr>
@@ -337,7 +337,7 @@ export function ProjectListPage() {
             {failureModal?.failures.length} task{failureModal?.failures.length === 1 ? '' : 's'} were rejected during the bulk{' '}
             {failureModal?.operation} operation:
           </p>
-          <ul className="list-page__failure-list">
+          <ul className="list-page-failure-list">
             {failureModal?.failures.map((f) => (
               <li key={f.taskId}>
                 <span className="mono">{f.taskId.slice(0, 8)}</span>
@@ -366,12 +366,12 @@ function FilterBar({ filter, onChange, members }) {
   const assignee = filter.assigneeId ? members.find((m) => m.userId === filter.assigneeId) : null;
 
   return (
-    <div className="list-page__filters">
-      <div className="list-page__search">
+    <div className="list-page-filters">
+      <div className="list-page-search">
         <Search size={14} aria-hidden="true" />
         <input
           type="search"
-          className="list-page__search-input"
+          className="list-page-search-input"
           placeholder="Search title…"
           aria-label="Search title"
           value={filter.search}
@@ -406,7 +406,7 @@ function FilterBar({ filter, onChange, members }) {
           </CheckItem>
         ))}
       </MenuButton>
-      <label className="row gap-3 list-page__done-toggle">
+      <label className="row gap-3 list-page-done-toggle">
         <input
           type="checkbox"
           className="cb"
@@ -452,7 +452,7 @@ function MenuButton({ label, count = 0, align = 'start', closeOnSelect = false, 
   }, [open, setOpen]);
 
   return (
-    <div className="list-page__menu-wrap" ref={ref}>
+    <div className="list-page-menu-wrap" ref={ref}>
       <Button
         variant="secondary"
         size="sm"
@@ -462,12 +462,12 @@ function MenuButton({ label, count = 0, align = 'start', closeOnSelect = false, 
         onClick={() => setOpen(!open)}
       >
         {label}
-        {count > 0 && <span className="list-page__menu-count">{count}</span>}
+        {count > 0 && <span className="list-page-menu-count">{count}</span>}
         <ChevronDown size={14} aria-hidden="true" />
       </Button>
       {open && (
         <div
-          className={`menu list-page__menu is-${align}`}
+          className={`menu list-page-menu is-${align}`}
           role="menu"
           onClick={closeOnSelect ? (e) => { if (e.target.closest('.menu-item')) setOpen(false); } : undefined}
         >
@@ -485,10 +485,10 @@ function CheckItem({ checked, disabled, onToggle, children }) {
       role="menuitemcheckbox"
       aria-checked={checked}
       disabled={disabled}
-      className={`menu-item list-page__check-item ${checked ? 'is-checked' : ''}`}
+      className={`menu-item list-page-check-item ${checked ? 'is-checked' : ''}`}
       onClick={onToggle}
     >
-      <span className="list-page__check-mark" aria-hidden="true">
+      <span className="list-page-check-mark" aria-hidden="true">
         {checked && <Check size={14} />}
       </span>
       {children}
@@ -498,12 +498,12 @@ function CheckItem({ checked, disabled, onToggle, children }) {
 
 function BulkBar({ count, onClear, onAction }) {
   return (
-    <div className="list-page__bulkbar">
+    <div className="list-page-bulkbar">
       <span><strong>{count}</strong> selected</span>
       <div className="row gap-2">
         <Button size="sm" variant="secondary" onClick={() => onAction('status')}>Change status</Button>
         <Button size="sm" variant="secondary" onClick={() => onAction('assignee')}>Change assignee</Button>
-        <Button size="sm" variant="ghost" className="list-page__bulk-delete" onClick={() => onAction('delete')}>Delete</Button>
+        <Button size="sm" variant="ghost" className="list-page-bulk-delete" onClick={() => onAction('delete')}>Delete</Button>
         <Button size="sm" variant="ghost" onClick={onClear}>Clear</Button>
       </div>
     </div>
@@ -513,16 +513,16 @@ function BulkBar({ count, onClear, onAction }) {
 function TaskRow({ task, visible, selected, onToggleSelect, onUpdate, epics, sprints, members }) {
   return (
     <tr className={selected ? 'is-selected' : undefined}>
-      <td className="list-page__check-col">
+      <td className="list-page-check-col">
         <input type="checkbox" checked={selected} onChange={onToggleSelect} aria-label={`Select ${task.title}`} />
       </td>
       {visible.has('key') && (
-        <td className="list-page__td-mono">
+        <td className="list-page-td-mono">
           <span className="mono">{task.key}</span>
         </td>
       )}
       {visible.has('title') && (
-        <td className="list-page__title-cell">
+        <td className="list-page-title-cell">
           <EditableText
             value={task.title}
             placeholder="Untitled"
@@ -533,7 +533,7 @@ function TaskRow({ task, visible, selected, onToggleSelect, onUpdate, epics, spr
       {visible.has('status') && (
         <td>
           <select
-            className={`list-page__cell-select list-page__status list-page__status--${task.status}`}
+            className={`list-page-cell-select list-page-status list-page-status-${task.status}`}
             value={task.status}
             onChange={(e) => onUpdate(task, 'status', e.target.value)}
             aria-label="Status"
@@ -547,7 +547,7 @@ function TaskRow({ task, visible, selected, onToggleSelect, onUpdate, epics, spr
       {visible.has('priority') && (
         <td>
           <select
-            className={`list-page__cell-select list-page__pri list-page__pri--${task.priority}`}
+            className={`list-page-cell-select list-page-pri list-page-pri-${task.priority}`}
             value={task.priority}
             onChange={(e) => onUpdate(task, 'priority', e.target.value)}
             aria-label="Priority"
@@ -559,7 +559,7 @@ function TaskRow({ task, visible, selected, onToggleSelect, onUpdate, epics, spr
       {visible.has('assignee') && (
         <td>
           <select
-            className="list-page__cell-select"
+            className="list-page-cell-select"
             value={task.assigneeId ?? ''}
             onChange={(e) => onUpdate(task, 'assignee', e.target.value || null)}
             aria-label="Assignee"
@@ -572,7 +572,7 @@ function TaskRow({ task, visible, selected, onToggleSelect, onUpdate, epics, spr
       {visible.has('epic') && (
         <td>
           <select
-            className="list-page__cell-select"
+            className="list-page-cell-select"
             value={task.epicId ?? ''}
             onChange={(e) => onUpdate(task, 'epic', e.target.value || null)}
             aria-label="Epic"
@@ -585,7 +585,7 @@ function TaskRow({ task, visible, selected, onToggleSelect, onUpdate, epics, spr
       {visible.has('sprint') && (
         <td>
           <select
-            className="list-page__cell-select"
+            className="list-page-cell-select"
             value={task.sprintId ?? ''}
             onChange={(e) => onUpdate(task, 'sprint', e.target.value || null)}
             aria-label="Sprint"
@@ -608,7 +608,7 @@ function TaskRow({ task, visible, selected, onToggleSelect, onUpdate, epics, spr
         <td>
           <input
             type="date"
-            className="list-page__cell-input"
+            className="list-page-cell-input"
             value={task.dueDate ? task.dueDate.slice(0, 10) : ''}
             onChange={(e) => onUpdate(task, 'dueDate', e.target.value || null)}
             aria-label="Due date"
@@ -628,7 +628,7 @@ function EditableText({ value, placeholder, onCommit }) {
   return (
     <input
       type="text"
-      className="list-page__cell-input"
+      className="list-page-cell-input"
       value={local}
       placeholder={placeholder}
       onChange={(e) => setLocal(e.target.value)}
@@ -647,7 +647,7 @@ function EditableNumber({ value, min, onCommit }) {
   return (
     <input
       type="number"
-      className="list-page__cell-input list-page__cell-input--num"
+      className="list-page-cell-input list-page-cell-input-num"
       value={local}
       min={min}
       onChange={(e) => setLocal(e.target.value)}
@@ -696,7 +696,7 @@ function BulkActionModal({ op, count, members, onClose, onConfirm }) {
                 <input className="input" value={reason} onChange={(e) => setReason(e.target.value)} />
               </label>
             )}
-            <p className="muted list-page__hint">
+            <p className="muted list-page-hint">
               Each task is validated individually. Invalid transitions are reported but don't abort the batch.
             </p>
           </div>

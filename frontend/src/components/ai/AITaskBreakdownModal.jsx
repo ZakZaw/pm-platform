@@ -78,10 +78,10 @@ export function AITaskBreakdownModal({ open, taskId, currentTitle, onClose, onAp
         </h2>
       </ModalHeader>
       <ModalBody>
-        {error && <p className="ai-draft__error">{error}</p>}
+        {error && <p className="ai-draft-error">{error}</p>}
 
         {loading && (
-          <p className="ai-draft__empty">
+          <p className="ai-draft-empty">
             <Sparkles size={14} color="var(--ai-2)" aria-hidden="true" />{' '}
             Asking the AI…
           </p>
@@ -89,8 +89,8 @@ export function AITaskBreakdownModal({ open, taskId, currentTitle, onClose, onAp
 
         {result && !loading && (
           <>
-            <div className="ai-draft__breakdown-section">
-              <label className="ai-draft__breakdown-label hstack ai-draft__gap-sm">
+            <div className="ai-draft-breakdown-section">
+              <label className="ai-draft-breakdown-label hstack ai-draft-gap-sm">
                 <input
                   type="checkbox"
                   checked={applyDesc}
@@ -98,13 +98,13 @@ export function AITaskBreakdownModal({ open, taskId, currentTitle, onClose, onAp
                 />
                 Refined description
               </label>
-              <div className="ai-draft__breakdown-text">
+              <div className="ai-draft-breakdown-text">
                 {result.refinedDescription || <span className="muted">(empty)</span>}
               </div>
             </div>
 
-            <div className="ai-draft__breakdown-section">
-              <label className="ai-draft__breakdown-label hstack ai-draft__gap-sm">
+            <div className="ai-draft-breakdown-section">
+              <label className="ai-draft-breakdown-label hstack ai-draft-gap-sm">
                 <input
                   type="checkbox"
                   checked={applyAc}
@@ -112,7 +112,7 @@ export function AITaskBreakdownModal({ open, taskId, currentTitle, onClose, onAp
                 />
                 Acceptance criteria ({result.acceptanceCriteria.length})
               </label>
-              <ul className="ai-draft__breakdown-ac">
+              <ul className="ai-draft-breakdown-ac">
                 {result.acceptanceCriteria.map((ac, i) => (
                   <li key={i}>{ac}</li>
                 ))}
@@ -120,8 +120,8 @@ export function AITaskBreakdownModal({ open, taskId, currentTitle, onClose, onAp
             </div>
 
             {result.suggestedStoryPoints != null && (
-              <div className="ai-draft__breakdown-section">
-                <label className="ai-draft__breakdown-label hstack ai-draft__gap-sm">
+              <div className="ai-draft-breakdown-section">
+                <label className="ai-draft-breakdown-label hstack ai-draft-gap-sm">
                   <input
                     type="checkbox"
                     checked={applyPts}
@@ -133,7 +133,7 @@ export function AITaskBreakdownModal({ open, taskId, currentTitle, onClose, onAp
             )}
 
             {result.reasoning && (
-              <p className="ai-draft__reasoning">{result.reasoning}</p>
+              <p className="ai-draft-reasoning">{result.reasoning}</p>
             )}
           </>
         )}

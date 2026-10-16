@@ -14,36 +14,36 @@
   margin: 0;
 }
 
-.invite__lede {
+.invite-lede {
   color: var(--text-muted);
   font-size: var(--fs-md);
   line-height: var(--lh-normal);
 }
 
-.invite__lede strong {
+.invite-lede strong {
   color: var(--text);
   font-weight: var(--fw-semibold);
 }
 
-.invite__actions {
+.invite-actions {
   display: flex;
   flex-direction: column;
   gap: var(--s-4);
 }
 
-.invite__muted {
+.invite-muted {
   color: var(--text-muted);
   font-size: var(--fs-md);
   text-align: center;
 }
 
-.invite__error {
+.invite-error {
   color: var(--danger);
   font-size: var(--fs-md);
   margin: 0;
   line-height: var(--lh-normal);
 }
 
-.invite__error strong {
+.invite-error strong {
   font-weight: var(--fw-semibold);
 }

@@ -6,21 +6,21 @@
   flex-direction: column;
 }
 
-.public-roadmap__header {
+.public-roadmap-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: var(--s-6) var(--s-8);
 }
 
-.public-roadmap__brand {
+.public-roadmap-brand {
   display: flex;
   align-items: center;
   gap: var(--s-3);
   font-size: var(--fs-sm);
 }
 
-.public-roadmap__logo {
+.public-roadmap-logo {
   width: var(--s-9);
   height: var(--s-9);
   border-radius: var(--r-pill);
@@ -32,7 +32,7 @@
   font-weight: var(--fw-bold);
 }
 
-.public-roadmap__main {
+.public-roadmap-main {
   flex: 1;
   max-width: 1280px;
   width: 100%;
@@ -43,18 +43,18 @@
   gap: var(--s-5);
 }
 
-.public-roadmap__title-row {
+.public-roadmap-title-row {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   margin-bottom: var(--s-4);
 }
 
-.public-roadmap__title {
+.public-roadmap-title {
   margin: var(--s-2) 0 0;
 }
 
-.public-roadmap__gate {
+.public-roadmap-gate {
   flex: 1;
   display: flex;
   align-items: center;
@@ -62,7 +62,7 @@
   padding: var(--s-10) 0;
 }
 
-.public-roadmap__gate-card {
+.public-roadmap-gate-card {
   width: 100%;
   max-width: 360px;
   padding: var(--s-9) var(--s-8);
@@ -73,7 +73,7 @@
   text-align: center;
 }
 
-.public-roadmap__gate-icon {
+.public-roadmap-gate-icon {
   width: var(--s-11);
   height: var(--s-11);
   border-radius: var(--r-pill);
@@ -85,25 +85,25 @@
   color: var(--accent);
 }
 
-.public-roadmap__gate-form {
+.public-roadmap-gate-form {
   margin-top: var(--s-5);
   align-items: stretch;
   text-align: left;
 }
 
-.public-roadmap__gate-error {
+.public-roadmap-gate-error {
   color: var(--danger);
   font-size: var(--fs-sm);
   margin: 0;
 }
 
-.public-roadmap__error {
+.public-roadmap-error {
   text-align: center;
   padding: var(--s-10) var(--s-5);
   color: var(--text-secondary);
 }
 
-.public-roadmap__undated {
+.public-roadmap-undated {
   margin-top: var(--s-2);
   padding: var(--s-7) var(--s-8);
   border: 1px solid var(--card-border);
@@ -112,20 +112,20 @@
   box-shadow: var(--shadow-card);
 }
 
-.public-roadmap__undated-title {
+.public-roadmap-undated-title {
   margin: 0;
   font-size: var(--fs-md);
   font-weight: var(--fw-semibold);
 }
 
-.public-roadmap__undated li {
+.public-roadmap-undated li {
   padding: var(--s-2) var(--s-4);
   background: var(--bg-subtle);
   border-radius: var(--r-pill);
   font-size: var(--fs-sm);
 }
 
-.public-roadmap__undated ul {
+.public-roadmap-undated ul {
   list-style: none;
   margin: var(--s-3) 0 0;
   padding: 0;
@@ -134,7 +134,7 @@
   gap: var(--s-3);
 }
 
-.public-roadmap__footer {
+.public-roadmap-footer {
   margin-top: auto;
   padding-top: var(--s-7);
   font-size: var(--fs-xs);

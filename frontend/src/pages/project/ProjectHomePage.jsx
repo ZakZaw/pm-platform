@@ -8,7 +8,6 @@ import {
   GitPullRequest,
   MessageSquare,
   Plus,
-  RefreshCw,
   Sparkles,
   Wand2,
 } from 'lucide-react';
@@ -238,9 +237,6 @@ export function ProjectHomePage() {
           </div>
           <div className="row gap-3">
             <AvatarStack people={members} max={5} size="sm" />
-            <Button variant="ghost" size="sm" disabled title="Coming in Phase 2">
-              <MessageSquare size={14} aria-hidden="true" /> Discuss
-            </Button>
             <Link to={`/${orgSlug}/projects/${projectSlug}/ai`}>
               <Button variant="secondary" size="sm">
                 <Sparkles size={13} aria-hidden="true" /> Ask AI
@@ -287,9 +283,6 @@ export function ProjectHomePage() {
           <div className="card">
             <div className="card-header">
               <h3 className="h-card">Activity</h3>
-              <Button variant="ghost" size="sm" disabled title="Coming in Phase 2">
-                <RefreshCw size={12} aria-hidden="true" /> Refresh
-              </Button>
             </div>
             <div className="card-body project-home-activity">
               {PLACEHOLDER_ACTIVITY.map((a, i) => (

@@ -4,19 +4,19 @@
   gap: var(--s-5);
 }
 
-.epic-form__field {
+.epic-form-field {
   display: flex;
   flex-direction: column;
   gap: var(--s-2);
 }
 
-.epic-form__label {
+.epic-form-label {
   font-size: var(--fs-xs);
   font-weight: var(--fw-medium);
   color: var(--text-secondary);
 }
 
-.epic-form__textarea {
+.epic-form-textarea {
   font-family: inherit;
   font-size: var(--fs-md);
   color: var(--text);
@@ -27,19 +27,19 @@
   resize: vertical;
   min-height: 60px;
 }
-.epic-form__textarea:focus {
+.epic-form-textarea:focus {
   outline: none;
   border-color: var(--accent-bright);
   box-shadow: var(--shadow-focus);
 }
 
-.epic-form__colors {
+.epic-form-colors {
   display: flex;
   gap: var(--s-4);
   flex-wrap: wrap;
 }
 
-.epic-form__color {
+.epic-form-color {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -47,18 +47,18 @@
   cursor: pointer;
   padding: 0;
 }
-.epic-form__color.is-active {
+.epic-form-color.is-active {
   border-color: var(--text);
   box-shadow: 0 0 0 2px var(--surface);
 }
 
-.epic-form__error {
+.epic-form-error {
   color: var(--danger);
   font-size: var(--fs-xs);
   margin: 0;
 }
 
-.epic-form__actions {
+.epic-form-actions {
   display: flex;
   justify-content: flex-end;
   gap: var(--s-4);

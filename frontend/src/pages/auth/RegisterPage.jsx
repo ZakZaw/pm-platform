@@ -40,7 +40,7 @@ export function RegisterPage() {
       subtitle="Start managing projects"
       footer={<>Already have an account? <Link to="/login">Sign in</Link></>}
     >
-      <form className="auth-page__form" onSubmit={onSubmit}>
+      <form className="auth-page-form" onSubmit={onSubmit}>
         <Input
           label="Full name"
           value={fullName}
@@ -66,8 +66,8 @@ export function RegisterPage() {
           minLength={8}
           autoComplete="new-password"
         />
-        {error && <p className="auth-page__error">{error}</p>}
-        <Button type="submit" size="lg" block disabled={submitting} className="auth-page__submit">
+        {error && <p className="auth-page-error">{error}</p>}
+        <Button type="submit" size="lg" block disabled={submitting} className="auth-page-submit">
           {submitting ? 'Creating account…' : 'Create account'}
         </Button>
       </form>

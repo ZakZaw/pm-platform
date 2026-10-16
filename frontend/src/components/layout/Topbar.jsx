@@ -2,14 +2,11 @@ import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ChevronDown,
-  HelpCircle,
   LogOut,
   Moon,
   PanelLeftClose,
   PanelLeftOpen,
   Plus,
-  Search,
-  Sparkles,
   Sun,
   UserCircle,
 } from 'lucide-react';
@@ -169,14 +166,8 @@ export function Topbar() {
 
       <div className="fill" />
 
-      <button className="search" type="button" title="Search (coming soon)">
-        <Search size={14} aria-hidden="true" />
-        <span className="search-text">Search or jump to…</span>
-        <span className="kbd">⌘K</span>
-      </button>
-
       <Button
-        variant="primary"
+        variant="secondary"
         size="sm"
         onClick={() => openQuickCreate?.()}
         aria-label="Create task"
@@ -186,16 +177,12 @@ export function Topbar() {
         <span>New task</span>
       </Button>
 
-      <button type="button" className="icon-btn topbar-ai" title="Ask AI" aria-label="Ask AI">
-        <Sparkles size={16} strokeWidth={2.2} aria-hidden="true" />
-      </button>
-
       <NotificationsPanel />
 
       <div className="topbar-user" ref={menuRef}>
         <button
           type="button"
-          className="topbar-user__trigger"
+          className="topbar-user-trigger"
           onClick={() => setMenuOpen((v) => !v)}
           aria-haspopup="menu"
           aria-expanded={menuOpen}
@@ -204,7 +191,7 @@ export function Topbar() {
           <ChevronDown size={12} aria-hidden="true" />
         </button>
         {menuOpen && (
-          <div className="menu topbar-user__menu" role="menu">
+          <div className="menu topbar-user-menu" role="menu">
             <Link
               to="/settings/profile"
               className="menu-item"
@@ -223,10 +210,6 @@ export function Topbar() {
             >
               {isLight ? <Moon size={13} aria-hidden="true" /> : <Sun size={13} aria-hidden="true" />}
               <span>{isLight ? 'Dark mode' : 'Light mode'}</span>
-            </button>
-            <button type="button" className="menu-item" onClick={() => setMenuOpen(false)}>
-              <HelpCircle size={13} aria-hidden="true" />
-              <span>Help</span>
             </button>
             <div className="menu-sep" />
             <button

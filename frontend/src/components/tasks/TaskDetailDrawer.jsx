@@ -41,7 +41,7 @@ export function TaskDetailDrawer({ taskId, projectId, onClose, onChanged }) {
   if (!taskId) return null;
 
   return (
-    <div className="task-drawer__backdrop" onClick={onClose} role="presentation">
+    <div className="task-drawer-backdrop" onClick={onClose} role="presentation">
       <div
         className="task-drawer"
         role="dialog"
@@ -49,8 +49,8 @@ export function TaskDetailDrawer({ taskId, projectId, onClose, onChanged }) {
         aria-label="Task details"
         onClick={(e) => e.stopPropagation()}
       >
-        {error && <p className="task-drawer__placeholder">{error}</p>}
-        {!error && !task && <p className="task-drawer__placeholder">Loading…</p>}
+        {error && <p className="task-drawer-placeholder">{error}</p>}
+        {!error && !task && <p className="task-drawer-placeholder">Loading…</p>}
         {task && (
           <TaskDetail
             task={task}

@@ -24,7 +24,7 @@ export function Skeleton({
         {Array.from({ length: rows }).map((_, i) => (
           <span
             key={i}
-            className={['skeleton', `skeleton--r-${radius}`].join(' ')}
+            className={['skeleton', `skeleton-r-${radius}`].join(' ')}
             style={{ height, width: rowWidth(i, rows) }}
           />
         ))}
@@ -33,7 +33,7 @@ export function Skeleton({
   }
   return (
     <span
-      className={['skeleton', `skeleton--r-${radius}`, `skeleton--${variant}`, className].filter(Boolean).join(' ')}
+      className={['skeleton', `skeleton-r-${radius}`, `skeleton-${variant}`, className].filter(Boolean).join(' ')}
       style={{ width, height, ...style }}
       aria-hidden="true"
     />

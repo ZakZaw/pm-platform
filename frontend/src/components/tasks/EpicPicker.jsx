@@ -33,20 +33,20 @@ export function EpicPicker({ projectId, value, onChange, disabled }) {
   return (
     <Dropdown
       trigger={
-        <button type="button" className="field-picker__trigger" disabled={disabled}>
+        <button type="button" className="field-picker-trigger" disabled={disabled}>
           {current ? (
             <>
               <span
-                className="field-picker__swatch"
+                className="field-picker-swatch"
                 style={{ background: current.color || DEFAULT_COLOR }}
                 aria-hidden="true"
               />
-              <span className="field-picker__label truncate">{current.title}</span>
+              <span className="field-picker-label truncate">{current.title}</span>
             </>
           ) : (
             <>
               <Layers size={12} aria-hidden="true" />
-              <span className="field-picker__placeholder">No epic</span>
+              <span className="field-picker-placeholder">No epic</span>
             </>
           )}
           <ChevronDown size={12} aria-hidden="true" />
@@ -62,7 +62,7 @@ export function EpicPicker({ projectId, value, onChange, disabled }) {
       )}
       {value && <Dropdown.Divider />}
       {epics.length === 0 && (
-        <div className="field-picker__empty">No epics in this project yet.</div>
+        <div className="field-picker-empty">No epics in this project yet.</div>
       )}
       {epics.map((e) => (
         <Dropdown.Item
@@ -70,7 +70,7 @@ export function EpicPicker({ projectId, value, onChange, disabled }) {
           onSelect={() => e.id !== value && onChange?.(e.id)}
           icon={
             <span
-              className="field-picker__swatch"
+              className="field-picker-swatch"
               style={{ background: e.color || DEFAULT_COLOR }}
               aria-hidden="true"
             />

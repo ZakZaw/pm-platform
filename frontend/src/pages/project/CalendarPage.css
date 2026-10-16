@@ -10,9 +10,9 @@
 
 .calendar-page .page-head { margin-bottom: 0; }
 
-.calendar-page__nav { align-items: center; }
+.calendar-page-nav { align-items: center; }
 
-.calendar-page__legend {
+.calendar-page-legend {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -23,29 +23,29 @@
 
 /* Legend swatch: round dot in the sprint's band colour (stronger than the
    7% cell tint so it reads at a glance). */
-.calendar-page__swatch {
+.calendar-page-swatch {
   display: inline-block;
   width: var(--s-4);
   height: var(--s-4);
   border-radius: var(--r-pill);
 }
-.calendar-page__swatch.sprint-tint-a { background: var(--accent); }
-.calendar-page__swatch.sprint-tint-b { background: var(--violet); }
-.calendar-page__swatch.sprint-tint-c { background: var(--info); }
-.calendar-page__swatch.sprint-tint-d { background: var(--success); }
+.calendar-page-swatch.sprint-tint-a { background: var(--accent); }
+.calendar-page-swatch.sprint-tint-b { background: var(--violet); }
+.calendar-page-swatch.sprint-tint-c { background: var(--info); }
+.calendar-page-swatch.sprint-tint-d { background: var(--success); }
 
 /* Week view: 7 columns × 1 tall row. */
-.calendar-page__grid.is-week .cal-grid {
+.calendar-page-grid.is-week .cal-grid {
   grid-template-rows: minmax(360px, 1fr);
 }
 
-.calendar-page__cell--week {
+.calendar-page-cell-week {
   min-height: 360px;
 }
 
-.calendar-page__cell-head { margin-bottom: var(--s-1); }
+.calendar-page-cell-head { margin-bottom: var(--s-1); }
 
-.calendar-page__more { font-size: var(--fs-xs); }
+.calendar-page-more { font-size: var(--fs-xs); }
 
 /* Sprint band tinting. Four light backgrounds rotate so adjacent sprints
    are visually distinct. Combined with .cal-cell.is-today the today
@@ -55,14 +55,14 @@
 .sprint-tint-c { background: color-mix(in srgb, var(--info) 7%, var(--surface)); }
 .sprint-tint-d { background: color-mix(in srgb, var(--success) 7%, var(--surface)); }
 
-.calendar-page__sprint-label {
+.calendar-page-sprint-label {
   font-size: var(--fs-2xs);
   max-width: 60%;
 }
 
 .cal-cell.is-over { background: var(--accent-soft); }
 
-.calendar-page__task {
+.calendar-page-task {
   cursor: grab;
   user-select: none;
   display: flex;
@@ -70,8 +70,8 @@
   gap: var(--s-2);
 }
 
-.calendar-page__task.is-dragging { opacity: 0.4; cursor: grabbing; }
-.calendar-page__task.is-dragging-overlay {
+.calendar-page-task.is-dragging { opacity: 0.4; cursor: grabbing; }
+.calendar-page-task.is-dragging-overlay {
   cursor: grabbing;
   box-shadow: var(--shadow-md);
 }

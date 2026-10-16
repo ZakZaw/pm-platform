@@ -153,9 +153,9 @@ export function WorkflowEditorModal({ projectId, workflowId, onClose, onSaved })
               />
               <div>
                 <div className="input-label">Checklist template</div>
-                <ul className="wf-editor__items">
+                <ul className="wf-editor-items">
                   {template.map((item, i) => (
-                    <li key={i} className="wf-editor__item">
+                    <li key={i} className="wf-editor-item">
                       <button
                         type="button"
                         className="icon-btn icon-btn-sm"
@@ -173,9 +173,9 @@ export function WorkflowEditorModal({ projectId, workflowId, onClose, onSaved })
                         placeholder={`Item ${i + 1}`}
                         aria-label={`Checklist item ${i + 1}`}
                         maxLength={300}
-                        className="input wf-editor__input"
+                        className="input wf-editor-input"
                       />
-                      <label className="wf-editor__seq">
+                      <label className="wf-editor-seq">
                         <input
                           type="checkbox"
                           checked={item.sequential}
@@ -194,7 +194,7 @@ export function WorkflowEditorModal({ projectId, workflowId, onClose, onSaved })
                     </li>
                   ))}
                 </ul>
-                <div className="wf-editor__add">
+                <div className="wf-editor-add">
                   <Button type="button" variant="ghost" size="sm" onClick={addItem}>
                     <Plus size={13} aria-hidden="true" /> Add item
                   </Button>

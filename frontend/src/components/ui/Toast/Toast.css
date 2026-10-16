@@ -20,12 +20,12 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.toast__icon { flex-shrink: 0; margin-top: 1px; }
-.toast__body { flex: 1; min-width: 0; }
-.toast__title { font-weight: var(--fw-semibold); margin-bottom: 2px; }
-.toast__message { color: var(--text-secondary); font-size: var(--fs-md); }
+.toast-icon { flex-shrink: 0; margin-top: 1px; }
+.toast-body { flex: 1; min-width: 0; }
+.toast-title { font-weight: var(--fw-semibold); margin-bottom: 2px; }
+.toast-message { color: var(--text-secondary); font-size: var(--fs-md); }
 
-.toast__close {
+.toast-close {
   background: transparent;
   border: 0;
   color: var(--text-muted);
@@ -34,8 +34,8 @@
   border-radius: var(--r-sm);
   display: inline-flex;
 }
-.toast__close:hover { color: var(--text); background: var(--surface-hover); }
+.toast-close:hover { color: var(--text); background: var(--surface-hover); }
 
-.toast-success .toast__icon { color: var(--success); }
-.toast-danger  .toast__icon { color: var(--danger); }
-.toast-info    .toast__icon { color: var(--info); }
+.toast-success .toast-icon { color: var(--success); }
+.toast-danger  .toast-icon { color: var(--danger); }
+.toast-info    .toast-icon { color: var(--info); }

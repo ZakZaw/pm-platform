@@ -20,11 +20,11 @@ export function PriorityDropdown({ value, onChange, disabled }) {
       trigger={
         <button
           type="button"
-          className="priority-dropdown__trigger"
+          className="priority-dropdown-trigger"
           disabled={disabled}
         >
           <Priority level={value} />
-          <span className="priority-dropdown__label">{current.label}</span>
+          <span className="priority-dropdown-label">{current.label}</span>
           <ChevronDown size={14} aria-hidden="true" />
         </button>
       }
@@ -38,7 +38,7 @@ export function PriorityDropdown({ value, onChange, disabled }) {
           <Priority level={l.value} />
           <span>{l.label}</span>
           {l.value === value && (
-            <span className="priority-dropdown__current">· current</span>
+            <span className="priority-dropdown-current">· current</span>
           )}
         </Dropdown.Item>
       ))}

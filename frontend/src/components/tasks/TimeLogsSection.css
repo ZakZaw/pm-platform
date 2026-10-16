@@ -5,21 +5,21 @@
 }
 
 
-.timelogs-section__form {
+.timelogs-section-form {
   display: flex;
   align-items: center;
   gap: var(--s-2);
 }
 
-.timelogs-section__duration {
+.timelogs-section-duration {
   width: 100px;
 }
 
-.timelogs-section__date {
+.timelogs-section-date {
   width: 140px;
 }
 
-.timelogs-section__list {
+.timelogs-section-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -28,7 +28,7 @@
   gap: var(--s-2);
 }
 
-.timelogs-section__row {
+.timelogs-section-row {
   display: flex;
   align-items: center;
   gap: var(--s-3);
@@ -36,20 +36,20 @@
   font-size: var(--fs-sm);
   border-radius: var(--r-sm);
 }
-.timelogs-section__row:hover { background: var(--surface-hover); }
+.timelogs-section-row:hover { background: var(--surface-hover); }
 
-.timelogs-section__minutes {
+.timelogs-section-minutes {
   font-variant-numeric: tabular-nums;
   font-weight: var(--fw-medium);
   min-width: 64px;
 }
 
-.timelogs-section__date {
+.timelogs-section-date {
   min-width: 56px;
   font-size: var(--fs-xs);
 }
 
-.timelogs-section__who {
+.timelogs-section-who {
   min-width: 100px;
   font-size: var(--fs-xs);
 }

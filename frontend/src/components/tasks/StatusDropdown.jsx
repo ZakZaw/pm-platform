@@ -14,7 +14,7 @@ export function StatusDropdown({ status, onChange, disabled }) {
       trigger={
         <button
           type="button"
-          className="status-dropdown__trigger"
+          className="status-dropdown-trigger"
           disabled={disabled}
         >
           <StatusBadge status={status} />
@@ -26,7 +26,7 @@ export function StatusDropdown({ status, onChange, disabled }) {
       {TASK_STATUSES.map((s) => (
         <Dropdown.Item key={s} onSelect={() => s !== status && onChange(s)}>
           <StatusBadge status={s} />
-          {s === status && <span className="status-dropdown__current">· current</span>}
+          {s === status && <span className="status-dropdown-current">· current</span>}
         </Dropdown.Item>
       ))}
     </Dropdown>

@@ -86,14 +86,14 @@ export function MembersPage() {
   if (!loaded) {
     return (
       <div className="main-inner">
-        <p className="members__placeholder">Loading…</p>
+        <p className="members-placeholder">Loading…</p>
       </div>
     );
   }
   if (!myRole) {
     return (
       <div className="main-inner">
-        <p className="members__placeholder">You don't have access to this organization.</p>
+        <p className="members-placeholder">You don't have access to this organization.</p>
       </div>
     );
   }
@@ -137,11 +137,11 @@ export function MembersPage() {
       </header>
 
       {isAdminOrAbove && (
-        <section className="card members__invite-card" aria-labelledby="members-invite-title">
-          <h2 id="members-invite-title" className="members__section-title">
+        <section className="card members-invite-card" aria-labelledby="members-invite-title">
+          <h2 id="members-invite-title" className="members-section-title">
             Invite a member
           </h2>
-          <form className="members__invite" onSubmit={onInvite}>
+          <form className="members-invite" onSubmit={onInvite}>
             <Input
               aria-label="Email"
               type="email"
@@ -161,13 +161,13 @@ export function MembersPage() {
               {inviting ? 'Sending…' : 'Send invitation'}
             </Button>
           </form>
-          {inviteError && <p className="members__error">{inviteError}</p>}
-          {inviteSuccess && <p className="members__success">{inviteSuccess}</p>}
+          {inviteError && <p className="members-error">{inviteError}</p>}
+          {inviteSuccess && <p className="members-success">{inviteSuccess}</p>}
         </section>
       )}
 
-      <section className="members__directory" aria-label="Directory">
-        <div className="members__filters">
+      <section className="members-directory" aria-label="Directory">
+        <div className="members-filters">
           <Input
             aria-label="Search"
             type="search"
@@ -189,7 +189,7 @@ export function MembersPage() {
           />
         </div>
 
-        {listError && <p className="members__error">{listError}</p>}
+        {listError && <p className="members-error">{listError}</p>}
 
         <MemberTable
           members={members}
@@ -221,7 +221,7 @@ export function MembersPage() {
         />
 
         {totalPages > 1 && (
-          <div className="members__pager">
+          <div className="members-pager">
             <Button
               variant="ghost"
               size="sm"
@@ -230,7 +230,7 @@ export function MembersPage() {
             >
               Previous
             </Button>
-            <span className="members__pager-info">
+            <span className="members-pager-info">
               Page {page} of {totalPages} · {total} {total === 1 ? 'member' : 'members'}
             </span>
             <Button
@@ -260,21 +260,21 @@ function MemberTable({ members, isOwner, isAdminOrAbove, loading, onRoleChange, 
   );
 
   if (loading && members.length === 0) {
-    return <p className="members__placeholder">Loading members…</p>;
+    return <p className="members-placeholder">Loading members…</p>;
   }
   if (!loading && members.length === 0) {
-    return <p className="members__placeholder">No members match.</p>;
+    return <p className="members-placeholder">No members match.</p>;
   }
 
   return (
-    <Table className="members__table">
+    <Table className="members-table">
       <Table.Head>
         <Table.Row>
           <Table.Header>Name</Table.Header>
           <Table.Header>Role</Table.Header>
           <Table.Header>Joined</Table.Header>
           <Table.Header align="right">
-            <span className="members__sr">Actions</span>
+            <span className="members-sr">Actions</span>
           </Table.Header>
         </Table.Row>
       </Table.Head>
@@ -284,11 +284,11 @@ function MemberTable({ members, isOwner, isAdminOrAbove, loading, onRoleChange, 
           return (
             <Table.Row key={m.userId}>
               <Table.Cell>
-                <div className="members__person">
+                <div className="members-person">
                   <Avatar src={m.avatarUrl} name={m.fullName} size="sm" />
-                  <div className="members__person-text">
-                    <div className="members__person-name">{m.fullName}</div>
-                    <div className="members__person-email">{m.email}</div>
+                  <div className="members-person-text">
+                    <div className="members-person-name">{m.fullName}</div>
+                    <div className="members-person-email">{m.email}</div>
                   </div>
                 </div>
               </Table.Cell>
@@ -297,7 +297,7 @@ function MemberTable({ members, isOwner, isAdminOrAbove, loading, onRoleChange, 
                     rows; everyone else sees plain text. */}
                 {canManage ? (
                   <Select
-                    className="members__role-select"
+                    className="members-role-select"
                     options={allRoleOptions.filter(
                       // Only Owners can promote anyone to Owner.
                       (o) => o.value !== 'Owner' || isOwner,
@@ -307,10 +307,10 @@ function MemberTable({ members, isOwner, isAdminOrAbove, loading, onRoleChange, 
                     aria-label={`Role for ${m.fullName}`}
                   />
                 ) : (
-                  <span className="members__role">{m.role}</span>
+                  <span className="members-role">{m.role}</span>
                 )}
               </Table.Cell>
-              <Table.Cell className="members__joined">
+              <Table.Cell className="members-joined">
                 {new Date(m.joinedAt).toLocaleDateString()}
               </Table.Cell>
               <Table.Cell align="right">
@@ -318,7 +318,7 @@ function MemberTable({ members, isOwner, isAdminOrAbove, loading, onRoleChange, 
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="members__remove"
+                    className="members-remove"
                     onClick={() => onRemove(m)}
                   >
                     Remove

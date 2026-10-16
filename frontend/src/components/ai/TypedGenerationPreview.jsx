@@ -72,30 +72,30 @@ export function typedDraftTotals(preview) {
 // Plain muted tag (no capsule) for secondary read-outs like stage %,
 // priority, channel, SLA.
 function Tag({ children }) {
-  return <span className="typed-preview__tag">{children}</span>;
+  return <span className="typed-preview-tag">{children}</span>;
 }
 
 function SectionRow({ icon, title, badges = [], meta }) {
   return (
-    <div className="typed-preview__row">
+    <div className="typed-preview-row">
       {icon}
-      <span className="typed-preview__row-title">{title}</span>
+      <span className="typed-preview-row-title">{title}</span>
       {badges.map((b, i) => (
         <span key={i}>{b}</span>
       ))}
-      {meta && <span className="typed-preview__row-meta">{meta}</span>}
+      {meta && <span className="typed-preview-row-meta">{meta}</span>}
     </div>
   );
 }
 
 function SubSection({ label, children, count }) {
   return (
-    <div className="typed-preview__section">
-      <div className="typed-preview__section-head">
-        <span className="typed-preview__section-title">{label}</span>
-        {count != null && <span className="typed-preview__count">{count}</span>}
+    <div className="typed-preview-section">
+      <div className="typed-preview-section-head">
+        <span className="typed-preview-section-title">{label}</span>
+        {count != null && <span className="typed-preview-count">{count}</span>}
       </div>
-      <div className="typed-preview__section-body">{children}</div>
+      <div className="typed-preview-section-body">{children}</div>
     </div>
   );
 }
@@ -220,7 +220,7 @@ function MarketingPreview({ draft }) {
     <div className="typed-preview">
       <SubSection label="Campaigns" count={draft.campaigns.length}>
         {draft.campaigns.map((c, i) => (
-          <div key={`${c.name}-${i}`} className="typed-preview__campaign">
+          <div key={`${c.name}-${i}`} className="typed-preview-campaign">
             <SectionRow
               icon={<Megaphone size={13} aria-hidden="true" />}
               title={c.name}
@@ -228,7 +228,7 @@ function MarketingPreview({ draft }) {
               meta={[c.startDate?.slice(0, 10), c.endDate?.slice(0, 10)].filter(Boolean).join(' → ') || undefined}
             />
             {c.assets.length > 0 && (
-              <ul className="typed-preview__sub">
+              <ul className="typed-preview-sub">
                 {c.assets.map((a) => (
                   <li key={a.title}>
                     <CheckCircle2 size={11} aria-hidden="true" />
@@ -242,7 +242,7 @@ function MarketingPreview({ draft }) {
               </ul>
             )}
             {c.tasks.length > 0 && (
-              <ul className="typed-preview__sub">
+              <ul className="typed-preview-sub">
                 {c.tasks.map((t, ti) => (
                   <li key={`${t.title}-${ti}`}>
                     <CheckSquare size={11} aria-hidden="true" />
@@ -269,7 +269,7 @@ function OperationsPreview({ draft }) {
     <div className="typed-preview">
       <SubSection label="Workflows" count={draft.workflows.length}>
         {draft.workflows.map((w, i) => (
-          <div key={`${w.name}-${i}`} className="typed-preview__workflow">
+          <div key={`${w.name}-${i}`} className="typed-preview-workflow">
             <SectionRow
               icon={<WorkflowIcon size={13} aria-hidden="true" />}
               title={w.name}
@@ -280,7 +280,7 @@ function OperationsPreview({ draft }) {
               ]}
               meta={w.description || undefined}
             />
-            <ul className="typed-preview__sub">
+            <ul className="typed-preview-sub">
               {w.checklist.map((item, ci) => (
                 <li key={`${item.title}-${ci}`}>
                   <CheckSquare size={11} aria-hidden="true" />
@@ -303,13 +303,13 @@ function GenericPreview({ draft }) {
     <div className="typed-preview">
       <SubSection label="Lists" count={draft.lists.length}>
         {draft.lists.map((l, i) => (
-          <div key={`${l.name}-${i}`} className="typed-preview__list">
+          <div key={`${l.name}-${i}`} className="typed-preview-list">
             <SectionRow
               icon={<ListTodo size={13} aria-hidden="true" />}
               title={l.name}
               meta={`${l.tasks.length} task${l.tasks.length === 1 ? '' : 's'}`}
             />
-            <ul className="typed-preview__sub">
+            <ul className="typed-preview-sub">
               {l.tasks.map((t, ti) => (
                 <li key={`${t.title}-${ti}`}>
                   <CheckSquare size={11} aria-hidden="true" />

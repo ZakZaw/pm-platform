@@ -1,4 +1,4 @@
-.deal-drawer__backdrop {
+.deal-drawer-backdrop {
   position: fixed;
   inset: 0;
   background: var(--overlay);
@@ -20,38 +20,38 @@
   flex-direction: column;
 }
 
-.deal-drawer__head {
+.deal-drawer-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: var(--s-6) var(--s-8) 0;
 }
 
-.deal-drawer__head-meta {
+.deal-drawer-head-meta {
   display: flex;
   align-items: center;
   gap: var(--s-5);
   font-size: var(--fs-sm);
 }
 
-.deal-drawer__placeholder {
+.deal-drawer-placeholder {
   padding: var(--s-8);
   color: var(--text-muted);
 }
 
-.deal-drawer__error {
+.deal-drawer-error {
   padding: var(--s-6) var(--s-8);
   color: var(--danger);
 }
 
-.deal-drawer__body {
+.deal-drawer-body {
   padding: var(--s-5) var(--s-8) var(--s-10);
   display: flex;
   flex-direction: column;
   gap: var(--s-8);
 }
 
-.deal-drawer__title {
+.deal-drawer-title {
   font-size: var(--fs-2xl);
   font-weight: var(--fw-bold);
   letter-spacing: var(--tracking-tight);
@@ -60,23 +60,23 @@
   margin: 0;
 }
 
-.deal-drawer__fields {
+.deal-drawer-fields {
   gap: var(--s-6) var(--s-7);
 }
 
-.deal-drawer__field {
+.deal-drawer-field {
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
 }
 
-.deal-drawer__label {
+.deal-drawer-label {
   font-size: var(--fs-sm);
   font-weight: var(--fw-medium);
   color: var(--text-muted);
 }
 
-.deal-drawer__value {
+.deal-drawer-value {
   font-family: var(--font-display);
   font-size: var(--fs-2xl);
   font-weight: var(--fw-bold);
@@ -86,7 +86,7 @@
   line-height: var(--lh-tight);
 }
 
-.deal-drawer__reason {
+.deal-drawer-reason {
   padding: var(--s-5) var(--s-6);
   background: var(--danger-soft);
   border-radius: var(--r-lg);
@@ -94,31 +94,31 @@
   color: var(--text-secondary);
 }
 
-.deal-drawer__reason.is-won {
+.deal-drawer-reason.is-won {
   background: var(--success-soft);
 }
 
-.deal-drawer__section {
+.deal-drawer-section {
   display: flex;
   flex-direction: column;
   gap: var(--s-5);
 }
 
-.deal-drawer__section-title {
+.deal-drawer-section-title {
   margin: 0;
   font-size: var(--fs-base);
   font-weight: var(--fw-semibold);
   color: var(--text);
 }
 
-.deal-drawer__activity-form {
+.deal-drawer-activity-form {
   display: grid;
   grid-template-columns: 120px 1fr auto;
   gap: var(--s-4);
   align-items: center;
 }
 
-.deal-drawer__activity-list {
+.deal-drawer-activity-list {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -127,7 +127,7 @@
   gap: var(--s-6);
 }
 
-.deal-drawer__activity {
+.deal-drawer-activity {
   display: flex;
   align-items: flex-start;
   gap: var(--s-5);
@@ -136,7 +136,7 @@
   line-height: var(--lh-normal);
 }
 
-.deal-drawer__activity-icon {
+.deal-drawer-activity-icon {
   width: 28px;
   height: 28px;
   flex-shrink: 0;
@@ -148,13 +148,13 @@
   color: var(--accent);
 }
 
-.deal-drawer__activity-meta {
+.deal-drawer-activity-meta {
   margin-top: var(--s-1);
   font-size: var(--fs-xs);
   color: var(--text-muted);
 }
 
-.deal-drawer__empty {
+.deal-drawer-empty {
   color: var(--text-muted);
   font-size: var(--fs-sm);
 }
@@ -171,5 +171,5 @@
 
 @media (max-width: 640px) {
   .deal-drawer { width: 100vw; }
-  .deal-drawer__activity-form { grid-template-columns: 1fr; }
+  .deal-drawer-activity-form { grid-template-columns: 1fr; }
 }

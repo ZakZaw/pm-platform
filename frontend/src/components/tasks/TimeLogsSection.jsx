@@ -113,10 +113,10 @@ export function TimeLogsSection({ taskId, totalMinutes = 0, onLogged }) {
     <TaskSection title="Time logged" meta={`${formatMinutes(totalMinutes)} total`}>
     <div className="timelogs-section">
 
-      <form onSubmit={submit} className="timelogs-section__form">
+      <form onSubmit={submit} className="timelogs-section-form">
         <input
           type="text"
-          className="input timelogs-section__duration"
+          className="input timelogs-section-duration"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           placeholder="e.g. 1h 30m"
@@ -124,7 +124,7 @@ export function TimeLogsSection({ taskId, totalMinutes = 0, onLogged }) {
         />
         <input
           type="date"
-          className="input timelogs-section__date"
+          className="input timelogs-section-date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
           aria-label="Date"
@@ -144,12 +144,12 @@ export function TimeLogsSection({ taskId, totalMinutes = 0, onLogged }) {
       </form>
 
       {entries.length > 0 && (
-        <ul className="timelogs-section__list">
+        <ul className="timelogs-section-list">
           {entries.map((e) => (
-            <li key={e.id} className="timelogs-section__row">
-              <span className="timelogs-section__minutes">{formatMinutes(e.minutes)}</span>
-              <span className="muted timelogs-section__date">{formatDate(e.loggedAt)}</span>
-              <span className="timelogs-section__who muted">{e.userName ?? '—'}</span>
+            <li key={e.id} className="timelogs-section-row">
+              <span className="timelogs-section-minutes">{formatMinutes(e.minutes)}</span>
+              <span className="muted timelogs-section-date">{formatDate(e.loggedAt)}</span>
+              <span className="timelogs-section-who muted">{e.userName ?? '—'}</span>
               {e.comment && <span className="fill truncate" title={e.comment}>{e.comment}</span>}
               {!e.comment && <span className="fill" />}
               <button

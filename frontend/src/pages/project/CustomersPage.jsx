@@ -45,6 +45,7 @@ export function CustomersPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
+            {project && <div className="eyebrow">{project.name}</div>}
             <h1 className="page-title">Customers</h1>
             <div className="page-subtitle">
               People and companies who file tickets. Open counts surface who's escalating.

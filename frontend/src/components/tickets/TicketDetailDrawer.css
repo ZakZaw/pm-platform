@@ -1,4 +1,4 @@
-.ticket-drawer__backdrop {
+.ticket-drawer-backdrop {
   position: fixed;
   inset: 0;
   background: var(--overlay);
@@ -20,38 +20,38 @@
   flex-direction: column;
 }
 
-.ticket-drawer__head {
+.ticket-drawer-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: var(--s-6) var(--s-8) 0;
 }
 
-.ticket-drawer__head-meta {
+.ticket-drawer-head-meta {
   display: flex;
   align-items: center;
   gap: var(--s-5);
   font-size: var(--fs-sm);
 }
 
-.ticket-drawer__error {
+.ticket-drawer-error {
   padding: var(--s-6) var(--s-8);
   color: var(--danger);
 }
 
-.ticket-drawer__placeholder {
+.ticket-drawer-placeholder {
   padding: var(--s-8);
   color: var(--text-muted);
 }
 
-.ticket-drawer__body {
+.ticket-drawer-body {
   padding: var(--s-5) var(--s-8) var(--s-10);
   display: flex;
   flex-direction: column;
   gap: var(--s-7);
 }
 
-.ticket-drawer__title {
+.ticket-drawer-title {
   font-size: var(--fs-2xl);
   font-weight: var(--fw-bold);
   letter-spacing: var(--tracking-tight);
@@ -60,15 +60,15 @@
   color: var(--text);
 }
 
-.ticket-drawer__meta {
+.ticket-drawer-meta {
   display: flex;
   align-items: center;
   gap: var(--s-5);
 }
-.ticket-drawer__meta .input-group { min-width: 160px; }
+.ticket-drawer-meta .input-group { min-width: 160px; }
 
 /* SLA read-out: dot + coloured text. */
-.ticket-drawer__sla {
+.ticket-drawer-sla {
   display: inline-flex;
   align-items: center;
   gap: var(--s-3);
@@ -76,17 +76,17 @@
   font-weight: var(--fw-medium);
   color: var(--text-secondary);
 }
-.ticket-drawer__sla::before {
+.ticket-drawer-sla::before {
   content: "";
   width: 7px;
   height: 7px;
   border-radius: var(--r-pill);
   background: currentColor;
 }
-.ticket-drawer__sla.is-danger { color: var(--danger); }
-.ticket-drawer__sla.is-ok { color: var(--success); }
+.ticket-drawer-sla.is-danger { color: var(--danger); }
+.ticket-drawer-sla.is-ok { color: var(--success); }
 
-.ticket-drawer__body-md {
+.ticket-drawer-body-md {
   padding: var(--s-6);
   background: var(--surface-2);
   border-radius: var(--r-lg);
@@ -96,20 +96,20 @@
   line-height: var(--lh-relaxed);
 }
 
-.ticket-drawer__section {
+.ticket-drawer-section {
   display: flex;
   flex-direction: column;
   gap: var(--s-5);
 }
 
-.ticket-drawer__section-title {
+.ticket-drawer-section-title {
   margin: 0;
   font-size: var(--fs-base);
   font-weight: var(--fw-semibold);
   color: var(--text);
 }
 
-.ticket-drawer__replies {
+.ticket-drawer-replies {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -118,29 +118,29 @@
   gap: var(--s-4);
 }
 
-.ticket-drawer__empty {
+.ticket-drawer-empty {
   color: var(--text-muted);
   font-size: var(--fs-sm);
 }
 
-.ticket-drawer__reply {
+.ticket-drawer-reply {
   padding: var(--s-5) var(--s-6);
   background: var(--surface-2);
   border-radius: var(--r-lg);
 }
 
-.ticket-drawer__reply.is-internal {
+.ticket-drawer-reply.is-internal {
   background: var(--warning-soft);
 }
 
-.ticket-drawer__reply-head {
+.ticket-drawer-reply-head {
   display: flex;
   align-items: center;
   gap: var(--s-4);
   margin-bottom: var(--s-3);
 }
 
-.ticket-drawer__reply-kind {
+.ticket-drawer-reply-kind {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
@@ -148,31 +148,31 @@
   font-weight: var(--fw-semibold);
   color: var(--info);
 }
-.ticket-drawer__reply-kind.is-internal { color: var(--warning); }
+.ticket-drawer-reply-kind.is-internal { color: var(--warning); }
 
-.ticket-drawer__reply-time {
+.ticket-drawer-reply-time {
   font-size: var(--fs-xs);
   color: var(--text-muted);
 }
 
-.ticket-drawer__reply-body {
+.ticket-drawer-reply-body {
   white-space: pre-wrap;
   color: var(--text);
   font-size: var(--fs-md);
   line-height: var(--lh-normal);
 }
 
-.ticket-drawer__reply-form {
+.ticket-drawer-reply-form {
   margin-top: var(--s-3);
 }
 
-.ticket-drawer__reply-actions {
+.ticket-drawer-reply-actions {
   display: flex;
   align-items: center;
   margin-top: var(--s-4);
 }
 
-.ticket-drawer__internal-toggle {
+.ticket-drawer-internal-toggle {
   display: inline-flex;
   align-items: center;
   gap: var(--s-3);

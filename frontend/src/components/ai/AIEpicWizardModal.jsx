@@ -140,49 +140,49 @@ export function AIEpicWizardModal({ open, projectId, onClose, onCreated }) {
         </h2>
       </ModalHeader>
       <ModalBody>
-        {error && <p className="ai-draft__error">{error}</p>}
+        {error && <p className="ai-draft-error">{error}</p>}
 
         {!preview && (
-          <div className="ai-draft__prompt">
-            <label htmlFor="ai-epic-desc" className="ai-draft__label">
+          <div className="ai-draft-prompt">
+            <label htmlFor="ai-epic-desc" className="ai-draft-label">
               Describe the epic
             </label>
             <textarea
               id="ai-epic-desc"
               data-autofocus
-              className="ai-draft__textarea"
+              className="ai-draft-textarea"
               rows={5}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="e.g. Build the billing system: pricing plans, Stripe checkout, prorations on plan changes, invoice history."
             />
-            <p className="ai-draft__hint">
+            <p className="ai-draft-hint">
               AI sees existing epics in this project so it won't propose duplicates.
             </p>
           </div>
         )}
 
         {preview?.epic && (
-          <div className="ai-draft__plan">
-            <div className="ai-draft__plan-head hstack">
+          <div className="ai-draft-plan">
+            <div className="ai-draft-plan-head hstack">
               <Sparkles size={14} color="var(--ai-2)" aria-hidden="true" />
-              <span className="ai-draft__plan-title">Generated epic</span>
+              <span className="ai-draft-plan-title">Generated epic</span>
               {totals && (
-                <span className="dim ai-draft__plan-totals">
+                <span className="dim ai-draft-plan-totals">
                   · {totals.tasks} tasks · {totals.points} points
                 </span>
               )}
             </div>
 
-            <div className="ai-draft__epic">
+            <div className="ai-draft-epic">
               <input
-                className="input ai-draft__epic-title"
+                className="input ai-draft-epic-title"
                 value={preview.epic.title}
                 onChange={(e) => updateTitle(e.target.value)}
                 placeholder="Epic title"
               />
               <textarea
-                className="ai-draft__epic-desc"
+                className="ai-draft-epic-desc"
                 rows={2}
                 value={preview.epic.description ?? ''}
                 onChange={(e) => updateDescription(e.target.value)}
@@ -190,7 +190,7 @@ export function AIEpicWizardModal({ open, projectId, onClose, onCreated }) {
               />
             </div>
 
-            <div className="ai-draft__tasks">
+            <div className="ai-draft-tasks">
               {preview.epic.tasks.map((t, i) => (
                 <TaskRow
                   key={i}
@@ -200,7 +200,7 @@ export function AIEpicWizardModal({ open, projectId, onClose, onCreated }) {
                 />
               ))}
               {preview.epic.tasks.length === 0 && (
-                <p className="ai-draft__empty">
+                <p className="ai-draft-empty">
                   All tasks removed. Regenerate or close to start over.
                 </p>
               )}
@@ -269,28 +269,28 @@ function TimelineImpactPanel({ impact }) {
     ? `Based on a velocity of ${impact.projectVelocityPointsPerSprint}pt / ${impact.averageSprintLengthDays}d sprint.`
     : `No closed-sprint history yet — using a fallback velocity of ${impact.projectVelocityPointsPerSprint}pt.`;
   return (
-    <div className="ai-draft__impact" aria-label="Timeline impact">
-      <div className="ai-draft__impact-head">Timeline impact</div>
-      <div className="ai-draft__impact-summary">
+    <div className="ai-draft-impact" aria-label="Timeline impact">
+      <div className="ai-draft-impact-head">Timeline impact</div>
+      <div className="ai-draft-impact-summary">
         {impact.addedStoryPoints}pt added · ~{impact.estimatedSprintsToComplete} sprint{impact.estimatedSprintsToComplete === 1 ? '' : 's'}
         {impact.projectedShiftDays > 0 ? ` · ~${impact.projectedShiftDays}d of downstream work` : ''}.
         {' '}{velocityNote}
       </div>
 
-      <div className="ai-draft__impact-head ai-draft__impact-head--sub">Open sprints</div>
+      <div className="ai-draft-impact-head ai-draft-impact-head-sub">Open sprints</div>
       {impact.sprints.length === 0 ? (
-        <p className="ai-draft__impact-empty">No planning or active sprints in this project.</p>
+        <p className="ai-draft-impact-empty">No planning or active sprints in this project.</p>
       ) : (
-        <ul className="ai-draft__impact-list">
+        <ul className="ai-draft-impact-list">
           {impact.sprints.map((s) => (
             <li
               key={s.sprintId}
-              className={`ai-draft__impact-row${s.projectedOverflowPoints > 0 ? ' is-warn' : ''}`}
+              className={`ai-draft-impact-row${s.projectedOverflowPoints > 0 ? ' is-warn' : ''}`}
             >
-              <span className="ai-draft__impact-row-name">
+              <span className="ai-draft-impact-row-name">
                 {s.name} <span className="muted">· {s.status}</span>
               </span>
-              <span className="ai-draft__impact-row-meta">
+              <span className="ai-draft-impact-row-meta">
                 {s.committedPoints}/{s.targetPoints}pt committed ·
                 {' '}{s.projectedOverflowPoints > 0
                   ? `${s.projectedOverflowPoints}pt overflow`
@@ -301,18 +301,18 @@ function TimelineImpactPanel({ impact }) {
         </ul>
       )}
 
-      <div className="ai-draft__impact-head ai-draft__impact-head--sub">Milestones in next 90 days</div>
+      <div className="ai-draft-impact-head ai-draft-impact-head-sub">Milestones in next 90 days</div>
       {impact.milestones.length === 0 ? (
-        <p className="ai-draft__impact-empty">No upcoming milestones within the projection window.</p>
+        <p className="ai-draft-impact-empty">No upcoming milestones within the projection window.</p>
       ) : (
-        <ul className="ai-draft__impact-list">
+        <ul className="ai-draft-impact-list">
           {impact.milestones.map((m) => (
             <li
               key={m.milestoneId}
-              className={`ai-draft__impact-row${m.projectedShiftDays > 0 ? ' is-warn' : ''}`}
+              className={`ai-draft-impact-row${m.projectedShiftDays > 0 ? ' is-warn' : ''}`}
             >
-              <span className="ai-draft__impact-row-name">{m.title}</span>
-              <span className="ai-draft__impact-row-meta">
+              <span className="ai-draft-impact-row-name">{m.title}</span>
+              <span className="ai-draft-impact-row-meta">
                 in {m.daysUntil}d ·
                 {' '}{m.projectedShiftDays > 0 ? `+${m.projectedShiftDays}d shift` : 'no shift'}
               </span>
@@ -331,10 +331,10 @@ function TimelineImpactPanel({ impact }) {
 // projection runs).
 function DestinationPicker({ impact, value, onChange }) {
   return (
-    <div className="ai-draft__destination" role="radiogroup" aria-label="Destination">
-      <div className="ai-draft__destination-head">Add to…</div>
-      <div className="ai-draft__destination-options">
-        <label className={`ai-draft__destination-opt${value === null ? ' is-selected' : ''}`}>
+    <div className="ai-draft-destination" role="radiogroup" aria-label="Destination">
+      <div className="ai-draft-destination-head">Add to…</div>
+      <div className="ai-draft-destination-options">
+        <label className={`ai-draft-destination-opt${value === null ? ' is-selected' : ''}`}>
           <input
             type="radio"
             name="ai-epic-destination"
@@ -342,13 +342,13 @@ function DestinationPicker({ impact, value, onChange }) {
             onChange={() => onChange(null)}
           />
           <span>Backlog</span>
-          <span className="ai-draft__destination-opt-meta">tasks land unsprinted</span>
+          <span className="ai-draft-destination-opt-meta">tasks land unsprinted</span>
         </label>
         {impact.sprints.map((s) => (
           <label
             key={s.sprintId}
             className={[
-              'ai-draft__destination-opt',
+              'ai-draft-destination-opt',
               value === s.sprintId ? 'is-selected' : '',
               s.projectedOverflowPoints > 0 ? 'is-warn' : '',
             ].filter(Boolean).join(' ')}
@@ -362,7 +362,7 @@ function DestinationPicker({ impact, value, onChange }) {
             <span>
               {s.name} <span className="muted">· {s.status}</span>
             </span>
-            <span className="ai-draft__destination-opt-meta">
+            <span className="ai-draft-destination-opt-meta">
               {s.projectedOverflowPoints > 0
                 ? `would overflow by ${s.projectedOverflowPoints}pt`
                 : `${s.remainingCapacityPoints}pt free`}
@@ -377,11 +377,11 @@ function DestinationPicker({ impact, value, onChange }) {
 function TaskRow({ task, onChange, onRemove }) {
   const [editing, setEditing] = useState(false);
   return (
-    <div className="ai-draft__task hstack">
+    <div className="ai-draft-task hstack">
       <Badge tone={PRIORITY_TONES[task.priority] ?? 'neutral'}>{task.priority}</Badge>
       {editing ? (
         <input
-          className="input ai-draft__task-input grow"
+          className="input ai-draft-task-input grow"
           value={task.title}
           autoFocus
           onChange={(e) => onChange({ title: e.target.value })}
@@ -391,9 +391,9 @@ function TaskRow({ task, onChange, onRemove }) {
           }}
         />
       ) : (
-        <span className="grow ai-draft__task-title">{task.title}</span>
+        <span className="grow ai-draft-task-title">{task.title}</span>
       )}
-      <span className="mono dim ai-draft__task-pts">{task.storyPoints}pt</span>
+      <span className="mono dim ai-draft-task-pts">{task.storyPoints}pt</span>
       <button
         type="button"
         className="icon-btn icon-btn-sm"

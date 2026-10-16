@@ -105,13 +105,13 @@ export function LabelsSection({ taskId, projectId, initial = [], onChange }) {
 
   return (
     <div className="labels-section" ref={wrapRef}>
-      <div className="row gap-2 labels-section__chips">
+      <div className="row gap-2 labels-section-chips">
         {labels.map((l) => (
-          <span key={l.id} className={`badge badge-${l.color} labels-section__chip`}>
+          <span key={l.id} className={`badge badge-${l.color} labels-section-chip`}>
             <Tag size={9} aria-hidden="true" /> {l.name}
             <button
               type="button"
-              className="labels-section__chip-x"
+              className="labels-section-chip-x"
               onClick={() => removeChip(l)}
               aria-label={`Remove ${l.name}`}
             >
@@ -121,7 +121,7 @@ export function LabelsSection({ taskId, projectId, initial = [], onChange }) {
         ))}
         <button
           type="button"
-          className="labels-section__add"
+          className="labels-section-add"
           onClick={() => setPickerOpen((v) => !v)}
         >
           <Plus size={12} aria-hidden="true" /> Add label
@@ -129,10 +129,10 @@ export function LabelsSection({ taskId, projectId, initial = [], onChange }) {
       </div>
 
       {pickerOpen && (
-        <div className="menu labels-section__menu" role="menu">
+        <div className="menu labels-section-menu" role="menu">
           <div className="menu-label">Project labels</div>
           {available.length === 0 ? (
-            <p className="muted labels-section__empty">
+            <p className="muted labels-section-empty">
               No labels yet — create one below.
             </p>
           ) : (
@@ -152,7 +152,7 @@ export function LabelsSection({ taskId, projectId, initial = [], onChange }) {
             ))
           )}
           <div className="menu-sep" />
-          <form onSubmit={createLabel} className="labels-section__form">
+          <form onSubmit={createLabel} className="labels-section-form">
             <input
               className="input"
               type="text"
@@ -162,7 +162,7 @@ export function LabelsSection({ taskId, projectId, initial = [], onChange }) {
               maxLength={60}
             />
             <select
-              className="input labels-section__tone"
+              className="input labels-section-tone"
               value={newTone}
               onChange={(e) => setNewTone(e.target.value)}
               aria-label="Color"

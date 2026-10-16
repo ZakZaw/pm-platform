@@ -118,7 +118,7 @@ export function NotificationsPanel() {
 
       {open && (
         <div className="notif-panel" role="dialog" aria-label="Notifications">
-          <header className="notif-panel__head">
+          <header className="notif-panel-head">
             <strong>Notifications</strong>
             <button
               type="button"
@@ -131,7 +131,7 @@ export function NotificationsPanel() {
               <span>Mark all read</span>
             </button>
           </header>
-          <div className="notif-panel__body">
+          <div className="notif-panel-body">
             {!loaded && <div className="notif-empty">Loading…</div>}
             {loaded && items.length === 0 && (
               <div className="notif-empty">You're all caught up.</div>
@@ -158,24 +158,24 @@ function NotificationRow({ item, onClick }) {
       className={`notif-row ${item.readAt ? 'is-read' : ''}`}
       onClick={onClick}
     >
-      <div className="notif-row__icon">
+      <div className="notif-row-icon">
         {item.actorName ? (
           <Avatar name={item.actorName} src={item.actorAvatarUrl} size="xs" />
         ) : (
-          <span className="notif-row__kind">
+          <span className="notif-row-kind">
             <Icon name={iconName} size={12} />
           </span>
         )}
       </div>
-      <div className="notif-row__main">
-        <div className="notif-row__title">
-          {!item.readAt && <span className="notif-row__dot" aria-hidden="true" />}
+      <div className="notif-row-main">
+        <div className="notif-row-title">
+          {!item.readAt && <span className="notif-row-dot" aria-hidden="true" />}
           {item.title}
         </div>
         {item.bodyMd && (
-          <div className="notif-row__body">{item.bodyMd}</div>
+          <div className="notif-row-body">{item.bodyMd}</div>
         )}
-        <div className="notif-row__meta">
+        <div className="notif-row-meta">
           {item.projectName && <span>{item.projectName}</span>}
           {item.projectName && <span aria-hidden="true">·</span>}
           <span title={new Date(item.createdAt).toLocaleString()}>

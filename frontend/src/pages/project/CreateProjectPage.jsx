@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Briefcase, FileText, Sparkles } from 'lucide-react';
+import { Briefcase, Sparkles } from 'lucide-react';
 import { Button, Input, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { useProjectStore } from '@/store/projectStore';
@@ -13,12 +13,6 @@ const MODES = [
     title: 'Start blank',
     description: 'A fresh project with no structure. Add work items as you go.',
     Icon: Briefcase,
-  },
-  {
-    key: 'template',
-    title: 'From template',
-    description: 'Pick a starter template that matches the project type.',
-    Icon: FileText,
   },
   {
     key: 'ai',
@@ -45,15 +39,6 @@ export function CreateProjectPage() {
       navigate(`/${orgSlug}/projects/new/ai?type=${typeId}`);
       return;
     }
-    if (mode === 'template') {
-      toast.show({
-        tone: 'info',
-        title: 'Templates coming soon',
-        message: 'Template picker ships in a follow-up task.',
-      });
-      return;
-    }
-
     setSubmitting(true);
     try {
       const project = await projectsApi.create(orgSlug, {
@@ -87,12 +72,12 @@ export function CreateProjectPage() {
         </div>
       </header>
 
-      <h2 className="create-project__section-title">
-        <span className="create-project__step" aria-hidden="true">1</span>
+      <h2 className="create-project-section-title">
+        <span className="create-project-step" aria-hidden="true">1</span>
         Project type
       </h2>
       <div
-        className="create-project__types"
+        className="create-project-types"
         role="radiogroup"
         aria-label="Project type"
       >
@@ -111,20 +96,20 @@ export function CreateProjectPage() {
               <span className={`proj-icon proj-icon-${t.id.toLowerCase()}`} aria-hidden="true">
                 <Icon size={18} />
               </span>
-              <span className="type-card__text">
-                <span className="type-card__title">{t.label}</span>
-                <span className="type-card__desc">{t.description}</span>
+              <span className="type-card-text">
+                <span className="type-card-title">{t.label}</span>
+                <span className="type-card-desc">{t.description}</span>
               </span>
             </button>
           );
         })}
       </div>
 
-      <h2 className="create-project__section-title">
-        <span className="create-project__step" aria-hidden="true">2</span>
+      <h2 className="create-project-section-title">
+        <span className="create-project-step" aria-hidden="true">2</span>
         Starting point
       </h2>
-      <div className="create-project__modes" role="radiogroup" aria-label="Project mode">
+      <div className="create-project-modes" role="radiogroup" aria-label="Project mode">
         {MODES.map((m) => {
           const Icon = m.Icon;
           const active = mode === m.key;
@@ -137,19 +122,19 @@ export function CreateProjectPage() {
               className={['mode-card', `mode-card-${m.key}`, active ? 'is-active' : ''].filter(Boolean).join(' ')}
               onClick={() => setMode(m.key)}
             >
-              <Icon className="mode-card__icon" aria-hidden="true" size={18} />
-              <span className="mode-card__title">{m.title}</span>
-              <span className="mode-card__desc">{m.description}</span>
+              <Icon className="mode-card-icon" aria-hidden="true" size={18} />
+              <span className="mode-card-title">{m.title}</span>
+              <span className="mode-card-desc">{m.description}</span>
             </button>
           );
         })}
       </div>
 
-      <h2 className="create-project__section-title">
-        <span className="create-project__step" aria-hidden="true">3</span>
+      <h2 className="create-project-section-title">
+        <span className="create-project-step" aria-hidden="true">3</span>
         Name it
       </h2>
-      <form onSubmit={onSubmit} className="card create-project__form">
+      <form onSubmit={onSubmit} className="card create-project-form">
         <Input
           aria-label="Project name"
           value={name}

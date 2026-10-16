@@ -10,8 +10,8 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Filter, MoreHorizontal, Plus, RefreshCw } from 'lucide-react';
-import { Button, Dropdown, Skeleton, useToast } from '@/components/ui';
+import { Plus, RefreshCw } from 'lucide-react';
+import { Button, Skeleton, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { salesApi } from '@/api/sales.api';
 import { DealDetailDrawer } from '@/components/deals/DealDetailDrawer';
@@ -208,30 +208,22 @@ export function PipelinePage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
+            {project && <div className="eyebrow">{project.name}</div>}
             <h1 className="page-title">Pipeline</h1>
             <div className="page-subtitle">
               {totalOpenCount} open deals · {fmtCurrency(totalOpenValue, 'USD')} in flight
             </div>
           </div>
           <div className="row gap-3">
-            <Dropdown
-              align="end"
-              trigger={(
-                <button type="button" className="icon-btn" aria-label="More actions" title="More actions">
-                  <MoreHorizontal size={16} aria-hidden="true" />
-                </button>
-              )}
+            <button
+              type="button"
+              className="icon-btn"
+              aria-label="Refresh"
+              title="Refresh"
+              onClick={() => refresh(project.id).catch(() => {})}
             >
-              <Dropdown.Item
-                icon={<RefreshCw size={13} aria-hidden="true" />}
-                onSelect={() => refresh(project.id).catch(() => {})}
-              >
-                Refresh
-              </Dropdown.Item>
-              <Dropdown.Item icon={<Filter size={13} aria-hidden="true" />} disabled>
-                Filter (coming soon)
-              </Dropdown.Item>
-            </Dropdown>
+              <RefreshCw size={16} aria-hidden="true" />
+            </button>
             <Button variant="primary" size="sm" onClick={() => setCreateOpen(true)}>
               <Plus size={13} aria-hidden="true" /> New deal
             </Button>

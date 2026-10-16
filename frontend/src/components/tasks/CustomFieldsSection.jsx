@@ -11,7 +11,7 @@ import './CustomFieldsSection.css';
  * SetTaskCustomFieldValuesCommand — the server's RequiredMissing error is
  * surfaced as a toast.
  *
- * Used by TaskDetail (drawer view). For TaskForm (create flow), required
+ * Used by TaskDetail (drawer view). For QuickCreateTaskModal (create flow), required
  * fields aren't enforced at create time today — the user fills them in
  * after creation. F2-05 follow-up: collect required values during create
  * and reject the form if any are missing.
@@ -103,12 +103,12 @@ export function CustomFieldsSection({ taskId, projectId }) {
   return (
     <TaskSection title="Custom fields" meta={`${filled} of ${visibleDefs.length} set`}>
     <div className="cf-section">
-      <div className="cf-section__grid">
+      <div className="cf-section-grid">
         {visibleDefs.map((def) => (
-          <div key={def.id} className="drawer-prop cf-section__row">
+          <div key={def.id} className="drawer-prop cf-section-row">
             <span className="label-key">
               {def.name}
-              {def.required && <span className="cf-section__required" title="Required"> *</span>}
+              {def.required && <span className="cf-section-required" title="Required"> *</span>}
             </span>
             <FieldInput def={def} value={values[def.id]} onChange={(v) => handleChange(def, v)} />
           </div>
@@ -130,7 +130,7 @@ function FieldInput({ def, value, onChange }) {
     case 'SingleSelect':
       return (
         <select
-          className="cf-section__select"
+          className="cf-section-select"
           value={value ?? ''}
           onChange={(e) => onChange(e.target.value === '' ? null : e.target.value)}
         >
@@ -151,7 +151,7 @@ function TextInput({ value, onCommit }) {
   return (
     <input
       type="text"
-      className="cf-section__input"
+      className="cf-section-input"
       value={local}
       onChange={(e) => setLocal(e.target.value)}
       onBlur={() => onCommit(local.trim())}
@@ -169,7 +169,7 @@ function NumberInput({ value, onCommit }) {
   return (
     <input
       type="number"
-      className="cf-section__input cf-section__input--num"
+      className="cf-section-input cf-section-input-num"
       value={local}
       onChange={(e) => setLocal(e.target.value)}
       onBlur={() => {
@@ -189,7 +189,7 @@ function DateInput({ value, onChange }) {
   return (
     <input
       type="date"
-      className="cf-section__input"
+      className="cf-section-input"
       value={value ? value.slice(0, 10) : ''}
       onChange={(e) => onChange(e.target.value)}
     />
@@ -205,7 +205,7 @@ function MultiSelectInput({ options, value, onChange }) {
     onChange([...next]);
   };
   return (
-    <div className="row gap-2 wrap cf-section__multi">
+    <div className="row gap-2 wrap cf-section-multi">
       {options.map((opt) => (
         <button
           key={opt}

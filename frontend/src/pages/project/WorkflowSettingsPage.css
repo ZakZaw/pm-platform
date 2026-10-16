@@ -80,32 +80,32 @@
 .workflow-dot.is-success { background: var(--success); }
 
 /* Inline-edit inputs read as plain text until hovered / focused. */
-.workflow .workflow-name__input,
+.workflow .workflow-name-input,
 .workflow .workflow-color,
-.workflow .workflow-wip__input {
+.workflow .workflow-wip-input {
   border-color: transparent;
   background-color: transparent;
   box-shadow: none;
 }
-.workflow .workflow-name__input {
+.workflow .workflow-name-input {
   font-weight: var(--fw-medium);
   padding: 0 var(--s-3);
 }
 .workflow .workflow-color {
   color: var(--text-secondary);
 }
-.workflow-row:hover .workflow-name__input,
+.workflow-row:hover .workflow-name-input,
 .workflow-row:hover .workflow-color,
-.workflow-row:hover .workflow-wip__input,
-.workflow .workflow-name__input:focus,
+.workflow-row:hover .workflow-wip-input,
+.workflow .workflow-name-input:focus,
 .workflow .workflow-color:focus,
-.workflow .workflow-wip__input:focus {
+.workflow .workflow-wip-input:focus {
   border-color: var(--border);
   background-color: var(--surface);
 }
-.workflow .workflow-name__input:focus,
+.workflow .workflow-name-input:focus,
 .workflow .workflow-color:focus,
-.workflow .workflow-wip__input:focus {
+.workflow .workflow-wip-input:focus {
   border-color: var(--accent-bright);
   box-shadow: 0 0 0 3px var(--ring);
 }
@@ -134,13 +134,13 @@
   cursor: pointer;
 }
 
-.workflow-wip__input {
+.workflow-wip-input {
   width: 56px;
   height: 32px;
   text-align: center;
   padding: 0 var(--s-2);
 }
-.workflow-wip__input::placeholder {
+.workflow-wip-input::placeholder {
   color: var(--text-subtle);
 }
 

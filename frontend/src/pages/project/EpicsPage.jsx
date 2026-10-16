@@ -7,7 +7,6 @@ import {
   Card,
   EmptyState,
   Priority,
-  Segmented,
   Skeleton,
   StatusBadge,
   useToast,
@@ -58,7 +57,6 @@ export function EpicsPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [expanded, setExpanded] = useState({});
   const [openedTaskId, setOpenedTaskId] = useState(null);
-  const [view, setView] = useState('list');
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -135,7 +133,7 @@ export function EpicsPage() {
         </div>
       </div>
 
-      <div className="row between epics-page-toolbar">
+      <div className="row epics-page-toolbar">
         <label className="row gap-3 muted epics-page-archived">
           <input
             type="checkbox"
@@ -145,17 +143,6 @@ export function EpicsPage() {
           />
           Show archived
         </label>
-        <Segmented
-          value={view}
-          onChange={setView}
-          size="sm"
-          options={[
-            { value: 'list', label: 'List' },
-            { value: 'tree', label: 'Tree', disabled: true },
-            { value: 'gantt', label: 'Timeline', disabled: true },
-          ]}
-          ariaLabel="Epics view"
-        />
       </div>
 
       {creating && (
@@ -193,7 +180,7 @@ export function EpicsPage() {
           <Button variant="secondary" onClick={() => setAiOpen(true)}>
             <Sparkles size={14} aria-hidden="true" /> Draft with AI
           </Button>
-          <Button variant="primary" onClick={() => setCreating(true)}>
+          <Button variant="secondary" onClick={() => setCreating(true)}>
             New epic
           </Button>
         </EmptyState>

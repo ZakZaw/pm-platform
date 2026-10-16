@@ -212,24 +212,24 @@ function FieldRow({ field, onEdit, onDelete }) {
 
   return (
     <li ref={setNodeRef} style={style} className="cf-row">
-      <button type="button" className="cf-row__grip" {...attributes} {...listeners} aria-label="Drag to reorder">
+      <button type="button" className="cf-row-grip" {...attributes} {...listeners} aria-label="Drag to reorder">
         <GripVertical size={14} aria-hidden="true" />
       </button>
-      <div className="cf-row__main">
-        <div className="cf-row__name">{field.name}</div>
-        <div className="cf-row__meta">
+      <div className="cf-row-main">
+        <div className="cf-row-name">{field.name}</div>
+        <div className="cf-row-meta">
           <span>{TYPE_LABEL[field.fieldType] ?? field.fieldType}</span>
           {field.options && field.options.length > 0 && (
-            <span className="cf-row__options">· {field.options.join(', ')}</span>
+            <span className="cf-row-options">· {field.options.join(', ')}</span>
           )}
         </div>
       </div>
       {field.required ? <span className="cf-required">Required</span> : <span />}
-      <div className="cf-row__actions">
+      <div className="cf-row-actions">
         <Button size="sm" variant="ghost" onClick={onEdit}>Edit</Button>
         <button
           type="button"
-          className="icon-btn icon-btn-sm cf-row__delete"
+          className="icon-btn icon-btn-sm cf-row-delete"
           onClick={onDelete}
           aria-label={`Delete ${field.name}`}
           title="Delete field"

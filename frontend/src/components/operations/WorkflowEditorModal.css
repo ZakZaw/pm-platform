@@ -1,4 +1,4 @@
-.wf-editor__items {
+.wf-editor-items {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -7,18 +7,18 @@
   gap: var(--s-3);
 }
 
-.wf-editor__item {
+.wf-editor-item {
   display: flex;
   align-items: center;
   gap: var(--s-3);
 }
 
-.wf-editor__input {
+.wf-editor-input {
   flex: 1;
   height: 34px;
 }
 
-.wf-editor__seq {
+.wf-editor-seq {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
@@ -28,4 +28,4 @@
   cursor: pointer;
 }
 
-.wf-editor__add { margin-top: var(--s-3); }
+.wf-editor-add { margin-top: var(--s-3); }

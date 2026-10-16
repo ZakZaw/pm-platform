@@ -1,11 +1,11 @@
 /* Base .skeleton + shimmer keyframes live in reset.css. */
 
 .skeleton { display: block; }
-.skeleton--r-xs   { border-radius: var(--r-xs); }
-.skeleton--r-sm   { border-radius: var(--r-sm); }
-.skeleton--r-md   { border-radius: var(--r-md); }
-.skeleton--r-lg   { border-radius: var(--r-lg); }
-.skeleton--r-pill { border-radius: var(--r-pill); }
+.skeleton-r-xs   { border-radius: var(--r-xs); }
+.skeleton-r-sm   { border-radius: var(--r-sm); }
+.skeleton-r-md   { border-radius: var(--r-md); }
+.skeleton-r-lg   { border-radius: var(--r-lg); }
+.skeleton-r-pill { border-radius: var(--r-pill); }
 
 .skeleton-stack {
   display: flex;

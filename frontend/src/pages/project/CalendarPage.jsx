@@ -244,7 +244,7 @@ function TaskCalendarView({ project }) {
               ]}
               ariaLabel="Calendar view"
             />
-            <div className="row gap-1 calendar-page__nav">
+            <div className="row gap-1 calendar-page-nav">
               <button type="button" className="icon-btn icon-btn-sm" onClick={() => movePeriod(-1)} aria-label="Previous" title="Previous">
                 <ChevronLeft size={16} aria-hidden="true" />
               </button>
@@ -261,10 +261,10 @@ function TaskCalendarView({ project }) {
       </div>
 
       {sprints.length > 0 && (
-        <div className="calendar-page__legend">
+        <div className="calendar-page-legend">
           {sprints.slice(0, SPRINT_TONES.length).map((s, i) => (
             <span key={s.id} className="row gap-3 center">
-              <span className={`calendar-page__swatch ${SPRINT_TONES[i]}`} />
+              <span className={`calendar-page-swatch ${SPRINT_TONES[i]}`} />
               <span>{s.name}</span>
             </span>
           ))}
@@ -280,7 +280,7 @@ function TaskCalendarView({ project }) {
         onDragEnd={handleDragEnd}
         onDragCancel={() => setDraggingId(null)}
       >
-        <div className={`cal calendar-page__grid ${view === 'week' ? 'is-week' : ''}`}>
+        <div className={`cal calendar-page-grid ${view === 'week' ? 'is-week' : ''}`}>
           <div className="cal-head">
             {DAY_NAMES.map((n) => <div key={n} className="cal-head-cell">{n}</div>)}
           </div>
@@ -313,15 +313,15 @@ function DayCell({ cell, tasks, sprint, view }) {
     !cell.inMonth ? 'is-other' : '',
     cell.isToday ? 'is-today' : '',
     isOver ? 'is-over' : '',
-    sprint ? `calendar-page__cell ${sprint.tone}` : '',
-    view === 'week' ? 'calendar-page__cell--week' : '',
+    sprint ? `calendar-page-cell ${sprint.tone}` : '',
+    view === 'week' ? 'calendar-page-cell-week' : '',
   ].filter(Boolean).join(' ');
   return (
     <div ref={setNodeRef} className={classes}>
-      <div className="row between center calendar-page__cell-head">
+      <div className="row between center calendar-page-cell-head">
         <span className="cal-date">{cell.date.getDate()}</span>
         {sprint && view === 'week' && (
-          <span className="calendar-page__sprint-label muted truncate">{sprint.name}</span>
+          <span className="calendar-page-sprint-label muted truncate">{sprint.name}</span>
         )}
       </div>
       <div className="col gap-1">
@@ -329,7 +329,7 @@ function DayCell({ cell, tasks, sprint, view }) {
           <DraggableTaskChip key={t.id} task={t} />
         ))}
         {tasks.length > (view === 'week' ? 12 : 3) && (
-          <span className="muted calendar-page__more">
+          <span className="muted calendar-page-more">
             +{tasks.length - (view === 'week' ? 12 : 3)} more
           </span>
         )}
@@ -345,7 +345,7 @@ function DraggableTaskChip({ task }) {
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      className={`cal-event calendar-page__task task-status-${task.status} ${isDragging ? 'is-dragging' : ''}`}
+      className={`cal-event calendar-page-task task-status-${task.status} ${isDragging ? 'is-dragging' : ''}`}
       title={`${task.key} · ${task.title} (${task.status})`}
     >
       <span className="truncate">{task.title}</span>
@@ -355,7 +355,7 @@ function DraggableTaskChip({ task }) {
 
 function TaskChip({ task, dragging }) {
   return (
-    <div className={`cal-event calendar-page__task task-status-${task.status} ${dragging ? 'is-dragging-overlay' : ''}`}>
+    <div className={`cal-event calendar-page-task task-status-${task.status} ${dragging ? 'is-dragging-overlay' : ''}`}>
       <span className="truncate">{task.title}</span>
     </div>
   );

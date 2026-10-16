@@ -9,11 +9,11 @@
   overflow: hidden;
 }
 
-.table__head {
+.table-head {
   background: transparent;
 }
 
-.table__header {
+.table-header {
   text-align: left;
   font-weight: var(--fw-medium);
   font-size: var(--fs-sm);
@@ -23,15 +23,15 @@
   white-space: nowrap;
 }
 
-.table__row + .table__row .table__cell {
+.table-row + .table-row .table-cell {
   border-top: 1px solid var(--border-subtle);
 }
 
-.table__cell {
+.table-cell {
   padding: var(--s-6) var(--s-7);
   color: var(--text);
   vertical-align: middle;
 }
 
-.table__cell--right { text-align: right; }
-.table__cell--center { text-align: center; }
+.table-cell-right { text-align: right; }
+.table-cell-center { text-align: center; }

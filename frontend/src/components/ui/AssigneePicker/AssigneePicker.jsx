@@ -50,7 +50,7 @@ export function AssigneePicker({
   const trigger = (
     <button
       type="button"
-      className={['assignee-picker__trigger', `is-${size}`, disabled ? 'is-disabled' : '']
+      className={['assignee-picker-trigger', `is-${size}`, disabled ? 'is-disabled' : '']
         .filter(Boolean)
         .join(' ')}
       disabled={disabled}
@@ -59,12 +59,12 @@ export function AssigneePicker({
       {current ? (
         <>
           <Avatar src={current.avatarUrl} name={current.fullName} size={size === 'md' ? 'sm' : 'xs'} />
-          <span className="assignee-picker__name">{current.fullName}</span>
+          <span className="assignee-picker-name">{current.fullName}</span>
         </>
       ) : (
         <>
-          <span className="assignee-picker__empty-dot" aria-hidden="true" />
-          <span className="assignee-picker__name is-muted">{placeholder}</span>
+          <span className="assignee-picker-empty-dot" aria-hidden="true" />
+          <span className="assignee-picker-name is-muted">{placeholder}</span>
         </>
       )}
     </button>
@@ -72,15 +72,15 @@ export function AssigneePicker({
 
   return (
     <div className={['assignee-picker', label ? 'is-field' : '', className].filter(Boolean).join(' ')}>
-      {label && <span className="assignee-picker__label">{label}</span>}
-      <Dropdown trigger={trigger} align="start" className="assignee-picker__dropdown">
-        <div className="assignee-picker__search">
+      {label && <span className="assignee-picker-label">{label}</span>}
+      <Dropdown trigger={trigger} align="start" className="assignee-picker-dropdown">
+        <div className="assignee-picker-search">
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search…"
-            className="assignee-picker__search-input"
+            className="assignee-picker-search-input"
             // Stop the Dropdown's outside-click close from firing.
             onClick={(e) => e.stopPropagation()}
           />

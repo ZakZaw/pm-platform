@@ -13,40 +13,40 @@
   align-items: start;
 }
 
-.comment__body {
+.comment-body {
   display: grid;
   gap: var(--s-4);
   min-width: 0;
 }
 
-.comment__head {
+.comment-head {
   display: flex;
   align-items: center;
   gap: var(--s-4);
 }
 
-.comment__name {
+.comment-name {
   font-weight: var(--fw-medium);
   color: var(--text);
   font-size: var(--fs-md);
 }
 
-.comment__time {
+.comment-time {
   color: var(--text-muted);
   font-size: var(--fs-xs);
 }
 
-.comment__edited {
+.comment-edited {
   font-style: italic;
 }
 
-.comment__actions {
+.comment-actions {
   margin-left: auto;
   display: inline-flex;
   gap: var(--s-2);
 }
 
-.comment__icon-btn {
+.comment-icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -59,12 +59,12 @@
   cursor: pointer;
 }
 
-.comment__icon-btn:hover {
+.comment-icon-btn:hover {
   background: var(--surface-hover);
   color: var(--text-secondary);
 }
 
-.comment__text {
+.comment-text {
   margin: 0;
   color: var(--text);
   font-size: var(--fs-base);
@@ -73,7 +73,7 @@
   word-break: break-word;
 }
 
-.comment__mention {
+.comment-mention {
   background: var(--accent-soft);
   color: var(--accent);
   padding: 0 var(--s-2);
@@ -81,7 +81,7 @@
   font-weight: var(--fw-medium);
 }
 
-.comment-list__empty {
+.comment-list-empty {
   color: var(--text-muted);
   font-size: var(--fs-md);
   margin: 0;

@@ -21,7 +21,7 @@ function renderBody(body) {
       out.push(<Fragment key={out.length}>{body.slice(lastIndex, start)}</Fragment>);
     }
     out.push(
-      <span key={out.length} className="comment__mention">
+      <span key={out.length} className="comment-mention">
         @{m[1]}
       </span>,
     );
@@ -83,7 +83,7 @@ export function CommentList({ projectId, comments, onChanged }) {
   }
 
   if (comments.length === 0) {
-    return <p className="comment-list__empty">No comments yet.</p>;
+    return <p className="comment-list-empty">No comments yet.</p>;
   }
 
   return (
@@ -96,18 +96,18 @@ export function CommentList({ projectId, comments, onChanged }) {
         return (
           <li key={c.id} className="comment">
             <Avatar name={c.author.fullName} src={c.author.avatarUrl} size="sm" />
-            <div className="comment__body">
-              <header className="comment__head">
-                <span className="comment__name">{c.author.fullName}</span>
-                <span className="comment__time">
+            <div className="comment-body">
+              <header className="comment-head">
+                <span className="comment-name">{c.author.fullName}</span>
+                <span className="comment-time">
                   {formatTime(c.createdAt)}
-                  {c.editedAt && <span className="comment__edited"> · edited</span>}
+                  {c.editedAt && <span className="comment-edited"> · edited</span>}
                 </span>
                 {canModify && !isEditing && (
-                  <div className="comment__actions">
+                  <div className="comment-actions">
                     <button
                       type="button"
-                      className="comment__icon-btn"
+                      className="comment-icon-btn"
                       onClick={() => setEditingId(c.id)}
                       aria-label="Edit comment"
                     >
@@ -115,7 +115,7 @@ export function CommentList({ projectId, comments, onChanged }) {
                     </button>
                     <button
                       type="button"
-                      className="comment__icon-btn"
+                      className="comment-icon-btn"
                       onClick={() => remove(c.id)}
                       aria-label="Delete comment"
                     >
@@ -134,7 +134,7 @@ export function CommentList({ projectId, comments, onChanged }) {
                   autoFocus
                 />
               ) : (
-                <p className="comment__text">{renderBody(c.bodyMd)}</p>
+                <p className="comment-text">{renderBody(c.bodyMd)}</p>
               )}
             </div>
           </li>

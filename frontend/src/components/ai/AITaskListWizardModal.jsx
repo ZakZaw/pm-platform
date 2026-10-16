@@ -142,12 +142,12 @@ export function AITaskListWizardModal({
         </h2>
       </ModalHeader>
       <ModalBody>
-        {error && <p className="ai-draft__error">{error}</p>}
+        {error && <p className="ai-draft-error">{error}</p>}
 
         {!preview && (
           <>
             {!fixedEpic && epicOptions.length > 0 && (
-              <div className="ai-draft__select-row">
+              <div className="ai-draft-select-row">
                 <Select
                   label="Add to epic"
                   value={epicId}
@@ -156,20 +156,20 @@ export function AITaskListWizardModal({
                 />
               </div>
             )}
-            <div className="ai-draft__prompt">
-              <label htmlFor="ai-tasks-desc" className="ai-draft__label">
+            <div className="ai-draft-prompt">
+              <label htmlFor="ai-tasks-desc" className="ai-draft-label">
                 What tasks do you need?
               </label>
               <textarea
                 id="ai-tasks-desc"
                 data-autofocus
-                className="ai-draft__textarea"
+                className="ai-draft-textarea"
                 rows={5}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="e.g. Wire up password reset: email entry page, send reset link, set new password, expire old sessions."
               />
-              <p className="ai-draft__hint">
+              <p className="ai-draft-hint">
                 AI will return 3–8 sprint-sized tasks with acceptance criteria. Edit anything before confirming.
               </p>
             </div>
@@ -177,10 +177,10 @@ export function AITaskListWizardModal({
         )}
 
         {preview && (
-          <div className="ai-draft__plan">
-            <div className="ai-draft__list-meta">
+          <div className="ai-draft-plan">
+            <div className="ai-draft-list-meta">
               <Sparkles size={13} color="var(--ai-2)" aria-hidden="true" />
-              <span className="ai-draft__plan-title">
+              <span className="ai-draft-plan-title">
                 {preview.tasks.length} tasks · {totalPts} points
               </span>
               {preview.epicTitle && (
@@ -190,7 +190,7 @@ export function AITaskListWizardModal({
                 </span>
               )}
             </div>
-            <div className="ai-draft__tasks">
+            <div className="ai-draft-tasks">
               {preview.tasks.map((t, i) => (
                 <TaskRow
                   key={i}
@@ -200,7 +200,7 @@ export function AITaskListWizardModal({
                 />
               ))}
               {preview.tasks.length === 0 && (
-                <p className="ai-draft__empty">
+                <p className="ai-draft-empty">
                   All tasks removed. Regenerate or close to start over.
                 </p>
               )}
@@ -250,11 +250,11 @@ export function AITaskListWizardModal({
 function TaskRow({ task, onChange, onRemove }) {
   const [editing, setEditing] = useState(false);
   return (
-    <div className="ai-draft__task hstack">
+    <div className="ai-draft-task hstack">
       <Badge tone={PRIORITY_TONES[task.priority] ?? 'neutral'}>{task.priority}</Badge>
       {editing ? (
         <input
-          className="input ai-draft__task-input grow"
+          className="input ai-draft-task-input grow"
           value={task.title}
           autoFocus
           onChange={(e) => onChange({ title: e.target.value })}
@@ -264,9 +264,9 @@ function TaskRow({ task, onChange, onRemove }) {
           }}
         />
       ) : (
-        <span className="grow ai-draft__task-title">{task.title}</span>
+        <span className="grow ai-draft-task-title">{task.title}</span>
       )}
-      <span className="mono dim ai-draft__task-pts">{task.storyPoints}pt</span>
+      <span className="mono dim ai-draft-task-pts">{task.storyPoints}pt</span>
       <button
         type="button"
         className="icon-btn icon-btn-sm"

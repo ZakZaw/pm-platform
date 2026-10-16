@@ -5,37 +5,37 @@
   padding: var(--s-4) var(--s-3);
 }
 
-.typed-preview__section {
+.typed-preview-section {
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
 }
 
-.typed-preview__section-head {
+.typed-preview-section-head {
   display: flex;
   align-items: baseline;
   gap: var(--s-3);
   padding: 0 var(--s-4);
 }
 
-.typed-preview__section-title {
+.typed-preview-section-title {
   font-size: var(--fs-md);
   font-weight: var(--fw-semibold);
   color: var(--text);
 }
 
-.typed-preview__count {
+.typed-preview-count {
   font-size: var(--fs-sm);
   color: var(--text-muted);
 }
 
-.typed-preview__section-body {
+.typed-preview-section-body {
   display: flex;
   flex-direction: column;
 }
 
 /* Flat rows separated by hairlines (no box-in-box). */
-.typed-preview__row {
+.typed-preview-row {
   display: flex;
   align-items: center;
   gap: var(--s-4);
@@ -44,11 +44,11 @@
   color: var(--text-muted);
   border-radius: var(--r-md);
 }
-.typed-preview__row:hover {
+.typed-preview-row:hover {
   background: var(--surface-hover);
 }
 
-.typed-preview__row-title {
+.typed-preview-row-title {
   flex: 1;
   font-size: var(--fs-md);
   color: var(--text);
@@ -57,14 +57,14 @@
   white-space: nowrap;
 }
 
-.typed-preview__row-meta {
+.typed-preview-row-meta {
   font-size: var(--fs-sm);
   color: var(--text-muted);
   white-space: nowrap;
 }
 
 /* Secondary read-out as plain muted text, not a capsule. */
-.typed-preview__tag {
+.typed-preview-tag {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
@@ -74,14 +74,14 @@
   white-space: nowrap;
 }
 
-.typed-preview__campaign,
-.typed-preview__workflow,
-.typed-preview__list {
+.typed-preview-campaign,
+.typed-preview-workflow,
+.typed-preview-list {
   display: flex;
   flex-direction: column;
 }
 
-.typed-preview__sub {
+.typed-preview-sub {
   list-style: none;
   margin: 0;
   padding: 0 var(--s-4) var(--s-4) var(--s-10);
@@ -90,7 +90,7 @@
   gap: var(--s-2);
 }
 
-.typed-preview__sub li {
+.typed-preview-sub li {
   display: flex;
   align-items: center;
   gap: var(--s-4);
@@ -98,19 +98,19 @@
   color: var(--text-secondary);
 }
 
-.typed-preview__sub li > svg {
+.typed-preview-sub li > svg {
   color: var(--text-subtle);
   flex-shrink: 0;
 }
 
-.typed-preview__sub li > span:first-of-type {
+.typed-preview-sub li > span:first-of-type {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.typed-preview__sub .typed-preview__tag,
-.typed-preview__sub .muted {
+.typed-preview-sub .typed-preview-tag,
+.typed-preview-sub .muted {
   flex: 0 0 auto;
 }

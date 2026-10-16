@@ -16,7 +16,7 @@
   position: relative;
 }
 
-.dash-canvas-widget__body {
+.dash-canvas-widget-body {
   flex: 1;
   min-width: 0;
   min-height: 0;
@@ -25,7 +25,7 @@
 
 /* Drag handle: invisible overlay at the top edge of each widget. Only
    rendered in edit mode so normal interaction isn't intercepted. */
-.dash-canvas-widget__drag {
+.dash-canvas-widget-drag {
   position: absolute;
   top: 0;
   left: 0;
@@ -35,7 +35,7 @@
   cursor: grab;
 }
 
-.dashboard-canvas.is-editing .dash-canvas-widget__drag {
+.dashboard-canvas.is-editing .dash-canvas-widget-drag {
   background: linear-gradient(
     to bottom,
     color-mix(in srgb, var(--accent) 10%, transparent),
@@ -43,11 +43,11 @@
   );
 }
 
-.dash-canvas-widget__drag:active {
+.dash-canvas-widget-drag:active {
   cursor: grabbing;
 }
 
-.dash-canvas-widget__remove {
+.dash-canvas-widget-remove {
   position: absolute;
   top: var(--s-4);
   right: var(--s-4);
@@ -65,7 +65,7 @@
   transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 }
 
-.dash-canvas-widget__remove:hover {
+.dash-canvas-widget-remove:hover {
   background: var(--danger-soft);
   color: var(--danger);
 }

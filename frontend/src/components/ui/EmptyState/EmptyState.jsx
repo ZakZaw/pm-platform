@@ -15,10 +15,10 @@ import './EmptyState.css';
 export function EmptyState({ icon, title, subtitle, children, className = '' }) {
   return (
     <div className={['empty-state', className].filter(Boolean).join(' ')}>
-      {icon && <div className="empty-state__icon" aria-hidden="true">{icon}</div>}
-      {title && <p className="empty-state__title">{title}</p>}
-      {subtitle && <p className="empty-state__subtitle">{subtitle}</p>}
-      {children && <div className="empty-state__actions">{children}</div>}
+      {icon && <div className="empty-state-icon" aria-hidden="true">{icon}</div>}
+      {title && <p className="empty-state-title">{title}</p>}
+      {subtitle && <p className="empty-state-subtitle">{subtitle}</p>}
+      {children && <div className="empty-state-actions">{children}</div>}
     </div>
   );
 }

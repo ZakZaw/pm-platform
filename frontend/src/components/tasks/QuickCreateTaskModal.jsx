@@ -200,8 +200,8 @@ export function QuickCreateTaskModal() {
   return (
     <div className="qct-backdrop" role="dialog" aria-modal="true" aria-label="Create task">
       <div className="qct-modal">
-        <header className="qct-modal__head">
-          <h2 className="qct-modal__title">New task</h2>
+        <header className="qct-modal-head">
+          <h2 className="qct-modal-title">New task</h2>
           <button
             type="button"
             className="icon-btn icon-btn-sm"
@@ -211,9 +211,9 @@ export function QuickCreateTaskModal() {
             <X size={16} aria-hidden="true" />
           </button>
         </header>
-        <form className="qct-modal__form" onSubmit={submit}>
+        <form className="qct-modal-form" onSubmit={submit}>
           <input
-            className="qct-modal__title-input"
+            className="qct-modal-title-input"
             aria-label="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -231,7 +231,7 @@ export function QuickCreateTaskModal() {
             options={options}
           />
 
-          <div className="qct-modal__grid-3">
+          <div className="qct-modal-grid-3">
             <Select
               label="Priority"
               value={priority}
@@ -245,8 +245,8 @@ export function QuickCreateTaskModal() {
               onChange={(e) => setDueDate(e.target.value)}
             />
             {!isPersonal && chosen?.orgSlug ? (
-              <div className="qct-modal__field">
-                <span className="qct-modal__label">Assignee</span>
+              <div className="qct-modal-field">
+                <span className="qct-modal-label">Assignee</span>
                 <AssigneePicker
                   orgSlug={chosen.orgSlug}
                   value={assigneeId}
@@ -268,22 +268,22 @@ export function QuickCreateTaskModal() {
 
           <button
             type="button"
-            className="qct-modal__more"
+            className="qct-modal-more"
             aria-expanded={moreOpen}
             onClick={() => setMoreOpen((v) => !v)}
           >
-            <ChevronRight size={14} aria-hidden="true" className="qct-modal__more-chevron" />
+            <ChevronRight size={14} aria-hidden="true" className="qct-modal-more-chevron" />
             More details
-            <span className="qct-modal__more-hint">
+            <span className="qct-modal-more-hint">
               {isPersonal
                 ? 'description, acceptance criteria'
                 : 'epic, sprint, points, reviewer, description, acceptance criteria'}
             </span>
           </button>
 
-          <div className="qct-modal__more-body" hidden={!moreOpen}>
+          <div className="qct-modal-more-body" hidden={!moreOpen}>
             {!isPersonal && (
-              <div className="qct-modal__grid-2">
+              <div className="qct-modal-grid-2">
                 <Select
                   label="Epic"
                   value={epicId}
@@ -309,7 +309,7 @@ export function QuickCreateTaskModal() {
             )}
 
             {!isPersonal && chosen?.orgSlug && (
-              <div className="qct-modal__grid-2">
+              <div className="qct-modal-grid-2">
                 <Input
                   label="Points"
                   type="number"
@@ -319,8 +319,8 @@ export function QuickCreateTaskModal() {
                   onChange={(e) => setStoryPoints(e.target.value)}
                   placeholder="—"
                 />
-                <div className="qct-modal__field">
-                  <span className="qct-modal__label">Reviewer</span>
+                <div className="qct-modal-field">
+                  <span className="qct-modal-label">Reviewer</span>
                   <AssigneePicker
                     orgSlug={chosen.orgSlug}
                     value={reviewerId}
@@ -330,13 +330,13 @@ export function QuickCreateTaskModal() {
               </div>
             )}
 
-            <div className="qct-modal__field">
-              <label className="qct-modal__label" htmlFor="qct-desc">
+            <div className="qct-modal-field">
+              <label className="qct-modal-label" htmlFor="qct-desc">
                 Description
               </label>
               <textarea
                 id="qct-desc"
-                className="qct-modal__textarea"
+                className="qct-modal-textarea"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
@@ -345,13 +345,13 @@ export function QuickCreateTaskModal() {
               />
             </div>
 
-            <div className="qct-modal__field">
-              <label className="qct-modal__label" htmlFor="qct-ac">
+            <div className="qct-modal-field">
+              <label className="qct-modal-label" htmlFor="qct-ac">
                 Acceptance criteria (one per line)
               </label>
               <textarea
                 id="qct-ac"
-                className="qct-modal__textarea"
+                className="qct-modal-textarea"
                 value={acceptance}
                 onChange={(e) => setAcceptance(e.target.value)}
                 rows={3}
@@ -360,8 +360,8 @@ export function QuickCreateTaskModal() {
             </div>
           </div>
 
-          {error && <p className="qct-modal__error">{error}</p>}
-          <div className="qct-modal__actions">
+          {error && <p className="qct-modal-error">{error}</p>}
+          <div className="qct-modal-actions">
             <Button type="button" variant="ghost" onClick={close} disabled={busy}>
               Cancel
             </Button>

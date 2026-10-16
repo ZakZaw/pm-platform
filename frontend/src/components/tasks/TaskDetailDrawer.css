@@ -1,4 +1,4 @@
-.task-drawer__backdrop {
+.task-drawer-backdrop {
   position: fixed;
   inset: 0;
   background: var(--overlay);
@@ -21,7 +21,7 @@
 
 .task-drawer .task-detail { min-height: 100%; }
 
-.task-drawer__placeholder {
+.task-drawer-placeholder {
   color: var(--text-muted);
   font-size: var(--fs-md);
   padding: var(--s-8);

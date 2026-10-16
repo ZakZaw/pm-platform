@@ -2,13 +2,13 @@
   position: relative;
 }
 
-.labels-section__chip {
+.labels-section-chip {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
 }
 
-.labels-section__chip-x {
+.labels-section-chip-x {
   background: transparent;
   border: 0;
   cursor: pointer;
@@ -21,11 +21,11 @@
   border-radius: var(--r-pill);
 }
 
-.labels-section__chip-x:hover {
+.labels-section-chip-x:hover {
   opacity: 1;
 }
 
-.labels-section__add {
+.labels-section-add {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
@@ -39,13 +39,13 @@
   cursor: pointer;
 }
 
-.labels-section__add:hover { color: var(--accent); }
+.labels-section-add:hover { color: var(--accent); }
 
-.labels-section__chips { align-items: center; flex-wrap: wrap; }
+.labels-section-chips { align-items: center; flex-wrap: wrap; }
 
-.labels-section__empty { padding: var(--s-3) var(--s-4); margin: 0; }
+.labels-section-empty { padding: var(--s-3) var(--s-4); margin: 0; }
 
-.labels-section__menu {
+.labels-section-menu {
   position: absolute;
   top: calc(100% + var(--s-2));
   left: 0;
@@ -56,18 +56,18 @@
   padding: var(--s-3) 0;
 }
 
-.labels-section__form {
+.labels-section-form {
   display: flex;
   align-items: center;
   gap: var(--s-2);
   padding: var(--s-3) var(--s-4);
 }
 
-.labels-section__form .input {
+.labels-section-form .input {
   flex: 1;
   min-width: 0;
 }
 
-.labels-section__tone {
+.labels-section-tone {
   width: 100px;
 }

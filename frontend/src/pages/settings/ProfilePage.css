@@ -8,40 +8,40 @@
   gap: 0;
 }
 
-.profile__card {
+.profile-card {
   padding: var(--s-9);
   display: flex;
   flex-direction: column;
   gap: var(--s-9);
 }
 
-.profile__avatar-row {
+.profile-avatar-row {
   display: flex;
   align-items: center;
   gap: var(--s-7);
 }
 
-.profile__identity {
+.profile-identity {
   min-width: 0;
 }
 
-.profile__name {
+.profile-name {
   font-size: var(--fs-lg);
   font-weight: var(--fw-semibold);
   color: var(--text);
 }
 
-.profile__email {
+.profile-email {
   font-size: var(--fs-md);
   color: var(--text-muted);
   margin-top: var(--s-1);
 }
 
-.profile__file-input {
+.profile-file-input {
   display: none;
 }
 
-.profile__avatar-actions {
+.profile-avatar-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -49,36 +49,36 @@
   margin-top: var(--s-5);
 }
 
-.profile__hint {
+.profile-hint {
   font-size: var(--fs-sm);
   color: var(--text-muted);
 }
 
-.profile__error {
+.profile-error {
   color: var(--danger);
   font-size: var(--fs-sm);
   margin: var(--s-4) 0 0;
 }
 
-.profile__success {
+.profile-success {
   color: var(--success);
   font-size: var(--fs-md);
   margin: 0;
 }
 
-.profile__form {
+.profile-form {
   display: flex;
   flex-direction: column;
   gap: var(--s-8);
 }
 
-.profile__grid {
+.profile-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--s-8) var(--s-7);
 }
 
-.profile__chips {
+.profile-chips {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -90,12 +90,12 @@
   border-radius: var(--r-md);
 }
 
-.profile__chips:focus-within {
+.profile-chips:focus-within {
   border-color: var(--accent-bright);
   box-shadow: var(--shadow-focus);
 }
 
-.profile__tag-input {
+.profile-tag-input {
   flex: 1;
   min-width: 120px;
   background: transparent;
@@ -106,32 +106,32 @@
   padding: var(--s-1) 0;
 }
 
-.profile__tag-input::placeholder {
+.profile-tag-input::placeholder {
   color: var(--text-subtle);
 }
 
-.profile__footer {
+.profile-footer {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: var(--s-6);
 }
 
-.profile__status {
+.profile-status {
   flex: 1;
   min-width: 0;
 }
 
-.profile__status .profile__error {
+.profile-status .profile-error {
   margin: 0;
 }
 
-.profile__placeholder {
+.profile-placeholder {
   color: var(--text-muted);
   font-size: var(--fs-md);
 }
 
 @media (max-width: 760px) {
-  .profile__grid { grid-template-columns: 1fr; }
-  .profile__avatar-row { align-items: flex-start; }
+  .profile-grid { grid-template-columns: 1fr; }
+  .profile-avatar-row { align-items: flex-start; }
 }

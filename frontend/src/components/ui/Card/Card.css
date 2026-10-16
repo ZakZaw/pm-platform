@@ -2,14 +2,14 @@
 
 .card-elevated { box-shadow: var(--shadow-md); }
 
-.card__title {
+.card-title {
   font-size: var(--fs-lg);
   font-weight: var(--fw-semibold);
   letter-spacing: var(--tracking-tight);
   margin: 0 0 var(--s-4);
   color: var(--text);
 }
-.card__subtitle {
+.card-subtitle {
   font-size: var(--fs-md);
   color: var(--text-muted);
   margin: 0 0 var(--s-6);

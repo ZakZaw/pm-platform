@@ -136,9 +136,9 @@ function Item({ children, onSelect, disabled, danger, icon, kbd }) {
         close();
       }}
     >
-      {icon && <span className="menu-item__icon">{icon}</span>}
-      <span className="menu-item__label">{children}</span>
-      {kbd && <span className="menu-item__kbd">{kbd}</span>}
+      {icon && <span className="menu-item-icon">{icon}</span>}
+      <span className="menu-item-label">{children}</span>
+      {kbd && <span className="menu-item-kbd">{kbd}</span>}
     </button>
   );
 }

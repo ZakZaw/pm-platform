@@ -63,9 +63,9 @@ function ChartFrame({ minHeight = 120, children }) {
 function KpiCard({ label, value, delta, tone = 'info' }) {
   return (
     <div className="dash-kpi">
-      <div className="dash-kpi__label">{label}</div>
-      <div className="dash-kpi__row">
-        <div className="dash-kpi__value">{value}</div>
+      <div className="dash-kpi-label">{label}</div>
+      <div className="dash-kpi-row">
+        <div className="dash-kpi-value">{value}</div>
         {delta && (
           <span className={`stat-delta stat-delta-${tone === 'warning' || tone === 'danger' ? 'down' : 'up'}`}>
             {delta}
@@ -78,8 +78,8 @@ function KpiCard({ label, value, delta, tone = 'info' }) {
 
 function WidgetHead({ title, children }) {
   return (
-    <header className="dash-card__head">
-      <h3 className="dash-card__title">{title}</h3>
+    <header className="dash-card-head">
+      <h3 className="dash-card-title">{title}</h3>
       {children}
     </header>
   );
@@ -160,7 +160,7 @@ export const ENGINEERING_WIDGETS = [
               </Tone>
             )}
           </WidgetHead>
-          <div className="dash-card__body">
+          <div className="dash-card-body">
             <div className="dash-sub">
               {hasSprint
                 ? `${burndown.sprintName} · ${done} / ${total} pt · ${daysLeft} day${daysLeft === 1 ? '' : 's'} left`
@@ -172,8 +172,8 @@ export const ENGINEERING_WIDGETS = [
                   {(w, h) => <BurndownChart total={total} actual={actual} today={today} days={days} width={w} height={h} />}
                 </ChartFrame>
                 <div className="dash-legend">
-                  <span className="dash-legend__item"><span className="dash-legend__line" />Remaining</span>
-                  <span className="dash-legend__item"><span className="dash-legend__dash" />Ideal</span>
+                  <span className="dash-legend-item"><span className="dash-legend-line" />Remaining</span>
+                  <span className="dash-legend-item"><span className="dash-legend-dash" />Ideal</span>
                 </div>
               </>
             ) : (
@@ -197,13 +197,13 @@ export const ENGINEERING_WIDGETS = [
           <WidgetHead title="Project health">
             {health && <Tone tone={bandTone}>{health.band}</Tone>}
           </WidgetHead>
-          <div className="dash-card__body center">
+          <div className="dash-card-body center">
             <HealthGauge score={score} size={128} stroke={9} />
             <div className="dash-signals">
               {signals.map((s) => (
                 <div key={s.label} className="dash-signal">
                   <Tone tone={s.tone}>{s.label}</Tone>
-                  <span className="dash-signal__value">{s.value}</span>
+                  <span className="dash-signal-value">{s.value}</span>
                 </div>
               ))}
             </div>
@@ -220,12 +220,12 @@ export const ENGINEERING_WIDGETS = [
       <div className="dash-card">
         <WidgetHead title="Velocity">
           <div className="dash-legend">
-            <span className="dash-legend__item"><span className="dash-legend__swatch is-muted" />Committed</span>
-            <span className="dash-legend__item"><span className="dash-legend__swatch" />Completed</span>
-            <span className="dash-legend__item"><span className="dash-legend__dash" />Avg</span>
+            <span className="dash-legend-item"><span className="dash-legend-swatch is-muted" />Committed</span>
+            <span className="dash-legend-item"><span className="dash-legend-swatch" />Completed</span>
+            <span className="dash-legend-item"><span className="dash-legend-dash" />Avg</span>
           </div>
         </WidgetHead>
-        <div className="dash-card__body">
+        <div className="dash-card-body">
           {(velocity?.length ?? 0) === 0 ? (
             <Empty>No sprint history yet. Close a sprint to start tracking velocity.</Empty>
           ) : (
@@ -256,7 +256,7 @@ export const ENGINEERING_WIDGETS = [
     render: ({ epicProgress }) => (
       <div className="dash-card">
         <WidgetHead title="Epic progress" />
-        <div className="dash-card__body">
+        <div className="dash-card-body">
           <EpicProgressBars epics={epicProgress ?? []} metric="points" limit={6} />
         </div>
       </div>
@@ -274,7 +274,7 @@ export const ENGINEERING_WIDGETS = [
           <WidgetHead title="Team workload">
             <span className="dash-meta">Tasks done per day · last 10 days</span>
           </WidgetHead>
-          <div className="dash-card__body">
+          <div className="dash-card-body">
             {data.length === 0 ? (
               <Empty>No team members on this project yet.</Empty>
             ) : (
@@ -291,10 +291,10 @@ export const ENGINEERING_WIDGETS = [
     defaults: { w: 4, h: 5, minW: 3, minH: 4 },
     render: ({ insight }) => (
       <div className="dash-card">
-        <header className="dash-card__head">
-          <div className="dash-insight__title-row">
-            <span className="ai-mark dash-insight__mark"><Icon name="sparkles" size={13} /></span>
-            <h3 className="dash-card__title">Weekly insight</h3>
+        <header className="dash-card-head">
+          <div className="dash-insight-title-row">
+            <span className="ai-mark dash-insight-mark"><Icon name="sparkles" size={13} /></span>
+            <h3 className="dash-card-title">Weekly insight</h3>
           </div>
           {insight && (
             <Tone tone={insight.tone}>
@@ -302,13 +302,13 @@ export const ENGINEERING_WIDGETS = [
             </Tone>
           )}
         </header>
-        <div className="dash-card__body">
+        <div className="dash-card-body">
           {insight ? (
             <>
-              <div className="dash-insight__headline">{insight.headline}</div>
-              <p className="dash-insight__body">{insight.detail}</p>
+              <div className="dash-insight-headline">{insight.headline}</div>
+              <p className="dash-insight-body">{insight.detail}</p>
               {insight.highlights?.length > 0 && (
-                <ul className="dash-insight__highlights">
+                <ul className="dash-insight-highlights">
                   {insight.highlights.map((h) => (
                     <li key={h}>{h}</li>
                   ))}
@@ -413,13 +413,13 @@ function ActivityRow({ entry }) {
   // generic "{verb} the {targetType}" line.
   const summary = entry.summary?.trim();
   return (
-    <div className="dash-activity__row">
+    <div className="dash-activity-row">
       <Avatar name={actorName} src={entry.actor?.avatarUrl} size="sm" />
-      <span className="dash-activity__text">
-        <span className="dash-activity__actor">{actorName}</span>{' '}
+      <span className="dash-activity-text">
+        <span className="dash-activity-actor">{actorName}</span>{' '}
         <span className="muted">{summary || `${phrase} the ${targetLabel}`}</span>
       </span>
-      <span className="dash-activity__time" title={new Date(entry.createdAt).toLocaleString()}>
+      <span className="dash-activity-time" title={new Date(entry.createdAt).toLocaleString()}>
         {relativeTime(entry.createdAt)}
       </span>
     </div>

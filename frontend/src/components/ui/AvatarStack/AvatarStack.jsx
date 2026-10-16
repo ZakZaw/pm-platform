@@ -17,7 +17,7 @@ export function AvatarStack({ people = [], max = 5, size = 'xs', className = '' 
       ))}
       {extra > 0 && (
         <span
-          className={`avatar avatar-${size} avatar-stack__more`}
+          className={`avatar avatar-${size} avatar-stack-more`}
           aria-label={`${extra} more`}
         >
           +{extra}

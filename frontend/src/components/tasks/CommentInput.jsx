@@ -165,10 +165,10 @@ export function CommentInput({
 
   return (
     <form className="comment-input" onSubmit={handleSubmit}>
-      <div className="comment-input__wrap">
+      <div className="comment-input-wrap">
         <textarea
           ref={textareaRef}
-          className="comment-input__textarea"
+          className="comment-input-textarea"
           value={value}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
@@ -176,13 +176,13 @@ export function CommentInput({
           rows={3}
         />
         {query !== null && users.length > 0 && (
-          <ul className="comment-input__menu" role="listbox">
+          <ul className="comment-input-menu" role="listbox">
             {users.map((u, i) => (
               <li
                 key={u.id}
                 role="option"
                 aria-selected={i === highlight}
-                className={['comment-input__menu-item', i === highlight ? 'is-active' : '']
+                className={['comment-input-menu-item', i === highlight ? 'is-active' : '']
                   .filter(Boolean)
                   .join(' ')}
                 onMouseDown={(e) => {
@@ -191,16 +191,16 @@ export function CommentInput({
                 }}
               >
                 <Avatar name={u.fullName} src={u.avatarUrl} size="xs" />
-                <div className="comment-input__menu-text">
-                  <div className="comment-input__menu-name">{u.fullName}</div>
-                  <div className="comment-input__menu-email">{u.email}</div>
+                <div className="comment-input-menu-text">
+                  <div className="comment-input-menu-name">{u.fullName}</div>
+                  <div className="comment-input-menu-email">{u.email}</div>
                 </div>
               </li>
             ))}
           </ul>
         )}
       </div>
-      <div className="comment-input__actions">
+      <div className="comment-input-actions">
         {onCancel && (
           <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
             Cancel

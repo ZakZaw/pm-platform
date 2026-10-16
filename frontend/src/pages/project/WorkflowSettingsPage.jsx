@@ -286,7 +286,7 @@ function WipLimitInput({ cfg, onPatch }) {
         type="number"
         min={1}
         placeholder="–"
-        className="input workflow-wip__input"
+        className="input workflow-wip-input"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onBlur={commit}
@@ -345,7 +345,7 @@ function RowInner({ cfg, onPatch, onDelete }) {
       <div className="workflow-name" title={`Behaves like ${baseLabel} (${cfg.status})`}>
         <span className={`workflow-dot is-${cfg.color}`} aria-hidden="true" />
         <Input
-          className="workflow-name__input"
+          className="workflow-name-input"
           value={name}
           onChange={(e) => setName(e.target.value)}
           onBlur={commitName}

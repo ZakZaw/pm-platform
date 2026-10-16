@@ -126,31 +126,31 @@ export function AISettingsPage() {
         </div>
       </div>
 
-      <div className="ai-settings__grid">
+      <div className="ai-settings-grid">
         {MODES.map((mode) => {
           const selected = project?.aiControlMode === mode.value;
           return (
             <button
               key={mode.value}
               type="button"
-              className={`ai-settings__card ai-settings__card--${mode.tone} ${selected ? 'is-selected' : ''}`}
+              className={`ai-settings-card ai-settings-card-${mode.tone} ${selected ? 'is-selected' : ''}`}
               onClick={() => setMode(mode.value)}
               disabled={!canEdit || saving}
               aria-pressed={selected}
             >
-              <div className="ai-settings__head">
-                <span className="ai-settings__icon" aria-hidden="true">
+              <div className="ai-settings-head">
+                <span className="ai-settings-icon" aria-hidden="true">
                   <mode.Icon size={18} />
                 </span>
-                <span className="ai-settings__label">{mode.label}</span>
+                <span className="ai-settings-label">{mode.label}</span>
                 {/* Radio-style marker: filled check when selected. */}
-                <span className="ai-settings__radio" aria-hidden="true">
+                <span className="ai-settings-radio" aria-hidden="true">
                   {selected && <Check size={12} strokeWidth={3} />}
                 </span>
-                {selected && <span className="ai-settings__sr">Selected</span>}
+                {selected && <span className="ai-settings-sr">Selected</span>}
               </div>
-              <p className="ai-settings__summary">{mode.summary}</p>
-              <ul className="ai-settings__details">
+              <p className="ai-settings-summary">{mode.summary}</p>
+              <ul className="ai-settings-details">
                 {mode.details.map((d) => <li key={d}>{d}</li>)}
               </ul>
             </button>

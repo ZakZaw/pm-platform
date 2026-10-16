@@ -50,7 +50,7 @@ export function LoginPage() {
       subtitle="Sign in to your workspace"
       footer={<>New here? <Link to="/register">Create an account</Link></>}
     >
-      <form className="auth-page__form" onSubmit={onSubmit}>
+      <form className="auth-page-form" onSubmit={onSubmit}>
         <Input
           label="Email"
           type="email"
@@ -67,8 +67,8 @@ export function LoginPage() {
           required
           autoComplete="current-password"
         />
-        {error && <p className="auth-page__error">{error}</p>}
-        <Button type="submit" size="lg" block disabled={submitting} className="auth-page__submit">
+        {error && <p className="auth-page-error">{error}</p>}
+        <Button type="submit" size="lg" block disabled={submitting} className="auth-page-submit">
           {submitting ? 'Signing in…' : 'Sign in'}
         </Button>
       </form>

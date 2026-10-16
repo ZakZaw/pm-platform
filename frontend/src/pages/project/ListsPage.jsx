@@ -251,7 +251,7 @@ export function ListsPage() {
         </EmptyState>
       ) : (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div className="lists-page__stack">
+          <div className="lists-page-stack">
             {view.lists.map((l) => (
               <ListSection
                 key={l.id}
@@ -284,8 +284,8 @@ export function ListsPage() {
                 assignee={activeDrag.item.assigneeId ? memberById[activeDrag.item.assigneeId] : null}
               />
             ) : activeDrag?.kind === 'list' ? (
-              <div className="lists-page__list-overlay">
-                <span className="lists-page__list-title">{activeDrag.item.name}</span>
+              <div className="lists-page-list-overlay">
+                <span className="lists-page-list-title">{activeDrag.item.name}</span>
               </div>
             ) : null}
           </DragOverlay>
@@ -323,7 +323,7 @@ function NewListButton({ creating, setCreating, onSubmit }) {
   }
   return (
     <form
-      className="hstack lists-page__newlist"
+      className="hstack lists-page-newlist"
       onSubmit={(e) => {
         e.preventDefault();
         onSubmit(name);
@@ -333,7 +333,7 @@ function NewListButton({ creating, setCreating, onSubmit }) {
     >
       <input
         autoFocus
-        className="lists-page__newlist-input"
+        className="lists-page-newlist-input"
         placeholder="List name"
         value={name}
         onChange={(e) => setName(e.target.value)}
@@ -388,10 +388,10 @@ function ListSection({
   const doneCount = list.tasks.filter((t) => t.status === 'Done').length;
 
   return (
-    <Card className={['lists-page__list', isOver ? 'is-over' : ''].filter(Boolean).join(' ')}>
+    <Card className={['lists-page-list', isOver ? 'is-over' : ''].filter(Boolean).join(' ')}>
       <header
         ref={setHandleRef}
-        className="lists-page__list-head"
+        className="lists-page-list-head"
         style={handleStyle}
         {...attributes}
         {...listeners}
@@ -404,7 +404,7 @@ function ListSection({
           >
             <input
               autoFocus
-              className="lists-page__rename-input"
+              className="lists-page-rename-input"
               value={draftName}
               onChange={(e) => setDraftName(e.target.value)}
               onBlur={() => onSubmitRename(draftName.trim())}
@@ -416,8 +416,8 @@ function ListSection({
           </form>
         ) : (
           <>
-            <h2 className="lists-page__list-title">{list.name}</h2>
-            <span className="muted lists-page__list-count">
+            <h2 className="lists-page-list-title">{list.name}</h2>
+            <span className="muted lists-page-list-count">
               {doneCount}/{list.tasks.length}
             </span>
             <div className="grow" />
@@ -450,13 +450,13 @@ function ListSection({
         )}
       </header>
 
-      <div ref={setNodeRef} className="lists-page__droparea">
+      <div ref={setNodeRef} className="lists-page-droparea">
         {list.tasks.length === 0 ? (
-          <p className="lists-page__placeholder">
+          <p className="lists-page-placeholder">
             {isOver ? 'Drop here to add to this list.' : 'No tasks yet.'}
           </p>
         ) : (
-          <ul className="lists-page__items">
+          <ul className="lists-page-items">
             {list.tasks.map((t) => (
               <DraggableTaskRow
                 key={t.id}
@@ -469,11 +469,11 @@ function ListSection({
         )}
       </div>
 
-      <form className="lists-page__create" onSubmit={submitTask}>
-        <Plus size={16} aria-hidden="true" className="lists-page__create-icon" />
+      <form className="lists-page-create" onSubmit={submitTask}>
+        <Plus size={16} aria-hidden="true" className="lists-page-create-icon" />
         <input
           type="text"
-          className="lists-page__create-input"
+          className="lists-page-create-input"
           placeholder="Add a task…"
           aria-label={`Add a task to ${list.name}`}
           value={newTitle}
@@ -501,18 +501,18 @@ function UnsortedSection({ tasks, memberById, onCreateTask, onOpenTask }) {
   }
 
   return (
-    <Card className={['lists-page__list', 'lists-page__list--unsorted', isOver ? 'is-over' : ''].filter(Boolean).join(' ')}>
-      <header className="lists-page__list-head lists-page__list-head--static">
-        <h2 className="lists-page__list-title">Unsorted</h2>
-        <span className="muted lists-page__list-count">{tasks.length}</span>
+    <Card className={['lists-page-list', 'lists-page-list-unsorted', isOver ? 'is-over' : ''].filter(Boolean).join(' ')}>
+      <header className="lists-page-list-head lists-page-list-head-static">
+        <h2 className="lists-page-list-title">Unsorted</h2>
+        <span className="muted lists-page-list-count">{tasks.length}</span>
       </header>
-      <div ref={setNodeRef} className="lists-page__droparea">
+      <div ref={setNodeRef} className="lists-page-droparea">
         {tasks.length === 0 ? (
-          <p className="lists-page__placeholder">
+          <p className="lists-page-placeholder">
             {isOver ? 'Drop here to move out of any list.' : 'No unsorted tasks.'}
           </p>
         ) : (
-          <ul className="lists-page__items">
+          <ul className="lists-page-items">
             {tasks.map((t) => (
               <DraggableTaskRow
                 key={t.id}
@@ -524,11 +524,11 @@ function UnsortedSection({ tasks, memberById, onCreateTask, onOpenTask }) {
           </ul>
         )}
       </div>
-      <form className="lists-page__create" onSubmit={submit}>
-        <Plus size={16} aria-hidden="true" className="lists-page__create-icon" />
+      <form className="lists-page-create" onSubmit={submit}>
+        <Plus size={16} aria-hidden="true" className="lists-page-create-icon" />
         <input
           type="text"
-          className="lists-page__create-input"
+          className="lists-page-create-input"
           placeholder="Add a task to Unsorted…"
           aria-label="Add a task to Unsorted"
           value={newTitle}
@@ -557,7 +557,7 @@ function DraggableTaskRow({ task, assignee, onOpen }) {
     <li
       ref={setNodeRef}
       style={style}
-      className="lists-page__item is-interactive"
+      className="lists-page-item is-interactive"
       role="button"
       tabIndex={0}
       onClick={() => { if (!isDragging) onOpen?.(task.id); }}
@@ -574,7 +574,7 @@ function DraggableTaskRow({ task, assignee, onOpen }) {
 
 function DragTaskRow({ task, assignee }) {
   return (
-    <li className="lists-page__item is-overlay">
+    <li className="lists-page-item is-overlay">
       <TaskRow task={task} assignee={assignee} />
     </li>
   );
@@ -584,26 +584,26 @@ function TaskRow({ task, assignee }) {
   return (
     <>
       <StatusBadge status={task.status} />
-      <span className="lists-page__item-title">
-        {task.key && <span className="muted lists-page__item-key mono">{task.key}</span>}
+      <span className="lists-page-item-title">
+        {task.key && <span className="muted lists-page-item-key mono">{task.key}</span>}
         {task.title}
       </span>
-      <div className="lists-page__item-meta">
+      <div className="lists-page-item-meta">
         <Priority level={task.priority} showLabel />
         {task.subtaskCount > 0 && (
-          <span className="lists-page__item-sub">
+          <span className="lists-page-item-sub">
             {task.completedSubtaskCount}/{task.subtaskCount}
           </span>
         )}
         {task.dueDate && (
-          <span className="muted lists-page__item-due">
+          <span className="muted lists-page-item-due">
             Due {new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
           </span>
         )}
         {assignee ? (
           <Avatar src={assignee.avatarUrl} name={assignee.fullName} size="xs" />
         ) : (
-          <span className="lists-page__unassigned" title="Unassigned" />
+          <span className="lists-page-unassigned" title="Unassigned" />
         )}
       </div>
     </>

@@ -264,7 +264,7 @@
 .avatar-stack .avatar { margin-left: -8px; border: 2px solid var(--surface); }
 .avatar-stack .avatar:first-child { margin-left: 0; }
 .avatar-stack .avatar-more,
-.avatar-stack .avatar-stack__more {
+.avatar-stack .avatar-stack-more {
   background: var(--surface-2);
   color: var(--text-secondary);
   font-size: var(--fs-2xs);

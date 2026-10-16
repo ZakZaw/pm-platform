@@ -195,7 +195,7 @@ export function Topbar() {
       <div className="topbar-user" ref={menuRef}>
         <button
           type="button"
-          className="topbar-user__trigger"
+          className="topbar-user-trigger"
           onClick={() => setMenuOpen((v) => !v)}
           aria-haspopup="menu"
           aria-expanded={menuOpen}
@@ -204,7 +204,7 @@ export function Topbar() {
           <ChevronDown size={12} aria-hidden="true" />
         </button>
         {menuOpen && (
-          <div className="menu topbar-user__menu" role="menu">
+          <div className="menu topbar-user-menu" role="menu">
             <Link
               to="/settings/profile"
               className="menu-item"

@@ -49,17 +49,17 @@ export function TaskForm({ initial, onSubmit, onCancel, submitLabel = 'Create' }
         autoComplete="off"
         placeholder="What needs to happen?"
       />
-      <label className="task-form__field">
-        <span className="task-form__label">Description</span>
+      <label className="task-form-field">
+        <span className="task-form-label">Description</span>
         <textarea
-          className="task-form__textarea"
+          className="task-form-textarea"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={4}
           placeholder="Markdown supported. Render lands with the comments feature."
         />
       </label>
-      <div className="task-form__row">
+      <div className="task-form-row">
         <Select
           label="Priority"
           options={PRIORITY_OPTIONS}
@@ -80,9 +80,9 @@ export function TaskForm({ initial, onSubmit, onCancel, submitLabel = 'Create' }
         />
       </div>
 
-      {error && <p className="task-form__error">{error}</p>}
+      {error && <p className="task-form-error">{error}</p>}
 
-      <div className="task-form__actions">
+      <div className="task-form-actions">
         {onCancel && (
           <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
         )}

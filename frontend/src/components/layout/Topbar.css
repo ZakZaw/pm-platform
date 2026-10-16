@@ -9,7 +9,7 @@
 
 .topbar-user { position: relative; }
 
-.topbar-user__trigger {
+.topbar-user-trigger {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
@@ -21,9 +21,9 @@
   cursor: pointer;
   transition: background var(--dur-fast);
 }
-.topbar-user__trigger:hover { background: var(--surface-hover); }
+.topbar-user-trigger:hover { background: var(--surface-hover); }
 
-.topbar-user__menu {
+.topbar-user-menu {
   position: absolute;
   top: calc(100% + 6px);
   right: 0;

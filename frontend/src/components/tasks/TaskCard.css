@@ -17,15 +17,15 @@
 .task-card:hover { border-color: var(--border-strong); background: var(--surface-hover); }
 .task-card.is-compact { padding: var(--s-4) var(--s-5); }
 
-.task-card__row {
+.task-card-row {
   display: flex;
   align-items: center;
   gap: var(--s-4);
 }
 
-.task-card__row--meta { color: var(--text-muted); }
+.task-card-row-meta { color: var(--text-muted); }
 
-.task-card__title {
+.task-card-title {
   flex: 1;
   font-weight: var(--fw-medium);
   color: var(--text);
@@ -35,19 +35,19 @@
   white-space: nowrap;
 }
 
-.task-card__prio {
+.task-card-prio {
   width: 3px;
   height: 14px;
   border-radius: var(--r-pill);
   background: var(--text-muted);
   flex-shrink: 0;
 }
-.task-card__prio.prio-urgent { background: var(--pri-urgent); }
-.task-card__prio.prio-high { background: var(--pri-high); }
-.task-card__prio.prio-med { background: var(--pri-medium); }
-.task-card__prio.prio-low { background: var(--pri-low); }
+.task-card-prio.prio-urgent { background: var(--pri-urgent); }
+.task-card-prio.prio-high { background: var(--pri-high); }
+.task-card-prio.prio-med { background: var(--pri-medium); }
+.task-card-prio.prio-low { background: var(--pri-low); }
 
-.task-card__unassigned {
+.task-card-unassigned {
   width: 18px;
   height: 18px;
   border-radius: 50%;

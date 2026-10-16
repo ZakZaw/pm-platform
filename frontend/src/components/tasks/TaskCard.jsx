@@ -21,9 +21,9 @@ export function TaskCard({ task, onOpen, compact = false }) {
       className={['task-card', compact ? 'is-compact' : ''].filter(Boolean).join(' ')}
       onClick={() => onOpen?.(task)}
     >
-      <div className="task-card__row">
-        <span className={['task-card__prio', PRIORITY_TONE[task.priority]].join(' ')} aria-label={task.priority} />
-        <span className="task-card__title">{task.title}</span>
+      <div className="task-card-row">
+        <span className={['task-card-prio', PRIORITY_TONE[task.priority]].join(' ')} aria-label={task.priority} />
+        <span className="task-card-title">{task.title}</span>
         {assignee ? (
           <Avatar
             src={assignee.avatarUrl}
@@ -32,10 +32,10 @@ export function TaskCard({ task, onOpen, compact = false }) {
             alt={`Assigned to ${assignee.fullName}`}
           />
         ) : task.assigneeId ? null : (
-          <span className="task-card__unassigned" title="Unassigned" />
+          <span className="task-card-unassigned" title="Unassigned" />
         )}
       </div>
-      <div className="task-card__row task-card__row--meta">
+      <div className="task-card-row task-card-row-meta">
         <StatusBadge status={task.status} />
       </div>
     </button>

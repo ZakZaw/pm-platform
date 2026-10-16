@@ -54,7 +54,7 @@ export function AcceptInvitePage() {
   };
 
   if (state.status === 'loading') {
-    return <Shell><p className="invite__muted">Loading invitation…</p></Shell>;
+    return <Shell><p className="invite-muted">Loading invitation…</p></Shell>;
   }
   if (state.status === 'notfound') {
     return (
@@ -86,13 +86,13 @@ export function AcceptInvitePage() {
 
   return (
     <Shell title={`Join ${preview.organizationName}`}>
-      <p className="invite__lede">
+      <p className="invite-lede">
         {preview.inviterFullName} invited <strong>{preview.email}</strong> to join{' '}
         <strong>{preview.organizationName}</strong> as <strong>{preview.role}</strong>.
       </p>
 
       {!isAuthenticated && (
-        <div className="invite__actions">
+        <div className="invite-actions">
           <Button
             block
             size="lg"
@@ -114,8 +114,8 @@ export function AcceptInvitePage() {
       )}
 
       {isAuthenticated && !emailMatch && (
-        <div className="invite__actions">
-          <p className="invite__error">
+        <div className="invite-actions">
+          <p className="invite-error">
             You're signed in as <strong>{user.email}</strong>, but this invite is for{' '}
             <strong>{preview.email}</strong>. Sign out and try again with the invited address.
           </p>
@@ -133,8 +133,8 @@ export function AcceptInvitePage() {
       )}
 
       {isAuthenticated && emailMatch && (
-        <div className="invite__actions">
-          {acceptError && <p className="invite__error">{acceptError}</p>}
+        <div className="invite-actions">
+          {acceptError && <p className="invite-error">{acceptError}</p>}
           <Button block size="lg" onClick={onAccept} disabled={accepting}>
             {accepting ? 'Joining…' : `Accept invitation`}
           </Button>

@@ -1,4 +1,4 @@
-.status-dropdown__trigger {
+.status-dropdown-trigger {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
@@ -10,10 +10,10 @@
   cursor: pointer;
   font-family: inherit;
 }
-.status-dropdown__trigger:hover:not(:disabled) { background: var(--surface-hover); }
-.status-dropdown__trigger:disabled { opacity: 0.6; cursor: not-allowed; }
+.status-dropdown-trigger:hover:not(:disabled) { background: var(--surface-hover); }
+.status-dropdown-trigger:disabled { opacity: 0.6; cursor: not-allowed; }
 
-.status-dropdown__current {
+.status-dropdown-current {
   color: var(--text-muted);
   font-size: var(--fs-xs);
 }

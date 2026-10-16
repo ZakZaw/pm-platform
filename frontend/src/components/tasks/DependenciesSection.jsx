@@ -104,12 +104,12 @@ export function DependenciesSection({ taskId, projectId }) {
   return (
     <TaskSection title="Dependencies" meta={total > 0 ? total : 'None'}>
     <div className="dependencies-section" ref={wrapRef}>
-      <div className="dependencies-section__group">
-        <div className="dependencies-section__group-label">Blocked by</div>
+      <div className="dependencies-section-group">
+        <div className="dependencies-section-group-label">Blocked by</div>
         {deps.dependsOn.length === 0 ? (
-          <p className="muted dependencies-section__empty">No prerequisites.</p>
+          <p className="muted dependencies-section-empty">No prerequisites.</p>
         ) : (
-          <ul className="dependencies-section__list">
+          <ul className="dependencies-section-list">
             {deps.dependsOn.map((d) => (
               <DepRow
                 key={d.id}
@@ -123,15 +123,15 @@ export function DependenciesSection({ taskId, projectId }) {
         )}
         <button
           type="button"
-          className="dependencies-section__add"
+          className="dependencies-section-add"
           onClick={() => setPickerOpen((v) => !v)}
           disabled={loading || busy}
         >
           <Plus size={11} aria-hidden="true" /> Add prerequisite
         </button>
         {pickerOpen && (
-          <div className="menu dependencies-section__menu" role="menu">
-            <div className="dependencies-section__search">
+          <div className="menu dependencies-section-menu" role="menu">
+            <div className="dependencies-section-search">
               <input
                 type="text"
                 className="input"
@@ -141,9 +141,9 @@ export function DependenciesSection({ taskId, projectId }) {
                 onChange={(e) => setQuery(e.target.value)}
               />
             </div>
-            <div className="dependencies-section__menu-list">
+            <div className="dependencies-section-menu-list">
               {filtered.length === 0 ? (
-                <p className="muted dependencies-section__menu-empty">
+                <p className="muted dependencies-section-menu-empty">
                   No matching tasks.
                 </p>
               ) : (
@@ -152,7 +152,7 @@ export function DependenciesSection({ taskId, projectId }) {
                     key={t.id}
                     type="button"
                     role="menuitem"
-                    className="menu-item dependencies-section__menu-item"
+                    className="menu-item dependencies-section-menu-item"
                     onClick={() => addDep(t.id)}
                   >
                     <span className="mono muted">{t.key}</span>
@@ -166,12 +166,12 @@ export function DependenciesSection({ taskId, projectId }) {
         )}
       </div>
 
-      <div className="dependencies-section__group">
-        <div className="dependencies-section__group-label">Blocks</div>
+      <div className="dependencies-section-group">
+        <div className="dependencies-section-group-label">Blocks</div>
         {deps.blocking.length === 0 ? (
-          <p className="muted dependencies-section__empty">Nothing waits on this.</p>
+          <p className="muted dependencies-section-empty">Nothing waits on this.</p>
         ) : (
-          <ul className="dependencies-section__list">
+          <ul className="dependencies-section-list">
             {deps.blocking.map((d) => (
               <DepRow key={d.id} dep={d} />
             ))}
@@ -185,7 +185,7 @@ export function DependenciesSection({ taskId, projectId }) {
 
 function DepRow({ dep, onRemove, busy, removable }) {
   return (
-    <li className="dependencies-section__row">
+    <li className="dependencies-section-row">
       <span className="mono muted">{dep.key}</span>
       <span className="truncate">{dep.title}</span>
       <StatusBadge status={dep.status} />

@@ -18,22 +18,22 @@ export function WorkloadHeatmap({ days = [], data = [] }) {
     <div className="workload-heat" style={{ '--heat-days': days.length }}>
       <div />
       {days.map((d, i) => (
-        <div key={`d-${i}`} className="workload-heat__day">
+        <div key={`d-${i}`} className="workload-heat-day">
           {d}
         </div>
       ))}
-      <div className="workload-heat__day workload-heat__total-head">Total</div>
+      <div className="workload-heat-day workload-heat-total-head">Total</div>
       {data.map((row, i) => (
         <Fragment key={`p-${i}`}>
-          <div className="workload-heat__name truncate" title={row.name}>{row.name}</div>
+          <div className="workload-heat-name truncate" title={row.name}>{row.name}</div>
           {row.load.map((v, j) => (
             <div
               key={`c-${i}-${j}`}
-              className={`workload-heat__cell is-l${level(v)}`}
+              className={`workload-heat-cell is-l${level(v)}`}
               title={`${row.name} · ${days[j]} · ${v}`}
             />
           ))}
-          <div className="workload-heat__total">
+          <div className="workload-heat-total">
             {row.load.reduce((s, v) => s + (v ?? 0), 0)}
           </div>
         </Fragment>

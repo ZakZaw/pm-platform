@@ -32,7 +32,7 @@ export function Avatar({ src, name, alt, size = 'md', color, status, className =
   return (
     <span className={classes} aria-label={alt ?? name ?? undefined}>
       {src ? (
-        <img className="avatar__image" src={src} alt={alt ?? name ?? ''} />
+        <img className="avatar-image" src={src} alt={alt ?? name ?? ''} />
       ) : (
         <span aria-hidden="true">{initialsFor(name)}</span>
       )}

@@ -26,32 +26,32 @@ export function EpicCard({ epic, orgSlug, projectSlug }) {
       className={['epic-card', 'is-interactive', archived ? 'is-archived' : ''].filter(Boolean).join(' ')}
     >
       <div
-        className="epic-card__hit"
+        className="epic-card-hit"
         role="button"
         tabIndex={0}
         onClick={open}
         onKeyDown={onKey}
         aria-label={`Open epic ${epic.title}`}
       />
-      <div className="epic-card__head">
-        <span className="epic-card__color" style={{ background: epic.color || 'var(--accent)' }} />
-        <div className="epic-card__title">{epic.title}</div>
+      <div className="epic-card-head">
+        <span className="epic-card-color" style={{ background: epic.color || 'var(--accent)' }} />
+        <div className="epic-card-title">{epic.title}</div>
         <Badge tone={statusTone(epic.status)}>{epic.status}</Badge>
       </div>
 
       {epic.description && (
-        <p className="epic-card__desc">{epic.description}</p>
+        <p className="epic-card-desc">{epic.description}</p>
       )}
 
-      <div className="epic-card__meta">
+      <div className="epic-card-meta">
         <span>{epic.taskCount} {epic.taskCount === 1 ? 'task' : 'tasks'}</span>
         <span>·</span>
         <span>{epic.doneStoryPoints}/{epic.totalStoryPoints} pts</span>
       </div>
 
-      <div className="epic-card__bar" aria-label={`Progress ${pct}%`}>
+      <div className="epic-card-bar" aria-label={`Progress ${pct}%`}>
         <div
-          className="epic-card__bar-fill"
+          className="epic-card-bar-fill"
           style={{ width: `${pct}%`, background: epic.color || 'var(--accent)' }}
         />
       </div>

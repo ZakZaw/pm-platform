@@ -5,7 +5,7 @@
 }
 
 
-.attachments-section__drop {
+.attachments-section-drop {
   display: flex;
   align-items: center;
   gap: var(--s-3);
@@ -19,17 +19,17 @@
     background var(--dur-fast) var(--ease-out);
 }
 
-.attachments-section__drop.is-active {
+.attachments-section-drop.is-active {
   border-color: var(--accent);
   background: var(--accent-soft);
 }
 
-.attachments-section__hint {
+.attachments-section-hint {
   margin-left: auto;
   font-size: var(--fs-xs);
 }
 
-.attachments-section__list {
+.attachments-section-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -38,18 +38,18 @@
   gap: var(--s-2);
 }
 
-.attachments-section__row {
+.attachments-section-row {
   display: flex;
   align-items: center;
   gap: var(--s-3);
   padding: var(--s-2) var(--s-3);
   border-radius: var(--r-sm);
 }
-.attachments-section__row:hover { background: var(--surface-hover); }
+.attachments-section-row:hover { background: var(--surface-hover); }
 
-.attachments-section__info { min-width: 0; }
+.attachments-section-info { min-width: 0; }
 
-.attachments-section__thumb {
+.attachments-section-thumb {
   width: 28px;
   height: 28px;
   border-radius: var(--r-sm);
@@ -61,16 +61,16 @@
   flex-shrink: 0;
 }
 
-.attachments-section__name {
+.attachments-section-name {
   font-size: var(--fs-sm);
   color: var(--text);
   text-decoration: none;
 }
 
-.attachments-section__name:hover {
+.attachments-section-name:hover {
   text-decoration: underline;
 }
 
-.attachments-section__meta {
+.attachments-section-meta {
   font-size: var(--fs-xs);
 }

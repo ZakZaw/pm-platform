@@ -62,14 +62,14 @@ export function ToastProvider({ children, defaultDurationMs = 5000 }) {
           const { Icon, className } = meta;
           return (
             <div key={t.id} className={['toast', className].join(' ')}>
-              <Icon className="toast__icon" size={18} aria-hidden="true" />
-              <div className="toast__body">
-                {t.title && <div className="toast__title">{t.title}</div>}
-                <div className="toast__message">{t.message}</div>
+              <Icon className="toast-icon" size={18} aria-hidden="true" />
+              <div className="toast-body">
+                {t.title && <div className="toast-title">{t.title}</div>}
+                <div className="toast-message">{t.message}</div>
               </div>
               <button
                 type="button"
-                className="toast__close"
+                className="toast-close"
                 onClick={() => dismiss(t.id)}
                 aria-label="Dismiss"
               >

@@ -465,39 +465,39 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
       />
       <aside className="task-detail" aria-label={`Task: ${task.title}`}>
         {/* Head: key + quiet meta, title, then the three fields people touch most. */}
-        <div className="drawer-head task-detail__head">
-          <div className="task-detail__head-main">
-            <div className="task-detail__meta">
+        <div className="drawer-head task-detail-head">
+          <div className="task-detail-head-main">
+            <div className="task-detail-meta">
               <button
                 type="button"
-                className="mono task-detail__key-btn"
+                className="mono task-detail-key-btn"
                 onClick={copyKey}
                 title="Copy task key"
               >
                 {shortKey(task)}
               </button>
               {currentEpic && (
-                <span className="task-detail__meta-item" title={`Epic: ${currentEpic.title}`}>
-                  <span className="task-detail__dot" style={{ '--dot': epicColor }} aria-hidden="true" />
+                <span className="task-detail-meta-item" title={`Epic: ${currentEpic.title}`}>
+                  <span className="task-detail-dot" style={{ '--dot': epicColor }} aria-hidden="true" />
                   {currentEpic.title}
                 </span>
               )}
               {(task.prUrl || task.prNumber) && (
-                <span className={`task-detail__meta-item tone-${PR_STATE_TONE[task.prState] ?? 'neutral'}`}>
+                <span className={`task-detail-meta-item tone-${PR_STATE_TONE[task.prState] ?? 'neutral'}`}>
                   <GitPullRequest size={12} aria-hidden="true" />
                   {task.prNumber ? `#${task.prNumber}` : 'PR'}
                   {task.prState ? ` ${task.prState}` : ''}
                 </span>
               )}
               {task.ciStatus && (
-                <span className={`task-detail__meta-item tone-${CI_TONE[task.ciStatus] ?? 'neutral'}`}>
+                <span className={`task-detail-meta-item tone-${CI_TONE[task.ciStatus] ?? 'neutral'}`}>
                   <CiIcon status={task.ciStatus} /> CI {task.ciStatus}
                 </span>
               )}
             </div>
             {editingTitle ? (
               <input
-                className="task-detail__title-input"
+                className="task-detail-title-input"
                 value={titleDraft}
                 autoFocus
                 maxLength={200}
@@ -516,7 +516,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
             ) : (
               <button
                 type="button"
-                className="task-detail__title task-detail__title--edit"
+                className="task-detail-title task-detail-title-edit"
                 onClick={() => setEditingTitle(true)}
                 title="Click to edit"
               >
@@ -524,22 +524,22 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
               </button>
             )}
 
-            <div className="task-detail__quick">
-              <div className="task-detail__quick-field">
-                <span className="task-detail__quick-label">Status</span>
+            <div className="task-detail-quick">
+              <div className="task-detail-quick-field">
+                <span className="task-detail-quick-label">Status</span>
                 <StatusDropdown status={task.status} onChange={changeStatus} />
               </div>
-              <div className="task-detail__quick-field">
-                <span className="task-detail__quick-label">Assignee</span>
+              <div className="task-detail-quick-field">
+                <span className="task-detail-quick-label">Assignee</span>
                 <AssigneePicker orgSlug={orgSlug} value={task.assigneeId ?? null} onChange={changeAssignee} />
               </div>
-              <div className="task-detail__quick-field">
-                <span className="task-detail__quick-label">Priority</span>
+              <div className="task-detail-quick-field">
+                <span className="task-detail-quick-label">Priority</span>
                 <PriorityDropdown value={task.priority} onChange={changePriority} />
               </div>
             </div>
           </div>
-          <div className="row gap-2 task-detail__head-actions">
+          <div className="row gap-2 task-detail-head-actions">
             <Dropdown
               align="end"
               trigger={
@@ -575,14 +575,14 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
         </div>
 
         {/* Body */}
-        <div className="drawer-body task-detail__body">
-          <div className="task-detail__main">
+        <div className="drawer-body task-detail-body">
+          <div className="task-detail-main">
             {/* Description */}
-            <section className="task-detail__block">
-              <h3 className="task-detail__block-title">Description</h3>
+            <section className="task-detail-block">
+              <h3 className="task-detail-block-title">Description</h3>
               {editingDesc ? (
                 <textarea
-                  className="task-detail__desc-input"
+                  className="task-detail-desc-input"
                   value={descDraft}
                   autoFocus
                   rows={4}
@@ -600,7 +600,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                 />
               ) : task.description ? (
                 <p
-                  className="task-detail__desc task-detail__desc--edit"
+                  className="task-detail-desc task-detail-desc-edit"
                   onClick={() => setEditingDesc(true)}
                   title="Click to edit"
                 >
@@ -609,7 +609,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
               ) : (
                 <button
                   type="button"
-                  className="task-detail__desc-empty"
+                  className="task-detail-desc-empty"
                   onClick={() => setEditingDesc(true)}
                 >
                   Add a description…
@@ -618,12 +618,12 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
             </section>
 
             {/* Acceptance criteria (subtasks) + AI breakdown */}
-            <section className="task-detail__block">
-              <div className="task-detail__block-head">
-                <h3 className="task-detail__block-title">
+            <section className="task-detail-block">
+              <div className="task-detail-block-head">
+                <h3 className="task-detail-block-title">
                   Acceptance criteria
                   {subtasks.length > 0 && (
-                    <span className="task-detail__block-count">
+                    <span className="task-detail-block-count">
                       {doneSubs}/{subtasks.length}
                     </span>
                   )}
@@ -638,25 +638,25 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                 </Button>
               </div>
               {subtasks.length === 0 && (
-                <p className="task-detail__placeholder">No acceptance criteria yet.</p>
+                <p className="task-detail-placeholder">No acceptance criteria yet.</p>
               )}
-              <ul className="task-detail__ac">
+              <ul className="task-detail-ac">
                 {subtasks.map((s) => (
-                  <li key={s.id} className="task-detail__ac-row">
-                    <label className="task-detail__ac-check">
+                  <li key={s.id} className="task-detail-ac-row">
+                    <label className="task-detail-ac-check">
                       <input
                         type="checkbox"
                         checked={s.completed}
                         onChange={() => toggleSubtask(s)}
                       />
-                      <span className="task-detail__ac-box" aria-hidden="true">
+                      <span className="task-detail-ac-box" aria-hidden="true">
                         {s.completed && <Check size={10} strokeWidth={3} />}
                       </span>
-                      <span className={s.completed ? 'task-detail__ac-done' : ''}>{s.title}</span>
+                      <span className={s.completed ? 'task-detail-ac-done' : ''}>{s.title}</span>
                     </label>
                     <button
                       type="button"
-                      className="btn btn-ghost btn-icon-sm task-detail__ac-remove"
+                      className="btn btn-ghost btn-icon-sm task-detail-ac-remove"
                       onClick={() => removeSubtask(s)}
                       aria-label="Remove criterion"
                     >
@@ -665,14 +665,14 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                   </li>
                 ))}
               </ul>
-              <form onSubmit={addSubtask} className="task-detail__ac-form">
-                <Plus size={14} aria-hidden="true" className="task-detail__ac-plus" />
+              <form onSubmit={addSubtask} className="task-detail-ac-form">
+                <Plus size={14} aria-hidden="true" className="task-detail-ac-plus" />
                 <input
                   type="text"
                   value={newSub}
                   onChange={(e) => setNewSub(e.target.value)}
                   placeholder="Add criterion…"
-                  className="task-detail__ac-input"
+                  className="task-detail-ac-input"
                   aria-label="New acceptance criterion"
                 />
                 {newSub.trim().length > 0 && (
@@ -684,7 +684,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
             </section>
 
             {aiEstimate && (
-              <div className="task-detail__ai-estimate">
+              <div className="task-detail-ai-estimate">
                 <AISuggestionCard
                   chipLabel="AI estimate"
                   title={`Suggested: ${aiEstimate.points} points`}
@@ -698,16 +698,16 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
             )}
 
             {/* Details — every other editable property, label/value pairs */}
-            <section className="task-detail__block">
-              <h3 className="task-detail__block-title">Details</h3>
-              <div className="task-detail__props">
+            <section className="task-detail-block">
+              <h3 className="task-detail-block-title">Details</h3>
+              <div className="task-detail-props">
                 <div className="drawer-prop">
                   <span className="label-key">Reviewer</span>
                   <AssigneePicker orgSlug={orgSlug} value={task.reviewerId ?? null} onChange={changeReviewer} />
                 </div>
                 <div className="drawer-prop">
                   <span className="label-key">Points</span>
-                  <div className="task-detail__pts-row">
+                  <div className="task-detail-pts-row">
                     <input
                       type="number"
                       min={0}
@@ -722,7 +722,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                         }
                       }}
                       placeholder="—"
-                      className="task-detail__pts-input"
+                      className="task-detail-pts-input"
                       aria-label="Story points"
                     />
                     <Button
@@ -747,18 +747,18 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                 </div>
                 <div className="drawer-prop">
                   <span className="label-key">Due</span>
-                  <div className="task-detail__date-wrap">
+                  <div className="task-detail-date-wrap">
                     <input
                       type="date"
                       value={toDateInput(task.dueDate)}
                       onChange={(e) => commitDueDate(e.target.value)}
-                      className="task-detail__date-input"
+                      className="task-detail-date-input"
                       aria-label="Due date"
                     />
                     {task.dueDate && (
                       <button
                         type="button"
-                        className="task-detail__date-clear"
+                        className="task-detail-date-clear"
                         onClick={() => commitDueDate('')}
                         aria-label="Clear due date"
                         title="Clear"
@@ -792,7 +792,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                       type="url"
                       value={prUrlDraft}
                       autoFocus
-                      className="task-detail__pr-input"
+                      className="task-detail-pr-input"
                       placeholder="https://github.com/…"
                       onChange={(e) => setPrUrlDraft(e.target.value)}
                       onBlur={commitPrUrl}
@@ -807,13 +807,13 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                       }}
                     />
                   ) : task.prUrl ? (
-                    <span className="row task-detail__pr-link">
+                    <span className="row task-detail-pr-link">
                       <a href={task.prUrl} target="_blank" rel="noreferrer noopener" title={task.prUrl}>
                         <ExternalLink size={12} aria-hidden="true" /> Open PR
                       </a>
                       <button
                         type="button"
-                        className="task-detail__pr-edit"
+                        className="task-detail-pr-edit"
                         onClick={() => setEditingPrUrl(true)}
                       >
                         Edit
@@ -822,7 +822,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                   ) : (
                     <button
                       type="button"
-                      className="task-detail__pr-empty"
+                      className="task-detail-pr-empty"
                       onClick={() => setEditingPrUrl(true)}
                     >
                       Add URL…
@@ -832,8 +832,8 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                 {task.ciStatus && (
                   <div className="drawer-prop">
                     <span className="label-key">CI</span>
-                    <span className="row task-detail__pr-link">
-                      <span className={`task-detail__meta-item tone-${CI_TONE[task.ciStatus] ?? 'neutral'}`}>
+                    <span className="row task-detail-pr-link">
+                      <span className={`task-detail-meta-item tone-${CI_TONE[task.ciStatus] ?? 'neutral'}`}>
                         <CiIcon status={task.ciStatus} /> {task.ciStatus}
                       </span>
                       {task.ciUrl && (
@@ -854,7 +854,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
             </section>
 
             {/* Secondary sections — collapsed by default, summaries visible */}
-            <div className="task-detail__sections">
+            <div className="task-detail-sections">
               <DependenciesSection taskId={task.id} projectId={projectId} />
               <CustomFieldsSection taskId={task.id} projectId={projectId} />
               <AttachmentsSection taskId={task.id} />
@@ -874,8 +874,8 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
             </div>
 
             {/* Activity */}
-            <section className="task-detail__block">
-              <div className="tabs task-detail__tabs">
+            <section className="task-detail-block">
+              <div className="tabs task-detail-tabs">
                 <button
                   type="button"
                   className={activeTab === 'comments' ? 'is-active' : ''}
@@ -900,9 +900,9 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                 </button>
               </div>
 
-              <div className="task-detail__activity">
+              <div className="task-detail-activity">
                 {activeTab === 'comments' && (
-                  <div className="task-detail__comments">
+                  <div className="task-detail-comments">
                     <CommentList
                       projectId={projectId}
                       comments={comments}
@@ -912,14 +912,14 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                   </div>
                 )}
                 {activeTab === 'history' && (
-                  <p className="task-detail__placeholder">
-                    <History size={12} aria-hidden="true" className="task-detail__inline-icon" />
+                  <p className="task-detail-placeholder">
+                    <History size={12} aria-hidden="true" className="task-detail-inline-icon" />
                     Field-change history isn’t wired up yet — coming in Phase 2.
                   </p>
                 )}
                 {activeTab === 'commits' && (
-                  <p className="task-detail__placeholder">
-                    <GitCommit size={12} aria-hidden="true" className="task-detail__inline-icon" />
+                  <p className="task-detail-placeholder">
+                    <GitCommit size={12} aria-hidden="true" className="task-detail-inline-icon" />
                     Connect a repo in Settings to surface commits and PRs here.
                   </p>
                 )}

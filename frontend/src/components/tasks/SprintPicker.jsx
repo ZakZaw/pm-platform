@@ -32,10 +32,10 @@ export function SprintPicker({ projectId, value, onChange, disabled }) {
   return (
     <Dropdown
       trigger={
-        <button type="button" className="field-picker__trigger" disabled={disabled}>
+        <button type="button" className="field-picker-trigger" disabled={disabled}>
           <Rocket size={12} aria-hidden="true" />
-          <span className="field-picker__label truncate">
-            {current ? current.name : <span className="field-picker__placeholder">Backlog</span>}
+          <span className="field-picker-label truncate">
+            {current ? current.name : <span className="field-picker-placeholder">Backlog</span>}
           </span>
           <ChevronDown size={12} aria-hidden="true" />
         </button>
@@ -50,7 +50,7 @@ export function SprintPicker({ projectId, value, onChange, disabled }) {
       )}
       {value && <Dropdown.Divider />}
       {selectable.length === 0 && (
-        <div className="field-picker__empty">No active or planned sprints.</div>
+        <div className="field-picker-empty">No active or planned sprints.</div>
       )}
       {selectable.map((s) => (
         <Dropdown.Item
@@ -58,7 +58,7 @@ export function SprintPicker({ projectId, value, onChange, disabled }) {
           onSelect={() => s.id !== value && onChange?.(s.id)}
           icon={
             <span
-              className="field-picker__status-dot"
+              className="field-picker-status-dot"
               data-status={s.status}
               aria-hidden="true"
             />
@@ -66,7 +66,7 @@ export function SprintPicker({ projectId, value, onChange, disabled }) {
         >
           {s.name}
           {s.status === 'Active' && (
-            <span className="field-picker__hint">· active</span>
+            <span className="field-picker-hint">· active</span>
           )}
         </Dropdown.Item>
       ))}

@@ -20,7 +20,7 @@
 
 /* The whole-card click target sits behind the content. Children like the
    edit button stopPropagation on click so they aren't swallowed. */
-.epic-card__hit {
+.epic-card-hit {
   position: absolute;
   inset: 0;
   border-radius: inherit;
@@ -29,29 +29,29 @@
   border: 0;
   z-index: 0;
 }
-.epic-card__hit:focus-visible {
+.epic-card-hit:focus-visible {
   outline: none;
   box-shadow: inset 0 0 0 1px var(--accent-bright);
 }
-.epic-card__head,
-.epic-card__desc,
-.epic-card__meta,
-.epic-card__bar { position: relative; z-index: 1; }
+.epic-card-head,
+.epic-card-desc,
+.epic-card-meta,
+.epic-card-bar { position: relative; z-index: 1; }
 
-.epic-card__head {
+.epic-card-head {
   display: flex;
   align-items: center;
   gap: var(--s-4);
 }
 
-.epic-card__color {
+.epic-card-color {
   width: 10px;
   height: 10px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.epic-card__title {
+.epic-card-title {
   flex: 1;
   font-weight: var(--fw-semibold);
   color: var(--text);
@@ -60,7 +60,7 @@
   white-space: nowrap;
 }
 
-.epic-card__edit {
+.epic-card-edit {
   position: relative;
   z-index: 2;
   display: inline-flex;
@@ -74,13 +74,13 @@
   cursor: pointer;
   border-radius: var(--r-sm);
 }
-.epic-card__edit:hover {
+.epic-card-edit:hover {
   background: var(--surface-hover);
   color: var(--text-secondary);
   border-color: var(--border-subtle);
 }
 
-.epic-card__desc {
+.epic-card-desc {
   color: var(--text-secondary);
   font-size: var(--fs-md);
   line-height: var(--lh-snug);
@@ -91,7 +91,7 @@
   overflow: hidden;
 }
 
-.epic-card__meta {
+.epic-card-meta {
   display: flex;
   align-items: center;
   gap: var(--s-2);
@@ -100,14 +100,14 @@
   font-family: var(--font-mono);
 }
 
-.epic-card__bar {
+.epic-card-bar {
   height: 4px;
   background: var(--surface-hover);
   border-radius: var(--r-pill);
   overflow: hidden;
 }
 
-.epic-card__bar-fill {
+.epic-card-bar-fill {
   height: 100%;
   background: var(--accent);
   transition: width var(--dur-base) var(--ease-out);

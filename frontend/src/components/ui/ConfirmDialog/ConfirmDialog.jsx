@@ -20,16 +20,16 @@ export function ConfirmDialog({
   return (
     <Modal open={open} onClose={busy ? undefined : onCancel} labelledBy={titleId} size="sm">
       <ModalHeader>
-        <span className={['confirm-dialog__icon', `confirm-dialog__icon-${tone}`].join(' ')}>
+        <span className={['confirm-dialog-icon', `confirm-dialog-icon-${tone}`].join(' ')}>
           <AlertTriangle size={16} aria-hidden="true" />
         </span>
-        <h2 id={titleId} className="modal-title confirm-dialog__title">
+        <h2 id={titleId} className="modal-title confirm-dialog-title">
           {title}
         </h2>
       </ModalHeader>
       {message && (
         <ModalBody>
-          <p className="confirm-dialog__message">{message}</p>
+          <p className="confirm-dialog-message">{message}</p>
         </ModalBody>
       )}
       <ModalFooter>

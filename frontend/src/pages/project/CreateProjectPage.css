@@ -8,7 +8,7 @@
   gap: 0;
 }
 
-.create-project__section-title {
+.create-project-section-title {
   display: flex;
   align-items: center;
   gap: var(--s-4);
@@ -17,11 +17,11 @@
   color: var(--text);
   margin: var(--s-10) 0 var(--s-6);
 }
-.create-project__section-title:first-of-type {
+.create-project-section-title:first-of-type {
   margin-top: 0;
 }
 
-.create-project__step {
+.create-project-step {
   width: 24px;
   height: 24px;
   border-radius: var(--r-pill);
@@ -34,7 +34,7 @@
   justify-content: center;
 }
 
-.create-project__types {
+.create-project-types {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--s-6);
@@ -78,25 +78,25 @@
   padding: var(--s-7);
 }
 
-.type-card__text {
+.type-card-text {
   display: flex;
   flex-direction: column;
   gap: var(--s-2);
   min-width: 0;
 }
 
-.type-card__title {
+.type-card-title {
   font-weight: var(--fw-semibold);
   color: var(--text);
   font-size: var(--fs-base);
 }
-.type-card__desc {
+.type-card-desc {
   font-size: var(--fs-sm);
   color: var(--text-muted);
   line-height: var(--lh-snug);
 }
 
-.create-project__modes {
+.create-project-modes {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--s-6);
@@ -109,22 +109,22 @@
   padding: var(--s-7);
 }
 
-.mode-card__icon { color: var(--text-secondary); }
-.mode-card.is-active .mode-card__icon { color: var(--accent); }
-.mode-card-ai .mode-card__icon { color: var(--violet); }
+.mode-card-icon { color: var(--text-secondary); }
+.mode-card.is-active .mode-card-icon { color: var(--accent); }
+.mode-card-ai .mode-card-icon { color: var(--violet); }
 
-.mode-card__title {
+.mode-card-title {
   font-weight: var(--fw-semibold);
   color: var(--text);
 }
 
-.mode-card__desc {
+.mode-card-desc {
   font-size: var(--fs-sm);
   color: var(--text-muted);
   line-height: var(--lh-snug);
 }
 
-.create-project__form {
+.create-project-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--s-4);
@@ -133,11 +133,11 @@
 }
 
 @media (max-width: 900px) {
-  .create-project__types { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .create-project-types { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 640px) {
-  .create-project__modes,
-  .create-project__types,
-  .create-project__form { grid-template-columns: 1fr; }
+  .create-project-modes,
+  .create-project-types,
+  .create-project-form { grid-template-columns: 1fr; }
 }

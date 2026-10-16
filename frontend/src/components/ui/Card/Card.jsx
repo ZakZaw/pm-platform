@@ -6,8 +6,8 @@ export function Card({ variant = 'default', title, subtitle, className = '', chi
   const classes = [base, 'card-pad', elevated, className].filter(Boolean).join(' ');
   return (
     <div className={classes} {...rest}>
-      {title && <h2 className="card__title">{title}</h2>}
-      {subtitle && <p className="card__subtitle">{subtitle}</p>}
+      {title && <h2 className="card-title">{title}</h2>}
+      {subtitle && <p className="card-subtitle">{subtitle}</p>}
       {children}
     </div>
   );

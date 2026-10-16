@@ -102,9 +102,9 @@ export function RoadmapPublicPage() {
 
   return (
     <div className="public-roadmap">
-      <header className="public-roadmap__header">
-        <div className="public-roadmap__brand">
-          <span className="public-roadmap__logo" aria-hidden="true">✦</span>
+      <header className="public-roadmap-header">
+        <div className="public-roadmap-brand">
+          <span className="public-roadmap-logo" aria-hidden="true">✦</span>
           <span className="muted">Read-only roadmap</span>
         </div>
         {data && (
@@ -122,11 +122,11 @@ export function RoadmapPublicPage() {
         )}
       </header>
 
-      <main className="public-roadmap__main">
+      <main className="public-roadmap-main">
         {needsPassword && !data ? (
-          <div className="public-roadmap__gate">
-            <div className="public-roadmap__gate-card">
-              <div className="public-roadmap__gate-icon" aria-hidden="true">
+          <div className="public-roadmap-gate">
+            <div className="public-roadmap-gate-card">
+              <div className="public-roadmap-gate-icon" aria-hidden="true">
                 <Lock size={20} />
               </div>
               <h1>Password required</h1>
@@ -134,7 +134,7 @@ export function RoadmapPublicPage() {
                 Whoever shared this link added a password. Enter it to view the
                 roadmap.
               </p>
-              <form onSubmit={submitPassword} className="col gap-3 public-roadmap__gate-form">
+              <form onSubmit={submitPassword} className="col gap-3 public-roadmap-gate-form">
                 <input
                   type="password"
                   className="input"
@@ -144,7 +144,7 @@ export function RoadmapPublicPage() {
                   placeholder="Password"
                   aria-label="Password"
                 />
-                {error && <p className="public-roadmap__gate-error">{error}</p>}
+                {error && <p className="public-roadmap-gate-error">{error}</p>}
                 <Button type="submit" variant="primary" disabled={!password.trim()}>
                   Unlock
                 </Button>
@@ -152,19 +152,19 @@ export function RoadmapPublicPage() {
             </div>
           </div>
         ) : error ? (
-          <div className="public-roadmap__error">
+          <div className="public-roadmap-error">
             <h1>{error}</h1>
           </div>
         ) : loading ? (
           <Skeleton height={280} radius="lg" />
         ) : data ? (
           <>
-            <div className="public-roadmap__title-row">
+            <div className="public-roadmap-title-row">
               <div>
                 <div className="eyebrow">
                   {data.projectKey ? `${data.projectKey} · ` : ''}{data.projectType}
                 </div>
-                <h1 className="page-title public-roadmap__title">{data.projectName}</h1>
+                <h1 className="page-title public-roadmap-title">{data.projectName}</h1>
               </div>
             </div>
             <RoadmapView
@@ -174,8 +174,8 @@ export function RoadmapPublicPage() {
               roleCanEdit={false}
             />
             {roadmapData.undated.length > 0 && (
-              <div className="public-roadmap__undated">
-                <h2 className="public-roadmap__undated-title">Not yet placed</h2>
+              <div className="public-roadmap-undated">
+                <h2 className="public-roadmap-undated-title">Not yet placed</h2>
                 <ul>
                   {roadmapData.undated.map((e) => (
                     <li key={e.id} className="muted">{e.title}</li>
@@ -183,7 +183,7 @@ export function RoadmapPublicPage() {
                 </ul>
               </div>
             )}
-            <footer className="public-roadmap__footer">
+            <footer className="public-roadmap-footer">
               <span className="muted">
                 This is a read-only window. Changes inside the project appear
                 here automatically.

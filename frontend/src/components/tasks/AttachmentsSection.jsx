@@ -91,7 +91,7 @@ export function AttachmentsSection({ taskId }) {
     <div className="attachments-section">
 
       <div
-        className={`attachments-section__drop ${dragging ? 'is-active' : ''}`}
+        className={`attachments-section-drop ${dragging ? 'is-active' : ''}`}
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
@@ -106,7 +106,7 @@ export function AttachmentsSection({ taskId }) {
         >
           {uploading ? 'Uploading…' : 'Browse'}
         </Button>
-        <span className="muted attachments-section__hint">50 MB max</span>
+        <span className="muted attachments-section-hint">50 MB max</span>
         <input
           ref={fileInputRef}
           type="file"
@@ -117,27 +117,27 @@ export function AttachmentsSection({ taskId }) {
       </div>
 
       {items.length > 0 && (
-        <ul className="attachments-section__list">
+        <ul className="attachments-section-list">
           {items.map((a) => (
-            <li key={a.id} className="attachments-section__row">
-              <div className="attachments-section__thumb" aria-hidden="true">
+            <li key={a.id} className="attachments-section-row">
+              <div className="attachments-section-thumb" aria-hidden="true">
                 {isImage(a.contentType) ? (
                   <ImageIcon size={14} />
                 ) : (
                   <FileIcon size={14} />
                 )}
               </div>
-              <div className="col fill attachments-section__info">
+              <div className="col fill attachments-section-info">
                 <a
                   href={a.url}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="attachments-section__name truncate"
+                  className="attachments-section-name truncate"
                   title={a.fileName}
                 >
                   {a.fileName}
                 </a>
-                <span className="muted attachments-section__meta">
+                <span className="muted attachments-section-meta">
                   {formatSize(a.fileSize)}
                   {a.uploadedByName ? ` · ${a.uploadedByName}` : ''}
                 </span>

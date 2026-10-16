@@ -2,18 +2,18 @@
   max-width: 1100px;
 }
 
-.ai-settings__grid {
+.ai-settings-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--s-7);
 }
 
 @media (max-width: 900px) {
-  .ai-settings__grid { grid-template-columns: 1fr; }
+  .ai-settings-grid { grid-template-columns: 1fr; }
 }
 
 /* Each mode is a borderless card; the selected one gets an accent ring. */
-.ai-settings__card {
+.ai-settings-card {
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -32,31 +32,31 @@
   color: var(--text);
 }
 
-.ai-settings__card:hover:not(:disabled):not(.is-selected) {
+.ai-settings-card:hover:not(:disabled):not(.is-selected) {
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
 
-.ai-settings__card:disabled {
+.ai-settings-card:disabled {
   cursor: not-allowed;
 }
-.ai-settings__card:disabled:not(.is-selected) {
+.ai-settings-card:disabled:not(.is-selected) {
   opacity: 0.7;
 }
 
-.ai-settings__card.is-selected {
+.ai-settings-card.is-selected {
   border-color: var(--accent);
   box-shadow: 0 0 0 1px var(--accent), var(--shadow-card);
 }
 
-.ai-settings__head {
+.ai-settings-head {
   display: flex;
   align-items: center;
   gap: var(--s-5);
 }
 
 /* Round tinted icon badge. */
-.ai-settings__icon {
+.ai-settings-icon {
   width: 40px;
   height: 40px;
   border-radius: var(--r-pill);
@@ -68,17 +68,17 @@
   color: var(--text-secondary);
 }
 
-.ai-settings__card--neutral .ai-settings__icon { color: var(--text-muted); }
-.ai-settings__card--info    .ai-settings__icon { color: var(--accent); background: var(--accent-soft); }
-.ai-settings__card--warning .ai-settings__icon { color: var(--warning); background: var(--warning-soft); }
-.ai-settings__card--purple  .ai-settings__icon { color: var(--violet); background: var(--violet-soft); }
+.ai-settings-card-neutral .ai-settings-icon { color: var(--text-muted); }
+.ai-settings-card-info    .ai-settings-icon { color: var(--accent); background: var(--accent-soft); }
+.ai-settings-card-warning .ai-settings-icon { color: var(--warning); background: var(--warning-soft); }
+.ai-settings-card-purple  .ai-settings-icon { color: var(--violet); background: var(--violet-soft); }
 
-.ai-settings__label {
+.ai-settings-label {
   font-size: var(--fs-lg);
   font-weight: var(--fw-semibold);
 }
 
-.ai-settings__radio {
+.ai-settings-radio {
   margin-left: auto;
   width: 22px;
   height: 22px;
@@ -90,12 +90,12 @@
   flex-shrink: 0;
   color: var(--text-on-accent);
 }
-.ai-settings__card.is-selected .ai-settings__radio {
+.ai-settings-card.is-selected .ai-settings-radio {
   background: var(--accent);
   border-color: var(--accent);
 }
 
-.ai-settings__sr {
+.ai-settings-sr {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -104,14 +104,14 @@
   white-space: nowrap;
 }
 
-.ai-settings__summary {
+.ai-settings-summary {
   margin: 0;
   font-size: var(--fs-md);
   color: var(--text-secondary);
   line-height: var(--lh-normal);
 }
 
-.ai-settings__details {
+.ai-settings-details {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -120,7 +120,7 @@
   gap: var(--s-3);
 }
 
-.ai-settings__details li {
+.ai-settings-details li {
   font-size: var(--fs-sm);
   color: var(--text-muted);
   line-height: var(--lh-normal);
@@ -128,7 +128,7 @@
   position: relative;
 }
 
-.ai-settings__details li::before {
+.ai-settings-details li::before {
   content: '';
   position: absolute;
   left: var(--s-2);

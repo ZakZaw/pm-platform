@@ -3,11 +3,11 @@
   gap: var(--s-4);
 }
 
-.comment-input__wrap {
+.comment-input-wrap {
   position: relative;
 }
 
-.comment-input__textarea {
+.comment-input-textarea {
   width: 100%;
   min-height: 64px;
   padding: var(--s-5);
@@ -21,14 +21,14 @@
   resize: vertical;
 }
 
-.comment-input__textarea:focus {
+.comment-input-textarea:focus {
   outline: none;
   background: var(--surface);
   border-color: var(--accent-border);
   box-shadow: var(--shadow-focus);
 }
 
-.comment-input__menu {
+.comment-input-menu {
   position: absolute;
   top: 100%;
   left: 0;
@@ -44,7 +44,7 @@
   z-index: 50;
 }
 
-.comment-input__menu-item {
+.comment-input-menu-item {
   display: flex;
   align-items: center;
   gap: var(--s-4);
@@ -53,18 +53,18 @@
   cursor: pointer;
 }
 
-.comment-input__menu-item.is-active,
-.comment-input__menu-item:hover {
+.comment-input-menu-item.is-active,
+.comment-input-menu-item:hover {
   background: var(--surface-hover);
 }
 
-.comment-input__menu-text {
+.comment-input-menu-text {
   display: grid;
   gap: 1px;
   min-width: 0;
 }
 
-.comment-input__menu-name {
+.comment-input-menu-name {
   color: var(--text);
   font-size: var(--fs-md);
   font-weight: var(--fw-medium);
@@ -73,7 +73,7 @@
   text-overflow: ellipsis;
 }
 
-.comment-input__menu-email {
+.comment-input-menu-email {
   color: var(--text-muted);
   font-size: var(--fs-xs);
   white-space: nowrap;
@@ -81,7 +81,7 @@
   text-overflow: ellipsis;
 }
 
-.comment-input__actions {
+.comment-input-actions {
   display: flex;
   gap: var(--s-4);
   justify-content: flex-end;

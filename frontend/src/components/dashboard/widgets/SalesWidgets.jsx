@@ -75,12 +75,12 @@ export function SalesConversionWidget({ data, loading }) {
       empty={!loading && funnel.every((s) => s.count === 0)}
       emptyText="Deals will appear here once added."
     >
-      <ul className="dashboard-widget__funnel">
+      <ul className="dashboard-widget-funnel">
         {funnel.map((s) => (
           <li key={s.name}>
-            <div className="dashboard-widget__row">
+            <div className="dashboard-widget-row">
               <span className="truncate">{s.name}</span>
-              <span className="dashboard-widget__row-meta">
+              <span className="dashboard-widget-row-meta">
                 {s.count} · {Math.round(s.conversionPct)}%
               </span>
             </div>

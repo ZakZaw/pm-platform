@@ -12,91 +12,91 @@
   gap: 0;
 }
 
-.members__invite-card {
+.members-invite-card {
   padding: var(--s-8);
   margin-bottom: var(--s-9);
 }
 
-.members__section-title {
+.members-section-title {
   font-size: var(--fs-base);
   font-weight: var(--fw-semibold);
   color: var(--text);
   margin: 0 0 var(--s-6);
 }
 
-.members__invite {
+.members-invite {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 160px auto;
   gap: var(--s-4);
   align-items: center;
 }
 
-.members__filters {
+.members-filters {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 180px;
   gap: var(--s-4);
   margin-bottom: var(--s-6);
 }
 
-.members__person {
+.members-person {
   display: flex;
   align-items: center;
   gap: var(--s-5);
   min-width: 0;
 }
 
-.members__person-text {
+.members-person-text {
   min-width: 0;
 }
 
-.members__person-name {
+.members-person-name {
   font-weight: var(--fw-medium);
   color: var(--text);
 }
 
-.members__person-email {
+.members-person-email {
   font-size: var(--fs-sm);
   color: var(--text-muted);
 }
 
 /* Role select reads as plain text until hovered/focused. */
-.members .members__role-select {
+.members .members-role-select {
   width: 140px;
   border-color: transparent;
   background-color: transparent;
 }
-.members__table .table__row:hover .members__role-select,
-.members .members__role-select:focus {
+.members-table .table-row:hover .members-role-select,
+.members .members-role-select:focus {
   border-color: var(--border);
   background-color: var(--surface);
 }
 
-.members__role {
+.members-role {
   display: inline-block;
   padding: 0 var(--s-5);
   color: var(--text-secondary);
   font-weight: var(--fw-medium);
 }
 
-.members__joined {
+.members-joined {
   color: var(--text-muted);
   white-space: nowrap;
 }
 
 /* Row action appears on hover / keyboard focus. */
-.members__remove {
+.members-remove {
   opacity: 0;
   transition: opacity var(--dur-fast) var(--ease-out);
 }
-.members__table .table__row:hover .members__remove,
-.members__remove:focus-visible {
+.members-table .table-row:hover .members-remove,
+.members-remove:focus-visible {
   opacity: 1;
 }
-.members__remove:hover {
+.members-remove:hover {
   color: var(--danger);
 }
 
-.members__sr {
+.members-sr {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -105,43 +105,43 @@
   white-space: nowrap;
 }
 
-.members__pager {
+.members-pager {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-top: var(--s-6);
 }
 
-.members__pager-info {
+.members-pager-info {
   font-size: var(--fs-sm);
   color: var(--text-muted);
 }
 
-.members__error {
+.members-error {
   color: var(--danger);
   font-size: var(--fs-md);
   margin: var(--s-5) 0 0;
 }
 
-.members__success {
+.members-success {
   color: var(--success);
   font-size: var(--fs-md);
   margin: var(--s-5) 0 0;
 }
 
-.members__placeholder {
+.members-placeholder {
   color: var(--text-muted);
   font-size: var(--fs-md);
   padding: var(--s-8) 0;
 }
 
 @media (hover: none) {
-  .members__remove { opacity: 1; }
+  .members-remove { opacity: 1; }
 }
 
 @media (max-width: 760px) {
-  .members__invite,
-  .members__filters {
+  .members-invite,
+  .members-filters {
     grid-template-columns: 1fr;
   }
 }

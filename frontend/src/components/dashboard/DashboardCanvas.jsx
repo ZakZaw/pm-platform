@@ -65,10 +65,10 @@ export function DashboardCanvas({
           <div key={it.i} className="dash-canvas-widget" data-widget-id={it.i}>
             {editing && (
               <>
-                <div className="dash-canvas-widget__drag" aria-label="Drag" />
+                <div className="dash-canvas-widget-drag" aria-label="Drag" />
                 <button
                   type="button"
-                  className="dash-canvas-widget__remove"
+                  className="dash-canvas-widget-remove"
                   onClick={() => onRemove(it.i)}
                   aria-label={`Remove ${widget.title}`}
                 >
@@ -76,7 +76,7 @@ export function DashboardCanvas({
                 </button>
               </>
             )}
-            <div className="dash-canvas-widget__body">
+            <div className="dash-canvas-widget-body">
               {widget.render({ ...ctx, editing })}
             </div>
           </div>

@@ -17,8 +17,9 @@ import './meetingRoom.css';
 
 /**
  * F2-20 — guest landing page. Anonymous: the token in the URL is the
- * credential. The visitor enters their display name once, hits Join,
- * and we exchange that for a LiveKit access token via the public
+ * credential (reusable until it expires or is revoked, not single-use).
+ * The visitor enters a display name (max 80 chars), hits Join, and we
+ * exchange that for a LiveKit access token via the public
  * <c>/meetings/guest/{token}/join</c> endpoint.
  */
 export function GuestMeetingPage() {
@@ -94,6 +95,7 @@ export function GuestMeetingPage() {
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
             placeholder="What should we call you?"
+            maxLength={80}
             autoFocus
           />
           {error && (

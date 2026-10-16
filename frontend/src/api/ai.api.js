@@ -82,6 +82,16 @@ export const aiApi = {
       .get(`/projects/${projectId}/ai/suggestions`, { params: { includeActed } })
       .then((r) => r.data),
 
+  // F1.5-08 — org-level AI inbox: the union of suggestions across the
+  // caller's visible projects, grouped by project type. Returns
+  // { total, groups: [{ projectType, count,
+  //   suggestions: [{ suggestion: AISuggestionDto, projectName, projectSlug }] }] }.
+  // Every AISuggestionDto carries `projectType` + a server-derived `category`.
+  listOrgSuggestions: (orgSlug, { includeActed = false } = {}) =>
+    apiClient
+      .get(`/orgs/${orgSlug}/ai/suggestions`, { params: { includeActed } })
+      .then((r) => r.data),
+
   generateSprintHealth: (projectId) =>
     apiClient
       .post(`/projects/${projectId}/ai/suggestions/sprint-health`)

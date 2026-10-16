@@ -1,0 +1,102 @@
+/* AI inbox list + rows, shared by the project and org inboxes (F1.5-08).
+   Flat class names, tokens only. */
+
+.ai-inbox-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr));
+  gap: var(--s-7);
+  align-items: start;
+}
+
+.ai-inbox-row {
+  display: flex;
+  min-width: 0;
+}
+/* Let the suggestion card fill its grid cell (the primitive caps itself
+   at a fixed max-width for stand-alone use). */
+.ai-inbox-row > .ai-suggest {
+  max-width: none;
+  width: 100%;
+}
+
+/* ---- Project-type badge: round tinted icon + coloured label ---------- */
+
+.ai-type-badge {
+  --ai-type-tone: var(--text-muted);
+  --ai-type-tone-soft: var(--surface-2);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--ai-type-tone);
+  white-space: nowrap;
+}
+.ai-type-badge.is-info    { --ai-type-tone: var(--info);    --ai-type-tone-soft: var(--info-soft); }
+.ai-type-badge.is-success { --ai-type-tone: var(--success); --ai-type-tone-soft: var(--success-soft); }
+.ai-type-badge.is-rose    { --ai-type-tone: var(--rose);    --ai-type-tone-soft: var(--rose-soft); }
+.ai-type-badge.is-amber   { --ai-type-tone: var(--amber);   --ai-type-tone-soft: var(--amber-soft); }
+.ai-type-badge.is-violet  { --ai-type-tone: var(--violet);  --ai-type-tone-soft: var(--violet-soft); }
+.ai-type-badge.is-teal    { --ai-type-tone: var(--teal);    --ai-type-tone-soft: var(--teal-soft); }
+
+.ai-type-badge-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--s-7);
+  height: var(--s-7);
+  border-radius: var(--r-pill);
+  background: var(--ai-type-tone-soft);
+  color: var(--ai-type-tone);
+  flex-shrink: 0;
+}
+.ai-type-badge.is-md {
+  font-size: var(--fs-base);
+  gap: var(--s-4);
+}
+.ai-type-badge.is-md .ai-type-badge-icon {
+  width: var(--s-9);
+  height: var(--s-9);
+}
+
+/* F2-13 — reassignment rows inside an AISuggestionCard body. */
+.reassign-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+  margin-top: var(--s-5);
+}
+
+.reassign-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(160px, 1.4fr);
+  align-items: center;
+  gap: var(--s-2) var(--s-4);
+}
+
+.reassign-task-key {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  letter-spacing: var(--tracking-mono);
+}
+
+.reassign-task-title {
+  color: var(--text);
+  font-size: var(--fs-md);
+}
+
+.reassign-score {
+  grid-column: 2;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+.reassign-score:empty { display: none; }
+
+.reassign-select {
+  width: 100%;
+}

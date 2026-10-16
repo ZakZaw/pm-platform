@@ -1,41 +1,42 @@
 // F1.5-08 — roadmap adapter registry. Each project type registers an
-// adapter that loads its own data and shapes it into the unified roadmap
-// model below. The `RoadmapView` component is type-agnostic — it only
-// renders the shape returned here.
+// adapter that loads its data and shapes it into the unified roadmap model
+// below. `RoadmapView` and `RoadmapPage` are type-agnostic — they only render
+// the shape returned here, so adding a project type means one line here.
+//
+// Engineering keeps its editable adapter (GET /projects/{id}/roadmap: epic
+// drag-resize, dependencies, milestones, share links). Every other type reads
+// the server-computed, type-aware timeline (GET /projects/{id}/roadmap/timeline)
+// through the shared `timelineRoadmap` adapter — the type-specific shaping
+// (deals by close quarter, SLA deadlines per queue, campaign spans + assets,
+// runs per workflow, tasks per list) lives in GetProjectTimelineQuery.
 //
 // Adapter shape:
 //   loadRoadmap(projectId): Promise<{
 //     bars:   [{ id, label, start, end, color, sublabel?, ownerId?, ownerName?, riskFlag? }]
-//     points: [{ id, label, at, color, kind?, editable?, epicId? }]
-//                                                 // 'milestone' | 'run' | 'target' | 'sprint'
-//     range:  { from, to }                        // ISO date strings (date-only)
-//     dependencies?: [{ from, to }]               // edge ids — render arrow from bar→bar
-//     undated?:      [{ id, title }]              // epics that have no dates yet
-//     emptyHint?:    string                       // shown when bars+points are empty
-//     editable?:     boolean                      // gates drag-resize handles in the view
+//     points: [{ id, label, at, color, kind?, editable?, epicId?, flagged? }]
+//     groups?: [{ id, label, sublabel?, bars: [...], points: [...] }]   // one lane each
+//     stats?:  [{ label, value, tone }]                                 // headline strip
+//     range:  { from, to }                        // ISO date strings
+//     dependencies?: [{ from, to }]               // edge ids — arrow bar→bar
+//     undated?:      [{ id, title }]              // work with no dates yet
+//     undatedTitle?, undatedHint?: string         // copy for the undated panel
+//     emptyHint?:    string                       // shown when nothing to plot
+//     editable?:     boolean                      // gates drag-resize handles
+//     capabilities?: { milestones, share }        // gates page actions
 //   }>
-//
-// All dates returned must be ISO strings — the view doesn't try to be
-// clever about timezones. The page passes through what the adapter
-// returns. Adding a new type means writing a new adapter and adding
-// one line here.
 
 import { engineeringRoadmap } from './adapters/engineering';
-import { salesRoadmap } from './adapters/sales';
-import { supportRoadmap } from './adapters/support';
-import { marketingRoadmap } from './adapters/marketing';
-import { operationsRoadmap } from './adapters/operations';
-import { genericRoadmap } from './adapters/generic';
+import { timelineRoadmap } from './adapters/timeline';
 
 export const ROADMAP_ADAPTERS = {
   Engineering: engineeringRoadmap,
-  Sales: salesRoadmap,
-  Support: supportRoadmap,
-  Marketing: marketingRoadmap,
-  Operations: operationsRoadmap,
-  Generic: genericRoadmap,
+  Sales: timelineRoadmap,
+  Support: timelineRoadmap,
+  Marketing: timelineRoadmap,
+  Operations: timelineRoadmap,
+  Generic: timelineRoadmap,
 };
 
 export function adapterForType(type) {
-  return ROADMAP_ADAPTERS[type] ?? null;
+  return ROADMAP_ADAPTERS[type] ?? timelineRoadmap;
 }

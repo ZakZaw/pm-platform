@@ -35,12 +35,18 @@ export function AISuggestionCard({
   undoMessage,
   undoSubtext,
   onUndo,
+  // F1.5-08 type-aware variant: `tone` (info/success/rose/amber/violet/
+  // neutral) tints a left rule so cards read by project type at a glance;
+  // `badge` renders in the header (e.g. a project-type badge).
+  tone,
+  badge,
   // Compact-card props
   message,
   actionLabel,
   onAction,
   className = '',
 }) {
+  const toneClass = tone ? `ai-suggest-tone is-${tone}` : '';
   if (compact) {
     return (
       <div className={['card-ai', 'ai-suggest', 'ai-suggest--compact', className].filter(Boolean).join(' ')}>
@@ -68,9 +74,10 @@ export function AISuggestionCard({
   }
 
   return (
-    <div className={['card-ai', 'ai-suggest', className].filter(Boolean).join(' ')}>
+    <div className={['card-ai', 'ai-suggest', toneClass, className].filter(Boolean).join(' ')}>
       <div className="ai-suggest__header hstack">
         <AIChip label={chipLabel} variant="gradient" />
+        {badge}
         {scope && <span className="ai-suggest__scope">· {scope}</span>}
         <span className="grow" />
         {onDismiss && (

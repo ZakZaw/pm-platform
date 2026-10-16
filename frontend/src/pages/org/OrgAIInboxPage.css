@@ -1,0 +1,20 @@
+/* Org AI inbox (F1.5-08) — one section per project type. Toolbar, list and
+   card styles are shared with the project inbox. */
+
+.org-ai-inbox-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-10);
+}
+
+.org-ai-inbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-6);
+}
+
+.org-ai-inbox-group-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+}

@@ -41,6 +41,7 @@ import { CustomFieldsPage } from '@/pages/project/CustomFieldsPage';
 import { AISettingsPage } from '@/pages/project/AISettingsPage';
 import { IntegrationsPage } from '@/pages/project/IntegrationsPage';
 import { OrgPortfolioPage } from '@/pages/dashboard/OrgPortfolioPage';
+import { OrgAIInboxPage } from '@/pages/org/OrgAIInboxPage';
 import { RoadmapPublicPage } from '@/pages/share/RoadmapPublicPage';
 import { ChannelsLayout } from '@/pages/chat/ChannelsLayout';
 import { ChannelPage } from '@/pages/chat/ChannelPage';
@@ -139,6 +140,10 @@ function App() {
             <Route
               path="/:slug/portfolio"
               element={<Keyed paramKey="slug"><OrgPortfolioPage /></Keyed>}
+            />
+            <Route
+              path="/:slug/ai-inbox"
+              element={<Keyed paramKey="slug"><OrgAIInboxPage /></Keyed>}
             />
             <Route
               path="/:slug/projects/:projectSlug/backlog"

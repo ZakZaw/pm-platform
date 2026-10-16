@@ -47,6 +47,7 @@ const SECTION_LABEL = {
   runs: 'Run',
   chat: 'Chat',
   portfolio: 'Portfolio',
+  'ai-inbox': 'AI Inbox',
   'api-keys': 'API keys',
   new: 'New project',
   home: 'Home',

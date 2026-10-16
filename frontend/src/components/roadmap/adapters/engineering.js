@@ -29,6 +29,7 @@ export async function engineeringRoadmap(projectId) {
       undated: [],
       emptyHint: "Couldn't load the roadmap. Check that the project still exists.",
       editable: true,
+      capabilities: { milestones: true, share: true },
     };
   }
 
@@ -86,6 +87,7 @@ export async function engineeringRoadmap(projectId) {
       ? 'No epics placed on the timeline yet. Set start and end dates on an epic to see it here.'
       : undefined,
     editable: true,
+    capabilities: { milestones: true, share: true },
   };
 }
 

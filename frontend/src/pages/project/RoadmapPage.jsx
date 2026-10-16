@@ -86,8 +86,21 @@ export function RoadmapPage() {
     if (filter.ownerId) bars = bars.filter((b) => b.ownerId === filter.ownerId);
     if (filter.status) bars = bars.filter((b) => b.sublabel === filter.status);
     if (filter.riskOnly) bars = bars.filter((b) => b.riskFlag);
-    return { ...data, bars };
+    // Grouped lanes (typed timelines): "flagged only" keeps the flagged
+    // markers/bars and drops lanes left empty.
+    let groups = data.groups;
+    if (filter.riskOnly && groups) {
+      groups = groups
+        .map((g) => ({
+          ...g,
+          bars: g.bars.filter((b) => b.riskFlag),
+          points: g.points.filter((p) => p.flagged),
+        }))
+        .filter((g) => g.bars.length + g.points.length > 0);
+    }
+    return { ...data, bars, groups };
   }, [data, filter]);
+  const capabilities = data?.capabilities ?? {};
 
   // Build owner + status options for the filter dropdown from current bars.
   const filterOptions = useMemo(() => {
@@ -173,7 +186,9 @@ export function RoadmapPage() {
             <h1 className="page-title">Roadmap</h1>
             {meta && (
               <p className="page-subtitle">
-                {meta.label} project · {canEdit ? 'drag bar edges to shift dates.' : 'read-only.'}
+                {meta.label} project · {data && !data.editable
+                  ? 'live timeline from project data.'
+                  : canEdit ? 'drag bar edges to shift dates.' : 'read-only.'}
               </p>
             )}
           </div>
@@ -211,7 +226,7 @@ export function RoadmapPage() {
                 />
               )}
             </div>
-            {canEdit && (
+            {canEdit && capabilities.share && (
               <Button
                 size="sm"
                 variant="ghost"
@@ -221,7 +236,7 @@ export function RoadmapPage() {
                 <Share2 size={14} aria-hidden="true" /> Share
               </Button>
             )}
-            {canEdit && (
+            {canEdit && capabilities.milestones && (
               <Button
                 variant="primary"
                 size="sm"
@@ -249,14 +264,14 @@ export function RoadmapPage() {
         )}
         {data?.undated?.length > 0 && (
           <div className="roadmap-page__undated">
-            <h2 className="roadmap-page__undated-title">Not yet placed</h2>
+            <h2 className="roadmap-page__undated-title">{data.undatedTitle ?? 'Not yet placed'}</h2>
             <ul>
               {data.undated.map((e) => (
                 <li key={e.id} className="muted">{e.title}</li>
               ))}
             </ul>
             <p className="muted roadmap-page__hint">
-              Open an epic and set its start &amp; end dates to add it to the timeline.
+              {data.undatedHint ?? 'Open an epic and set its start & end dates to add it to the timeline.'}
             </p>
           </div>
         )}
@@ -421,7 +436,7 @@ function FilterMenu({ options, value, onChange, onClose }) {
         className={`menu-item ${value.riskOnly ? 'is-selected' : ''}`}
         onClick={() => onChange({ ...value, riskOnly: !value.riskOnly })}
       >
-        Only flagged-risk epics
+        Only flagged items
       </button>
       <div className="menu-sep" />
       <button

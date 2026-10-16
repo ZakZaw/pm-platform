@@ -4,6 +4,15 @@ export const roadmapApi = {
   get: (projectId) =>
     apiClient.get(`/projects/${projectId}/roadmap`).then((r) => r.data),
 
+  // F1.5-08 — type-aware timeline aggregate, shaped by the project's type.
+  // Returns { projectId, type, from, to,
+  //   groups:  [{ id, label, sublabel }],
+  //   bars:    [{ id, label, start, end, tone, sublabel, groupId, flagged }],
+  //   markers: [{ id, label, at, tone, kind, sublabel, groupId, flagged }],
+  //   stats:   [{ label, value, tone }], undated: [{ id, label }], emptyHint }.
+  timeline: (projectId) =>
+    apiClient.get(`/projects/${projectId}/roadmap/timeline`).then((r) => r.data),
+
   // F2-01 — body: { startDate, endDate, cascade }
   // Server returns { applied, affected: [{ epicId, title, newStartDate, newEndDate }] }.
   // When applied === false the caller should open the cascade-confirm modal

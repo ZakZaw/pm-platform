@@ -21,6 +21,7 @@ import {
   Sparkline,
   useToast,
 } from '@/components/ui';
+import { aiApi } from '@/api/ai.api';
 import { orgsApi } from '@/api/orgs.api';
 import { projectsApi } from '@/api/projects.api';
 import { useOrgRole } from '@/hooks/useOrgRole';
@@ -78,20 +79,23 @@ export function OrgHomePage() {
   const [nameDraft, setNameDraft] = useState('');
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [filter, setFilter] = useState('all');
+  const [aiInbox, setAiInbox] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [orgData, projectList, members] = await Promise.all([
+        const [orgData, projectList, members, inbox] = await Promise.all([
           orgsApi.get(slug),
           projectsApi.listForOrg(slug),
           orgsApi.listMembers(slug, { page: 1, pageSize: 6 }).catch(() => ({ items: [], total: 0 })),
+          aiApi.listOrgSuggestions(slug).catch(() => null),
         ]);
         if (cancelled) return;
         setOrg(orgData);
         setProjects(projectList);
         setMemberSummary(members);
+        setAiInbox(inbox);
       } catch (err) {
         if (!cancelled) setError(err.response?.data?.detail ?? 'Could not load organization.');
       }
@@ -294,9 +298,22 @@ export function OrgHomePage() {
       <div className="ai-card org-home-ai">
         <div className="ai-mark"><Sparkles size={14} /></div>
         <div className="col org-home-ai-text">
-          <strong>AI suggestions waiting for your call</strong>
-          <span className="muted">Open the AI inbox in any project to review.</span>
+          <strong>
+            {aiInbox?.total
+              ? `${aiInbox.total} AI suggestion${aiInbox.total === 1 ? '' : 's'} waiting for your call`
+              : 'No AI suggestions waiting right now'}
+          </strong>
+          <span className="muted">
+            {aiInbox?.groups?.length
+              ? aiInbox.groups.map((g) => `${g.count} ${findProjectType(g.projectType).short}`).join(' · ')
+              : 'Insights from every project you can see collect in the org AI inbox.'}
+          </span>
         </div>
+        <Link to={`/${slug}/ai-inbox`}>
+          <Button variant="ghost" size="sm">
+            Open inbox <ArrowRight size={12} aria-hidden="true" />
+          </Button>
+        </Link>
       </div>
 
       {/* Projects */}

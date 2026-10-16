@@ -45,6 +45,20 @@ public class ApplyTypedProjectGenerationCommandHandler(
             .FirstOrDefaultAsync(r => r.Id == request.RequestId, ct);
         if (generationRequest is null)
             return Result.Failure<ProjectDto>(AIErrors.RequestNotFound);
+
+        // C2 - only the user who generated the draft may apply it, and only
+        // while they can still create projects in that org (active Member+).
+        // Answer "not found" so request ids can't be probed.
+        if (generationRequest.CreatedBy != userId)
+            return Result.Failure<ProjectDto>(AIErrors.RequestNotFound);
+        var canCreateInOrg = await db.OrgMemberships.AnyAsync(m =>
+            m.OrganizationId == generationRequest.OrganizationId
+            && m.UserId == userId
+            && m.RemovedAt == null
+            && m.Role != OrgRole.Guest, ct);
+        if (!canCreateInOrg)
+            return Result.Failure<ProjectDto>(AIErrors.RequestNotFound);
+
         if (generationRequest.Status != "Draft")
             return Result.Failure<ProjectDto>(AIErrors.RequestAlreadyApplied);
 
@@ -104,7 +118,7 @@ public class ApplyTypedProjectGenerationCommandHandler(
             ProjectType.Support => ApplySupport(project.Id, userId, preview.Support),
             ProjectType.Marketing => ApplyMarketing(project.Id, userId, preview.Marketing),
             ProjectType.Operations => ApplyOperations(project.Id, userId, preview.Operations),
-            ProjectType.Generic => ApplyGeneric(project.Id, userId, preview.Generic),
+            ProjectType.Generic => ApplyGeneric(project, userId, preview.Generic),
             _ => "(none)",
         };
 
@@ -376,9 +390,10 @@ public class ApplyTypedProjectGenerationCommandHandler(
         return $"operations:{draft.Workflows.Count}w";
     }
 
-    private string ApplyGeneric(Guid projectId, Guid userId, AIGenericProjectDraft? draft)
+    private string ApplyGeneric(Project project, Guid userId, AIGenericProjectDraft? draft)
     {
         if (draft is null) return "generic:empty";
+        var projectId = project.Id;
         var order = 1;
         var keyNum = 0;
         var priorityOrder = 0;
@@ -411,6 +426,8 @@ public class ApplyTypedProjectGenerationCommandHandler(
                 taskCount++;
             }
         }
+        // M8 - keep the per-project key counter in step (new project).
+        project.LastTaskKeyNum = keyNum;
         return $"generic:{draft.Lists.Count}l/{taskCount}t";
     }
 

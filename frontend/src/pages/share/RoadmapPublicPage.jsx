@@ -75,6 +75,9 @@ export function RoadmapPublicPage() {
       } else if (code === 'RoadmapShare.InvalidPassword') {
         setNeedsPassword(true);
         setError('That password is incorrect. Try again.');
+      } else if (code === 'RoadmapShare.PasswordLocked') {
+        setNeedsPassword(true);
+        setError('Too many wrong passwords. Wait 15 minutes, then try again.');
       } else if (code === 'RoadmapShare.Expired') {
         setError('This link has expired. Ask the sender for a fresh one.');
       } else if (code === 'RoadmapShare.Revoked') {

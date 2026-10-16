@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Download, File as FileIcon, Image as ImageIcon, Trash2, UploadCloud } from 'lucide-react';
 import { Button, useToast } from '@/components/ui';
 import { attachmentsApi } from '@/api/attachments.api';
+import { saveBlob } from '@/utils/download';
 import { TaskSection } from './TaskSection';
 import './AttachmentsSection.css';
 
@@ -74,6 +75,15 @@ export function AttachmentsSection({ taskId }) {
     for (const f of files) uploadOne(f);
   }
 
+  async function download(attachment) {
+    try {
+      const blob = await attachmentsApi.download(attachment.id);
+      saveBlob(blob, attachment.fileName);
+    } catch {
+      toast.show({ tone: 'danger', message: `Could not download ${attachment.fileName}.` });
+    }
+  }
+
   async function remove(attachment) {
     try {
       await attachmentsApi.remove(attachment.id);
@@ -129,31 +139,28 @@ export function AttachmentsSection({ taskId }) {
                 )}
               </div>
               <div className="col fill attachments-section-info">
-                <a
-                  href={a.url}
-                  target="_blank"
-                  rel="noreferrer noopener"
+                <button
+                  type="button"
+                  onClick={() => download(a)}
                   className="attachments-section-name truncate"
                   title={a.fileName}
                 >
                   {a.fileName}
-                </a>
+                </button>
                 <span className="muted attachments-section-meta">
                   {formatSize(a.fileSize)}
                   {a.uploadedByName ? ` · ${a.uploadedByName}` : ''}
                 </span>
               </div>
-              <a
-                href={a.url}
-                download={a.fileName}
-                target="_blank"
-                rel="noreferrer noopener"
+              <button
+                type="button"
                 className="btn btn-ghost btn-icon-sm"
+                onClick={() => download(a)}
                 title="Download"
                 aria-label="Download"
               >
                 <Download size={12} aria-hidden="true" />
-              </a>
+              </button>
               <button
                 type="button"
                 className="btn btn-ghost btn-icon-sm"

@@ -1,3 +1,4 @@
+using Application.Authorization;
 using System.Text.Json;
 using Api.Authorization;
 using Application.Common;
@@ -46,7 +47,7 @@ public class CustomFieldsController(ISender mediator) : ControllerBase
         CancellationToken ct)
     {
         var result = await mediator.Send(new UpdateCustomFieldDefinitionCommand(
-            fieldId, body.Name, body.Options, body.Required, body.SortOrder), ct);
+            projectId, fieldId, body.Name, body.Options, body.Required, body.SortOrder), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
@@ -54,13 +55,14 @@ public class CustomFieldsController(ISender mediator) : ControllerBase
     [RequireProjectRole(ProjectRole.TeamLead)]
     public async Task<ActionResult> Delete(Guid projectId, Guid fieldId, CancellationToken ct)
     {
-        var result = await mediator.Send(new DeleteCustomFieldDefinitionCommand(fieldId), ct);
+        var result = await mediator.Send(new DeleteCustomFieldDefinitionCommand(projectId, fieldId), ct);
         return result.IsSuccess ? NoContent() : ToProblem(result.Error!);
     }
 
     // -------- Per-task values --------
 
     [HttpGet("api/v1/tasks/{taskId:guid}/custom-fields")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<IReadOnlyList<CustomFieldValueDto>>> GetValues(
         Guid taskId, CancellationToken ct)
     {
@@ -69,6 +71,7 @@ public class CustomFieldsController(ISender mediator) : ControllerBase
     }
 
     [HttpPut("api/v1/tasks/{taskId:guid}/custom-fields")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<IReadOnlyList<CustomFieldValueDto>>> SetValues(
         Guid taskId,
         [FromBody] SetCustomFieldValuesBodyDto body,

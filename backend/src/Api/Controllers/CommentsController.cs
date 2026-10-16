@@ -1,3 +1,6 @@
+using Domain.Enums;
+using Application.Authorization;
+using Api.Authorization;
 using Application.Common;
 using Application.Features.Comments;
 using Application.Features.Comments.Commands;
@@ -13,6 +16,7 @@ namespace Api.Controllers;
 public class CommentsController(ISender mediator) : ControllerBase
 {
     [HttpGet("api/v1/tasks/{taskId:guid}/comments")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<IReadOnlyList<CommentDto>>> ListForTask(
         Guid taskId, CancellationToken ct)
     {
@@ -21,6 +25,7 @@ public class CommentsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/tasks/{taskId:guid}/comments")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<CommentDto>> Create(
         Guid taskId,
         [FromBody] CreateCommentBodyDto body,
@@ -32,6 +37,7 @@ public class CommentsController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("api/v1/comments/{id:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Comment, "id")]
     public async Task<ActionResult<CommentDto>> Update(
         Guid id,
         [FromBody] UpdateCommentBodyDto body,
@@ -43,6 +49,7 @@ public class CommentsController(ISender mediator) : ControllerBase
     }
 
     [HttpDelete("api/v1/comments/{id:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Comment, "id")]
     public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new DeleteCommentCommand(id), ct);
@@ -50,6 +57,7 @@ public class CommentsController(ISender mediator) : ControllerBase
     }
 
     [HttpGet("api/v1/projects/{projectId:guid}/mentionable-users")]
+    [RequireProjectRole(ProjectRole.Viewer)]
     public async Task<ActionResult<IReadOnlyList<MentionableUserDto>>> Mentionable(
         Guid projectId,
         [FromQuery(Name = "q")] string? query,

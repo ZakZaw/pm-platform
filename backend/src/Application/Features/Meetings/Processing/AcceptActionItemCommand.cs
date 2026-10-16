@@ -82,16 +82,14 @@ public class AcceptActionItemCommandHandler(
             var priority = ParsePriority(request.Priority) ?? item.SuggestedPriority;
             var due = request.DueDate ?? item.SuggestedDueDate;
 
-            // KeyNum: next per-project serial. Keep the same logic the
-            // create-task command uses so display keys stay monotonic.
-            var nextKeyNum = await db.Tasks
-                .Where(t => t.ProjectId == item.Meeting.ProjectId)
-                .MaxAsync(t => (int?)t.KeyNum, ct) ?? 0;
+            // KeyNum: next per-project serial from the same atomic counter
+            // the create-task command uses (M8).
+            var keyNum = await db.ReserveTaskKeyNumsAsync(item.Meeting.ProjectId, 1, ct);
 
             var task = new TaskEntity
             {
                 ProjectId = item.Meeting.ProjectId,
-                KeyNum = nextKeyNum + 1,
+                KeyNum = keyNum,
                 Title = title,
                 Description = string.IsNullOrWhiteSpace(request.Description)
                     ? item.Description
@@ -110,6 +108,11 @@ public class AcceptActionItemCommandHandler(
         item.AcceptedAt = DateTime.UtcNow;
         item.AcceptedTaskId = linkedTaskId;
         item.AcceptedByUserId = userId;
+
+        // M6 - accepting an AI-drafted action item is an AI write: audit it.
+        db.AIAuditLogs.Add(ActionItemAudit.Build(
+            item.Meeting.ProjectId, userId, item.MeetingId,
+            [(item.Id, item.Title, linkedTaskId, request.ExistingTaskId is not null)]));
 
         await db.SaveChangesAsync(ct);
 

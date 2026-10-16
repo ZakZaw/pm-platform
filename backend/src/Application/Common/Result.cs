@@ -49,6 +49,9 @@ public static class AuthErrors
 
     public static readonly Error NotAuthenticated =
         new("Auth.NotAuthenticated", "You must be signed in to perform this action.");
+
+    public static readonly Error AccountLocked =
+        new("Auth.AccountLocked", "Too many failed sign-in attempts. Try again in 15 minutes.");
 }
 
 public static class OrgErrors
@@ -79,6 +82,12 @@ public static class OrgErrors
 
     public static readonly Error LastOwner =
         new("Org.LastOwner", "An organization must have at least one Owner.");
+
+    public static readonly Error NotAMember =
+        new("Org.NotAMember", "You do not have access to this organization.");
+
+    public static readonly Error InsufficientRole =
+        new("Org.InsufficientRole", "Your organization role does not allow this action.");
 }
 
 public static class UserErrors
@@ -186,7 +195,10 @@ public static class RoadmapShareErrors
         new("RoadmapShare.InvalidPassword", "The password is incorrect.");
 
     public static readonly Error InvalidPasswordValue =
-        new("RoadmapShare.InvalidPasswordValue", "Password must be 4-128 characters.");
+        new("RoadmapShare.InvalidPasswordValue", "Password must be 8-128 characters.");
+
+    public static readonly Error PasswordLocked =
+        new("RoadmapShare.PasswordLocked", "Too many wrong passwords for this link. Try again in 15 minutes.");
 
     public static readonly Error InvalidExpiry =
         new("RoadmapShare.InvalidExpiry", "Expiry must be in the future.");
@@ -235,6 +247,9 @@ public static class TaskErrors
 
     public static Error ReasonRequired(string to) =>
         new("Task.ReasonRequired", $"Moving a task to {to} requires a reason.");
+
+    public static readonly Error InvalidPrUrl =
+        new("Task.InvalidPrUrl", "PR link must be an http(s) URL of at most 512 characters.");
 
     public static readonly Error NoOpTransition =
         new("Task.NoOpTransition", "Task is already in that status.");
@@ -601,6 +616,9 @@ public static class AttachmentErrors
 
     public static readonly Error InvalidFileName =
         new("Attachment.InvalidFileName", "File name must be 1-260 characters.");
+
+    public static readonly Error BlockedType =
+        new("Attachment.BlockedType", "HTML, SVG, XML and script files can't be attached. Zip them first.");
 }
 
 public static class LabelErrors

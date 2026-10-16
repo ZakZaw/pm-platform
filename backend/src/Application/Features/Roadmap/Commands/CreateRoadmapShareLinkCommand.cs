@@ -47,7 +47,7 @@ public class CreateRoadmapShareLinkCommandHandler(
         string? hash = null;
         if (!string.IsNullOrEmpty(request.Password))
         {
-            if (request.Password.Length is < 4 or > 128)
+            if (request.Password.Length is < ShareLinkPasswordPolicy.MinLength or > ShareLinkPasswordPolicy.MaxLength)
                 return Result.Failure<RoadmapShareLinkDto>(RoadmapShareErrors.InvalidPasswordValue);
             hash = passwords.Hash(request.Password);
         }

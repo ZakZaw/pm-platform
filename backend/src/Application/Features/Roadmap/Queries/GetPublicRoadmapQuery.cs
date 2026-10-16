@@ -7,7 +7,8 @@ namespace Application.Features.Roadmap.Queries;
 
 /// <summary>
 /// Public, no-auth roadmap lookup driven by a share-link token. The handler
-/// resolves the link, validates the optional password gate, then projects
+/// resolves the link, validates the optional password gate (sent in the
+/// POST body or X-Share-Password header, never the URL; M4), then projects
 /// roadmap data with the link's privacy toggles applied (hide internal
 /// labels — descriptions, risk flags; hide assignees — owner names).
 /// </summary>
@@ -50,13 +51,7 @@ public class GetPublicRoadmapQueryHandler(IAppDbContext db, IPasswordHasher pass
     public async Task<Result<PublicRoadmapDto>> Handle(GetPublicRoadmapQuery request, CancellationToken ct)
     {
         var link = await db.RoadmapShareLinks
-            .Where(l => l.Token == request.Token)
-            .Select(l => new
-            {
-                l.Id, l.ProjectId, l.PasswordHash, l.ExpiresAt, l.RevokedAt,
-                l.HideInternalLabels, l.HideAssignees,
-            })
-            .FirstOrDefaultAsync(ct);
+            .FirstOrDefaultAsync(l => l.Token == request.Token, ct);
 
         if (link is null) return Result.Failure<PublicRoadmapDto>(RoadmapShareErrors.NotFound);
         if (link.RevokedAt is not null) return Result.Failure<PublicRoadmapDto>(RoadmapShareErrors.Revoked);
@@ -67,8 +62,40 @@ public class GetPublicRoadmapQueryHandler(IAppDbContext db, IPasswordHasher pass
         {
             if (string.IsNullOrEmpty(request.Password))
                 return Result.Failure<PublicRoadmapDto>(RoadmapShareErrors.PasswordRequired);
+
+            // M4 - per-link lockout after repeated wrong passwords.
+            var now = DateTime.UtcNow;
+            if (ShareLinkPasswordPolicy.IsLocked(link.PasswordLockedUntil, now))
+                return Result.Failure<PublicRoadmapDto>(RoadmapShareErrors.PasswordLocked);
+
             if (!passwords.Verify(hash, request.Password))
+            {
+                // Count the failure in one UPDATE (Postgres row-locks and
+                // re-reads the row), not read-modify-write on the tracked
+                // entity: parallel guesses all read the same count and
+                // overwrote each other, so the lockout never triggered.
+                // Same transition as ShareLinkPasswordPolicy.RegisterFailure.
+                var max = ShareLinkPasswordPolicy.MaxFailures;
+                DateTime? lockUntil = now + ShareLinkPasswordPolicy.LockoutDuration;
+                await db.RoadmapShareLinks
+                    .Where(l => l.Id == link.Id)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(l => l.PasswordLockedUntil,
+                            l => l.FailedPasswordAttempts + 1 >= max ? lockUntil : l.PasswordLockedUntil)
+                        .SetProperty(l => l.FailedPasswordAttempts,
+                            l => l.FailedPasswordAttempts + 1 >= max ? 0 : l.FailedPasswordAttempts + 1), ct);
                 return Result.Failure<PublicRoadmapDto>(RoadmapShareErrors.InvalidPassword);
+            }
+
+            if (link.FailedPasswordAttempts != 0 || link.PasswordLockedUntil is not null)
+            {
+                // Don't clear a lock that parallel wrong guesses set after we read the row.
+                await db.RoadmapShareLinks
+                    .Where(l => l.Id == link.Id && (l.PasswordLockedUntil == null || l.PasswordLockedUntil <= now))
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(l => l.FailedPasswordAttempts, 0)
+                        .SetProperty(l => l.PasswordLockedUntil, (DateTime?)null), ct);
+            }
         }
 
         var project = await db.Projects

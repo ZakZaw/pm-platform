@@ -1,3 +1,6 @@
+using Domain.Enums;
+using Application.Authorization;
+using Api.Authorization;
 using Application.Common;
 using Application.Features.Integrations;
 using MediatR;
@@ -17,6 +20,7 @@ namespace Api.Controllers;
 public class IntegrationsController(ISender mediator, IConfiguration config) : ControllerBase
 {
     [HttpGet("api/v1/projects/{projectId:guid}/integrations")]
+    [RequireProjectRole(ProjectRole.Viewer)]
     public async Task<ActionResult<IReadOnlyList<IntegrationDto>>> List(
         Guid projectId, CancellationToken ct)
     {
@@ -25,6 +29,7 @@ public class IntegrationsController(ISender mediator, IConfiguration config) : C
     }
 
     [HttpGet("api/v1/projects/{projectId:guid}/integrations/github/authorize")]
+    [RequireProjectRole(ProjectRole.PM)]
     public async Task<ActionResult<GitHubAuthorizeDto>> Authorize(
         Guid projectId,
         [FromQuery] string repo,
@@ -57,6 +62,7 @@ public class IntegrationsController(ISender mediator, IConfiguration config) : C
     }
 
     [HttpDelete("api/v1/integrations/{id:guid}")]
+    [RequireProjectRole(ProjectRole.PM, ProjectScope.Integration, "id")]
     public async Task<IActionResult> Disconnect(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new DisconnectIntegrationCommand(id), ct);

@@ -1,3 +1,4 @@
+using Api.Authorization;
 using Application.Common;
 using Application.Features.Notifications.Commands;
 using Application.Features.Notifications.Queries;
@@ -9,6 +10,7 @@ namespace Api.Controllers;
 
 [ApiController]
 [Authorize]
+[DenyApiKey]
 public class NotificationsController(ISender mediator) : ControllerBase
 {
     [HttpGet("api/v1/users/me/notifications")]

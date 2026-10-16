@@ -1,6 +1,7 @@
 using Application.Common;
 using Application.Features.Attachments.Commands;
 using Application.Interfaces;
+using Application.Features.Attachments;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,10 +23,14 @@ public class ListTaskAttachmentsQueryHandler(IAppDbContext db)
             .Where(a => a.TaskId == request.TaskId)
             .OrderByDescending(a => a.CreatedAt)
             .Select(a => new AttachmentDto(
-                a.Id, a.TaskId, a.FileName, a.FileSize, a.ContentType, a.Url,
+                a.Id, a.TaskId, a.FileName, a.FileSize, a.ContentType, string.Empty,
                 a.UploadedByUserId, a.UploadedBy.FullName, a.CreatedAt))
             .ToListAsync(ct);
 
-        return Result.Success<IReadOnlyList<AttachmentDto>>(rows);
+        // H3 - always hand out the authorized download URL (legacy rows
+        // still carry the old public /uploads path in the Url column).
+        return Result.Success<IReadOnlyList<AttachmentDto>>(rows
+            .Select(r => r with { Url = AttachmentFilePolicy.DownloadUrl(r.Id) })
+            .ToList());
     }
 }

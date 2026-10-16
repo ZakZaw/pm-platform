@@ -26,6 +26,29 @@ public class ApiKeyAuthenticationHandler(
 {
     public const string SchemeName = "ApiKey";
     public const string HeaderName = "X-Api-Key";
+    public const string OrgIdClaim = "org_id";
+    public const string AuthMethodClaim = "auth_method";
+    public const string AuthMethodApiKey = "api_key";
+    public const string ApiKeyIdClaim = "api_key_id";
+
+    /// <summary>
+    /// The org an API-key principal is confined to, or null for a normal
+    /// user (JWT) principal. Only principals issued by this handler carry
+    /// the claim pair, so a JWT can't smuggle one in.
+    /// </summary>
+    public static Guid? GetApiKeyOrgId(ClaimsPrincipal? user)
+    {
+        // When a request carries both a JWT and an API key the merged
+        // principal holds both identities; treat it as the (narrower)
+        // API-key principal.
+        var identity = user?.Identities.FirstOrDefault(i =>
+            i.IsAuthenticated && i.AuthenticationType == SchemeName);
+        if (identity is null || identity.FindFirst(AuthMethodClaim)?.Value != AuthMethodApiKey)
+            return null;
+        return Guid.TryParse(identity.FindFirst(OrgIdClaim)?.Value, out var orgId) ? orgId : null;
+    }
+
+    public static bool IsApiKeyPrincipal(ClaimsPrincipal? user) => GetApiKeyOrgId(user) is not null;
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
@@ -45,6 +68,15 @@ public class ApiKeyAuthenticationHandler(
         if (!key.IsActive(now))
             return AuthenticateResult.Fail("API key is revoked or expired.");
 
+        // H2 - a key acts as its creator; once the creator has left the org
+        // the key must stop working too.
+        var creatorActive = await db.OrgMemberships.AnyAsync(m =>
+            m.OrganizationId == key.OrganizationId
+            && m.UserId == key.CreatedByUserId
+            && m.RemovedAt == null);
+        if (!creatorActive)
+            return AuthenticateResult.Fail("API key owner is no longer a member of the organization.");
+
         // Throttle the last-used write to at most once a minute so a busy
         // key doesn't generate a DB write per request.
         if (key.LastUsedAt is null || key.LastUsedAt < now.AddMinutes(-1))
@@ -56,8 +88,9 @@ public class ApiKeyAuthenticationHandler(
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, key.CreatedByUserId.ToString()),
-            new Claim("org_id", key.OrganizationId.ToString()),
-            new Claim("auth_method", "api_key"),
+            new Claim(OrgIdClaim, key.OrganizationId.ToString()),
+            new Claim(AuthMethodClaim, AuthMethodApiKey),
+            new Claim(ApiKeyIdClaim, key.Id.ToString()),
         };
         var identity = new ClaimsIdentity(claims, SchemeName);
         var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), SchemeName);

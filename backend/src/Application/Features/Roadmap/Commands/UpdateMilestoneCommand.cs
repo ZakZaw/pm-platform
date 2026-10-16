@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Application.Features.Roadmap.Commands;
 
 public record UpdateMilestoneCommand(
+    Guid ProjectId,
     Guid MilestoneId,
     string? Title,
     DateOnly? Date,
@@ -26,7 +27,7 @@ public class UpdateMilestoneCommandHandler(
         if (currentUser.UserId is not { } userId)
             return Result.Failure<MilestoneDto>(AuthErrors.NotAuthenticated);
 
-        var m = await db.Milestones.FirstOrDefaultAsync(x => x.Id == request.MilestoneId, ct);
+        var m = await db.Milestones.FirstOrDefaultAsync(x => x.Id == request.MilestoneId && x.ProjectId == request.ProjectId, ct);
         if (m is null) return Result.Failure<MilestoneDto>(MilestoneErrors.NotFound);
 
         if (request.Title is { } t)

@@ -1,3 +1,4 @@
+using Application.Authorization;
 using Api.Authorization;
 using Application.Common;
 using Application.Features.Epics;
@@ -41,6 +42,7 @@ public class EpicsController(ISender mediator) : ControllerBase
     }
 
     [HttpGet("api/v1/epics/{id:guid}")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Epic, "id")]
     public async Task<ActionResult<EpicDto>> Get(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new GetEpicQuery(id), ct);
@@ -48,6 +50,7 @@ public class EpicsController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("api/v1/epics/{id:guid}")]
+    [RequireProjectRole(ProjectRole.TeamLead, ProjectScope.Epic, "id")]
     public async Task<ActionResult<EpicDto>> Update(
         Guid id,
         [FromBody] UpdateEpicBodyDto body,

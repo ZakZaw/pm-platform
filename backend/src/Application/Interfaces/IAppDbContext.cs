@@ -111,4 +111,12 @@ public interface IAppDbContext
     DbSet<IntegrationHealth> IntegrationHealth { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// M8 - atomically reserves <paramref name="count"/> consecutive task key
+    /// numbers in a project and returns the first one. Runs immediately (not
+    /// part of SaveChanges); numbers burnt by a later failure leave gaps,
+    /// which is fine for display keys.
+    /// </summary>
+    Task<int> ReserveTaskKeyNumsAsync(Guid projectId, int count, CancellationToken cancellationToken = default);
 }

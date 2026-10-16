@@ -1,3 +1,8 @@
+using Api.Middleware;
+using Microsoft.AspNetCore.RateLimiting;
+using Domain.Enums;
+using Application.Authorization;
+using Api.Authorization;
 using Application.Common;
 using Application.Features.AI;
 using Application.Features.Meetings;
@@ -23,6 +28,7 @@ namespace Api.Controllers;
 public class MeetingsController(ISender mediator) : ControllerBase
 {
     [HttpGet("api/v1/projects/{projectId:guid}/meetings")]
+    [RequireProjectRole(ProjectRole.Viewer)]
     public async Task<ActionResult<IReadOnlyList<MeetingListItemDto>>> List(
         Guid projectId,
         [FromQuery(Name = "include_past")] bool includePast = false,
@@ -35,6 +41,7 @@ public class MeetingsController(ISender mediator) : ControllerBase
     }
 
     [HttpGet("api/v1/meetings/{id:guid}")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Meeting, "id")]
     public async Task<ActionResult<MeetingDetailDto>> Get(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new GetMeetingQuery(id), ct);
@@ -42,6 +49,7 @@ public class MeetingsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/projects/{projectId:guid}/meetings")]
+    [RequireProjectRole(ProjectRole.Contributor)]
     public async Task<ActionResult<MeetingDetailDto>> Create(
         Guid projectId, [FromBody] CreateMeetingBodyDto body, CancellationToken ct)
     {
@@ -67,6 +75,7 @@ public class MeetingsController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("api/v1/meetings/{id:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Meeting, "id")]
     public async Task<ActionResult<MeetingDetailDto>> Update(
         Guid id, [FromBody] UpdateMeetingBodyDto body, CancellationToken ct)
     {
@@ -83,6 +92,7 @@ public class MeetingsController(ISender mediator) : ControllerBase
     }
 
     [HttpDelete("api/v1/meetings/{id:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Meeting, "id")]
     public async Task<IActionResult> Cancel(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new CancelMeetingCommand(id), ct);
@@ -90,6 +100,7 @@ public class MeetingsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/meetings/{id:guid}/rsvp")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Meeting, "id")]
     public async Task<ActionResult<MeetingDetailDto>> Rsvp(
         Guid id, [FromBody] RsvpBodyDto body, CancellationToken ct)
     {
@@ -98,6 +109,9 @@ public class MeetingsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/projects/{projectId:guid}/meetings/agenda-preview")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
+    [RequireProjectRole(ProjectRole.Contributor)]
     public async Task<ActionResult<AIMeetingAgenda>> PreviewAgenda(
         Guid projectId, [FromBody] PreviewAgendaBodyDto body, CancellationToken ct)
     {
@@ -115,6 +129,7 @@ public class MeetingsController(ISender mediator) : ControllerBase
     // F2-20 — issue a LiveKit access token. Attendee-only; the room
     // opens 15 min before the scheduled start.
     [HttpPost("api/v1/meetings/{id:guid}/join")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Meeting, "id")]
     public async Task<ActionResult<MeetingJoinTokenDto>> Join(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new JoinMeetingCommand(id), ct);
@@ -122,6 +137,7 @@ public class MeetingsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/meetings/{id:guid}/guest-links")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Meeting, "id")]
     public async Task<ActionResult<MeetingGuestLinkDto>> CreateGuestLink(
         Guid id, [FromBody] CreateGuestLinkBodyDto body, CancellationToken ct)
     {
@@ -131,6 +147,7 @@ public class MeetingsController(ISender mediator) : ControllerBase
     }
 
     [HttpGet("api/v1/meetings/{id:guid}/guest-links")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Meeting, "id")]
     public async Task<ActionResult<IReadOnlyList<MeetingGuestLinkDto>>> ListGuestLinks(
         Guid id, CancellationToken ct)
     {
@@ -139,6 +156,7 @@ public class MeetingsController(ISender mediator) : ControllerBase
     }
 
     [HttpDelete("api/v1/meetings/guest-links/{id:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.MeetingGuestLink, "id")]
     public async Task<IActionResult> RevokeGuestLink(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new RevokeGuestLinkCommand(id), ct);
@@ -148,6 +166,7 @@ public class MeetingsController(ISender mediator) : ControllerBase
     // Anonymous endpoint — the guest token itself is the credential.
     [AllowAnonymous]
     [HttpPost("api/v1/meetings/guest/{token}/join")]
+    [EnableRateLimiting(RateLimitPolicies.PublicLink)]
     public async Task<ActionResult<MeetingJoinTokenDto>> JoinAsGuest(
         string token, [FromBody] GuestJoinBodyDto body, CancellationToken ct)
     {
@@ -158,6 +177,7 @@ public class MeetingsController(ISender mediator) : ControllerBase
     // F2-21 transcript — POST appends a finalised segment, GET returns
     // the accumulated history, /download renders .txt or .vtt.
     [HttpPost("api/v1/meetings/{id:guid}/transcript/segments")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Meeting, "id")]
     public async Task<ActionResult<TranscriptSegmentDto>> PostTranscriptSegment(
         Guid id, [FromBody] PostTranscriptSegmentBodyDto body, CancellationToken ct)
     {
@@ -170,6 +190,7 @@ public class MeetingsController(ISender mediator) : ControllerBase
     }
 
     [HttpGet("api/v1/meetings/{id:guid}/transcript")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Meeting, "id")]
     public async Task<ActionResult<MeetingTranscriptDto>> GetTranscript(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new GetMeetingTranscriptQuery(id), ct);
@@ -177,6 +198,7 @@ public class MeetingsController(ISender mediator) : ControllerBase
     }
 
     [HttpGet("api/v1/meetings/{id:guid}/transcript/download")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Meeting, "id")]
     public async Task<IActionResult> DownloadTranscript(
         Guid id,
         [FromQuery] string format = "txt",
@@ -191,6 +213,7 @@ public class MeetingsController(ISender mediator) : ControllerBase
 
     // F2-22 post-meeting AI processing.
     [HttpPost("api/v1/meetings/{id:guid}/finalise")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Meeting, "id")]
     public async Task<ActionResult<MeetingSummaryDto>> Finalise(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new FinaliseMeetingCommand(id), ct);
@@ -198,6 +221,9 @@ public class MeetingsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/meetings/{id:guid}/process")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Meeting, "id")]
     public async Task<ActionResult<MeetingSummaryDto>> Process(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new ProcessMeetingTranscriptCommand(id), ct);
@@ -205,6 +231,7 @@ public class MeetingsController(ISender mediator) : ControllerBase
     }
 
     [HttpGet("api/v1/meetings/{id:guid}/summary")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Meeting, "id")]
     public async Task<ActionResult<MeetingSummaryDto>> GetSummary(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new GetMeetingSummaryQuery(id), ct);
@@ -212,6 +239,7 @@ public class MeetingsController(ISender mediator) : ControllerBase
     }
 
     [HttpGet("api/v1/meetings/{id:guid}/action-items")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Meeting, "id")]
     public async Task<ActionResult<IReadOnlyList<MeetingActionItemDto>>> ListActionItems(
         Guid id, CancellationToken ct)
     {
@@ -220,6 +248,7 @@ public class MeetingsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/action-items/{id:guid}/accept")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.MeetingActionItem, "id")]
     public async Task<ActionResult<MeetingActionItemDto>> AcceptActionItem(
         Guid id, [FromBody] AcceptActionItemBodyDto body, CancellationToken ct)
     {
@@ -230,6 +259,7 @@ public class MeetingsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/meetings/{id:guid}/action-items/bulk-accept")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Meeting, "id")]
     public async Task<ActionResult<IReadOnlyList<MeetingActionItemDto>>> BulkAcceptActionItems(
         Guid id, [FromBody] BulkAcceptActionItemsBodyDto body, CancellationToken ct)
     {
@@ -239,6 +269,7 @@ public class MeetingsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/action-items/{id:guid}/dismiss")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.MeetingActionItem, "id")]
     public async Task<ActionResult<MeetingActionItemDto>> DismissActionItem(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new DismissActionItemCommand(id), ct);

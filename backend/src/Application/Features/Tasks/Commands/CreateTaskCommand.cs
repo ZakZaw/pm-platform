@@ -94,10 +94,9 @@ public class CreateTaskCommandHandler(IAppDbContext db, ICurrentUser currentUser
             .Select(t => (int?)t.PriorityOrder)
             .MaxAsync(ct) ?? 1;
 
-        var nextKeyNum = 1 + await db.Tasks
-            .Where(t => t.ProjectId == project.Id)
-            .Select(t => (int?)t.KeyNum)
-            .MaxAsync(ct) ?? 1;
+        // M8 - atomic per-project counter; MAX(KeyNum)+1 raced with the
+        // unique (ProjectId, KeyNum) index under concurrent creates.
+        var nextKeyNum = await db.ReserveTaskKeyNumsAsync(project.Id, 1, ct);
 
         var ac = (request.AcceptanceCriteria ?? [])
             .Where(s => !string.IsNullOrWhiteSpace(s))

@@ -1,3 +1,4 @@
+using Api.Configuration;
 using System.Text;
 using Api.Middleware;
 using Application;
@@ -19,6 +20,11 @@ using Microsoft.OpenApi;
 Env.TraversePath().Load();
 
 var builder = WebApplication.CreateBuilder(args);
+
+// M2 — JWT_SECRET / DATABASE_URL (the names .env and the deployment docs
+// use) feed Jwt:SigningKey / ConnectionStrings:DefaultConnection.
+SecretsConfiguration.BridgeEnvironment(
+    builder.Configuration, builder.Environment.IsDevelopment(), Environment.GetEnvironmentVariable);
 
 // .env exposes GEMINI_API_KEY as a flat env var, but our config reads it
 // from AI:GeminiApiKey. Bridge the two here so devs don't have to learn
@@ -70,10 +76,30 @@ if (!string.IsNullOrWhiteSpace(livekitSecret))
     builder.Configuration["Video:ApiSecret"] = livekitSecret;
 }
 
-builder.Services.AddApplication();
+// MediatR + AutoMapper licence (Lucky Penny). Flat env var bridged like the
+// other secrets; absent in dev/test, where the libraries only log a warning.
+var luckyPennyEnv = Environment.GetEnvironmentVariable("LUCKYPENNY_LICENSE_KEY");
+if (!string.IsNullOrWhiteSpace(luckyPennyEnv))
+{
+    builder.Configuration["LuckyPenny:LicenseKey"] = luckyPennyEnv;
+}
+builder.Services.AddApplication(builder.Configuration["LuckyPenny:LicenseKey"]);
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddControllers();
+builder.Services.AddPlatformRateLimiting(builder.Configuration);
+
+// M8 / L10 — every unhandled exception becomes RFC 7807 problem details,
+// without stack traces outside Development.
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<ProblemDetailsExceptionHandler>();
+
+// L2 — HSTS outside Development (one year, include subdomains).
+builder.Services.AddHsts(options =>
+{
+    options.MaxAge = TimeSpan.FromDays(365);
+    options.IncludeSubDomains = true;
+});
 builder.Services.AddHealthChecks();
 builder.Services.AddSignalR();
 
@@ -111,7 +137,10 @@ builder.Services.AddSwaggerGen(opt =>
 
 var jwtIssuer = builder.Configuration["Jwt:Issuer"]!;
 var jwtAudience = builder.Configuration["Jwt:Audience"]!;
-var jwtKey = builder.Configuration["Jwt:SigningKey"]!;
+// M2 — refuse to boot outside Development with a missing, short or
+// publicly committed signing key.
+var jwtKey = SecretsConfiguration.ValidateSigningKey(
+    builder.Configuration["Jwt:SigningKey"], builder.Environment.IsDevelopment());
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -162,27 +191,73 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
-// F2-24 — Swagger UI (/swagger) + spec (/swagger/v1/swagger.json).
-app.UseSwagger();
-app.UseSwaggerUI(c =>
+app.UseExceptionHandler();
+
+if (!app.Environment.IsDevelopment())
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "PM Platform API v1");
-    c.DocumentTitle = "PM Platform API";
-});
+    // L2 — HTTPS only. Behind a TLS-terminating proxy, also set
+    // ASPNETCORE_FORWARDEDHEADERS_ENABLED=true so the original scheme
+    // (and client IP, for rate limiting) is honoured.
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
+
+// L2 — nosniff, frame denial, referrer policy and a strict CSP.
+app.UseMiddleware<SecurityHeadersMiddleware>();
+
+// F2-24 / L1 — Swagger UI (/swagger) + spec (/swagger/v1/swagger.json),
+// Development only: production doesn't advertise its API surface.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "PM Platform API v1");
+        c.DocumentTitle = "PM Platform API";
+    });
+}
 
 var uploadsRoot = Path.Combine(app.Environment.ContentRootPath, "wwwroot", "uploads");
 Directory.CreateDirectory(uploadsRoot);
+
+// H3 - task attachments are private (served only by the authorized
+// download endpoint). Attachments uploaded before that change still live
+// under wwwroot/uploads/tasks, so refuse to serve that folder statically.
+app.Use(async (ctx, next) =>
+{
+    if (ctx.Request.Path.StartsWithSegments("/uploads/tasks", StringComparison.OrdinalIgnoreCase))
+    {
+        ctx.Response.StatusCode = StatusCodes.Status404NotFound;
+        return;
+    }
+    await next();
+});
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(uploadsRoot),
-    RequestPath = "/uploads"
+    // The path check above is the fast path; the provider also refuses
+    // anything that resolves into uploads/tasks however the URL spells it
+    // (e.g. "/uploads//tasks/...").
+    FileProvider = new ExcludingFileProvider(
+        new PhysicalFileProvider(uploadsRoot), Path.Combine(uploadsRoot, "tasks")),
+    RequestPath = "/uploads",
+    // Public assets are avatars/logos only; never let a browser sniff them
+    // into something executable.
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+        ctx.Context.Response.Headers["Content-Security-Policy"] = "default-src 'none'; sandbox";
+    },
 });
 
-// F2-24 — per-key rate limiting with X-RateLimit-* headers, before auth
-// so it also shields unauthenticated endpoints.
-app.UseMiddleware<ApiRateLimitMiddleware>();
-
 app.UseAuthentication();
+
+// F2-24 / H4 — global per-identity budget with X-RateLimit-* headers.
+// Runs after authentication so only a *verified* API key or user gets its
+// own bucket (anonymous traffic is counted per IP), then the stricter
+// per-route policies ([EnableRateLimiting]) for auth, public links and AI.
+app.UseMiddleware<ApiRateLimitMiddleware>();
+app.UseRateLimiter();
+
 app.UseAuthorization();
 
 app.MapHealthChecks("/health");

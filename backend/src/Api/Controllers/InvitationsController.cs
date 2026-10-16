@@ -1,3 +1,5 @@
+using Api.Middleware;
+using Microsoft.AspNetCore.RateLimiting;
 using Api.Authorization;
 using Application.Common;
 using Application.Features.Invitations;
@@ -29,6 +31,7 @@ public class InvitationsController(ISender mediator) : ControllerBase
     }
 
     [HttpGet("api/v1/invitations/{token}")]
+    [EnableRateLimiting(RateLimitPolicies.PublicLink)]
     [AllowAnonymous]
     public async Task<ActionResult<InvitationPreviewDto>> Preview(string token, CancellationToken ct)
     {
@@ -37,6 +40,8 @@ public class InvitationsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/invitations/{token}/accept")]
+    [DenyApiKey]
+    [EnableRateLimiting(RateLimitPolicies.PublicLink)]
     [Authorize]
     public async Task<ActionResult<AcceptInvitationResultDto>> Accept(string token, CancellationToken ct)
     {

@@ -83,10 +83,9 @@ public class ApplyEpicGenerationCommandHandler(IAppDbContext db, ICurrentUser cu
         };
         db.Epics.Add(epic);
 
-        var nextKeyNum = 1 + await db.Tasks
-            .Where(t => t.ProjectId == project.Id)
-            .Select(t => (int?)t.KeyNum)
-            .MaxAsync(ct) ?? 1;
+        // M8 - reserve the whole block atomically.
+        var nextKeyNum = await db.ReserveTaskKeyNumsAsync(
+            project.Id, Math.Max(1, request.Epic.Tasks?.Count ?? 0), ct);
 
         var nextOrder = 1 + await db.Tasks
             .Where(t => t.ProjectId == project.Id)

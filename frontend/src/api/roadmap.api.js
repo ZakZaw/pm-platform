@@ -59,11 +59,13 @@ export const roadmapApi = {
 // Public share read uses no auth — call axios directly so the auth
 // interceptor doesn't hijack the URL or attach a bearer token.
 import axios from 'axios';
+//
+// The password is POSTed in the body, never put in the query string,
+// where it would leak into server/proxy logs and browser history.
 export const publicShareApi = {
-  getRoadmap: (token, password) =>
-    axios
-      .get(`/api/v1/share/roadmap/${encodeURIComponent(token)}`, {
-        params: password ? { password } : undefined,
-      })
-      .then((r) => r.data),
+  getRoadmap: (token, password) => {
+    const url = `/api/v1/share/roadmap/${encodeURIComponent(token)}`;
+    const request = password ? axios.post(url, { password }) : axios.get(url);
+    return request.then((r) => r.data);
+  },
 };

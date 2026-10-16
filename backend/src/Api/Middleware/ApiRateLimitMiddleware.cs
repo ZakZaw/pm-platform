@@ -1,15 +1,20 @@
 using System.Collections.Concurrent;
-using Application.Features.ApiKeys;
 using Infrastructure.Auth;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Api.Middleware;
 
 /// <summary>
-/// F2-24 — fixed-window rate limiting for the public API, partitioned by
-/// API key when present (else by client IP), and emitting the
+/// F2-24 - fixed-window rate limiting for the public API, emitting the
 /// <c>X-RateLimit-*</c> headers the AC asks for. In-memory and
-/// per-instance — fine for a single-node dev/demo deployment; a
-/// multi-node deploy would back this with a shared store.
+/// per-instance - fine for a single-node deployment; a multi-node deploy
+/// would back this with a shared store.
+///
+/// H4: runs after authentication and partitions by the *verified*
+/// identity (<see cref="RateLimitPartition"/>), so a made-up X-Api-Key no
+/// longer gets its own bucket. The counter table is swept of expired
+/// windows so memory stays bounded. Stricter per-route policies (auth,
+/// public links, AI) are layered on top with ASP.NET rate limiting.
 ///
 /// Limits are configurable via the <c>RateLimit</c> config section
 /// (PermitLimit, WindowSeconds). Only <c>/api/</c> traffic is limited so
@@ -17,6 +22,8 @@ namespace Api.Middleware;
 /// </summary>
 public class ApiRateLimitMiddleware
 {
+    private const int SweepThreshold = 10_000;
+
     private readonly RequestDelegate _next;
     private readonly int _limit;
     private readonly int _windowSeconds;
@@ -28,6 +35,7 @@ public class ApiRateLimitMiddleware
     }
 
     private static readonly ConcurrentDictionary<string, Counter> Counters = new();
+    private static long _lastSweptWindow;
 
     public ApiRateLimitMiddleware(RequestDelegate next, IConfiguration config)
     {
@@ -44,10 +52,22 @@ public class ApiRateLimitMiddleware
             return;
         }
 
-        var partition = ResolvePartition(context);
+        var user = context.User;
+        if (user.Identity?.IsAuthenticated != true
+            && context.Request.Headers.ContainsKey(ApiKeyAuthenticationHandler.HeaderName))
+        {
+            // The API-key scheme isn't the default, so authenticate it here.
+            // The handler caches its result for the rest of the request.
+            var keyAuth = await context.AuthenticateAsync(ApiKeyAuthenticationHandler.SchemeName);
+            if (keyAuth.Succeeded) user = keyAuth.Principal!;
+        }
+
+        var partition = RateLimitPartition.Resolve(user, context.Connection.RemoteIpAddress);
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var windowStart = now - (now % _windowSeconds);
         var resetAt = windowStart + _windowSeconds;
+
+        SweepExpired(windowStart);
 
         var counter = Counters.GetOrAdd(partition, _ => new Counter { WindowStart = windowStart });
         int count;
@@ -83,15 +103,21 @@ public class ApiRateLimitMiddleware
         await _next(context);
     }
 
-    private static string ResolvePartition(HttpContext context)
+    /// <summary>
+    /// Drops counters from earlier windows once the table grows large, at
+    /// most once per window, so random partitions can't grow it forever.
+    /// </summary>
+    private static void SweepExpired(long currentWindow)
     {
-        // Prefer the API key (hashed so we don't key the dictionary on a
-        // secret); otherwise fall back to the client IP.
-        if (context.Request.Headers.TryGetValue(ApiKeyAuthenticationHandler.HeaderName, out var key)
-            && !string.IsNullOrWhiteSpace(key))
+        if (Counters.Count < SweepThreshold) return;
+        var last = Interlocked.Read(ref _lastSweptWindow);
+        if (last == currentWindow || Interlocked.CompareExchange(ref _lastSweptWindow, currentWindow, last) != last)
+            return;
+
+        foreach (var (key, counter) in Counters)
         {
-            return "key:" + ApiKeyGenerator.Hash(key.ToString().Trim());
+            if (Volatile.Read(ref counter.WindowStart) < currentWindow)
+                Counters.TryRemove(key, out _);
         }
-        return "ip:" + (context.Connection.RemoteIpAddress?.ToString() ?? "unknown");
     }
 }

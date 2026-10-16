@@ -58,12 +58,7 @@ public class RegisterCommandHandler(
 
         var accessToken = jwt.GenerateAccessToken(user);
         var (plainRefresh, refreshHash, refreshExpiresAt) = jwt.GenerateRefreshToken();
-        db.RefreshTokens.Add(new RefreshToken
-        {
-            UserId = user.Id,
-            TokenHash = refreshHash,
-            ExpiresAt = refreshExpiresAt
-        });
+        db.RefreshTokens.Add(RefreshToken.StartFamily(user.Id, refreshHash, refreshExpiresAt));
 
         await db.SaveChangesAsync(ct);
 

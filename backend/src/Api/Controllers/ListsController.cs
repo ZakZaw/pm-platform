@@ -1,3 +1,4 @@
+using Application.Authorization;
 using Api.Authorization;
 using Application.Common;
 using Application.Features.Lists;
@@ -34,6 +35,7 @@ public class ListsController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("api/v1/lists/{listId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.TaskList, "listId")]
     public async Task<ActionResult<TaskListDto>> Update(
         Guid listId, [FromBody] UpdateListBodyDto body, CancellationToken ct)
     {
@@ -42,6 +44,7 @@ public class ListsController(ISender mediator) : ControllerBase
     }
 
     [HttpDelete("api/v1/lists/{listId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.TaskList, "listId")]
     public async Task<IActionResult> Delete(Guid listId, CancellationToken ct)
     {
         var result = await mediator.Send(new DeleteTaskListCommand(listId), ct);
@@ -59,6 +62,7 @@ public class ListsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/tasks/{taskId:guid}/move-to-list")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "taskId")]
     public async Task<IActionResult> MoveTask(
         Guid taskId, [FromBody] MoveToListBodyDto body, CancellationToken ct)
     {

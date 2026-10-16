@@ -1,4 +1,4 @@
-﻿using Application.Authorization;
+using Application.Authorization;
 using Application.Common;
 using Domain.Enums;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -71,6 +71,7 @@ public class RequireProjectRoleAttribute : Attribute, IAsyncActionFilter
             return;
         }
 
+        ctx.HttpContext.Items[AccessFilterHelpers.ProjectIdItem] = projectId.Value;
         await next();
     }
 }

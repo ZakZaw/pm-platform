@@ -1,3 +1,6 @@
+using Api.Authorization;
+using Api.Middleware;
+using Microsoft.AspNetCore.RateLimiting;
 using Application.Common;
 using Application.Features.Auth;
 using Application.Features.Auth.Commands;
@@ -8,6 +11,7 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/v1/auth")]
+[EnableRateLimiting(RateLimitPolicies.Auth)]
 public class AuthController(ISender mediator) : ControllerBase
 {
     [HttpPost("register")]
@@ -38,6 +42,7 @@ public class AuthController(ISender mediator) : ControllerBase
             "Auth.EmailAlreadyRegistered" => StatusCodes.Status409Conflict,
             "Auth.InvalidCredentials" => StatusCodes.Status401Unauthorized,
             "Auth.InvalidRefreshToken" => StatusCodes.Status401Unauthorized,
+            "Auth.AccountLocked" => StatusCodes.Status429TooManyRequests,
             _ => StatusCodes.Status400BadRequest
         };
         return Problem(title: error.Code, detail: error.Message, statusCode: status);

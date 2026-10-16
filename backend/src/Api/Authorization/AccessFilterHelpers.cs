@@ -1,4 +1,4 @@
-﻿using Application.Authorization;
+using Application.Authorization;
 using Application.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -7,6 +7,10 @@ namespace Api.Authorization;
 
 internal static class AccessFilterHelpers
 {
+    /// <summary>HttpContext.Items keys set by the role filters once access is granted.</summary>
+    public const string ProjectIdItem = "access.projectId";
+    public const string OrgIdItem = "access.orgId";
+
     public static IAccessControl Access(ActionExecutingContext ctx) =>
         ctx.HttpContext.RequestServices.GetRequiredService<IAccessControl>();
 

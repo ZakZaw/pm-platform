@@ -1,3 +1,5 @@
+using Api.Middleware;
+using Microsoft.AspNetCore.RateLimiting;
 using Application.Authorization;
 using Api.Authorization;
 using Application.Common;
@@ -96,6 +98,8 @@ public class SprintsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/sprints/{id:guid}/retro/generate")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
     [RequireProjectRole(ProjectRole.TeamLead, ProjectScope.Sprint, "id")]
     public async Task<ActionResult<SprintRetrospectiveDto>> GenerateRetro(Guid id, CancellationToken ct)
     {

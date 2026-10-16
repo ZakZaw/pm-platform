@@ -49,6 +49,9 @@ public static class AuthErrors
 
     public static readonly Error NotAuthenticated =
         new("Auth.NotAuthenticated", "You must be signed in to perform this action.");
+
+    public static readonly Error AccountLocked =
+        new("Auth.AccountLocked", "Too many failed sign-in attempts. Try again in 15 minutes.");
 }
 
 public static class OrgErrors

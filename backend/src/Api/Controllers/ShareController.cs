@@ -1,3 +1,6 @@
+using Api.Authorization;
+using Api.Middleware;
+using Microsoft.AspNetCore.RateLimiting;
 using Application.Common;
 using Application.Features.Roadmap.Queries;
 using MediatR;
@@ -17,6 +20,7 @@ namespace Api.Controllers;
 public class ShareController(ISender mediator) : ControllerBase
 {
     [HttpGet("api/v1/share/roadmap/{token}")]
+    [EnableRateLimiting(RateLimitPolicies.PublicLink)]
     public async Task<ActionResult<PublicRoadmapDto>> GetRoadmap(
         string token,
         [FromQuery] string? password = null,

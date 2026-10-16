@@ -29,6 +29,7 @@ public class ApiKeyAuthenticationHandler(
     public const string OrgIdClaim = "org_id";
     public const string AuthMethodClaim = "auth_method";
     public const string AuthMethodApiKey = "api_key";
+    public const string ApiKeyIdClaim = "api_key_id";
 
     /// <summary>
     /// The org an API-key principal is confined to, or null for a normal
@@ -89,6 +90,7 @@ public class ApiKeyAuthenticationHandler(
             new Claim(ClaimTypes.NameIdentifier, key.CreatedByUserId.ToString()),
             new Claim(OrgIdClaim, key.OrganizationId.ToString()),
             new Claim(AuthMethodClaim, AuthMethodApiKey),
+            new Claim(ApiKeyIdClaim, key.Id.ToString()),
         };
         var identity = new ClaimsIdentity(claims, SchemeName);
         var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), SchemeName);

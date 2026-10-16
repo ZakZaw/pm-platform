@@ -21,16 +21,27 @@ public class LoginCommandValidator : AbstractValidator<LoginCommand>
 public class LoginCommandHandler(
     IAppDbContext db,
     IPasswordHasher hasher,
-    IJwtService jwt)
+    IJwtService jwt,
+    ILoginAttemptStore attempts)
     : IRequestHandler<LoginCommand, Result<AuthResponse>>
 {
     public async Task<Result<AuthResponse>> Handle(LoginCommand request, CancellationToken ct)
     {
         var normalized = request.Email.Trim().ToLowerInvariant();
+        var now = DateTime.UtcNow;
+
+        // H4 - per-account lockout after repeated failures. Checked before
+        // the password so a locked account can't be used as an oracle.
+        if (LoginLockoutPolicy.IsLocked(attempts.Get(normalized), now))
+            return Result.Failure<AuthResponse>(AuthErrors.AccountLocked);
 
         var user = await db.Users.FirstOrDefaultAsync(u => u.Email == normalized, ct);
         if (user is null || !hasher.Verify(user.PasswordHash, request.Password))
+        {
+            attempts.Set(normalized, LoginLockoutPolicy.RecordFailure(attempts.Get(normalized), now));
             return Result.Failure<AuthResponse>(AuthErrors.InvalidCredentials);
+        }
+        attempts.Clear(normalized);
 
         var accessToken = jwt.GenerateAccessToken(user);
         var (plainRefresh, refreshHash, refreshExpiresAt) = jwt.GenerateRefreshToken();

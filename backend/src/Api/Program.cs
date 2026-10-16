@@ -74,6 +74,7 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddControllers();
+builder.Services.AddPlatformRateLimiting(builder.Configuration);
 builder.Services.AddHealthChecks();
 builder.Services.AddSignalR();
 
@@ -198,11 +199,15 @@ app.UseStaticFiles(new StaticFileOptions
     },
 });
 
-// F2-24 — per-key rate limiting with X-RateLimit-* headers, before auth
-// so it also shields unauthenticated endpoints.
-app.UseMiddleware<ApiRateLimitMiddleware>();
-
 app.UseAuthentication();
+
+// F2-24 / H4 — global per-identity budget with X-RateLimit-* headers.
+// Runs after authentication so only a *verified* API key or user gets its
+// own bucket (anonymous traffic is counted per IP), then the stricter
+// per-route policies ([EnableRateLimiting]) for auth, public links and AI.
+app.UseMiddleware<ApiRateLimitMiddleware>();
+app.UseRateLimiter();
+
 app.UseAuthorization();
 
 app.MapHealthChecks("/health");

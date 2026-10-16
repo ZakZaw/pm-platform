@@ -1,3 +1,5 @@
+using Api.Middleware;
+using Microsoft.AspNetCore.RateLimiting;
 using Application.Authorization;
 using Api.Authorization;
 using Application.Common;
@@ -19,6 +21,8 @@ namespace Api.Controllers;
 public class AIController(ISender mediator) : ControllerBase
 {
     [HttpPost("api/v1/ai/clarify")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
     public async Task<ActionResult<ClarifyResponseDto>> Clarify(
         [FromBody] ClarifyBodyDto body, CancellationToken ct)
     {
@@ -30,6 +34,8 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/orgs/{slug}/ai/generate-project")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
     [RequireOrgRole(OrgRole.Member)]
     public async Task<ActionResult<AIGenerationPreviewDto>> GenerateProject(
         string slug,
@@ -75,6 +81,8 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/tasks/{taskId:guid}/estimate")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
     [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<TaskEstimateDto>> Estimate(
         Guid taskId, CancellationToken ct)
@@ -84,6 +92,8 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/tasks/{taskId:guid}/ai/breakdown")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
     [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<TaskBreakdownDto>> BreakdownTask(
         Guid taskId, CancellationToken ct)
@@ -93,6 +103,8 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/projects/{projectId:guid}/ai/generate-epic")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
     [RequireProjectRole(ProjectRole.TeamLead)]
     public async Task<ActionResult<AIGeneratedEpicDto>> GenerateEpic(
         Guid projectId, [FromBody] GenerateEpicBodyDto body, CancellationToken ct)
@@ -119,6 +131,8 @@ public class AIController(ISender mediator) : ControllerBase
     // (which sprints overflow, which milestones shift) so the user
     // sees the cost of accepting before they pick a destination.
     [HttpPost("api/v1/projects/{projectId:guid}/ai/breakdown")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
     [RequireProjectRole(ProjectRole.TeamLead)]
     public async Task<ActionResult<AIEpicBreakdownPreviewDto>> Breakdown(
         Guid projectId, [FromBody] GenerateEpicBodyDto body, CancellationToken ct)
@@ -129,6 +143,8 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/projects/{projectId:guid}/ai/generate-tasks")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
     [RequireProjectRole(ProjectRole.Contributor)]
     public async Task<ActionResult<AIGeneratedTaskListDto>> GenerateTasks(
         Guid projectId, [FromBody] GenerateTasksBodyDto body, CancellationToken ct)
@@ -149,6 +165,8 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/sprints/{sprintId:guid}/ai-fill")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
     [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Sprint, "sprintId")]
     public async Task<ActionResult<SprintFillPlanDto>> AiFillSprint(
         Guid sprintId,
@@ -181,6 +199,8 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/projects/{projectId:guid}/ai/suggestions/sprint-health")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
     [RequireProjectRole(ProjectRole.Contributor)]
     public async Task<ActionResult<AISuggestionDto>> GenerateSprintHealth(
         Guid projectId, CancellationToken ct)
@@ -196,6 +216,8 @@ public class AIController(ISender mediator) : ControllerBase
     // endpoints (Auth-only on the route, handler validates via the AI
     // gate + sprint state).
     [HttpPost("api/v1/sprints/{sprintId:guid}/ai/replan")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
     [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Sprint, "sprintId")]
     public async Task<ActionResult<AISuggestionDto>> GenerateVelocityReplan(
         Guid sprintId, CancellationToken ct)

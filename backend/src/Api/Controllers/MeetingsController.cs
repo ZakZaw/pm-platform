@@ -1,3 +1,5 @@
+using Api.Middleware;
+using Microsoft.AspNetCore.RateLimiting;
 using Domain.Enums;
 using Application.Authorization;
 using Api.Authorization;
@@ -107,6 +109,8 @@ public class MeetingsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/projects/{projectId:guid}/meetings/agenda-preview")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
     [RequireProjectRole(ProjectRole.Contributor)]
     public async Task<ActionResult<AIMeetingAgenda>> PreviewAgenda(
         Guid projectId, [FromBody] PreviewAgendaBodyDto body, CancellationToken ct)
@@ -162,6 +166,7 @@ public class MeetingsController(ISender mediator) : ControllerBase
     // Anonymous endpoint — the guest token itself is the credential.
     [AllowAnonymous]
     [HttpPost("api/v1/meetings/guest/{token}/join")]
+    [EnableRateLimiting(RateLimitPolicies.PublicLink)]
     public async Task<ActionResult<MeetingJoinTokenDto>> JoinAsGuest(
         string token, [FromBody] GuestJoinBodyDto body, CancellationToken ct)
     {
@@ -216,6 +221,8 @@ public class MeetingsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/meetings/{id:guid}/process")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
     [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Meeting, "id")]
     public async Task<ActionResult<MeetingSummaryDto>> Process(Guid id, CancellationToken ct)
     {

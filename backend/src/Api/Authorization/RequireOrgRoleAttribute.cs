@@ -1,4 +1,4 @@
-﻿using Application.Authorization;
+using Application.Authorization;
 using Application.Common;
 using Domain.Enums;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -66,6 +66,7 @@ public class RequireOrgRoleAttribute : Attribute, IAsyncActionFilter
             return;
         }
 
+        ctx.HttpContext.Items[AccessFilterHelpers.OrgIdItem] = orgId.Value;
         await next();
     }
 }

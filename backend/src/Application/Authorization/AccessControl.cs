@@ -23,6 +23,13 @@ public interface IAccessControl
 
     Task<Result> CheckOrgAsync(AccessPrincipal principal, Guid orgId, OrgRole minimum, CancellationToken ct);
 
+    /// <summary>
+    /// Read access to a chat channel: active org membership plus the
+    /// channel's own membership rule (OrgWide = every org member,
+    /// otherwise an explicit ChannelMember row).
+    /// </summary>
+    Task<Result> CheckChannelAsync(AccessPrincipal principal, Guid channelId, CancellationToken ct);
+
     /// <summary>The current HTTP caller, or null when unauthenticated.</summary>
     AccessPrincipal? CurrentPrincipal();
 }
@@ -153,6 +160,20 @@ public class AccessControl(IAppDbContext db, ICurrentUser currentUser) : IAccess
         return AccessPolicy.EvaluateProject(
             new ProjectAccessFacts(project.IsPersonal, project.OwnerUserId, project.OrganizationId, activeOrgMember, role),
             principal, minimum);
+    }
+
+    public async Task<Result> CheckChannelAsync(AccessPrincipal principal, Guid channelId, CancellationToken ct)
+    {
+        var orgId = await ResolveOrgIdAsync(OrgScope.Channel, channelId.ToString(), ct);
+        if (orgId is null)
+            return Result.Failure(ChannelErrors.NotFound);
+
+        var org = await CheckOrgAsync(principal, orgId.Value, OrgRole.Guest, ct);
+        if (!org.IsSuccess)
+            return org;
+
+        var gate = await Features.Messages.ChannelAccessGate.ResolveAsync(db, channelId, principal.UserId, ct);
+        return gate.IsSuccess ? Result.Success() : Result.Failure(gate.Error!);
     }
 
     public async Task<Result> CheckOrgAsync(

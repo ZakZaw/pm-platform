@@ -89,7 +89,7 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
   const [comments, setComments] = useState([]);
 
   // Editable buffers — reset whenever the underlying task changes server-side
-  // by remounting via parent key, or by useEffect resyncing from prop.
+  // (resynced from props during render, see below).
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(task.title);
   const [editingDesc, setEditingDesc] = useState(false);
@@ -105,13 +105,19 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
   const [pokerOpen, setPokerOpen] = useState(false);
   const [labels, setLabels] = useState(task.labels ?? []);
 
-  useEffect(() => {
+  // Resync the buffers when the task's server-side fields change. Done during
+  // render (React's "adjust state when a prop changes" pattern) instead of in
+  // an effect, so there is no extra render with stale drafts.
+  const syncSource = [task.id, task.title, task.description, task.storyPoints, task.prUrl, task.labels];
+  const [syncedFrom, setSyncedFrom] = useState(syncSource);
+  if (syncSource.some((v, i) => !Object.is(v, syncedFrom[i]))) {
+    setSyncedFrom(syncSource);
     setTitleDraft(task.title);
     setDescDraft(task.description ?? '');
     setPointsDraft(task.storyPoints == null ? '' : String(task.storyPoints));
     setPrUrlDraft(task.prUrl ?? '');
     setLabels(task.labels ?? []);
-  }, [task.id, task.title, task.description, task.storyPoints, task.prUrl, task.labels]);
+  }
 
   // Fetch the project's epics so we can render the color swatch beside the
   // task and resolve a name for the inline display. EpicPicker has its own
@@ -377,7 +383,6 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
       try {
         const created = [];
         for (const ac of p.acceptanceCriteria) {
-          // eslint-disable-next-line no-await-in-loop
           const sub = await subtasksApi.create(task.id, { title: ac });
           created.push(sub);
         }
@@ -891,5 +896,3 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
     </>
   );
 }
-
-export const __test__ = { shortKey };

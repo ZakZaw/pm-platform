@@ -29,15 +29,16 @@ export function PlanningPokerModal({ open, task, projectId, onClose, onClosedWit
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
 
+  const taskId = task?.id;
   const refetch = useCallback(async () => {
-    if (!task?.id) return;
+    if (!taskId) return;
     try {
-      const next = await pokerApi.getActive(task.id);
+      const next = await pokerApi.getActive(taskId);
       setSession(next ?? null);
     } catch {
       /* silent — UI shows last known state */
     }
-  }, [task?.id]);
+  }, [taskId]);
 
   // Live updates while the modal is open. Refetch on any poker event for the
   // task — server broadcasts to the project group, so we filter client-side
@@ -50,10 +51,18 @@ export function PlanningPokerModal({ open, task, projectId, onClose, onClosedWit
     'poker.closed': (p) => { if (!sessionId || p?.sessionId === sessionId) refetch(); },
   });
 
+  // Enter the loading state during render when the modal opens for a task;
+  // the effect below only performs the fetch.
+  const loadKey = open && taskId ? taskId : null;
+  const [prevLoadKey, setPrevLoadKey] = useState(null);
+  if (loadKey !== prevLoadKey) {
+    setPrevLoadKey(loadKey);
+    if (loadKey) setLoading(true);
+  }
+
   useEffect(() => {
-    if (!open || !task?.id) return;
-    setLoading(true);
-    pokerApi.getActive(task.id)
+    if (!open || !taskId) return;
+    pokerApi.getActive(taskId)
       .then((s) => setSession(s ?? null))
       .catch((err) =>
         toast.show({
@@ -61,7 +70,7 @@ export function PlanningPokerModal({ open, task, projectId, onClose, onClosedWit
           message: err.response?.data?.detail ?? 'Could not load session.',
         }))
       .finally(() => setLoading(false));
-  }, [open, task?.id, toast]);
+  }, [open, taskId, toast]);
 
   const myVote = useMemo(
     () => session?.votes?.find((v) => v.userId === me?.id) ?? null,

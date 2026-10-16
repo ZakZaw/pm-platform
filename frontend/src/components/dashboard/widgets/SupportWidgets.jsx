@@ -1,4 +1,5 @@
-import { DashboardWidget, MetricRow, ProgressBar, StackedBar, WidgetRows, SEGMENT_TOKENS } from '../DashboardWidget';
+import { DashboardWidget, MetricRow, ProgressBar, StackedBar, WidgetRows } from '../DashboardWidget';
+import { SEGMENT_TOKENS } from '../segmentTokens';
 
 // polish D: Support widgets read the server-computed `/analytics/support`
 // aggregate (passed down by TypedDashboard). SLA attainment — the share of

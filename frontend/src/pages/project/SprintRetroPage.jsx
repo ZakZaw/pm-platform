@@ -41,16 +41,16 @@ export function SprintRetroPage() {
   const [drafts, setDrafts] = useState({
     summary: '', whatWentWell: '', whatDidnt: '', suggestions: '',
   });
-  useEffect(() => {
-    if (retro) {
-      setDrafts({
-        summary: retro.summary ?? '',
-        whatWentWell: retro.whatWentWell ?? '',
-        whatDidnt: retro.whatDidnt ?? '',
-        suggestions: retro.suggestions ?? '',
-      });
-    }
-  }, [retro?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [draftsFor, setDraftsFor] = useState(undefined);
+  if (retro && retro.id !== draftsFor) {
+    setDraftsFor(retro.id);
+    setDrafts({
+      summary: retro.summary ?? '',
+      whatWentWell: retro.whatWentWell ?? '',
+      whatDidnt: retro.whatDidnt ?? '',
+      suggestions: retro.suggestions ?? '',
+    });
+  }
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -81,6 +81,7 @@ export function SprintRetroPage() {
     }
   }, [orgSlug, projectSlug, sprintId]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch on mount/route change; load() flips the loading flag
   useEffect(() => { load(); }, [load]);
 
   async function generate() {

@@ -46,6 +46,7 @@ export function CustomFieldsSection({ taskId, projectId }) {
     }
   }, [taskId, projectId]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch per task; load() flips the loading flag
   useEffect(() => { load(); }, [load]);
 
   // Debounced save. We send only the changed field per write to keep the
@@ -147,7 +148,12 @@ function FieldInput({ def, value, onChange }) {
 
 function TextInput({ value, onCommit }) {
   const [local, setLocal] = useState(value);
-  useEffect(() => { setLocal(value); }, [value]);
+  // Adopt a new server value during render (no effect round-trip).
+  const [prevValue, setPrevValue] = useState(value);
+  if (value !== prevValue) {
+    setPrevValue(value);
+    setLocal(value);
+  }
   return (
     <input
       type="text"
@@ -165,7 +171,12 @@ function TextInput({ value, onCommit }) {
 
 function NumberInput({ value, onCommit }) {
   const [local, setLocal] = useState(value == null ? '' : String(value));
-  useEffect(() => { setLocal(value == null ? '' : String(value)); }, [value]);
+  // Adopt a new server value during render (no effect round-trip).
+  const [prevValue, setPrevValue] = useState(value);
+  if (value !== prevValue) {
+    setPrevValue(value);
+    setLocal(value == null ? '' : String(value));
+  }
   return (
     <input
       type="number"

@@ -1,4 +1,5 @@
-import { DashboardWidget, MetricRow, ProgressBar, StackedBar, WidgetRows, SEGMENT_TOKENS } from '../DashboardWidget';
+import { DashboardWidget, MetricRow, ProgressBar, StackedBar, WidgetRows } from '../DashboardWidget';
+import { SEGMENT_TOKENS } from '../segmentTokens';
 
 // polish D: Sales widgets read the server-computed `/analytics/sales`
 // aggregate (passed down by TypedDashboard) instead of re-deriving pipeline

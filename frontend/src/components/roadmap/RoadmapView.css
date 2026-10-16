@@ -1,4 +1,8 @@
 .roadmap-view {
+  /* Lane-label column width; tracks, the axis, the dependency overlay and
+     the marker rows all offset by this + the column gap. */
+  --roadmap-label-w: 180px;
+  --roadmap-track-offset: calc(var(--roadmap-label-w) + var(--s-6));
   display: flex;
   flex-direction: column;
   gap: var(--s-6);
@@ -9,26 +13,26 @@
   box-shadow: var(--shadow-card);
 }
 
-.roadmap-view--loading,
-.roadmap-view__error {
+.roadmap-view-loading,
+.roadmap-view-error {
   color: var(--text-muted);
   font-size: var(--fs-md);
   padding: var(--s-8);
 }
 
-.roadmap-view__hint {
+.roadmap-view-hint {
   font-size: var(--fs-xs);
   color: var(--text-muted);
   margin: 0;
 }
 
-.roadmap-view__axis {
+.roadmap-view-axis {
   position: relative;
   height: var(--s-8);
-  margin-left: calc(180px + var(--s-6));
+  margin-left: var(--roadmap-track-offset);
 }
 
-.roadmap-view__tick {
+.roadmap-view-tick {
   position: absolute;
   top: 0;
   transform: translateX(-50%);
@@ -38,18 +42,18 @@
   pointer-events: none;
 }
 
-.roadmap-view__today {
+.roadmap-view-today {
   position: absolute;
   top: calc(var(--s-1) * -1);
   transform: translateX(-50%);
   pointer-events: none;
 }
 
-.roadmap-view__lanes-wrap {
+.roadmap-view-lanes-wrap {
   position: relative;
 }
 
-.roadmap-view__lanes {
+.roadmap-view-lanes {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -61,27 +65,27 @@
 }
 
 /* Dependency arrow overlay. The SVG inhabits the same right-column gutter as
-   the tracks (the lane-label column is 160px), so we offset it the same way. */
-.roadmap-view__deps {
+   the tracks (the lane-label column is --roadmap-label-w), so we offset it the same way. */
+.roadmap-view-deps {
   position: absolute;
   top: 0;
-  left: calc(180px + var(--s-6));
+  left: var(--roadmap-track-offset);
   right: 0;
   bottom: 0;
-  width: calc(100% - 180px - var(--s-6));
+  width: calc(100% - var(--roadmap-track-offset));
   height: 100%;
   pointer-events: none;
   z-index: 2;
 }
 
-.roadmap-view__lane {
+.roadmap-view-lane {
   display: grid;
-  grid-template-columns: 180px 1fr;
+  grid-template-columns: var(--roadmap-label-w) 1fr;
   align-items: center;
   gap: var(--s-6);
 }
 
-.roadmap-view__lane-label {
+.roadmap-view-lane-label {
   font-size: var(--fs-md);
   font-weight: var(--fw-medium);
   color: var(--text);
@@ -91,11 +95,11 @@
   min-width: 0;
 }
 
-.roadmap-view__lane-sub {
+.roadmap-view-lane-sub {
   font-size: var(--fs-xs);
 }
 
-.roadmap-view__track {
+.roadmap-view-track {
   position: relative;
   height: var(--s-9);
   background: var(--bg-subtle);
@@ -103,7 +107,7 @@
   overflow: hidden;
 }
 
-.roadmap-view__track-today {
+.roadmap-view-track-today {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -113,7 +117,7 @@
   pointer-events: none;
 }
 
-.roadmap-view__bar {
+.roadmap-view-bar {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -123,11 +127,11 @@
   padding: 0 var(--s-5);
 }
 
-.roadmap-view[data-editable='true'] .roadmap-view__bar {
+.roadmap-view[data-editable='true'] .roadmap-view-bar {
   cursor: grab;
 }
 
-.roadmap-view__handle {
+.roadmap-view-handle {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -139,7 +143,7 @@
   transition: background var(--dur-fast) var(--ease-out);
 }
 
-.roadmap-view__handle::after {
+.roadmap-view-handle::after {
   content: '';
   width: 2px;
   height: 50%;
@@ -149,15 +153,15 @@
   transition: opacity var(--dur-fast) var(--ease-out);
 }
 
-.roadmap-view__handle:hover::after,
-.roadmap-view__bar:hover .roadmap-view__handle::after {
+.roadmap-view-handle:hover::after,
+.roadmap-view-bar:hover .roadmap-view-handle::after {
   opacity: 1;
 }
 
-.roadmap-view__handle--start { left: 0; }
-.roadmap-view__handle--end { right: 0; }
+.roadmap-view-handle-start { left: 0; }
+.roadmap-view-handle-end { right: 0; }
 
-.roadmap-view__bar-label {
+.roadmap-view-bar-label {
   font-size: var(--fs-xs);
   font-weight: var(--fw-medium);
   color: var(--text-on-accent);
@@ -166,34 +170,34 @@
   white-space: nowrap;
 }
 
-.roadmap-view__points-area {
+.roadmap-view-points-area {
   display: flex;
   flex-direction: column;
   gap: var(--s-4);
-  margin-left: calc(180px + var(--s-6));
+  margin-left: var(--roadmap-track-offset);
   margin-top: var(--s-4);
 }
 
-.roadmap-view__points-head {
+.roadmap-view-points-head {
   display: flex;
   align-items: center;
   gap: var(--s-3);
   font-size: var(--fs-sm);
 }
 
-.roadmap-view__points-title {
+.roadmap-view-points-title {
   font-weight: var(--fw-semibold);
   color: var(--text);
 }
 
-.roadmap-view__points-track {
+.roadmap-view-points-track {
   position: relative;
   height: var(--s-6);
   background: var(--bg-subtle);
   border-radius: var(--r-pill);
 }
 
-.roadmap-view__point {
+.roadmap-view-point {
   position: absolute;
   top: 50%;
   width: 8px;
@@ -206,29 +210,29 @@
   cursor: pointer;
 }
 
-.roadmap-view__point:disabled {
+.roadmap-view-point:disabled {
   cursor: default;
 }
 
-.roadmap-view__point--milestone {
+.roadmap-view-point-milestone {
   border-radius: 2px;
   width: 12px;
   height: 12px;
   transform: translate(-50%, -50%) rotate(45deg);
 }
 
-.roadmap-view__point--target {
+.roadmap-view-point-target {
   border-radius: 2px;
   width: 8px;
   height: 14px;
 }
 
-.roadmap-view__point--run {
+.roadmap-view-point-run {
   border-radius: 2px;
   transform: translate(-50%, -50%) rotate(45deg);
 }
 
-.roadmap-view__points-legend {
+.roadmap-view-points-legend {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -239,7 +243,7 @@
   color: var(--text-secondary);
 }
 
-.roadmap-view__points-legend li {
+.roadmap-view-points-legend li {
   display: grid;
   grid-template-columns: 10px 1fr auto;
   align-items: center;
@@ -247,14 +251,14 @@
   min-width: 0;
 }
 
-.roadmap-view__point-swatch {
+.roadmap-view-point-swatch {
   display: inline-block;
   width: 8px;
   height: 8px;
   border-radius: 2px;
 }
 
-.roadmap-view__empty {
+.roadmap-view-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -264,7 +268,7 @@
   color: var(--text-muted);
 }
 
-.roadmap-view__empty-text {
+.roadmap-view-empty-text {
   margin: 0;
   font-size: var(--fs-md);
   max-width: 380px;
@@ -327,21 +331,21 @@
 
 /* Grouped lanes overlay contiguous spans (quarters, sprints) — a hairline in
    the surface colour keeps adjacent segments readable. */
-.roadmap-view__bar.is-segment {
+.roadmap-view-bar.is-segment {
   border-radius: 0;
   box-shadow: inset -1px 0 0 var(--surface);
 }
 
 /* Markers sit above any bar sharing the lane. */
-.roadmap-view__track .roadmap-view__point {
+.roadmap-view-track .roadmap-view-point {
   z-index: 1;
 }
 
-.roadmap-view__point--task {
+.roadmap-view-point-task {
   border-radius: var(--r-pill);
 }
 
-.roadmap-view__point.is-flagged {
+.roadmap-view-point.is-flagged {
   box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--danger-border);
 }
 
@@ -349,5 +353,5 @@
   display: flex;
   flex-direction: column;
   gap: var(--s-4);
-  margin-left: calc(180px + var(--s-6));
+  margin-left: var(--roadmap-track-offset);
 }

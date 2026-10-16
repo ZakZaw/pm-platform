@@ -157,7 +157,7 @@ export function ListsPage() {
   async function handleDragEnd(e) {
     const drag = activeDrag;
     setActiveDrag(null);
-    const { active, over } = e;
+    const { over } = e;
     if (!over || !drag || !project) return;
     const overId = String(over.id);
 
@@ -368,7 +368,12 @@ function ListSection({
   const [draftName, setDraftName] = useState(list.name);
   const { setNodeRef, isOver } = useDroppable({ id: listDropId(list.id) });
 
-  useEffect(() => { if (isEditing) setDraftName(list.name); }, [isEditing, list.name]);
+  // Re-seed the rename buffer during render when editing starts or the name changes.
+  const [draftSeed, setDraftSeed] = useState({ isEditing, name: list.name });
+  if (isEditing !== draftSeed.isEditing || list.name !== draftSeed.name) {
+    setDraftSeed({ isEditing, name: list.name });
+    if (isEditing) setDraftName(list.name);
+  }
 
   // Separate draggable handle for reordering the list itself.
   const { attributes, listeners, setNodeRef: setHandleRef, transform, isDragging } = useDraggable({

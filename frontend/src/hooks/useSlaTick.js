@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useNow } from './useNow';
 
 /**
  * Returns Date.now() that re-renders the caller on a fixed interval,
@@ -7,10 +7,5 @@ import { useEffect, useState } from 'react';
  * triggering re-renders every second.
  */
 export function useSlaTick(intervalMs = 30_000) {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), intervalMs);
-    return () => clearInterval(id);
-  }, [intervalMs]);
-  return now;
+  return useNow(intervalMs);
 }

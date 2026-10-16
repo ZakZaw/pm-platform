@@ -25,7 +25,8 @@ import {
 import { aiApi } from '@/api/ai.api';
 import { useProjectStore } from '@/store/projectStore';
 import { PROJECT_TYPES, DEFAULT_PROJECT_TYPE_ID, findProjectType } from '@/constants/projectTypes';
-import { TypedGenerationPreview, typedDraftTotals } from '@/components/ai/TypedGenerationPreview';
+import { TypedGenerationPreview } from '@/components/ai/TypedGenerationPreview';
+import { typedDraftTotals } from '@/components/ai/typedDraftTotals';
 import './AIGenerationWizard.css';
 
 const TYPE_OPTIONS = PROJECT_TYPES.map((t) => ({ value: t.id, label: t.label }));

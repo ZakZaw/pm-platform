@@ -16,6 +16,8 @@ import { projectsApi } from '@/api/projects.api';
 import { tasksApi } from '@/api/tasks.api';
 import { epicsApi } from '@/api/epics.api';
 import { sprintsApi } from '@/api/sprints.api';
+import { csvEscape, toCsv } from '@/utils/csv';
+import { saveBlob } from '@/utils/download';
 import './ProjectListPage.css';
 
 const PRIORITIES = ['Urgent', 'High', 'Medium', 'Low'];
@@ -191,14 +193,8 @@ export function ProjectListPage() {
     const cols = ALL_COLUMNS.filter((c) => visibleCols.has(c.key));
     const rows = tasks.map((t) => cols.map((c) => csvCell(t, c.key, { epicById, sprintById, memberById })));
     const headers = cols.map((c) => csvEscape(c.label));
-    const body = [headers, ...rows].map((r) => r.join(',')).join('\n');
-    const blob = new Blob([body], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${project?.slug ?? 'tasks'}-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const blob = new Blob([toCsv([headers, ...rows])], { type: 'text/csv;charset=utf-8;' });
+    saveBlob(blob, `${project?.slug ?? 'tasks'}-${new Date().toISOString().slice(0, 10)}.csv`);
   };
 
   if (!project && loading) {
@@ -792,14 +788,6 @@ function csvCell(task, key, { epicById, sprintById, memberById }) {
   }
 }
 
-function csvEscape(v) {
-  if (v == null) return '';
-  const s = String(v);
-  if (s.includes(',') || s.includes('"') || s.includes('\n')) {
-    return `"${s.replace(/"/g, '""')}"`;
-  }
-  return s;
-}
 
 const COLS_KEY = 'pm-platform.list.columns.v1';
 function loadColumnPrefs() {

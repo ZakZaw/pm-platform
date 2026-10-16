@@ -82,16 +82,14 @@ public class AcceptActionItemCommandHandler(
             var priority = ParsePriority(request.Priority) ?? item.SuggestedPriority;
             var due = request.DueDate ?? item.SuggestedDueDate;
 
-            // KeyNum: next per-project serial. Keep the same logic the
-            // create-task command uses so display keys stay monotonic.
-            var nextKeyNum = await db.Tasks
-                .Where(t => t.ProjectId == item.Meeting.ProjectId)
-                .MaxAsync(t => (int?)t.KeyNum, ct) ?? 0;
+            // KeyNum: next per-project serial from the same atomic counter
+            // the create-task command uses (M8).
+            var keyNum = await db.ReserveTaskKeyNumsAsync(item.Meeting.ProjectId, 1, ct);
 
             var task = new TaskEntity
             {
                 ProjectId = item.Meeting.ProjectId,
-                KeyNum = nextKeyNum + 1,
+                KeyNum = keyNum,
                 Title = title,
                 Description = string.IsNullOrWhiteSpace(request.Description)
                     ? item.Description

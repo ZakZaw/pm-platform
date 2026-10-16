@@ -49,12 +49,11 @@ public class AcceptActionItemsBulkCommandHandler(
         if (items.Any(i => i.DismissedAt is not null))
             return Result.Failure<IReadOnlyList<MeetingActionItemDto>>(ActionItemErrors.AlreadyDismissed);
 
-        var startingKeyNum = await db.Tasks
-            .Where(t => t.ProjectId == meeting.ProjectId)
-            .MaxAsync(t => (int?)t.KeyNum, ct) ?? 0;
+        // M8 - reserve the block from the atomic per-project counter.
+        var startingKeyNum = await db.ReserveTaskKeyNumsAsync(meeting.ProjectId, items.Count, ct);
 
         var now = DateTime.UtcNow;
-        var offset = 1;
+        var offset = 0;
         foreach (var item in items)
         {
             var task = new TaskEntity

@@ -134,6 +134,10 @@ public class ApplyProjectGenerationCommandHandler(
             }
         }
 
+        // M8 - keep the per-project key counter in step with the tasks
+        // created here (brand-new project, so no concurrent creates yet).
+        project.LastTaskKeyNum = keyNum;
+
         generationRequest.Status = "Applied";
         generationRequest.AppliedAt = DateTime.UtcNow;
         generationRequest.AppliedProjectId = project.Id;

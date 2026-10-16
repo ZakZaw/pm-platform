@@ -13,6 +13,12 @@ public class Project
     /// for personal projects). Derived from <see cref="Name"/> at create
     /// time and never changes — task IDs reference it permanently.</summary>
     public required string Key { get; set; }
+
+    /// <summary>M8 - highest task <c>KeyNum</c> handed out in this project.
+    /// Incremented atomically in the database
+    /// (<c>IAppDbContext.ReserveTaskKeyNumsAsync</c>) so concurrent creates
+    /// can't collide on the unique (ProjectId, KeyNum) index.</summary>
+    public int LastTaskKeyNum { get; set; }
     public ProjectType Type { get; set; }
     public ProjectStatus Status { get; set; } = ProjectStatus.Active;
     public DateTime? TargetDate { get; set; }

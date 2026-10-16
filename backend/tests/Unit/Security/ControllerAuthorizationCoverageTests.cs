@@ -26,6 +26,8 @@ public class ControllerAuthorizationCoverageTests
         ["AuthController.Register"] = "auth: anonymous sign-up",
         ["AuthController.Login"] = "auth: anonymous sign-in",
         ["AuthController.Refresh"] = "auth: refresh-token rotation, token is the credential",
+        ["AuthController.Logout"] = "auth: revokes the presented refresh-token family; token is the credential",
+        ["AuthController.LogoutAll"] = "auth: revokes every session of the signed-in caller",
 
         // Public / token-gated links.
         ["ShareController.GetRoadmap"] = "public share link: token (+ optional password) is the credential",

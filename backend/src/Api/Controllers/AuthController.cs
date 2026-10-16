@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Api.Authorization;
 using Api.Middleware;
 using Microsoft.AspNetCore.RateLimiting;
@@ -33,6 +34,25 @@ public class AuthController(ISender mediator) : ControllerBase
     {
         var result = await mediator.Send(command, ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    // M5 - server-side sign-out. The refresh token is the credential (the
+    // access token may already have expired), so no [Authorize].
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout([FromBody] LogoutCommand command, CancellationToken ct)
+    {
+        var result = await mediator.Send(command, ct);
+        return result.IsSuccess ? NoContent() : ToProblem(result.Error!);
+    }
+
+    // M5 - revoke every session of the signed-in user.
+    [HttpPost("logout-all")]
+    [Authorize]
+    [DenyApiKey]
+    public async Task<IActionResult> LogoutAll(CancellationToken ct)
+    {
+        var result = await mediator.Send(new LogoutAllCommand(), ct);
+        return result.IsSuccess ? NoContent() : ToProblem(result.Error!);
     }
 
     private ObjectResult ToProblem(Error error)

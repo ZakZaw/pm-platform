@@ -42,6 +42,20 @@ public class ApplyProjectGenerationCommandHandler(
             .FirstOrDefaultAsync(r => r.Id == request.RequestId, ct);
         if (generationRequest is null)
             return Result.Failure<ProjectDto>(AIErrors.RequestNotFound);
+
+        // C2 - only the user who generated the draft may apply it, and only
+        // while they can still create projects in that org (active Member+).
+        // Answer "not found" so request ids can't be probed.
+        if (generationRequest.CreatedBy != userId)
+            return Result.Failure<ProjectDto>(AIErrors.RequestNotFound);
+        var canCreateInOrg = await db.OrgMemberships.AnyAsync(m =>
+            m.OrganizationId == generationRequest.OrganizationId
+            && m.UserId == userId
+            && m.RemovedAt == null
+            && m.Role != OrgRole.Guest, ct);
+        if (!canCreateInOrg)
+            return Result.Failure<ProjectDto>(AIErrors.RequestNotFound);
+
         if (generationRequest.Status != "Draft")
             return Result.Failure<ProjectDto>(AIErrors.RequestAlreadyApplied);
 

@@ -81,6 +81,18 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddPlatformRateLimiting(builder.Configuration);
+
+// M8 / L10 — every unhandled exception becomes RFC 7807 problem details,
+// without stack traces outside Development.
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<ProblemDetailsExceptionHandler>();
+
+// L2 — HSTS outside Development (one year, include subdomains).
+builder.Services.AddHsts(options =>
+{
+    options.MaxAge = TimeSpan.FromDays(365);
+    options.IncludeSubDomains = true;
+});
 builder.Services.AddHealthChecks();
 builder.Services.AddSignalR();
 
@@ -172,13 +184,31 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
-// F2-24 — Swagger UI (/swagger) + spec (/swagger/v1/swagger.json).
-app.UseSwagger();
-app.UseSwaggerUI(c =>
+app.UseExceptionHandler();
+
+if (!app.Environment.IsDevelopment())
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "PM Platform API v1");
-    c.DocumentTitle = "PM Platform API";
-});
+    // L2 — HTTPS only. Behind a TLS-terminating proxy, also set
+    // ASPNETCORE_FORWARDEDHEADERS_ENABLED=true so the original scheme
+    // (and client IP, for rate limiting) is honoured.
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
+
+// L2 — nosniff, frame denial, referrer policy and a strict CSP.
+app.UseMiddleware<SecurityHeadersMiddleware>();
+
+// F2-24 / L1 — Swagger UI (/swagger) + spec (/swagger/v1/swagger.json),
+// Development only: production doesn't advertise its API surface.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "PM Platform API v1");
+        c.DocumentTitle = "PM Platform API";
+    });
+}
 
 var uploadsRoot = Path.Combine(app.Environment.ContentRootPath, "wwwroot", "uploads");
 Directory.CreateDirectory(uploadsRoot);

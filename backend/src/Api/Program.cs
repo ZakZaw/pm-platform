@@ -76,7 +76,14 @@ if (!string.IsNullOrWhiteSpace(livekitSecret))
     builder.Configuration["Video:ApiSecret"] = livekitSecret;
 }
 
-builder.Services.AddApplication();
+// MediatR + AutoMapper licence (Lucky Penny). Flat env var bridged like the
+// other secrets; absent in dev/test, where the libraries only log a warning.
+var luckyPennyEnv = Environment.GetEnvironmentVariable("LUCKYPENNY_LICENSE_KEY");
+if (!string.IsNullOrWhiteSpace(luckyPennyEnv))
+{
+    builder.Configuration["LuckyPenny:LicenseKey"] = luckyPennyEnv;
+}
+builder.Services.AddApplication(builder.Configuration["LuckyPenny:LicenseKey"]);
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddControllers();

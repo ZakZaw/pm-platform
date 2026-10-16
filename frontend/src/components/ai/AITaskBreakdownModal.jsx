@@ -28,14 +28,24 @@ export function AITaskBreakdownModal({ open, taskId, currentTitle, onClose, onAp
   const [applyAc, setApplyAc] = useState(true);
   const [applyPts, setApplyPts] = useState(true);
 
+  // Reset the form during render each time the modal opens (or retargets a
+  // different task) so the first open frame already shows the loading state.
+  const openKey = open ? taskId : null;
+  const [prevOpenKey, setPrevOpenKey] = useState(null);
+  if (openKey !== prevOpenKey) {
+    setPrevOpenKey(openKey);
+    if (open) {
+      setResult(null);
+      setError(null);
+      setApplyDesc(true);
+      setApplyAc(true);
+      setApplyPts(true);
+      setLoading(true);
+    }
+  }
+
   useEffect(() => {
     if (!open) return;
-    setResult(null);
-    setError(null);
-    setApplyDesc(true);
-    setApplyAc(true);
-    setApplyPts(true);
-    setLoading(true);
     aiApi
       .breakdownTask(taskId)
       .then(setResult)

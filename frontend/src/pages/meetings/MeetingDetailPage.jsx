@@ -22,6 +22,7 @@ import {
 import { meetingsApi } from '@/api/meetings.api';
 import { useAuthStore } from '@/store/authStore';
 import { describeRecurrence } from '@/components/meetings/recurrence';
+import { useNow } from '@/hooks/useNow';
 import '@/components/meetings/meetings.css';
 
 const TYPE_LABELS = {
@@ -57,6 +58,7 @@ export function MeetingDetailPage() {
   const navigate = useNavigate();
   const toast = useToast();
   const me = useAuthStore((s) => s.user);
+  const now = useNow();
 
   const [meeting, setMeeting] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -149,12 +151,12 @@ export function MeetingDetailPage() {
   // AC: "Agenda editable up to meeting start time."
   const { canRsvp, canEditAgenda } = useMemo(() => {
     if (!meeting || !start) return { canRsvp: false, canEditAgenda: false };
-    const futureSlot = start.getTime() > Date.now() && meeting.status === 'Scheduled';
+    const futureSlot = start.getTime() > now && meeting.status === 'Scheduled';
     return {
       canRsvp: !!myAttendance && futureSlot,
       canEditAgenda: isOrganiser && futureSlot,
     };
-  }, [meeting, start, myAttendance, isOrganiser]);
+  }, [meeting, start, myAttendance, isOrganiser, now]);
 
   if (loading && !meeting) {
     return <div className="main-inner"><Skeleton height={400} radius="lg" /></div>;
@@ -455,6 +457,7 @@ function TranscriptCard({ meetingId, toast }) {
  * externals" without a separate trip.
  */
 function GuestLinksCard({ meetingId, toast }) {
+  const now = useNow();
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [label, setLabel] = useState('');
@@ -545,7 +548,7 @@ function GuestLinksCard({ meetingId, toast }) {
       ) : (
         <ul className="mtg-people">
           {links.map((g) => {
-            const expired = new Date(g.expiresAt).getTime() < Date.now();
+            const expired = new Date(g.expiresAt).getTime() < now;
             const dead = !!g.revokedAt || expired;
             return (
               <li key={g.id} className="mtg-person">

@@ -22,17 +22,26 @@ function formatExpiry(dt) {
   });
 }
 
+const EMPTY_DRAFT = {
+  password: '',
+  expiresAt: '',
+  hideInternalLabels: false,
+  hideAssignees: false,
+};
+
 export function ShareLinkModal({ open, projectId, onClose }) {
   const toast = useToast();
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [draft, setDraft] = useState({
-    password: '',
-    expiresAt: '',
-    hideInternalLabels: false,
-    hideAssignees: false,
-  });
+  const [draft, setDraft] = useState(EMPTY_DRAFT);
+
+  // Clear the create form during render each time the modal opens.
+  const [wasOpen, setWasOpen] = useState(false);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) setDraft(EMPTY_DRAFT);
+  }
 
   const reload = useCallback(async () => {
     if (!projectId) return;
@@ -51,14 +60,8 @@ export function ShareLinkModal({ open, projectId, onClose }) {
   }, [projectId, toast]);
 
   useEffect(() => {
-    if (!open) return;
-    setDraft({
-      password: '',
-      expiresAt: '',
-      hideInternalLabels: false,
-      hideAssignees: false,
-    });
-    reload();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch on open; reload() flips the loading flag
+    if (open) reload();
   }, [open, reload]);
 
   async function createLink() {

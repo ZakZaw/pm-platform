@@ -97,9 +97,15 @@ export function OrgPortfolioPage() {
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('All');
 
+  // Switching orgs re-enters the loading state during render.
+  const [loadingFor, setLoadingFor] = useState(slug);
+  if (slug !== loadingFor) {
+    setLoadingFor(slug);
+    setLoading(true);
+  }
+
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     orgsApi.portfolio(slug)
       .then((d) => !cancelled && setData(d))
       .catch((e) => !cancelled && setError(e.response?.data?.detail ?? 'Could not load portfolio.'))
@@ -107,7 +113,7 @@ export function OrgPortfolioPage() {
     return () => { cancelled = true; };
   }, [slug]);
 
-  const projects = data?.projects ?? [];
+  const projects = useMemo(() => data?.projects ?? [], [data]);
   const rollup = data?.rollup;
   const conflicts = data?.resourceConflicts ?? [];
 

@@ -31,6 +31,7 @@ export function DependenciesSection({ taskId, projectId }) {
   }, [taskId, toast]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch per task; reload() flips the loading flag
     if (taskId) reload();
   }, [taskId, reload]);
 

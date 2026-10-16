@@ -1,5 +1,20 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
+
+function readVisible(storageKey, defaultStatuses) {
+  if (storageKey) {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)) return new Set(arr);
+      }
+    } catch {
+      /* malformed value — fall through to defaults */
+    }
+  }
+  return new Set(defaultStatuses);
+}
 
 /**
  * Tracks which workflow statuses are visible in a column view. Persists
@@ -16,31 +31,16 @@ export function useColumnVisibility(scope, defaultStatuses = []) {
   const userId = useAuthStore((s) => s.user?.id);
   const storageKey = userId && scope ? `pm:cols:${userId}:${scope}` : null;
 
-  const [visible, setVisibleState] = useState(() => new Set(defaultStatuses));
-
-  // Hydrate from storage when the key becomes available, or fall back
-  // to defaultStatuses on first mount. We rehydrate when `scope` changes
-  // so swapping projects doesn't leak settings.
-  useEffect(() => {
-    if (!storageKey) {
-      setVisibleState(new Set(defaultStatuses));
-      return;
-    }
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) {
-        const arr = JSON.parse(raw);
-        if (Array.isArray(arr)) {
-          setVisibleState(new Set(arr));
-          return;
-        }
-      }
-    } catch {
-      /* malformed value — fall through to defaults */
-    }
-    setVisibleState(new Set(defaultStatuses));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storageKey, defaultStatuses.join(',')]);
+  // Hydrate from storage when the key becomes available, or fall back to
+  // defaultStatuses. We rehydrate (during render) when the key or the
+  // default list changes so swapping projects doesn't leak settings.
+  const hydrateKey = `${storageKey ?? ''}|${defaultStatuses.join(',')}`;
+  const [visible, setVisibleState] = useState(() => readVisible(storageKey, defaultStatuses));
+  const [hydratedFor, setHydratedFor] = useState(hydrateKey);
+  if (hydrateKey !== hydratedFor) {
+    setHydratedFor(hydrateKey);
+    setVisibleState(readVisible(storageKey, defaultStatuses));
+  }
 
   const setVisible = useCallback(
     (nextSet) => {

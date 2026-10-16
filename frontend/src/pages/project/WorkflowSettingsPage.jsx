@@ -260,9 +260,12 @@ function Row({ cfg, onPatch, onDelete }) {
 // it does not block transitions.
 function WipLimitInput({ cfg, onPatch }) {
   const [value, setValue] = useState(cfg.wipLimit == null ? '' : String(cfg.wipLimit));
-  useEffect(() => {
+  // Adopt a new server value during render (no effect round-trip).
+  const [prevLimit, setPrevLimit] = useState(cfg.wipLimit);
+  if (cfg.wipLimit !== prevLimit) {
+    setPrevLimit(cfg.wipLimit);
     setValue(cfg.wipLimit == null ? '' : String(cfg.wipLimit));
-  }, [cfg.wipLimit]);
+  }
 
   function commit() {
     const trimmed = value.trim();

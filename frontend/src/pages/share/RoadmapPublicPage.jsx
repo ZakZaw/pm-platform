@@ -58,7 +58,6 @@ export function RoadmapPublicPage() {
   const [error, setError] = useState(null);
   const [zoom, setZoom] = useState('q');
   const [password, setPassword] = useState('');
-  const [passwordSubmitted, setPasswordSubmitted] = useState('');
   const [needsPassword, setNeedsPassword] = useState(false);
 
   const load = useCallback(async (pwd) => {
@@ -90,13 +89,13 @@ export function RoadmapPublicPage() {
     }
   }, [token]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch on mount/token change; load() flips the loading flag
   useEffect(() => { load(); }, [load]);
 
   const roadmapData = useMemo(() => (data ? toRoadmapShape(data) : null), [data]);
 
   function submitPassword(e) {
     e?.preventDefault?.();
-    setPasswordSubmitted(password);
     load(password);
   }
 

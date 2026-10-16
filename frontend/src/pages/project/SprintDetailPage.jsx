@@ -78,9 +78,12 @@ export function SprintDetailPage() {
   // Editable name buffer.
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
-  useEffect(() => {
-    if (sprint) setNameDraft(sprint.name);
-  }, [sprint?.id, sprint?.name]);
+  // Resync the buffer during render when the sprint's id/name changes.
+  const [nameSyncedFrom, setNameSyncedFrom] = useState(null);
+  if (sprint && (sprint.id !== nameSyncedFrom?.id || sprint.name !== nameSyncedFrom?.name)) {
+    setNameSyncedFrom({ id: sprint.id, name: sprint.name });
+    setNameDraft(sprint.name);
+  }
 
   const memberById = useMemo(() => {
     const map = {};
@@ -264,7 +267,6 @@ export function SprintDetailPage() {
     let added = 0;
     try {
       for (const pick of aiFillPlan.picks) {
-        // eslint-disable-next-line no-await-in-loop
         await tasksApi.update(pick.taskId, { sprintId });
         added += 1;
       }

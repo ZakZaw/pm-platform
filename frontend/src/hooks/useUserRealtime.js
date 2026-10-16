@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import * as signalR from '@microsoft/signalr';
 import { useAuthStore } from '@/store/authStore';
 
@@ -14,7 +14,11 @@ import { useAuthStore } from '@/store/authStore';
 export function useUserRealtime(handlers) {
   const accessToken = useAuthStore((s) => s.accessToken);
   const handlersRef = useRef(handlers);
-  handlersRef.current = handlers;
+  // Refresh after every commit (not during render). Declared before the
+  // connection effect so the first run binds the latest handler names.
+  useLayoutEffect(() => {
+    handlersRef.current = handlers;
+  });
 
   useEffect(() => {
     if (!accessToken) return undefined;

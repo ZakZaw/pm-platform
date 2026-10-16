@@ -456,14 +456,17 @@ function MilestoneCreateModal({ open, onClose, onCreate, epics }) {
   const [color, setColor] = useState('#5B6AF0');
   const [epicId, setEpicId] = useState('');
 
-  useEffect(() => {
+  // Blank the form during render each time the modal opens.
+  const [wasOpen, setWasOpen] = useState(false);
+  if (open !== wasOpen) {
+    setWasOpen(open);
     if (open) {
       setTitle('');
       setDate(new Date().toISOString().slice(0, 10));
       setColor('#5B6AF0');
       setEpicId('');
     }
-  }, [open]);
+  }
 
   const valid = title.trim().length >= 2 && !!date;
 

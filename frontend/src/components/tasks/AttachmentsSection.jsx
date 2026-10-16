@@ -37,6 +37,7 @@ export function AttachmentsSection({ taskId }) {
   }, [taskId, toast]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch per task; reload() stores the list
     if (taskId) reload();
   }, [taskId, reload]);
 

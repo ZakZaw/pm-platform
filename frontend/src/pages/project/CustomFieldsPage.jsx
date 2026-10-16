@@ -251,15 +251,19 @@ function FieldFormModal({ open, title, initial, onClose, onSubmit }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
 
-  useEffect(() => {
-    if (!open) return;
-    setName(initial?.name ?? '');
-    setFieldType(initial?.fieldType ?? 'Text');
-    setRequired(initial?.required ?? false);
-    setOptions(initial?.options ?? []);
-    setOptionDraft('');
-    setErr(null);
-  }, [open, initial]);
+  // Seed the form during render whenever the modal opens or is retargeted.
+  const [seededFrom, setSeededFrom] = useState({ open: false, initial: undefined });
+  if (open !== seededFrom.open || initial !== seededFrom.initial) {
+    setSeededFrom({ open, initial });
+    if (open) {
+      setName(initial?.name ?? '');
+      setFieldType(initial?.fieldType ?? 'Text');
+      setRequired(initial?.required ?? false);
+      setOptions(initial?.options ?? []);
+      setOptionDraft('');
+      setErr(null);
+    }
+  }
 
   const isSelect = fieldType === 'SingleSelect' || fieldType === 'MultiSelect';
 

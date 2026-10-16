@@ -195,7 +195,10 @@ public static class RoadmapShareErrors
         new("RoadmapShare.InvalidPassword", "The password is incorrect.");
 
     public static readonly Error InvalidPasswordValue =
-        new("RoadmapShare.InvalidPasswordValue", "Password must be 4-128 characters.");
+        new("RoadmapShare.InvalidPasswordValue", "Password must be 8-128 characters.");
+
+    public static readonly Error PasswordLocked =
+        new("RoadmapShare.PasswordLocked", "Too many wrong passwords for this link. Try again in 15 minutes.");
 
     public static readonly Error InvalidExpiry =
         new("RoadmapShare.InvalidExpiry", "Expiry must be in the future.");

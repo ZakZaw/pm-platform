@@ -31,6 +31,7 @@ public class ControllerAuthorizationCoverageTests
 
         // Public / token-gated links.
         ["ShareController.GetRoadmap"] = "public share link: token (+ optional password) is the credential",
+        ["ShareController.UnlockRoadmap"] = "public share link: token + password (in the body) is the credential",
         ["MeetingsController.JoinAsGuest"] = "guest meeting link: token is the credential",
         ["InvitationsController.Preview"] = "invitation preview: token is the credential",
         ["InvitationsController.Accept"] = "invitation accept: token + caller email must match the invite",

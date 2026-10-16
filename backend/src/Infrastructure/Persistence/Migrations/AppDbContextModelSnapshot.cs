@@ -2102,6 +2102,9 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("FailedPasswordAttempts")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("HideAssignees")
                         .HasColumnType("boolean");
 
@@ -2111,6 +2114,9 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<string>("PasswordHash")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("PasswordLockedUntil")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uuid");

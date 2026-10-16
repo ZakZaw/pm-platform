@@ -227,7 +227,11 @@ app.Use(async (ctx, next) =>
 });
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(uploadsRoot),
+    // The path check above is the fast path; the provider also refuses
+    // anything that resolves into uploads/tasks however the URL spells it
+    // (e.g. "/uploads//tasks/...").
+    FileProvider = new ExcludingFileProvider(
+        new PhysicalFileProvider(uploadsRoot), Path.Combine(uploadsRoot, "tasks")),
     RequestPath = "/uploads",
     // Public assets are avatars/logos only; never let a browser sniff them
     // into something executable.

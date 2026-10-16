@@ -3,15 +3,6 @@
 
 .home-eyebrow { margin-bottom: var(--s-3); }
 
-.home-sample-note {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-3);
-  margin-top: var(--s-4);
-  font-size: var(--fs-sm);
-  color: var(--text-subtle);
-}
-
 .home-kpis { margin-bottom: var(--s-8); }
 
 /* KPI tile head — round tinted icon badge + plain label */
@@ -36,9 +27,7 @@
 .home-icon-badge.is-warning { background: var(--warning-soft); color: var(--warning); }
 .home-icon-badge.is-info    { background: var(--info-soft);    color: var(--info); }
 
-.home-delta.is-success { color: var(--success); }
-.home-delta.is-warning { color: var(--warning); }
-.home-delta.is-info    { color: var(--info); }
+.home-kpi-hint { font-size: var(--fs-sm); margin-top: var(--s-2); }
 
 /* Cards */
 .home-card { padding: var(--s-8); }
@@ -63,6 +52,7 @@
   line-height: var(--lh-relaxed);
   flex: 1;
 }
+.home-insight-chips { flex-wrap: wrap; }
 
 /* Per-project list */
 .home-project-list {

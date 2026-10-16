@@ -90,6 +90,14 @@ public class UsersController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    // Personal /home dashboard — KPIs, weekly throughput, insight, per-project load.
+    [HttpGet("me/home")]
+    public async Task<ActionResult<Application.Features.Analytics.MyHomeDto>> MyHome(CancellationToken ct)
+    {
+        var result = await mediator.Send(new Application.Features.Analytics.Queries.GetMyHomeQuery(), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     [HttpGet("me/personal-project")]
     public async Task<ActionResult<Application.Features.Projects.ProjectDto>> MyPersonalProject(CancellationToken ct)
     {

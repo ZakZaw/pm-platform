@@ -58,4 +58,5 @@ public record PortfolioRollupDto(
 public record OrgPortfolioDto(
     PortfolioRollupDto Rollup,
     IReadOnlyList<PortfolioProjectDto> Projects,
-    IReadOnlyList<PortfolioResourceConflictDto> ResourceConflicts);
+    IReadOnlyList<PortfolioResourceConflictDto> ResourceConflicts,
+    OrgKpisDto Kpis);

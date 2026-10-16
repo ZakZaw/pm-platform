@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
+  Activity,
   ArrowDown,
   ArrowUp,
   Briefcase,
   Check,
-  GitPullRequest,
   MessageSquare,
   Plus,
   Sparkles,
@@ -13,15 +13,21 @@ import {
 } from 'lucide-react';
 import {
   AvatarStack,
+  Badge,
   Button,
   Skeleton,
 } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { epicsApi } from '@/api/epics.api';
-import { tasksApi } from '@/api/tasks.api';
 import { sprintsApi } from '@/api/sprints.api';
+import { analyticsApi } from '@/api/analytics.api';
+import { activityApi } from '@/api/activity.api';
 import { findProjectType } from '@/constants/projectTypes';
+import { deltaClass } from '@/utils/formatMetrics';
+import { describeActivity, relativeTime } from '@/utils/activityFormat';
 import './ProjectHomePage.css';
+
+const ACTIVITY_LIMIT = 6;
 
 const TYPE_VOCAB = {
   Engineering: { hierarchy: 'Epic → Task', item: 'Task' },
@@ -40,15 +46,6 @@ const AI_MODE_LABEL = {
   Autopilot: 'Autopilot',
 };
 
-const SPRINT_HEALTH_COPY = {
-  Engineering: 'Velocity is 22% below trailing avg. Two tasks likely to slip.',
-  Sales: 'Pipeline coverage is 2.4× target. Two large deals stalled in Proposal.',
-  Support: '4 tickets approaching SLA breach. 1 recurring issue detected.',
-  Marketing: 'Calendar is balanced. Next launch needs a final asset by Mon.',
-  Operations: 'All scheduled runs on track. Next compliance check in 9d.',
-  Generic: 'List is balanced. Nothing overdue.',
-};
-
 const PRIMARY_ACTION_PATH = {
   Engineering: 'backlog',
   Sales: 'pipeline',
@@ -57,13 +54,6 @@ const PRIMARY_ACTION_PATH = {
   Operations: 'runbooks',
   Generic: 'lists',
 };
-
-function daysUntil(iso) {
-  if (!iso) return null;
-  const d = new Date(iso).getTime();
-  if (!Number.isFinite(d)) return null;
-  return Math.max(0, Math.ceil((d - Date.now()) / 86400000));
-}
 
 function dateParts(iso) {
   if (!iso) return null;
@@ -75,55 +65,19 @@ function dateParts(iso) {
   };
 }
 
-// Placeholder rollups per project type. Where we have real data
-// (open tasks for Engineering), the value is computed; the rest stays
-// sample-flagged until the per-type analytics endpoints ship (Phase 2).
-function buildKpis(typeId, { openTasks, sprint, members }) {
-  switch (typeId) {
-    case 'Engineering':
-      return [
-        { label: 'Sprint', value: sprint?.name ?? '—', sub: sprint ? `${daysUntil(sprint.endDate) ?? '—'}d left` : 'No active sprint' },
-        { label: 'Velocity', value: '34', sub: 'pts/wk', delta: '+8%', up: true, sample: true },
-        { label: 'Bugs open', value: '7', sub: '2 urgent', delta: '-3', up: true, sample: true },
-        { label: 'PRs in review', value: '5', sub: '2 stale', sample: true },
-      ];
-    case 'Sales':
-      return [
-        { label: 'Pipeline', value: '$1.26m', sub: '10 active', delta: '+12%', up: true, sample: true },
-        { label: 'Win rate', value: '34%', sub: 'last 90d', delta: '+4pt', up: true, sample: true },
-        { label: 'Avg cycle', value: '21d', sub: 'qualified→won', delta: '-2d', up: true, sample: true },
-        { label: 'Quota', value: '68%', sub: 'of $1.8m', sample: true },
-      ];
-    case 'Support':
-      return [
-        { label: 'Open', value: '28', sub: '4 urgent', delta: '+3', up: false, sample: true },
-        { label: 'SLA hit', value: '94%', sub: 'last 7d', delta: '+1pt', up: true, sample: true },
-        { label: 'CSAT', value: '4.7', sub: '142 responses', sample: true },
-        { label: 'Avg first reply', value: '12m', sub: 'business hrs', delta: '-3m', up: true, sample: true },
-      ];
-    case 'Marketing':
-      return [
-        { label: 'Campaigns', value: '4', sub: '2 launching', sample: true },
-        { label: 'Scheduled', value: '15', sub: 'next 30d', delta: '+5', up: true, sample: true },
-        { label: 'Reach', value: '124k', sub: 'this month', delta: '+18%', up: true, sample: true },
-        { label: 'CTR', value: '3.2%', sub: 'avg paid', delta: '+0.4pt', up: true, sample: true },
-      ];
-    case 'Operations':
-      return [
-        { label: 'Active runs', value: '6', sub: '0 failed', sample: true },
-        { label: 'Compliance', value: '98%', sub: 'controls met', delta: '+2pt', up: true, sample: true },
-        { label: 'Next audit', value: 'Aug 1', sub: '10 days', sample: true },
-        { label: 'Avg cycle', value: '4.2d', sub: 'per run', delta: '-0.5d', up: true, sample: true },
-      ];
-    case 'Generic':
-    default:
-      return [
-        { label: 'Open', value: openTasks ?? 0, sub: 'tasks' },
-        { label: 'In progress', value: '—', sub: 'sample', sample: true },
-        { label: 'Done', value: '—', sub: 'this week', sample: true },
-        { label: 'Members', value: members.length, sub: 'active' },
-      ];
-  }
+// Activity verb → row icon.
+function activityIcon(verb) {
+  if (verb === 'CommentAdded') return <MessageSquare size={14} />;
+  if (verb?.startsWith('Task')) return <Check size={14} />;
+  return <Activity size={14} />;
+}
+
+// Arrow for a server-formatted delta ("+3", "-8%", "±0").
+function DeltaArrow({ delta }) {
+  if (!delta || delta.startsWith('±')) return null;
+  return delta.startsWith('-') || delta.startsWith('−')
+    ? <ArrowDown size={10} strokeWidth={3} />
+    : <ArrowUp size={10} strokeWidth={3} />;
 }
 
 export function ProjectHomePage() {
@@ -131,9 +85,11 @@ export function ProjectHomePage() {
   const navigate = useNavigate();
   const [project, setProject] = useState(null);
   const [epics, setEpics] = useState([]);
-  const [openTasks, setOpenTasks] = useState(0);
   const [activeSprint, setActiveSprint] = useState(null);
   const [members, setMembers] = useState([]);
+  // Server-composed KPI tiles + health card (one call), and the activity feed.
+  const [home, setHome] = useState(null);
+  const [activity, setActivity] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -143,17 +99,19 @@ export function ProjectHomePage() {
         const p = await projectsApi.getBySlug(orgSlug, projectSlug);
         if (cancelled) return;
         setProject(p);
-        const [es, ts, sprint, ms] = await Promise.all([
+        const [es, sprint, ms, homeData, feed] = await Promise.all([
           epicsApi.listForProject(p.id),
-          tasksApi.listForProject(p.id, { include_done: false }).catch(() => []),
           sprintsApi.getActive(p.id).catch(() => null),
           projectsApi.listMembers(p.id).catch(() => []),
+          analyticsApi.home(p.id).catch(() => null),
+          activityApi.listForProject(p.id, { limit: ACTIVITY_LIMIT }).catch(() => null),
         ]);
         if (cancelled) return;
         setEpics(es);
-        setOpenTasks(ts.length);
         setActiveSprint(sprint ?? null);
         setMembers(ms);
+        setHome(homeData);
+        setActivity(feed?.entries ?? []);
       } catch (err) {
         if (!cancelled) setError(err.response?.data?.detail ?? 'Could not load project.');
       }
@@ -168,10 +126,8 @@ export function ProjectHomePage() {
   const vocab = TYPE_VOCAB[typeId] ?? TYPE_VOCAB.Engineering;
   const iconClass = `proj-icon proj-icon-${typeId.toLowerCase()}`;
 
-  const kpis = useMemo(
-    () => (project ? buildKpis(typeId, { openTasks, sprint: activeSprint, members }) : []),
-    [project, typeId, openTasks, activeSprint, members],
-  );
+  const kpis = home?.kpis ?? [];
+  const health = home?.health ?? null;
 
   const upcoming = useMemo(() => {
     if (!project) return [];
@@ -212,7 +168,6 @@ export function ProjectHomePage() {
   const primaryPath = PRIMARY_ACTION_PATH[typeId] ?? 'backlog';
   const leadMember = members[0];
   const aiMode = AI_MODE_LABEL[project.aiControlMode] ?? 'Suggest';
-  const sampleLabels = kpis.filter((k) => k.sample).map((k) => k.label);
 
   return (
     <div className="main-inner project-home">
@@ -254,29 +209,26 @@ export function ProjectHomePage() {
       </div>
 
       <div className="grid-4">
-        {kpis.map((k, i) => (
-          <div key={i} className="stat" title={k.sample ? 'Sample data' : undefined}>
-            <div className="stat-label">{k.label}</div>
-            <div className="stat-value">{k.value}</div>
-            {(k.sub || k.delta) && (
-              <div className="stat-row project-home-stat-sub">
-                {k.sub && <span>{k.sub}</span>}
-                {k.delta && (
-                  <span className={`stat-delta stat-delta-${k.up ? 'up' : 'down'}`}>
-                    {k.up ? <ArrowUp size={10} strokeWidth={3} /> : <ArrowDown size={10} strokeWidth={3} />}
-                    {k.delta}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-        ))}
+        {home === null
+          ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} height={92} radius="lg" />)
+          : kpis.map((k) => (
+            <div key={k.label} className="stat">
+              <div className="stat-label">{k.label}</div>
+              <div className="stat-value">{k.value}</div>
+              {(k.sub || k.delta) && (
+                <div className="stat-row project-home-stat-sub">
+                  {k.sub && <span>{k.sub}</span>}
+                  {k.delta && (
+                    <span className={`stat-delta ${deltaClass(k.deltaGood)}`}>
+                      <DeltaArrow delta={k.delta} />
+                      {k.delta}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
       </div>
-      {sampleLabels.length > 0 && (
-        <p className="muted project-home-note">
-          {sampleLabels.join(', ')} show sample data until per-type analytics ship.
-        </p>
-      )}
 
       <div className="grid-12 project-home-body">
         <div className="col-8 col">
@@ -285,38 +237,53 @@ export function ProjectHomePage() {
               <h3 className="h-card">Activity</h3>
             </div>
             <div className="card-body project-home-activity">
-              {PLACEHOLDER_ACTIVITY.map((a, i) => (
-                <div key={i} className="project-home-activity-row">
-                  <div
-                    className={`project-home-activity-icon${a.ai ? ' is-ai' : ''}`}
-                    title={a.ai ? 'AI action' : undefined}
-                  >
-                    {a.ai ? <Sparkles size={14} aria-label="AI" /> : a.kind === 'pr' ? <GitPullRequest size={14} /> : a.kind === 'comment' ? <MessageSquare size={14} /> : <Check size={14} />}
-                  </div>
+              {activity === null && <Skeleton rows={4} />}
+              {activity?.length === 0 && (
+                <p className="muted project-home-empty">No activity in this project yet.</p>
+              )}
+              {activity?.map((entry) => (
+                <div key={entry.id} className="project-home-activity-row">
+                  <div className="project-home-activity-icon">{activityIcon(entry.verb)}</div>
                   <div className="project-home-activity-main">
                     <div className="project-home-activity-head">
-                      <strong>{a.who}</strong>
-                      <span className="muted project-home-activity-time">{a.time}</span>
+                      <strong>{entry.actor?.fullName ?? 'Someone'}</strong>
+                      <span
+                        className="muted project-home-activity-time"
+                        title={new Date(entry.createdAt).toLocaleString()}
+                      >
+                        {relativeTime(entry.createdAt)}
+                      </span>
                     </div>
-                    <div className="muted project-home-activity-body">{a.body}</div>
+                    <div className="muted project-home-activity-body">{describeActivity(entry)}</div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-          <p className="muted project-home-note">
-            Activity feed shows sample data until the activity-log endpoint ships (Phase 2).
-          </p>
         </div>
 
         <div className="col-4 col project-home-side">
           <div className="ai-card">
             <div className="ai-card-head">
               <div className="ai-mark"><Sparkles size={14} /></div>
-              <h3 className="h-card">Sprint health</h3>
+              <h3 className="h-card">{health?.title ?? 'Project health'}</h3>
             </div>
             <div className="ai-card-body">
-              <p className="project-home-ai-copy">{SPRINT_HEALTH_COPY[typeId]}</p>
+              {health ? (
+                <>
+                  <p className="project-home-ai-headline">{health.headline}</p>
+                  <p className="project-home-ai-copy">{health.detail}</p>
+                  {health.highlights?.length > 0 && (
+                    <div className="row gap-2 project-home-ai-chips">
+                      {health.highlights.map((h) => <Badge key={h} tone="neutral">{h}</Badge>)}
+                    </div>
+                  )}
+                </>
+              ) : home === null ? (
+                <Skeleton rows={2} />
+              ) : (
+                <p className="project-home-ai-copy">Health signals are unavailable right now.</p>
+              )}
               <div className="row gap-3">
                 <Link to={`/${orgSlug}/projects/${projectSlug}/ai`}>
                   <Button variant="secondary" size="sm">
@@ -353,11 +320,3 @@ export function ProjectHomePage() {
     </div>
   );
 }
-
-const PLACEHOLDER_ACTIVITY = [
-  { ai: true, who: 'Drafted a sprint replan', time: '12m ago', body: 'Suggested cutting two tasks to keep the sprint on track.' },
-  { kind: 'pr', who: 'Maya Singh', time: '34m ago', body: 'Opened PR #482 on feat/magic-link → moved task to In Review.' },
-  { kind: 'comment', who: 'Theo Park', time: '1h ago', body: 'Commented on a blocked task: blocked on legal SSO clearance.' },
-  { kind: 'check', who: 'Maya Singh', time: '2h ago', body: 'Closed a task — Splash skeleton loaders.' },
-  { ai: true, who: 'Estimated 4 tasks', time: '3h ago', body: 'Effort estimates with 78% confidence across the next sprint.' },
-];

@@ -77,6 +77,15 @@ public class AnalyticsController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    // Project home page — type-appropriate KPI tiles + the type-aware health card.
+    [HttpGet("api/v1/projects/{projectId:guid}/analytics/home")]
+    [RequireProjectRole(ProjectRole.Viewer)]
+    public async Task<ActionResult<ProjectHomeDto>> Home(Guid projectId, CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new GetProjectHomeQuery(projectId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     // ---- Per-type dashboard analytics (polish D) ----
 
     // Sales — open pipeline, weighted forecast, stage funnel, win rate, at-risk deals.

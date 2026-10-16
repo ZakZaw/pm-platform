@@ -15,4 +15,13 @@ public static class CycleTimeCalculator
         if (valid.Count == 0) return null;
         return Math.Round(valid.Average(s => (s.End - s.Start).TotalDays), 1);
     }
+
+    /// <summary>Same rules as <see cref="AverageDays"/>, in hours (for work
+    /// that usually finishes within a day, e.g. ops runs).</summary>
+    public static double? AverageHours(IEnumerable<(DateTime Start, DateTime End)> spans)
+    {
+        var valid = spans.Where(s => s.End >= s.Start).ToList();
+        if (valid.Count == 0) return null;
+        return Math.Round(valid.Average(s => (s.End - s.Start).TotalHours), 1);
+    }
 }

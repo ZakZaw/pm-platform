@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import {
-  ArrowRight,
   Clock,
   Flame,
   Info,
@@ -109,9 +108,6 @@ export function HomePage() {
             Tasks in In Review average 1.4 days, well under the team's 2-day target.
             Spend the breathing room knocking down two high-priority items in Backlog.
           </p>
-          <Button variant="ghost" size="sm" disabled title="Phase 2">
-            See full report <ArrowRight size={12} aria-hidden="true" />
-          </Button>
         </div>
 
         <div className="card home-card col-12">

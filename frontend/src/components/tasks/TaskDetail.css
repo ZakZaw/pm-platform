@@ -302,10 +302,6 @@
   font-size: var(--fs-sm);
   margin: 0;
 }
-.task-detail-inline-icon {
-  vertical-align: middle;
-  margin-right: var(--s-3);
-}
 
 /* Acceptance criteria */
 .task-detail-ac {
@@ -383,12 +379,7 @@
   margin-top: calc(var(--s-5) * -1);
 }
 
-/* Activity */
-.task-detail-tabs {
-  margin-bottom: var(--s-2);
-  gap: var(--s-7);
-}
-.task-detail-tabs button { font-size: var(--fs-sm); }
+/* Comments */
 .task-detail-activity { font-size: var(--fs-sm); }
 
 .task-detail-comments {

@@ -1,17 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
-  ArrowUpRight,
   Check,
   CircleAlert,
   CircleCheck,
   Clock,
   Copy,
   ExternalLink,
-  Eye,
-  GitCommit,
   GitPullRequest,
-  History,
   MoreHorizontal,
   Plus,
   Sparkles,
@@ -91,7 +87,6 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
   const [subtasks, setSubtasks] = useState([]);
   const [newSub, setNewSub] = useState('');
   const [comments, setComments] = useState([]);
-  const [activeTab, setActiveTab] = useState('comments');
 
   // Editable buffers — reset whenever the underlying task changes server-side
   // by remounting via parent key, or by useEffect resyncing from prop.
@@ -551,12 +546,6 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
               <Dropdown.Item icon={<Copy size={14} aria-hidden="true" />} onSelect={copyKey}>
                 Copy task key
               </Dropdown.Item>
-              <Dropdown.Item icon={<Eye size={14} aria-hidden="true" />} disabled>
-                Watchers
-              </Dropdown.Item>
-              <Dropdown.Item icon={<ArrowUpRight size={14} aria-hidden="true" />} disabled>
-                Open full page
-              </Dropdown.Item>
               <Dropdown.Divider />
               <Dropdown.Item icon={<Trash2 size={14} aria-hidden="true" />} danger onSelect={deleteTask}>
                 Delete task
@@ -873,56 +862,26 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
               />
             </div>
 
-            {/* Activity */}
+            {/* Comments */}
             <section className="task-detail-block">
-              <div className="tabs task-detail-tabs">
-                <button
-                  type="button"
-                  className={activeTab === 'comments' ? 'is-active' : ''}
-                  onClick={() => setActiveTab('comments')}
-                >
+              <div className="task-detail-block-head">
+                <h3 className="task-detail-block-title">
                   Comments
-                  <span className="tab-count">{comments.length}</span>
-                </button>
-                <button
-                  type="button"
-                  className={activeTab === 'history' ? 'is-active' : ''}
-                  onClick={() => setActiveTab('history')}
-                >
-                  History
-                </button>
-                <button
-                  type="button"
-                  className={activeTab === 'commits' ? 'is-active' : ''}
-                  onClick={() => setActiveTab('commits')}
-                >
-                  Commits
-                </button>
+                  {comments.length > 0 && (
+                    <span className="task-detail-block-count">{comments.length}</span>
+                  )}
+                </h3>
               </div>
 
               <div className="task-detail-activity">
-                {activeTab === 'comments' && (
-                  <div className="task-detail-comments">
-                    <CommentList
-                      projectId={projectId}
-                      comments={comments}
-                      onChanged={refreshComments}
-                    />
-                    <CommentInput projectId={projectId} onSubmit={postComment} />
-                  </div>
-                )}
-                {activeTab === 'history' && (
-                  <p className="task-detail-placeholder">
-                    <History size={12} aria-hidden="true" className="task-detail-inline-icon" />
-                    Field-change history isn’t wired up yet — coming in Phase 2.
-                  </p>
-                )}
-                {activeTab === 'commits' && (
-                  <p className="task-detail-placeholder">
-                    <GitCommit size={12} aria-hidden="true" className="task-detail-inline-icon" />
-                    Connect a repo in Settings to surface commits and PRs here.
-                  </p>
-                )}
+                <div className="task-detail-comments">
+                  <CommentList
+                    projectId={projectId}
+                    comments={comments}
+                    onChanged={refreshComments}
+                  />
+                  <CommentInput projectId={projectId} onSubmit={postComment} />
+                </div>
               </div>
             </section>
           </div>

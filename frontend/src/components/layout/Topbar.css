@@ -1,11 +1,5 @@
-/* Topbar layout lives in stratos.css (.topbar, .crumbs, .search).
+/* Topbar layout lives in stratos.css (.topbar, .crumbs).
    This file holds the user-menu trigger. */
-
-.search-text { flex: 1; text-align: left; }
-
-/* Ask AI — round icon button with the soft AI tint. */
-.topbar-ai { background: var(--ai-gradient-soft); color: var(--ai-text); }
-.topbar-ai:hover { background: var(--ai-gradient-mid); color: var(--ai-text); }
 
 .topbar-user { position: relative; }
 

@@ -10,7 +10,6 @@ import {
   Layers,
   ListChecks,
   MessageSquareText,
-  Plus,
   Quote,
   RefreshCw,
   Sparkles,
@@ -394,15 +393,7 @@ export function AIGenerationWizard() {
                 <Button variant="ghost" size="md" onClick={regenerate} disabled={loading}>
                   <RefreshCw size={14} aria-hidden="true" /> Regenerate
                 </Button>
-                {!isTypedPreview && (
-                  <Button variant="ghost" size="md" disabled>
-                    <Plus size={14} aria-hidden="true" /> Add epic
-                  </Button>
-                )}
                 <span className="fill" />
-                <Button variant="ghost" size="md" disabled>
-                  Save as draft
-                </Button>
                 <Button
                   variant="ai"
                   size="md"

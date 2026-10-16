@@ -2,14 +2,11 @@ import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ChevronDown,
-  HelpCircle,
   LogOut,
   Moon,
   PanelLeftClose,
   PanelLeftOpen,
   Plus,
-  Search,
-  Sparkles,
   Sun,
   UserCircle,
 } from 'lucide-react';
@@ -169,12 +166,6 @@ export function Topbar() {
 
       <div className="fill" />
 
-      <button className="search" type="button" title="Search (coming soon)">
-        <Search size={14} aria-hidden="true" />
-        <span className="search-text">Search or jump to…</span>
-        <span className="kbd">⌘K</span>
-      </button>
-
       <Button
         variant="secondary"
         size="sm"
@@ -185,10 +176,6 @@ export function Topbar() {
         <Plus size={14} aria-hidden="true" />
         <span>New task</span>
       </Button>
-
-      <button type="button" className="icon-btn topbar-ai" title="Ask AI" aria-label="Ask AI">
-        <Sparkles size={16} strokeWidth={2.2} aria-hidden="true" />
-      </button>
 
       <NotificationsPanel />
 
@@ -223,10 +210,6 @@ export function Topbar() {
             >
               {isLight ? <Moon size={13} aria-hidden="true" /> : <Sun size={13} aria-hidden="true" />}
               <span>{isLight ? 'Dark mode' : 'Light mode'}</span>
-            </button>
-            <button type="button" className="menu-item" onClick={() => setMenuOpen(false)}>
-              <HelpCircle size={13} aria-hidden="true" />
-              <span>Help</span>
             </button>
             <div className="menu-sep" />
             <button

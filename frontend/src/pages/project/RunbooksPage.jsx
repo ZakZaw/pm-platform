@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { MoreHorizontal, Plus, Sparkles, Workflow as WorkflowIcon } from 'lucide-react';
+import { Plus, Workflow as WorkflowIcon } from 'lucide-react';
 import {
   Button,
-  Dropdown,
   EmptyState,
   Skeleton,
   useToast,
@@ -98,18 +97,6 @@ export function RunbooksPage() {
             </p>
           </div>
           <div className="row gap-3">
-            <Dropdown
-              align="end"
-              trigger={(
-                <button type="button" className="icon-btn" aria-label="More actions" title="More actions">
-                  <MoreHorizontal size={16} aria-hidden="true" />
-                </button>
-              )}
-            >
-              <Dropdown.Item icon={<Sparkles size={13} aria-hidden="true" />} disabled>
-                Author from template (coming in Phase 2)
-              </Dropdown.Item>
-            </Dropdown>
             <Button variant="primary" size="sm" onClick={() => setEditing('new')}>
               <Plus size={14} aria-hidden="true" /> New workflow
             </Button>

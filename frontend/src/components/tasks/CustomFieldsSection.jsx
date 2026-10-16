@@ -11,7 +11,7 @@ import './CustomFieldsSection.css';
  * SetTaskCustomFieldValuesCommand — the server's RequiredMissing error is
  * surfaced as a toast.
  *
- * Used by TaskDetail (drawer view). For TaskForm (create flow), required
+ * Used by TaskDetail (drawer view). For QuickCreateTaskModal (create flow), required
  * fields aren't enforced at create time today — the user fills them in
  * after creation. F2-05 follow-up: collect required values during create
  * and reject the form if any are missing.

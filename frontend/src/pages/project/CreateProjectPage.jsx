@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Briefcase, FileText, Sparkles } from 'lucide-react';
+import { Briefcase, Sparkles } from 'lucide-react';
 import { Button, Input, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { useProjectStore } from '@/store/projectStore';
@@ -13,12 +13,6 @@ const MODES = [
     title: 'Start blank',
     description: 'A fresh project with no structure. Add work items as you go.',
     Icon: Briefcase,
-  },
-  {
-    key: 'template',
-    title: 'From template',
-    description: 'Pick a starter template that matches the project type.',
-    Icon: FileText,
   },
   {
     key: 'ai',
@@ -45,15 +39,6 @@ export function CreateProjectPage() {
       navigate(`/${orgSlug}/projects/new/ai?type=${typeId}`);
       return;
     }
-    if (mode === 'template') {
-      toast.show({
-        tone: 'info',
-        title: 'Templates coming soon',
-        message: 'Template picker ships in a follow-up task.',
-      });
-      return;
-    }
-
     setSubmitting(true);
     try {
       const project = await projectsApi.create(orgSlug, {

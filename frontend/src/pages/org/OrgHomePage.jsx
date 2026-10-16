@@ -6,7 +6,6 @@ import {
   Briefcase,
   Calendar,
   Camera,
-  Filter,
   Info,
   Pencil,
   Plus,
@@ -230,9 +229,6 @@ export function OrgHomePage() {
             </div>
           </div>
           <div className="row gap-3">
-            <Button variant="ghost" size="md" disabled title="Coming in Phase 2">
-              <Filter size={14} aria-hidden="true" /> Filter
-            </Button>
             <Link to={`/${slug}/projects/new`}>
               <Button variant="primary" size="md">
                 <Sparkles size={14} aria-hidden="true" /> New project

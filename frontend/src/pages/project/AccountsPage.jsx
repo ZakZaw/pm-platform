@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Plus } from 'lucide-react';
-import { Badge, Button, Input, Modal, ModalBody, ModalFooter, ModalHeader, Skeleton, useToast } from '@/components/ui';
+import { Building2, Plus } from 'lucide-react';
+import { Button, EmptyState, Input, Modal, ModalBody, ModalFooter, ModalHeader, Skeleton, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { salesApi } from '@/api/sales.api';
 import './AccountsPage.css';
@@ -46,10 +46,9 @@ export function AccountsPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>{project?.name ?? 'Sales'}</div>
             <h1 className="page-title">Accounts</h1>
             <div className="page-subtitle">
-              Companies you're working with. Track open deals and aggregate value at a glance.
+              Companies you're working with, with their open deals and pipeline value.
             </div>
           </div>
           <Button size="sm" onClick={() => setCreating(true)}>
@@ -59,35 +58,45 @@ export function AccountsPage() {
       </div>
 
       {!accounts ? (
-        <div className="col" style={{ gap: 8 }}>
+        <div className="col gap-3">
           {[0, 1, 2, 3].map((i) => (
             <Skeleton key={i} height={48} />
           ))}
         </div>
       ) : accounts.length === 0 ? (
-        <div className="muted" style={{ padding: 24, textAlign: 'center' }}>
-          No accounts yet. Create one to start building a pipeline.
-        </div>
+        <EmptyState
+          icon={<Building2 size={20} aria-hidden="true" />}
+          title="No accounts yet"
+          subtitle="Create one to start building a pipeline."
+        >
+          <Button variant="secondary" onClick={() => setCreating(true)}>New account</Button>
+        </EmptyState>
       ) : (
-        <div className="accounts-table" role="table">
-          <div className="accounts-row accounts-row-head" role="row">
-            <span role="columnheader">Name</span>
-            <span role="columnheader">Domain</span>
-            <span role="columnheader">Industry</span>
-            <span role="columnheader">Open deals</span>
-            <span role="columnheader">Value</span>
-          </div>
-          {accounts.map((a) => (
-            <div key={a.id} className="accounts-row" role="row">
-              <span role="cell" className="accounts-name">{a.name}</span>
-              <span role="cell" className="muted">{a.domain ?? '—'}</span>
-              <span role="cell" className="muted">{a.industry ?? '—'}</span>
-              <span role="cell">
-                <Badge tone={a.openDealCount > 0 ? 'info' : 'neutral'}>{a.openDealCount}</Badge>
-              </span>
-              <span role="cell" className="mono">{fmtCurrency(a.openDealValue, 'USD')}</span>
-            </div>
-          ))}
+        <div className="card accounts-card">
+          <table className="tbl">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Domain</th>
+                <th>Industry</th>
+                <th className="accounts-num">Open deals</th>
+                <th className="accounts-num">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {accounts.map((a) => (
+                <tr key={a.id}>
+                  <td className="accounts-name">{a.name}</td>
+                  <td className="muted">{a.domain ?? '—'}</td>
+                  <td className="muted">{a.industry ?? '—'}</td>
+                  <td className={['accounts-num', a.openDealCount > 0 ? '' : 'muted'].filter(Boolean).join(' ')}>
+                    {a.openDealCount}
+                  </td>
+                  <td className="accounts-num accounts-value">{fmtCurrency(a.openDealValue, 'USD')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -135,14 +144,14 @@ function CreateAccountModal({ projectId, onClose, onCreated }) {
     <Modal open onClose={onClose} labelledBy="create-account-title">
       <form onSubmit={submit}>
         <ModalHeader>
-          <h2 id="create-account-title" style={{ margin: 0, fontSize: 16 }}>New account</h2>
+          <h2 id="create-account-title" className="modal-title">New account</h2>
         </ModalHeader>
         <ModalBody>
-          <div className="col" style={{ gap: 12 }}>
+          <div className="col gap-5">
             <Input label="Name" autoFocus value={name} onChange={(e) => setName(e.target.value)} required />
             <Input label="Domain" value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="acme.com" />
             <Input label="Industry" value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder="SaaS" />
-            {error && <p style={{ color: 'var(--danger)', margin: 0 }}>{error}</p>}
+            {error && <p className="input-help is-error">{error}</p>}
           </div>
         </ModalBody>
         <ModalFooter>

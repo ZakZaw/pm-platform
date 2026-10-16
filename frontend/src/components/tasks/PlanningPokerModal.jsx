@@ -147,7 +147,7 @@ export function PlanningPokerModal({ open, task, projectId, onClose, onClosedWit
     <Modal open={open} onClose={onClose} labelledBy="poker-title" size="lg">
       <ModalHeader>
         <h3 id="poker-title" className="modal-title">
-          <Sparkles size={14} aria-hidden="true" style={{ marginRight: 6 }} />
+          <Sparkles size={14} aria-hidden="true" className="poker__title-icon" />
           Planning poker
         </h3>
       </ModalHeader>

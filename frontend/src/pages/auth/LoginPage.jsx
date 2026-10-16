@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
-import { Button, Card, Input } from '@/components/ui';
+import { Button, Input } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
 import { useOrgStore } from '@/store/orgStore';
-import './AuthPage.css';
+import { AuthLayout } from './AuthLayout';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -45,34 +45,33 @@ export function LoginPage() {
   };
 
   return (
-    <div className="auth-page">
-      <Card title="Sign in" subtitle="Welcome back" className="auth-page__card">
-        <form className="auth-page__form" onSubmit={onSubmit}>
-          <Input
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            autoComplete="email"
-          />
-          <Input
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-          />
-          {error && <p className="auth-page__error">{error}</p>}
-          <Button type="submit" block disabled={submitting}>
-            {submitting ? 'Signing in…' : 'Sign in'}
-          </Button>
-        </form>
-        <p className="auth-page__footer">
-          New here? <Link to="/register">Create an account</Link>
-        </p>
-      </Card>
-    </div>
+    <AuthLayout
+      title="Welcome back"
+      subtitle="Sign in to your workspace"
+      footer={<>New here? <Link to="/register">Create an account</Link></>}
+    >
+      <form className="auth-page__form" onSubmit={onSubmit}>
+        <Input
+          label="Email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          autoComplete="email"
+        />
+        <Input
+          label="Password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          autoComplete="current-password"
+        />
+        {error && <p className="auth-page__error">{error}</p>}
+        <Button type="submit" size="lg" block disabled={submitting} className="auth-page__submit">
+          {submitting ? 'Signing in…' : 'Sign in'}
+        </Button>
+      </form>
+    </AuthLayout>
   );
 }

@@ -1,20 +1,41 @@
+/* Leads — one card, airy rows, status as dot + text, Convert revealed on hover. */
+.leads-filter { min-width: 160px; }
+
 .leads-list {
+  list-style: none;
+  margin: 0;
+  padding: var(--s-3) 0;
   display: flex;
   flex-direction: column;
-  gap: var(--s-4);
 }
 
 .leads-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 140px 96px;
   align-items: center;
-  gap: var(--s-5);
-  padding: var(--s-5) var(--s-6);
-  background: var(--surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-md);
+  gap: var(--s-6);
+  padding: var(--s-5) var(--s-8);
+  transition: background var(--dur-fast) var(--ease-out);
 }
+.leads-row:hover { background: var(--surface-2); }
 
 .leads-name {
   font-weight: var(--fw-semibold);
   color: var(--text);
 }
+
+.leads-meta {
+  margin-top: var(--s-1);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.leads-action { display: flex; justify-content: flex-end; }
+
+/* Convert stays reachable by keyboard/touch; only fades on pointer devices. */
+@media (hover: hover) {
+  .leads-action { opacity: 0; transition: opacity var(--dur-fast) var(--ease-out); }
+  .leads-row:hover .leads-action,
+  .leads-row:focus-within .leads-action { opacity: 1; }
+}
+

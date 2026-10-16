@@ -1,5 +1,32 @@
 /* Runbooks — workflow table. Uses stratos .tbl + .card. */
 
-.runbooks-card {
-  overflow: hidden;
+.runbooks-card { overflow: hidden; }
+
+.runbooks-overdue { color: var(--danger); font-weight: var(--fw-medium); }
+
+.runbooks-row { cursor: pointer; }
+.runbooks-row:focus-visible { outline-offset: -2px; }
+
+.runbooks-name {
+  font-weight: var(--fw-semibold);
+  color: var(--text);
 }
+
+.runbooks-desc {
+  max-width: 420px;
+  margin-top: var(--s-1);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.runbooks-secondary { color: var(--text-secondary); }
+
+.runbooks-col-recur { width: 150px; }
+.runbooks-col-date { width: 110px; }
+.runbooks-col-status { width: 130px; }
+.runbooks-col-steps {
+  width: 80px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.runbooks-card .tbl th.runbooks-col-steps { text-align: right; }

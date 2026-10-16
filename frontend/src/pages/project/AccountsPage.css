@@ -1,31 +1,19 @@
-.accounts-table {
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-md);
-  background: var(--surface);
-  overflow: hidden;
-}
-
-.accounts-row {
-  display: grid;
-  grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1fr;
-  gap: var(--s-5);
-  padding: var(--s-5) var(--s-6);
-  font-size: var(--fs-md);
-  border-bottom: 1px solid var(--border-subtle);
-  align-items: center;
-}
-
-.accounts-row:last-child { border-bottom: none; }
-
-.accounts-row-head {
-  font-size: var(--fs-xs);
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  background: var(--surface-2);
-}
+/* Accounts — plain .card + .tbl (stratos). */
+.accounts-card { overflow: hidden; }
 
 .accounts-name {
   font-weight: var(--fw-semibold);
   color: var(--text);
 }
+
+.accounts-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.accounts-card .tbl th.accounts-num { text-align: right; }
+
+.accounts-value {
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+}
+

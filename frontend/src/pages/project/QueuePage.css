@@ -1,13 +1,45 @@
-/* Base .queue / .queue-row / .queue-head / .sla / .sla-dot live in stratos.css. */
+/* Base .queue / .queue-row / .queue-head / .sla / .sla-dot live in stratos.css.
+   Page-scoped: SLA as dot + coloured text (no pill), calmer rows. */
 
-.queue-page {
-  padding: var(--s-7) var(--s-9);
+.queue-page-breach { color: var(--danger); font-weight: var(--fw-medium); }
+
+.queue-page-body { margin-top: var(--s-7); }
+
+.queue-page .queue { gap: 0; background: var(--surface); }
+
+.queue-page .queue-row {
+  grid-template-columns: 72px minmax(0, 1fr) 150px 96px 104px 136px 64px;
+  padding: var(--s-6) var(--s-7);
+  border-bottom: 1px solid var(--divider);
 }
+.queue-page .queue-row:last-child { border-bottom: 0; }
+.queue-page .queue-head { padding: var(--s-5) var(--s-7); }
+
+.queue-page-sub {
+  margin-top: var(--s-1);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.queue-page-customer { color: var(--text-secondary); }
+
+.queue-page .sla {
+  background: transparent;
+  padding: 0;
+  font-family: var(--font-sans);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.queue-page .sla.is-danger,
+.queue-page .sla.is-warn,
+.queue-page .sla.is-ok { background: transparent; }
+.queue-page .sla-dot { width: 7px; height: 7px; }
 
 .queue-empty {
-  padding: var(--s-7) var(--s-6);
+  padding: var(--s-9) var(--s-6);
   text-align: center;
   color: var(--text-muted);
-  background: var(--surface);
   font-size: var(--fs-sm);
 }
+

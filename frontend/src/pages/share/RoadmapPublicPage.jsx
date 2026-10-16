@@ -7,8 +7,8 @@ import { publicShareApi } from '@/api/roadmap.api';
 import './RoadmapPublicPage.css';
 
 const EPIC_PALETTE = [
-  '#5B6AF0', '#4FD1E0', '#7A6BFF', '#C77BFF',
-  '#3FB984', '#E0A23A', '#E5484D', '#4F9EFF',
+  'var(--accent)', 'var(--teal)', 'var(--violet)', 'var(--rose)',
+  'var(--success)', 'var(--amber)', 'var(--danger)', 'var(--info)',
 ];
 
 function toRoadmapShape(payload) {
@@ -164,7 +164,7 @@ export function RoadmapPublicPage() {
                 <div className="eyebrow">
                   {data.projectKey ? `${data.projectKey} · ` : ''}{data.projectType}
                 </div>
-                <h1 className="public-roadmap__title">{data.projectName}</h1>
+                <h1 className="page-title public-roadmap__title">{data.projectName}</h1>
               </div>
             </div>
             <RoadmapView
@@ -175,7 +175,7 @@ export function RoadmapPublicPage() {
             />
             {roadmapData.undated.length > 0 && (
               <div className="public-roadmap__undated">
-                <span className="eyebrow">Not yet placed</span>
+                <h2 className="public-roadmap__undated-title">Not yet placed</h2>
                 <ul>
                   {roadmapData.undated.map((e) => (
                     <li key={e.id} className="muted">{e.title}</li>

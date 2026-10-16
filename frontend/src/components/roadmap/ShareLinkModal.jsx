@@ -169,14 +169,14 @@ export function ShareLinkModal({ open, projectId, onClose }) {
               <span>Hide assignee names</span>
             </label>
           </div>
-          <div className="row" style={{ justifyContent: 'flex-end', marginTop: 'var(--s-4)' }}>
+          <div className="row share-modal__create-actions">
             <Button variant="primary" size="sm" onClick={createLink} disabled={creating}>
               {creating ? 'Creating…' : 'Generate link'}
             </Button>
           </div>
         </div>
 
-        <div className="divider" style={{ margin: 'var(--s-7) 0' }} />
+        <div className="share-modal__gap" />
 
         <div className="eyebrow">Existing links</div>
         {loading ? (
@@ -196,15 +196,15 @@ export function ShareLinkModal({ open, projectId, onClose }) {
                   key={l.id}
                   className={`share-modal__row ${revoked || expired ? 'is-disabled' : ''}`}
                 >
-                  <div className="col gap-1 fill" style={{ minWidth: 0 }}>
+                  <div className="col gap-1 fill share-modal__link-info">
                     <div className="row gap-2 share-modal__url">
                       <code className="mono truncate" title={l.url}>{l.url}</code>
                       {l.hasPassword && (
-                        <span className="badge badge-neutral">password</span>
+                        <span className="share-modal__flag">Password</span>
                       )}
-                      {revoked && <span className="badge badge-danger">revoked</span>}
+                      {revoked && <span className="share-modal__flag is-danger">Revoked</span>}
                       {!revoked && expired && (
-                        <span className="badge badge-warning">expired</span>
+                        <span className="share-modal__flag is-warning">Expired</span>
                       )}
                     </div>
                     <div className="muted share-modal__meta">

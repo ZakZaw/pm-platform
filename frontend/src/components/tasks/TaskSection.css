@@ -1,0 +1,50 @@
+/* Collapsible secondary section inside the task drawer. */
+.task-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.task-section-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  padding: var(--s-4) 0;
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  text-align: left;
+  cursor: pointer;
+}
+
+.task-section-head:hover .task-section-title { color: var(--accent); }
+
+.task-section-head:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+  border-radius: var(--r-sm);
+}
+
+.task-section-chevron {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.task-section.is-open .task-section-chevron { transform: rotate(90deg); }
+
+.task-section-title { transition: color var(--dur-fast) var(--ease-out); }
+
+.task-section-meta {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-regular);
+}
+
+.task-section-body {
+  padding: 0 0 var(--s-5) var(--s-7);
+}

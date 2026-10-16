@@ -1,22 +1,40 @@
 .profile {
-  max-width: 640px;
+  max-width: 760px;
 }
 
-.profile__title {
-  font-size: var(--fs-2xl);
-  font-weight: var(--fw-semibold);
-  letter-spacing: -0.01em;
-  margin: 0 0 var(--s-8);
+/* Page-scoped fix: stratos' `.input-group` centres its children. */
+.profile .input-group {
+  align-items: stretch;
+  gap: 0;
 }
 
 .profile__card {
-  margin-bottom: var(--s-7);
+  padding: var(--s-9);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-9);
 }
 
 .profile__avatar-row {
   display: flex;
   align-items: center;
-  gap: var(--s-6);
+  gap: var(--s-7);
+}
+
+.profile__identity {
+  min-width: 0;
+}
+
+.profile__name {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+}
+
+.profile__email {
+  font-size: var(--fs-md);
+  color: var(--text-muted);
+  margin-top: var(--s-1);
 }
 
 .profile__file-input {
@@ -25,19 +43,20 @@
 
 .profile__avatar-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--s-4);
+  margin-top: var(--s-5);
 }
 
 .profile__hint {
-  font-size: var(--fs-xs);
+  font-size: var(--fs-sm);
   color: var(--text-muted);
-  margin: var(--s-4) 0 0;
 }
 
 .profile__error {
   color: var(--danger);
-  font-size: var(--fs-xs);
+  font-size: var(--fs-sm);
   margin: var(--s-4) 0 0;
 }
 
@@ -50,16 +69,22 @@
 .profile__form {
   display: flex;
   flex-direction: column;
-  gap: var(--s-6);
+  gap: var(--s-8);
+}
+
+.profile__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-8) var(--s-7);
 }
 
 .profile__chips {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  padding: 6px 8px;
-  min-height: 32px;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  min-height: 38px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
@@ -78,14 +103,35 @@
   outline: 0;
   color: var(--text);
   font-size: var(--fs-md);
-  padding: 2px 0;
+  padding: var(--s-1) 0;
 }
 
 .profile__tag-input::placeholder {
-  color: var(--text-muted);
+  color: var(--text-subtle);
+}
+
+.profile__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s-6);
+}
+
+.profile__status {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile__status .profile__error {
+  margin: 0;
 }
 
 .profile__placeholder {
   color: var(--text-muted);
   font-size: var(--fs-md);
+}
+
+@media (max-width: 760px) {
+  .profile__grid { grid-template-columns: 1fr; }
+  .profile__avatar-row { align-items: flex-start; }
 }

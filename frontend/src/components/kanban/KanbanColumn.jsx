@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import { MoreHorizontal, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { STATUS_MAP } from '@/components/ui/StatusBadge/constants';
 import './KanbanColumn.css';
@@ -76,34 +76,32 @@ export function KanbanColumn({
     >
       <header className="kanban-col-head">
         <div className="kanban-col-title">
-          <span className="kanban-col-title-dot" style={{ background: dotColor }} />
+          {/* Dot colour comes from the workflow config → custom property. */}
+          <span className="kanban-col-title-dot" style={{ '--col-dot': dotColor }} />
           <span>{label}</span>
           <span
-            className={`kanban-col-count ${wipExceeded ? 'is-over-limit' : ''}`}
+            className={['kanban-col-num', wipExceeded ? 'is-over-limit' : ''].filter(Boolean).join(' ')}
             title={wipLimit != null ? `WIP limit: ${wipLimit}` : undefined}
           >
             {count}
             {wipLimit != null && (
-              <span className="kanban-col-count__limit">/{wipLimit}</span>
+              <span className="kanban-col-num-limit">/{wipLimit}</span>
             )}
           </span>
         </div>
-        <div className="row gap-2">
-          {points != null && <span className="kanban-col-count">{points}p</span>}
+        <div className="kanban-col-tools">
+          {points != null && <span className="kanban-col-pts">{points} pts</span>}
           {onAddTask && (
             <button
               type="button"
-              className="btn btn-ghost btn-icon-sm"
+              className="icon-btn icon-btn-sm kanban-col-add-icon"
               onClick={() => setAdding(true)}
               aria-label="Add task"
               title="Add task"
             >
-              <Plus size={12} aria-hidden="true" />
+              <Plus size={14} aria-hidden="true" />
             </button>
           )}
-          <span className="btn btn-ghost btn-icon-sm" aria-hidden="true">
-            <MoreHorizontal size={12} />
-          </span>
         </div>
       </header>
 
@@ -149,7 +147,7 @@ export function KanbanColumn({
               className="kanban-col-add-trigger"
               onClick={() => setAdding(true)}
             >
-              + Add task
+              <Plus size={14} aria-hidden="true" /> Add task
             </button>
           )
         )}

@@ -86,10 +86,10 @@ export function CreateDealModal({ projectId, stages, onClose, onCreated }) {
     <Modal open onClose={onClose} labelledBy="create-deal-title" size="md">
       <form onSubmit={submit}>
         <ModalHeader>
-          <h2 id="create-deal-title" style={{ margin: 0, fontSize: 16 }}>New deal</h2>
+          <h2 id="create-deal-title" className="modal-title">New deal</h2>
         </ModalHeader>
         <ModalBody>
-          <div className="vstack" style={{ gap: 12 }}>
+          <div className="col gap-5">
             <Input
               label="Deal name"
               autoFocus
@@ -98,7 +98,7 @@ export function CreateDealModal({ projectId, stages, onClose, onCreated }) {
               placeholder="e.g. Acme Corp — Enterprise plan"
               required
             />
-            <div className="grid-2" style={{ gap: 12 }}>
+            <div className="grid-2">
               <Input
                 label="Value"
                 type="number"
@@ -120,12 +120,15 @@ export function CreateDealModal({ projectId, stages, onClose, onCreated }) {
               onChange={(e) => setAccountId(e.target.value)}
               options={accounts.map((a) => ({ value: a.id, label: a.name }))}
             />
-            <div className="hstack" style={{ gap: 6 }}>
-              <Input
-                value={newAccountName}
-                onChange={(e) => setNewAccountName(e.target.value)}
-                placeholder="…or create a new account"
-              />
+            <div className="row gap-3">
+              <div className="fill">
+                <Input
+                  value={newAccountName}
+                  onChange={(e) => setNewAccountName(e.target.value)}
+                  placeholder="…or create a new account"
+                  aria-label="Or create a new account"
+                />
+              </div>
               <Button
                 type="button"
                 variant="secondary"
@@ -144,7 +147,7 @@ export function CreateDealModal({ projectId, stages, onClose, onCreated }) {
                 .filter((s) => !s.isTerminalWon && !s.isTerminalLost)
                 .map((s) => ({ value: s.id, label: s.name }))}
             />
-            {error && <p style={{ color: 'var(--danger)', margin: 0 }}>{error}</p>}
+            {error && <p className="input-help is-error">{error}</p>}
           </div>
         </ModalBody>
         <ModalFooter>

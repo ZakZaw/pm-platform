@@ -1,55 +1,46 @@
-/* Engineering board page — compact sprint banner + kanban columns.
-   Built on .main-inner / .page-head. Kanban primitives in stratos.css. */
+/* Engineering board page — calm header (title, live dot, one line of
+   sprint facts) + kanban columns. Built on .main-inner / .page-head.
+   Kanban primitives in stratos.css. Shared by SprintBoardPage. */
 
 .board-page {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  padding: var(--s-7) var(--s-9) 0;
 }
 
-/* Override .main-inner default padding so the inner flex layout works */
+/* Board fills the viewport; let the columns own the bottom space. */
 .main-inner.board-page { padding-bottom: 0; }
 
 .board-page .page-head {
   flex-shrink: 0;
-  margin-bottom: var(--s-5);
+  margin-bottom: var(--s-7);
 }
+.board-page .page-title-row { align-items: flex-end; }
 
-/* Compact sprint banner inside the page head */
-.board-page-banner {
+.board-page-heading { min-width: 0; }
+.board-page-heading .eyebrow { margin-bottom: var(--s-3); }
+
+.board-page-title {
   display: flex;
   align-items: center;
-  gap: var(--s-4);
-  padding: var(--s-3) var(--s-5);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
+  flex-wrap: wrap;
+  gap: var(--s-5);
+  font-size: var(--fs-2xl);
 }
-.board-page-banner-label {
-  font-size: var(--fs-2xs);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wide);
-  font-weight: var(--fw-semibold);
-  color: var(--text-muted);
-}
-.board-page-banner-days { gap: 2px; }
-.board-page-banner-days-num {
-  font-size: var(--fs-lg);
-  font-weight: var(--fw-bold);
-  letter-spacing: -0.02em;
-  line-height: 1;
-}
-.board-page-banner-days-label {
-  font-size: var(--fs-2xs);
+
+.board-page-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  flex-shrink: 0;
 }
 
 .board-page-filter-dot {
   display: inline-block;
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   background: var(--accent);
   margin-left: var(--s-2);
 }
@@ -59,9 +50,11 @@
   flex-wrap: wrap;
   align-items: flex-end;
   gap: var(--s-5);
-  padding-bottom: var(--s-5);
-  margin-bottom: var(--s-5);
-  border-bottom: 1px solid var(--divider);
+  padding: var(--s-6) var(--s-7);
+  margin-bottom: var(--s-7);
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-card);
   flex-shrink: 0;
 }
 
@@ -70,8 +63,4 @@
   min-height: 0;
   overflow: hidden;
   display: flex;
-}
-
-@media (max-width: 1100px) {
-  .board-page-banner { display: none; }
 }

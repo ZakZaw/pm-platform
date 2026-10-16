@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Activity as ActivityIcon, Mail, MessageSquare, Phone, Video, X } from 'lucide-react';
-import { Badge, Button, Input, Select, useToast } from '@/components/ui';
+import { Button, Input, Select, useToast } from '@/components/ui';
 import { salesApi } from '@/api/sales.api';
 import { LostReasonModal } from './LostReasonModal';
 import './DealDetailDrawer.css';
@@ -12,6 +12,12 @@ const ACTIVITY_ICONS = {
   Email: Mail,
   Meeting: Video,
   Task: ActivityIcon,
+};
+
+const STATUS_CLASS = {
+  Open: 'status-progress',
+  Won: 'status-done',
+  Lost: 'status-blocked',
 };
 
 function fmtCurrency(value, currency) {
@@ -135,13 +141,11 @@ export function DealDetailDrawer({ dealId, stages, onClose, onChanged }) {
         onClick={(e) => e.stopPropagation()}
       >
         <header className="deal-drawer__head">
-          <div className="hstack" style={{ gap: 8 }}>
-            <Badge tone={deal?.status === 'Won' ? 'success' : deal?.status === 'Lost' ? 'danger' : 'info'}>
+          <div className="deal-drawer__head-meta">
+            <span className={`status ${STATUS_CLASS[deal?.status] ?? 'status-progress'}`}>
               {deal?.status ?? '…'}
-            </Badge>
-            <span className="muted" style={{ fontSize: 12 }}>
-              {deal?.accountName}
             </span>
+            {deal?.accountName && <span className="muted">{deal.accountName}</span>}
           </div>
           <button
             type="button"
@@ -163,7 +167,7 @@ export function DealDetailDrawer({ dealId, stages, onClose, onChanged }) {
 
             <div className="grid-2 deal-drawer__fields">
               <Field label="Value">
-                <span className="mono" style={{ fontSize: 18, fontWeight: 600 }}>
+                <span className="deal-drawer__value">
                   {fmtCurrency(deal.value, deal.currency)}
                 </span>
               </Field>
@@ -208,13 +212,13 @@ export function DealDetailDrawer({ dealId, stages, onClose, onChanged }) {
               </div>
             )}
             {deal.wonNote && (
-              <div className="deal-drawer__reason deal-drawer__reason--won">
+              <div className="deal-drawer__reason is-won">
                 <strong>Won note:</strong> {deal.wonNote}
               </div>
             )}
 
-            <div className="subsection">
-              <div className="subsection-eyebrow">Activity</div>
+            <section className="deal-drawer__section">
+              <h3 className="deal-drawer__section-title">Activity</h3>
               <form className="deal-drawer__activity-form" onSubmit={logActivity}>
                 <Select
                   value={activityType}
@@ -242,10 +246,12 @@ export function DealDetailDrawer({ dealId, stages, onClose, onChanged }) {
                   const Icon = ACTIVITY_ICONS[a.type] ?? MessageSquare;
                   return (
                     <li key={a.id} className="deal-drawer__activity">
-                      <Icon size={13} aria-hidden="true" />
+                      <span className="deal-drawer__activity-icon">
+                        <Icon size={13} aria-hidden="true" />
+                      </span>
                       <div className="grow">
                         <div>{a.summary}</div>
-                        <div className="muted" style={{ fontSize: 11 }}>
+                        <div className="deal-drawer__activity-meta">
                           {a.type} · {new Date(a.occurredAt).toLocaleString()}
                         </div>
                       </div>
@@ -253,10 +259,10 @@ export function DealDetailDrawer({ dealId, stages, onClose, onChanged }) {
                   );
                 })}
                 {activities.length === 0 && (
-                  <li className="muted" style={{ padding: 12 }}>No activity yet.</li>
+                  <li className="deal-drawer__empty">No activity yet.</li>
                 )}
               </ul>
-            </div>
+            </section>
           </div>
         )}
 
@@ -281,7 +287,7 @@ export function DealDetailDrawer({ dealId, stages, onClose, onChanged }) {
 function Field({ label, children }) {
   return (
     <div className="deal-drawer__field">
-      <div className="subsection-eyebrow">{label}</div>
+      <div className="deal-drawer__label">{label}</div>
       {children}
     </div>
   );

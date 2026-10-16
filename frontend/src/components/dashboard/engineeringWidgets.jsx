@@ -4,8 +4,8 @@
 // no data-fetching here, EXCEPT for the activity feed widget which fetches
 // its own paged history (see ActivityFeedWidget below).
 
-import { useEffect, useState } from 'react';
-import { Avatar, Badge, Icon, Skeleton } from '@/components/ui';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Avatar, Icon, Skeleton } from '@/components/ui';
 import {
   BurndownChart,
   EpicProgressBars,
@@ -14,16 +14,9 @@ import {
   WorkloadHeatmap,
 } from '@/components/charts';
 import { activityApi } from '@/api/activity.api';
+import './DashboardWidget.css';
 
-// Maps a backend signal tone keyword to its design token color.
-const TONE_COLOR = {
-  success: 'var(--success)',
-  warning: 'var(--warning)',
-  danger: 'var(--danger)',
-  info: 'var(--info)',
-};
-
-// Short header label for the weekly-insight tone badge.
+// Short header label for the weekly-insight tone read-out.
 const INSIGHT_TONE_LABEL = {
   success: 'On track',
   warning: 'Watch',
@@ -35,6 +28,38 @@ const INSIGHT_TONE_LABEL = {
 // rather than a misleading zero.
 const pct = (v) => (v == null ? '—' : `${Math.round(v)}%`);
 
+// Dot + coloured text status read-out (no capsule).
+function Tone({ tone = 'neutral', children }) {
+  return <span className={`dash-tone dash-tone-${tone}`}>{children}</span>;
+}
+
+// Measures its own box so SVG charts render at the widget's real size (the
+// canvas is resizable) while the chart components keep their explicit
+// width/height props.
+function ChartFrame({ minHeight = 120, children }) {
+  const ref = useRef(null);
+  const [size, setSize] = useState(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const measure = () => {
+      const r = el.getBoundingClientRect();
+      const next = { w: Math.floor(r.width), h: Math.max(minHeight, Math.floor(r.height)) };
+      setSize((cur) => (cur && cur.w === next.w && cur.h === next.h ? cur : next));
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [minHeight]);
+  return (
+    <div ref={ref} className="dash-chart">
+      {size && size.w > 0 && children(size.w, size.h)}
+    </div>
+  );
+}
+
 function KpiCard({ label, value, delta, tone = 'info' }) {
   return (
     <div className="dash-kpi">
@@ -42,13 +67,26 @@ function KpiCard({ label, value, delta, tone = 'info' }) {
       <div className="dash-kpi__row">
         <div className="dash-kpi__value">{value}</div>
         {delta && (
-          <span className={`stat-delta stat-delta-${tone === 'success' ? 'up' : tone === 'warning' || tone === 'danger' ? 'down' : 'up'}`}>
+          <span className={`stat-delta stat-delta-${tone === 'warning' || tone === 'danger' ? 'down' : 'up'}`}>
             {delta}
           </span>
         )}
       </div>
     </div>
   );
+}
+
+function WidgetHead({ title, children }) {
+  return (
+    <header className="dash-card__head">
+      <h3 className="dash-card__title">{title}</h3>
+      {children}
+    </header>
+  );
+}
+
+function Empty({ children }) {
+  return <p className="dash-empty">{children}</p>;
 }
 
 // Widget registry. Order here drives the default layout. Adding a new
@@ -115,26 +153,31 @@ export const ENGINEERING_WIDGETS = [
       const isBehind = remainingNow > idealNow + 2;
       return (
         <div className="dash-card">
-          <header className="dash-card__head">
-            <strong>Sprint burndown</strong>
+          <WidgetHead title="Sprint burndown">
             {hasSprint && (
-              <Badge tone={isBehind ? 'warning' : 'success'} dot>
+              <Tone tone={isBehind ? 'warning' : 'success'}>
                 {isBehind ? 'Behind ideal' : 'On track'}
-              </Badge>
+              </Tone>
             )}
-          </header>
+          </WidgetHead>
           <div className="dash-card__body">
-            <div className="muted dashboard-sub">
+            <div className="dash-sub">
               {hasSprint
                 ? `${burndown.sprintName} · ${done} / ${total} pt · ${daysLeft} day${daysLeft === 1 ? '' : 's'} left`
                 : 'No active sprint'}
             </div>
             {hasSprint ? (
-              <BurndownChart total={total} actual={actual} today={today} days={days} width={520} height={150} />
+              <>
+                <ChartFrame>
+                  {(w, h) => <BurndownChart total={total} actual={actual} today={today} days={days} width={w} height={h} />}
+                </ChartFrame>
+                <div className="dash-legend">
+                  <span className="dash-legend__item"><span className="dash-legend__line" />Remaining</span>
+                  <span className="dash-legend__item"><span className="dash-legend__dash" />Ideal</span>
+                </div>
+              </>
             ) : (
-              <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-sm)' }}>
-                Start a sprint to see its burndown.
-              </p>
+              <Empty>Start a sprint to see its burndown.</Empty>
             )}
           </div>
         </div>
@@ -151,23 +194,16 @@ export const ENGINEERING_WIDGETS = [
       const signals = health?.signals ?? [];
       return (
         <div className="dash-card">
-          <header className="dash-card__head">
-            <strong>Project health</strong>
-            {health && <Badge tone={bandTone}>{health.band}</Badge>}
-          </header>
+          <WidgetHead title="Project health">
+            {health && <Tone tone={bandTone}>{health.band}</Tone>}
+          </WidgetHead>
           <div className="dash-card__body center">
-            <HealthGauge score={score} />
-            <div className="col gap-3 dashboard-signals">
+            <HealthGauge score={score} size={128} stroke={9} />
+            <div className="dash-signals">
               {signals.map((s) => (
-                <div key={s.label} className="row between" style={{ fontSize: 'var(--fs-sm)' }}>
-                  <span className="row gap-3">
-                    <span
-                      className="dashboard-signal-dot"
-                      style={{ background: TONE_COLOR[s.tone] ?? 'var(--text-muted)' }}
-                    />
-                    {s.label}
-                  </span>
-                  <span className="mono muted">{s.value}</span>
+                <div key={s.label} className="dash-signal">
+                  <Tone tone={s.tone}>{s.label}</Tone>
+                  <span className="dash-signal__value">{s.value}</span>
                 </div>
               ))}
             </div>
@@ -182,40 +218,32 @@ export const ENGINEERING_WIDGETS = [
     defaults: { w: 8, h: 5, minW: 4, minH: 4 },
     render: ({ velocity }) => (
       <div className="dash-card">
-        <header className="dash-card__head">
-          <strong>Velocity</strong>
-          <div className="row gap-4" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)' }}>
-            <span className="row gap-2">
-              <span className="dashboard-legend-swatch" style={{ background: 'var(--surface-hover)' }} />
-              Committed
-            </span>
-            <span className="row gap-2">
-              <span className="dashboard-legend-swatch" style={{ background: 'var(--accent)' }} />
-              Completed
-            </span>
-            <span className="row gap-2">
-              <span className="dashboard-legend-swatch" style={{ background: 'var(--ai-2)' }} />
-              Avg
-            </span>
+        <WidgetHead title="Velocity">
+          <div className="dash-legend">
+            <span className="dash-legend__item"><span className="dash-legend__swatch is-muted" />Committed</span>
+            <span className="dash-legend__item"><span className="dash-legend__swatch" />Completed</span>
+            <span className="dash-legend__item"><span className="dash-legend__dash" />Avg</span>
           </div>
-        </header>
+        </WidgetHead>
         <div className="dash-card__body">
           {(velocity?.length ?? 0) === 0 ? (
-            <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-sm)' }}>
-              No sprint history yet. Close a sprint to start tracking velocity.
-            </p>
+            <Empty>No sprint history yet. Close a sprint to start tracking velocity.</Empty>
           ) : (
-            <VelocityChart
-              sprints={velocity.map((v) => ({
-                name: v.name,
-                committed: v.committed,
-                completed: v.completed,
-                rollingAverage: v.rollingAverage,
-                current: v.current,
-              }))}
-              width={520}
-              height={150}
-            />
+            <ChartFrame>
+              {(w, h) => (
+                <VelocityChart
+                  sprints={velocity.map((v) => ({
+                    name: v.name,
+                    committed: v.committed,
+                    completed: v.completed,
+                    rollingAverage: v.rollingAverage,
+                    current: v.current,
+                  }))}
+                  width={w}
+                  height={h}
+                />
+              )}
+            </ChartFrame>
           )}
         </div>
       </div>
@@ -227,7 +255,7 @@ export const ENGINEERING_WIDGETS = [
     defaults: { w: 4, h: 5, minW: 3, minH: 3 },
     render: ({ epicProgress }) => (
       <div className="dash-card">
-        <header className="dash-card__head"><strong>Epic progress</strong></header>
+        <WidgetHead title="Epic progress" />
         <div className="dash-card__body">
           <EpicProgressBars epics={epicProgress ?? []} metric="points" limit={6} />
         </div>
@@ -243,15 +271,12 @@ export const ENGINEERING_WIDGETS = [
       const data = (workload?.members ?? []).map((m) => ({ name: m.name, load: m.load }));
       return (
         <div className="dash-card">
-          <header className="dash-card__head">
-            <strong>Team workload</strong>
-            <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>last 10 days · tasks done/day</span>
-          </header>
+          <WidgetHead title="Team workload">
+            <span className="dash-meta">Tasks done per day · last 10 days</span>
+          </WidgetHead>
           <div className="dash-card__body">
             {data.length === 0 ? (
-              <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-sm)' }}>
-                No team members on this project yet.
-              </p>
+              <Empty>No team members on this project yet.</Empty>
             ) : (
               <WorkloadHeatmap days={days} data={data} />
             )}
@@ -265,33 +290,33 @@ export const ENGINEERING_WIDGETS = [
     title: 'Weekly insight',
     defaults: { w: 4, h: 5, minW: 3, minH: 4 },
     render: ({ insight }) => (
-      <div className="ai-card" style={{ height: '100%' }}>
-        <div className="ai-card-body">
-          <div className="row gap-4" style={{ marginBottom: 'var(--s-4)' }}>
-            <div className="ai-mark"><Icon name="sparkles" size={14} /></div>
-            <strong>Weekly insight</strong>
-            {insight && (
-              <span style={{ marginLeft: 'auto' }}>
-                <Badge tone={insight.tone === 'info' ? 'info' : insight.tone} dot>
-                  {INSIGHT_TONE_LABEL[insight.tone] ?? 'Insight'}
-                </Badge>
-              </span>
-            )}
+      <div className="dash-card">
+        <header className="dash-card__head">
+          <div className="dash-insight__title-row">
+            <span className="ai-mark dash-insight__mark"><Icon name="sparkles" size={13} /></span>
+            <h3 className="dash-card__title">Weekly insight</h3>
           </div>
+          {insight && (
+            <Tone tone={insight.tone}>
+              {INSIGHT_TONE_LABEL[insight.tone] ?? 'Insight'}
+            </Tone>
+          )}
+        </header>
+        <div className="dash-card__body">
           {insight ? (
             <>
-              <div className="dashboard-insight-title">{insight.headline}</div>
-              <p className="muted dashboard-insight-body">{insight.detail}</p>
+              <div className="dash-insight__headline">{insight.headline}</div>
+              <p className="dash-insight__body">{insight.detail}</p>
               {insight.highlights?.length > 0 && (
-                <div className="dashboard-insight-chips">
+                <ul className="dash-insight__highlights">
                   {insight.highlights.map((h) => (
-                    <span key={h} className="dashboard-insight-chip">{h}</span>
+                    <li key={h}>{h}</li>
                   ))}
-                </div>
+                </ul>
               )}
             </>
           ) : (
-            <p className="muted dashboard-insight-body">No insight to show yet.</p>
+            <Empty>No insight to show yet.</Empty>
           )}
         </div>
       </div>
@@ -366,32 +391,20 @@ function ActivityFeedWidget({ project, refreshKey }) {
 
   return (
     <div className="dash-card">
-      <header className="dash-card__head"><strong>Recent activity</strong></header>
-      <div className="col" style={{ overflowY: 'auto' }}>
-        {entries === null && !error && (
-          <div style={{ padding: 'var(--s-5) var(--s-7)' }}>
-            <Skeleton height={14} width="60%" />
-          </div>
-        )}
-        {error && (
-          <p className="muted" style={{ padding: 'var(--s-5) var(--s-7)', fontSize: 'var(--fs-sm)' }}>
-            {error}
-          </p>
-        )}
-        {entries && entries.length === 0 && !error && (
-          <p className="muted" style={{ padding: 'var(--s-5) var(--s-7)', margin: 0, fontSize: 'var(--fs-sm)' }}>
-            No activity in this project yet.
-          </p>
-        )}
-        {entries && entries.map((entry, i, list) => (
-          <ActivityRow key={entry.id} entry={entry} isLast={i === list.length - 1} />
+      <WidgetHead title="Recent activity" />
+      <div className="dash-activity">
+        {entries === null && !error && <Skeleton height={14} width="60%" />}
+        {error && <Empty>{error}</Empty>}
+        {entries && entries.length === 0 && !error && <Empty>No activity in this project yet.</Empty>}
+        {entries && entries.map((entry) => (
+          <ActivityRow key={entry.id} entry={entry} />
         ))}
       </div>
     </div>
   );
 }
 
-function ActivityRow({ entry, isLast }) {
+function ActivityRow({ entry }) {
   const actorName = entry.actor?.fullName ?? 'Someone';
   const phrase = VERB_PHRASE[entry.verb] ?? entry.verb;
   const targetLabel = TARGET_LABEL[entry.targetType] ?? entry.targetType.toLowerCase();
@@ -400,27 +413,13 @@ function ActivityRow({ entry, isLast }) {
   // generic "{verb} the {targetType}" line.
   const summary = entry.summary?.trim();
   return (
-    <div
-      className="row gap-4 dashboard-activity"
-      style={{ borderBottom: isLast ? 0 : '1px solid var(--divider)' }}
-    >
-      <Avatar
-        name={actorName}
-        src={entry.actor?.avatarUrl}
-        size="xs"
-      />
-      <span className="dashboard-activity-text">
-        <span style={{ fontWeight: 500 }}>{actorName}</span>{' '}
-        {summary ? (
-          <span className="muted">{summary}</span>
-        ) : (
-          <>
-            <span className="muted">{phrase} the </span>
-            <span className="mono" style={{ color: 'var(--accent)' }}>{targetLabel}</span>
-          </>
-        )}
+    <div className="dash-activity__row">
+      <Avatar name={actorName} src={entry.actor?.avatarUrl} size="sm" />
+      <span className="dash-activity__text">
+        <span className="dash-activity__actor">{actorName}</span>{' '}
+        <span className="muted">{summary || `${phrase} the ${targetLabel}`}</span>
       </span>
-      <span className="mono muted dashboard-activity-time" title={new Date(entry.createdAt).toLocaleString()}>
+      <span className="dash-activity__time" title={new Date(entry.createdAt).toLocaleString()}>
         {relativeTime(entry.createdAt)}
       </span>
     </div>

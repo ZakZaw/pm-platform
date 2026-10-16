@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ChevronRight, X } from 'lucide-react';
 import { AssigneePicker, Button, Input, Select, useToast } from '@/components/ui';
 import { useUiStore } from '@/store/uiStore';
 import { useOrgStore } from '@/store/orgStore';
@@ -43,6 +44,7 @@ export function QuickCreateTaskModal() {
   const [acceptance, setAcceptance] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
+  const [moreOpen, setMoreOpen] = useState(false);
 
   // Per-project related lists, loaded once a real (non-personal) project is
   // selected so the user can pick epic / sprint / assignee.
@@ -62,6 +64,7 @@ export function QuickCreateTaskModal() {
     setAssigneeId(null);
     setReviewerId(null);
     setAcceptance('');
+    setMoreOpen(false);
     usersApi
       .personalProject()
       .then((p) => setPersonalProject(p))
@@ -201,55 +204,32 @@ export function QuickCreateTaskModal() {
           <h2 className="qct-modal__title">New task</h2>
           <button
             type="button"
-            className="qct-modal__close"
+            className="icon-btn icon-btn-sm"
             onClick={close}
             aria-label="Close"
           >
-            ×
+            <X size={16} aria-hidden="true" />
           </button>
         </header>
         <form className="qct-modal__form" onSubmit={submit}>
-          <Select
-            label="Project"
-            value={projectId}
-            onChange={(e) => setProjectId(e.target.value)}
-            options={options}
-          />
-          <Input
-            label="Title"
+          <input
+            className="qct-modal__title-input"
+            aria-label="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
             minLength={2}
             maxLength={200}
             placeholder="What needs to happen?"
+            autoFocus
           />
 
-          {!isPersonal && (
-            <div className="qct-modal__grid-2">
-              <Select
-                label="Epic"
-                value={epicId}
-                onChange={(e) => setEpicId(e.target.value)}
-                options={[
-                  { value: '', label: '— No epic —' },
-                  ...epics.map((e) => ({ value: e.id, label: e.title })),
-                ]}
-              />
-              <Select
-                label="Sprint"
-                value={sprintId}
-                onChange={(e) => setSprintId(e.target.value)}
-                options={[
-                  { value: '', label: '— Backlog —' },
-                  ...sprints.map((s) => ({
-                    value: s.id,
-                    label: `${s.name}${s.status === 'Active' ? ' · active' : ''}`,
-                  })),
-                ]}
-              />
-            </div>
-          )}
+          <Select
+            label="Project"
+            value={projectId}
+            onChange={(e) => setProjectId(e.target.value)}
+            options={options}
+          />
 
           <div className="qct-modal__grid-3">
             <Select
@@ -259,66 +239,126 @@ export function QuickCreateTaskModal() {
               options={PRIORITY_OPTIONS}
             />
             <Input
-              label="Points"
-              type="number"
-              min={0}
-              max={200}
-              value={storyPoints}
-              onChange={(e) => setStoryPoints(e.target.value)}
-              placeholder="—"
-            />
-            <Input
               label="Due"
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
             />
-          </div>
-
-          {!isPersonal && chosen?.orgSlug && (
-            <div className="qct-modal__grid-2">
-              <div>
-                <label className="qct-modal__label">Assignee</label>
+            {!isPersonal && chosen?.orgSlug ? (
+              <div className="qct-modal__field">
+                <span className="qct-modal__label">Assignee</span>
                 <AssigneePicker
                   orgSlug={chosen.orgSlug}
                   value={assigneeId}
                   onChange={setAssigneeId}
                 />
               </div>
-              <div>
-                <label className="qct-modal__label">Reviewer</label>
-                <AssigneePicker
-                  orgSlug={chosen.orgSlug}
-                  value={reviewerId}
-                  onChange={setReviewerId}
+            ) : (
+              <Input
+                label="Points"
+                type="number"
+                min={0}
+                max={200}
+                value={storyPoints}
+                onChange={(e) => setStoryPoints(e.target.value)}
+                placeholder="—"
+              />
+            )}
+          </div>
+
+          <button
+            type="button"
+            className="qct-modal__more"
+            aria-expanded={moreOpen}
+            onClick={() => setMoreOpen((v) => !v)}
+          >
+            <ChevronRight size={14} aria-hidden="true" className="qct-modal__more-chevron" />
+            More details
+            <span className="qct-modal__more-hint">
+              {isPersonal
+                ? 'description, acceptance criteria'
+                : 'epic, sprint, points, reviewer, description, acceptance criteria'}
+            </span>
+          </button>
+
+          <div className="qct-modal__more-body" hidden={!moreOpen}>
+            {!isPersonal && (
+              <div className="qct-modal__grid-2">
+                <Select
+                  label="Epic"
+                  value={epicId}
+                  onChange={(e) => setEpicId(e.target.value)}
+                  options={[
+                    { value: '', label: '— No epic —' },
+                    ...epics.map((e) => ({ value: e.id, label: e.title })),
+                  ]}
+                />
+                <Select
+                  label="Sprint"
+                  value={sprintId}
+                  onChange={(e) => setSprintId(e.target.value)}
+                  options={[
+                    { value: '', label: '— Backlog —' },
+                    ...sprints.map((s) => ({
+                      value: s.id,
+                      label: `${s.name}${s.status === 'Active' ? ' · active' : ''}`,
+                    })),
+                  ]}
                 />
               </div>
+            )}
+
+            {!isPersonal && chosen?.orgSlug && (
+              <div className="qct-modal__grid-2">
+                <Input
+                  label="Points"
+                  type="number"
+                  min={0}
+                  max={200}
+                  value={storyPoints}
+                  onChange={(e) => setStoryPoints(e.target.value)}
+                  placeholder="—"
+                />
+                <div className="qct-modal__field">
+                  <span className="qct-modal__label">Reviewer</span>
+                  <AssigneePicker
+                    orgSlug={chosen.orgSlug}
+                    value={reviewerId}
+                    onChange={setReviewerId}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="qct-modal__field">
+              <label className="qct-modal__label" htmlFor="qct-desc">
+                Description
+              </label>
+              <textarea
+                id="qct-desc"
+                className="qct-modal__textarea"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                maxLength={2000}
+                placeholder="Optional"
+              />
             </div>
-          )}
 
-          <label className="qct-modal__label" htmlFor="qct-desc">
-            Description (optional)
-          </label>
-          <textarea
-            id="qct-desc"
-            className="qct-modal__textarea"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-            maxLength={2000}
-          />
-
-          <label className="qct-modal__label" htmlFor="qct-ac">
-            Acceptance criteria (one per line)
-          </label>
-          <textarea
-            id="qct-ac"
-            className="qct-modal__textarea"
-            value={acceptance}
-            onChange={(e) => setAcceptance(e.target.value)}
-            rows={3}
-            placeholder={'e.g.\nThe button is visible on the dashboard\nClicking it logs the user out'}
-          />
+            <div className="qct-modal__field">
+              <label className="qct-modal__label" htmlFor="qct-ac">
+                Acceptance criteria (one per line)
+              </label>
+              <textarea
+                id="qct-ac"
+                className="qct-modal__textarea"
+                value={acceptance}
+                onChange={(e) => setAcceptance(e.target.value)}
+                rows={3}
+                placeholder={'e.g.\nThe button is visible on the dashboard\nClicking it logs the user out'}
+              />
+            </div>
+          </div>
 
           {error && <p className="qct-modal__error">{error}</p>}
           <div className="qct-modal__actions">

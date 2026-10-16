@@ -1,11 +1,11 @@
 import './Card.css';
 
-export function Card({ variant = 'default', title, subtitle, className = '', children }) {
+export function Card({ variant = 'default', title, subtitle, className = '', children, ...rest }) {
   const base = variant === 'ai' ? 'card-ai' : 'card';
   const elevated = variant === 'elevated' ? 'card-elevated' : '';
   const classes = [base, 'card-pad', elevated, className].filter(Boolean).join(' ');
   return (
-    <div className={classes}>
+    <div className={classes} {...rest}>
       {title && <h2 className="card__title">{title}</h2>}
       {subtitle && <p className="card__subtitle">{subtitle}</p>}
       {children}

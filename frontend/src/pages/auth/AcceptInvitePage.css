@@ -1,20 +1,22 @@
+/* Accept-invite body; the shell (brand + card) comes from AuthLayout. */
+
 .invite {
-  min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--s-8);
+  flex-direction: column;
+  gap: var(--s-7);
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--fs-md);
+  line-height: var(--lh-normal);
 }
 
-.invite__card {
-  width: 100%;
-  max-width: 440px;
+.invite p {
+  margin: 0;
 }
 
 .invite__lede {
   color: var(--text-muted);
   font-size: var(--fs-md);
-  margin: 0 0 var(--s-8);
   line-height: var(--lh-normal);
 }
 
@@ -26,7 +28,7 @@
 .invite__actions {
   display: flex;
   flex-direction: column;
-  gap: var(--s-5);
+  gap: var(--s-4);
 }
 
 .invite__muted {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Avatar, Button, Card, Input } from '@/components/ui';
+import { Avatar, Button, Input } from '@/components/ui';
 import { orgsApi } from '@/api/orgs.api';
 import { useOrgStore } from '@/store/orgStore';
 import './CreateOrgPage.css';
@@ -65,28 +65,38 @@ export function CreateOrgPage() {
   };
 
   return (
-    <div className="page page-narrow create-org">
-      <Card
-        title="Create your organization"
-        subtitle="Your team's workspace. You can change the name and logo later."
-        className="create-org__card"
-      >
-        <form className="create-org__form" onSubmit={onSubmit}>
-          <div className="create-org__logo-row">
-            <Avatar src={logoPreview} name={name || 'Organization'} size="xl" />
-            <div>
+    <div className="main-inner create-org">
+      <div className="card create-org-card">
+        <div className="create-org-head">
+          <h1 className="create-org-title">Create your organization</h1>
+          <p className="muted create-org-sub">
+            Your team's workspace. You can change the name and logo later.
+          </p>
+        </div>
+
+        <form className="create-org-form" onSubmit={onSubmit}>
+          <div className="create-org-logo-row">
+            <button
+              type="button"
+              className="create-org-logo"
+              onClick={() => fileInputRef.current?.click()}
+              aria-label={logoFile ? 'Replace logo' : 'Upload logo'}
+            >
+              <Avatar src={logoPreview} name={name || 'Organization'} size="xl" />
+            </button>
+            <div className="create-org-logo-text">
               <Button
                 type="button"
-                variant="ghost"
+                variant="secondary"
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
               >
                 {logoFile ? 'Replace logo' : 'Upload logo'}
               </Button>
-              <p className="create-org__logo-help">PNG, JPEG, or WebP. Max 2 MB.</p>
+              <p className="create-org-logo-help">PNG, JPEG, or WebP. Max 2 MB.</p>
               <input
                 ref={fileInputRef}
-                className="create-org__file-input"
+                className="create-org-file-input"
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
                 onChange={onPickFile}
@@ -105,13 +115,13 @@ export function CreateOrgPage() {
             autoComplete="organization"
           />
 
-          {error && <p className="create-org__error">{error}</p>}
+          {error && <p className="create-org-error" role="alert">{error}</p>}
 
-          <Button type="submit" block disabled={submitting || name.trim().length < 2}>
+          <Button type="submit" size="lg" block disabled={submitting || name.trim().length < 2}>
             {submitting ? 'Creating…' : 'Create organization'}
           </Button>
         </form>
-      </Card>
+      </div>
     </div>
   );
 }

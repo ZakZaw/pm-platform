@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Badge,
   Priority,
   Segmented,
   Select,
@@ -192,32 +191,35 @@ export function MyWorkPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>{user?.fullName ?? 'You'}</div>
+            <div className="eyebrow mywork-eyebrow">{user?.fullName ?? 'You'}</div>
             <h1 className="page-title">My Work</h1>
-            <p className="page-subtitle" style={{ marginTop: 8 }}>
+            <p className="page-subtitle">
               {items.length} {items.length === 1 ? 'item' : 'items'} across {projectCount} project{projectCount === 1 ? '' : 's'}
             </p>
           </div>
-          <div className="row gap-3 mywork-filters">
-            <Segmented
-              value={kindFilter}
-              onChange={setKindFilter}
-              options={KIND_FILTERS}
-              ariaLabel="Filter by item kind"
-            />
-            <Select
-              value={projectFilter}
-              onChange={(e) => setProjectFilter(e.target.value)}
-              options={projectOptions}
-              aria-label="Filter by project"
-            />
-            <Select
-              value={sprintFilter}
-              onChange={(e) => setSprintFilter(e.target.value)}
-              options={sprintOptions}
-              aria-label="Filter by sprint"
-            />
-          </div>
+        </div>
+      </div>
+
+      <div className="mywork-toolbar">
+        <Segmented
+          value={kindFilter}
+          onChange={setKindFilter}
+          options={KIND_FILTERS}
+          ariaLabel="Filter by item kind"
+        />
+        <div className="mywork-filters">
+          <Select
+            value={projectFilter}
+            onChange={(e) => setProjectFilter(e.target.value)}
+            options={projectOptions}
+            aria-label="Filter by project"
+          />
+          <Select
+            value={sprintFilter}
+            onChange={(e) => setSprintFilter(e.target.value)}
+            options={sprintOptions}
+            aria-label="Filter by sprint"
+          />
         </div>
       </div>
 
@@ -235,32 +237,32 @@ export function MyWorkPage() {
       )}
 
       {!loading && !error && (
-        <div className="col gap-7 mywork-sections">
+        <div className="mywork-sections">
           {SECTIONS.map((sec) => {
             const list = sectioned[sec.id];
             if (!list || list.length === 0) return null;
             return (
-              <div key={sec.id}>
-                <div className="row gap-3" style={{ marginBottom: 'var(--s-4)' }}>
-                  <h3 className="h-card" style={{ fontSize: 'var(--fs-md)' }}>{sec.label}</h3>
-                  <Badge tone={sec.tone}>{list.length}</Badge>
+              <section key={sec.id} aria-label={sec.label}>
+                <div className="mywork-section-head">
+                  <h2 className="h-card">{sec.label}</h2>
+                  <span className={`mywork-section-count is-${sec.tone}`}>{list.length}</span>
                 </div>
-                <div className="card">
-                  {list.map((item, i) => (
+                <div className="card mywork-list">
+                  {list.map((item) => (
                     <MyWorkRow
                       key={item.id}
                       item={item}
-                      isLast={i === list.length - 1}
                       onOpen={() => setOpened({ taskId: item.id, projectId: item.projectId })}
                     />
                   ))}
                 </div>
-              </div>
+              </section>
             );
           })}
           {items.length === 0 && (
-            <div className="card mywork-empty-card">
-              <p className="muted">Nothing assigned to you right now.</p>
+            <div className="card empty">
+              <div className="empty-title">You're all clear</div>
+              <p className="empty-desc">Nothing assigned to you right now.</p>
             </div>
           )}
         </div>
@@ -276,39 +278,38 @@ export function MyWorkPage() {
   );
 }
 
-function MyWorkRow({ item, isLast, onOpen }) {
+function MyWorkRow({ item, onOpen }) {
   const meta = findProjectType(item.projectType);
-  const iconClass = `proj-icon proj-icon-${(meta?.id ?? 'generic').toLowerCase()}`;
+  const tint = (meta?.id ?? 'generic').toLowerCase();
   const due = formatDue(item.dueDate);
   const isUrgent = item.priority === 'Urgent';
+  const isOverdue = due?.startsWith('Overdue');
 
   return (
     <button
       type="button"
       onClick={onOpen}
       className="mywork-row"
-      style={{ borderBottom: isLast ? 0 : '1px solid var(--divider)' }}
       aria-label={`${item.title} — ${item.status}`}
     >
       <span className="mono muted mywork-row-key">{shortKey(item)}</span>
       <div className="mywork-row-body">
-        <div className="row gap-3">
-          <span className="mywork-row-title truncate">{item.title}</span>
-          {isUrgent && <Badge tone="danger" dot>Urgent</Badge>}
-        </div>
-        <div className="row gap-3 mywork-row-meta">
-          <span className={iconClass} style={{ width: 14, height: 14, fontSize: 7, borderRadius: 3 }}>
+        <span className="mywork-row-title truncate">{item.title}</span>
+        <div className="mywork-row-meta">
+          <span className={`proj-icon proj-icon-${tint} mywork-row-proj`} aria-hidden="true">
             {meta?.short?.[0] ?? '·'}
           </span>
-          <span>{item.projectIsPersonal ? 'Personal' : item.projectName}</span>
-          {meta && <><span>·</span><span>{meta.label}</span></>}
+          <span className="truncate">{item.projectIsPersonal ? 'Personal' : item.projectName}</span>
+          {meta && <span className="mywork-row-type">· {meta.label}</span>}
         </div>
       </div>
-      <div className="mywork-row-priority">
-        <Priority level={item.priority} />
+      <div className={['mywork-row-priority', isUrgent ? 'is-urgent' : ''].filter(Boolean).join(' ')}>
+        <Priority level={item.priority} showLabel={isUrgent} />
       </div>
       <StatusBadge status={item.status} />
-      <span className="muted mono mywork-row-due">{due ?? '—'}</span>
+      <span className={['mywork-row-due', isOverdue ? 'is-overdue' : ''].filter(Boolean).join(' ')}>
+        {due ?? '—'}
+      </span>
     </button>
   );
 }
@@ -319,13 +320,13 @@ function MyWorkRow({ item, isLast, onOpen }) {
 function OperationsRunsBanner({ runs }) {
   const overdue = runs.filter((r) => r.isOverdue).length;
   return (
-    <section className="mywork-ops">
-      <header className="row mywork-ops-head">
-        <span className="eyebrow">Runbooks</span>
+    <section className="card mywork-ops">
+      <header className="mywork-ops-head">
+        <h2 className="h-card">Runbooks</h2>
         {overdue > 0 ? (
-          <Badge tone="danger">{overdue} overdue</Badge>
+          <span className="status status-blocked">{overdue} overdue</span>
         ) : (
-          <Badge tone="neutral">{runs.length} due this week</Badge>
+          <span className="muted mywork-ops-count">{runs.length} due this week</span>
         )}
       </header>
       <ul className="mywork-ops-list">
@@ -335,6 +336,7 @@ function OperationsRunsBanner({ runs }) {
           const when = new Date(r.scheduledFor).toLocaleString(undefined, {
             month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
           });
+          const pct = r.itemCount > 0 ? Math.round((r.completedItemCount / r.itemCount) * 100) : 0;
           return (
             <li key={r.id} className={['mywork-ops-row', r.isOverdue ? 'is-overdue' : ''].filter(Boolean).join(' ')}>
               <Link to={to} className="mywork-ops-link">
@@ -343,9 +345,17 @@ function OperationsRunsBanner({ runs }) {
                   {r.projectName} · scheduled {when}
                 </span>
               </Link>
-              <span className="mono muted">
-                {r.completedItemCount}/{r.itemCount}
-              </span>
+              <div className="mywork-ops-progress">
+                <div className="bar">
+                  <div
+                    className={`bar-fill ${r.isOverdue ? 'bar-fill-danger' : ''}`}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                <span className="mywork-ops-ratio">
+                  {r.completedItemCount}/{r.itemCount}
+                </span>
+              </div>
             </li>
           );
         })}

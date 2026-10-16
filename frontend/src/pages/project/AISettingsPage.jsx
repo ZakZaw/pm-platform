@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Check, Eye, Power, Sparkles, ShieldQuestion } from 'lucide-react';
-import { Button, Card, Skeleton, useToast } from '@/components/ui';
+import { Skeleton, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import './AISettingsPage.css';
 
@@ -114,7 +114,7 @@ export function AISettingsPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>
+            <div className="eyebrow">
               {project?.name ?? 'Project'} · Settings
             </div>
             <h1 className="page-title">AI control mode</h1>
@@ -140,14 +140,14 @@ export function AISettingsPage() {
             >
               <div className="ai-settings__head">
                 <span className="ai-settings__icon" aria-hidden="true">
-                  <mode.Icon size={16} />
+                  <mode.Icon size={18} />
                 </span>
                 <span className="ai-settings__label">{mode.label}</span>
-                {selected && (
-                  <span className="ai-settings__selected-pill">
-                    <Check size={11} aria-hidden="true" /> Selected
-                  </span>
-                )}
+                {/* Radio-style marker: filled check when selected. */}
+                <span className="ai-settings__radio" aria-hidden="true">
+                  {selected && <Check size={12} strokeWidth={3} />}
+                </span>
+                {selected && <span className="ai-settings__sr">Selected</span>}
               </div>
               <p className="ai-settings__summary">{mode.summary}</p>
               <ul className="ai-settings__details">

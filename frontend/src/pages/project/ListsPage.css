@@ -12,46 +12,45 @@
 .lists-page__newlist-input {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--r-sm);
+  border-radius: var(--r-md);
   color: var(--text);
   font: inherit;
   font-size: var(--fs-md);
   padding: 0 var(--s-5);
-  height: 30px;
+  height: var(--s-9);
   width: 220px;
   outline: none;
 }
 
 .lists-page__newlist-input:focus {
-  border-color: var(--accent-bright);
+  border-color: var(--accent-border);
   box-shadow: var(--shadow-focus);
 }
 
 .lists-page__list {
   display: flex;
   flex-direction: column;
-  gap: var(--s-4);
-  padding: var(--s-6);
-  transition: border-color var(--dur-fast) var(--ease-out),
+  gap: var(--s-3);
+  padding: var(--s-7) var(--s-7) var(--s-5);
+  transition: box-shadow var(--dur-fast) var(--ease-out),
     background var(--dur-fast) var(--ease-out);
 }
 
 .lists-page__list.is-over {
-  border-color: var(--accent);
-  background: var(--surface-hover);
+  box-shadow: var(--shadow-card), var(--shadow-focus);
 }
 
+/* Unsorted reads as a quieter tray rather than a dashed box. */
 .lists-page__list--unsorted {
-  background: var(--surface);
-  border-style: dashed;
+  background: var(--bg-subtle);
+  box-shadow: none;
 }
 
 .lists-page__list-head {
   display: flex;
   align-items: center;
   gap: var(--s-4);
-  padding-bottom: var(--s-4);
-  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 var(--s-3) var(--s-3);
   cursor: grab;
   user-select: none;
 }
@@ -66,68 +65,69 @@
 
 .lists-page__list-title {
   margin: 0;
-  font-size: var(--fs-base);
+  font-size: var(--fs-lg);
   font-weight: var(--fw-semibold);
   color: var(--text);
 }
 
 .lists-page__list-count {
-  font-size: var(--fs-xs);
+  font-size: var(--fs-sm);
 }
 
 .lists-page__rename-input {
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--r-md);
   color: var(--text);
   font: inherit;
-  font-size: var(--fs-base);
+  font-size: var(--fs-lg);
   font-weight: var(--fw-semibold);
-  padding: 2px var(--s-4);
+  padding: var(--s-1) var(--s-4);
   width: 100%;
   outline: none;
 }
 
 .lists-page__rename-input:focus {
-  border-color: var(--accent-bright);
   box-shadow: var(--shadow-focus);
 }
 
+/* Inline "add a task" row — reads like the next list item. */
 .lists-page__create {
   display: flex;
   gap: var(--s-4);
   align-items: center;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-md);
 }
+
+.lists-page__create:focus-within { background: var(--bg-subtle); }
+.lists-page__list--unsorted .lists-page__create:focus-within { background: var(--surface); }
+
+.lists-page__create-icon { color: var(--text-muted); flex-shrink: 0; }
 
 .lists-page__create-input {
   flex: 1;
+  min-width: 0;
   background: transparent;
-  border: 1px dashed var(--border-subtle);
-  border-radius: var(--r-sm);
+  border: 0;
   color: var(--text);
   font: inherit;
   font-size: var(--fs-md);
-  padding: 0 var(--s-5);
-  height: 30px;
+  height: var(--s-10);
   outline: none;
 }
 
-.lists-page__create-input:focus {
-  border-color: var(--accent-bright);
-  border-style: solid;
-  box-shadow: var(--shadow-focus);
-}
+.lists-page__create-input::placeholder { color: var(--text-muted); }
 
 .lists-page__droparea {
-  min-height: 24px;
+  min-height: var(--s-7);
 }
 
 .lists-page__placeholder {
   margin: 0;
-  padding: var(--s-5);
+  padding: var(--s-4) var(--s-3);
   color: var(--text-muted);
-  font-size: var(--fs-md);
-  text-align: center;
+  font-size: var(--fs-sm);
 }
 
 .lists-page__items {
@@ -136,37 +136,45 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--s-2);
 }
 
 .lists-page__item {
   display: grid;
-  grid-template-columns: auto 1fr auto auto;
+  grid-template-columns: 120px minmax(0, 1fr) auto;
   gap: var(--s-5);
   align-items: center;
-  padding: var(--s-4) var(--s-5);
-  background: var(--surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-sm);
+  min-height: var(--row-h);
+  padding: var(--s-3);
+  border-radius: var(--r-md);
 }
 
 .lists-page__item.is-interactive {
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out);
+  transition: background var(--dur-fast) var(--ease-out);
 }
 
 .lists-page__item.is-interactive:hover {
   background: var(--surface-hover);
-  border-color: var(--border);
+}
+
+.lists-page__item.is-interactive:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
 }
 
 .lists-page__item.is-overlay {
-  background: var(--surface-2);
+  list-style: none;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
 }
 
 .lists-page__item-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-4);
+  min-width: 0;
   font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
   color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -175,31 +183,33 @@
 
 .lists-page__item-key {
   font-size: var(--fs-xs);
+  font-weight: var(--fw-regular);
+  flex-shrink: 0;
 }
 
 .lists-page__item-meta {
   display: flex;
   align-items: center;
-  gap: var(--s-4);
+  gap: var(--s-5);
 }
 
-.lists-page__item-sub {
+.lists-page__item-sub,
+.lists-page__item-due {
   color: var(--text-muted);
   font-size: var(--fs-xs);
 }
 
 .lists-page__unassigned {
   display: inline-block;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
+  width: var(--s-7);
+  height: var(--s-7);
+  border-radius: var(--r-pill);
   border: 1px dashed var(--border);
 }
 
 .lists-page__list-overlay {
   padding: var(--s-5) var(--s-6);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
+  background: var(--surface);
+  border-radius: var(--r-lg);
   box-shadow: var(--shadow-lg);
 }

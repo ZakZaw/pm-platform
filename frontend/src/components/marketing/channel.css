@@ -1,0 +1,28 @@
+/* Marketing channel colour hooks (tokens from tokens.css --mkt-channel-*). */
+.mkt-ch-email  { --ch: var(--mkt-channel-email);  --ch-bg: var(--mkt-channel-email-bg); }
+.mkt-ch-social { --ch: var(--mkt-channel-social); --ch-bg: var(--mkt-channel-social-bg); }
+.mkt-ch-blog   { --ch: var(--mkt-channel-blog);   --ch-bg: var(--mkt-channel-blog-bg); }
+.mkt-ch-paid   { --ch: var(--mkt-channel-paid);   --ch-bg: var(--mkt-channel-paid-bg); }
+.mkt-ch-event  { --ch: var(--mkt-channel-event);  --ch-bg: var(--mkt-channel-event-bg); }
+.mkt-ch-other  { --ch: var(--mkt-channel-other);  --ch-bg: var(--mkt-channel-other-bg); }
+
+/* Channel read-out: coloured dot + coloured text. */
+.mkt-ch-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--ch);
+}
+.mkt-ch-label::before,
+.mkt-ch-dot {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-pill);
+  background: var(--ch);
+  flex-shrink: 0;
+}
+

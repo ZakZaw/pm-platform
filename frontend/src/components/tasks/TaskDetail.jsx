@@ -6,15 +6,14 @@ import {
   CircleAlert,
   CircleCheck,
   Clock,
+  Copy,
   ExternalLink,
   Eye,
   GitCommit,
   GitPullRequest,
   History,
-  Layers,
-  Maximize2,
-  MessageSquare,
   MoreHorizontal,
+  Plus,
   Sparkles,
   Trash2,
   Users,
@@ -22,8 +21,8 @@ import {
 } from 'lucide-react';
 import {
   AssigneePicker,
-  Badge,
   Button,
+  Dropdown,
   useToast,
 } from '@/components/ui';
 import { tasksApi } from '@/api/tasks.api';
@@ -65,9 +64,9 @@ const CI_TONE = {
 };
 
 function CiIcon({ status }) {
-  if (status === 'Success') return <CircleCheck size={10} aria-hidden="true" />;
-  if (status === 'Failure') return <CircleAlert size={10} aria-hidden="true" />;
-  return <Clock size={10} aria-hidden="true" />;
+  if (status === 'Success') return <CircleCheck size={12} aria-hidden="true" />;
+  if (status === 'Failure') return <CircleAlert size={12} aria-hidden="true" />;
+  return <Clock size={12} aria-hidden="true" />;
 }
 
 function shortKey(task) {
@@ -464,49 +463,37 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
           onUpdated?.({ ...task, storyPoints: pts });
         }}
       />
-      <aside
-        className="task-detail"
-        aria-label={`Task: ${task.title}`}
-        style={{ '--task-color': epicColor }}
-      >
-        {/* Color accent bar — pulls from the assigned epic, or default. */}
-        <div className="task-detail__color-bar" aria-hidden="true" />
-
-        {/* Drawer head: key + epic badge + PR badge, title, action buttons */}
+      <aside className="task-detail" aria-label={`Task: ${task.title}`}>
+        {/* Head: key + quiet meta, title, then the three fields people touch most. */}
         <div className="drawer-head task-detail__head">
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="row gap-3" style={{ marginBottom: 'var(--s-3)' }}>
+          <div className="task-detail__head-main">
+            <div className="task-detail__meta">
               <button
                 type="button"
-                className="mono muted task-detail__key-btn"
+                className="mono task-detail__key-btn"
                 onClick={copyKey}
                 title="Copy task key"
               >
                 {shortKey(task)}
               </button>
               {currentEpic && (
-                <Badge tone="violet">
-                  <Layers size={10} aria-hidden="true" /> {currentEpic.title}
-                </Badge>
+                <span className="task-detail__meta-item" title={`Epic: ${currentEpic.title}`}>
+                  <span className="task-detail__dot" style={{ '--dot': epicColor }} aria-hidden="true" />
+                  {currentEpic.title}
+                </span>
               )}
               {(task.prUrl || task.prNumber) && (
-                <Badge tone={PR_STATE_TONE[task.prState] ?? 'neutral'}>
-                  <GitPullRequest size={10} aria-hidden="true" />
-                  {task.prNumber ? ` #${task.prNumber}` : ' PR'}
+                <span className={`task-detail__meta-item tone-${PR_STATE_TONE[task.prState] ?? 'neutral'}`}>
+                  <GitPullRequest size={12} aria-hidden="true" />
+                  {task.prNumber ? `#${task.prNumber}` : 'PR'}
                   {task.prState ? ` ${task.prState}` : ''}
-                </Badge>
+                </span>
               )}
               {task.ciStatus && (
-                <Badge tone={CI_TONE[task.ciStatus] ?? 'neutral'}>
+                <span className={`task-detail__meta-item tone-${CI_TONE[task.ciStatus] ?? 'neutral'}`}>
                   <CiIcon status={task.ciStatus} /> CI {task.ciStatus}
-                </Badge>
+                </span>
               )}
-              <span
-                className="task-detail__color-chip"
-                style={{ background: epicColor }}
-                title={currentEpic ? `Epic: ${currentEpic.title}` : 'No epic — default color'}
-                aria-hidden="true"
-              />
             </div>
             {editingTitle ? (
               <input
@@ -536,42 +523,53 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
                 {task.title}
               </button>
             )}
+
+            <div className="task-detail__quick">
+              <div className="task-detail__quick-field">
+                <span className="task-detail__quick-label">Status</span>
+                <StatusDropdown status={task.status} onChange={changeStatus} />
+              </div>
+              <div className="task-detail__quick-field">
+                <span className="task-detail__quick-label">Assignee</span>
+                <AssigneePicker orgSlug={orgSlug} value={task.assigneeId ?? null} onChange={changeAssignee} />
+              </div>
+              <div className="task-detail__quick-field">
+                <span className="task-detail__quick-label">Priority</span>
+                <PriorityDropdown value={task.priority} onChange={changePriority} />
+              </div>
+            </div>
           </div>
-          <div className="row gap-3">
-            <button
-              type="button"
-              className="btn btn-ghost btn-icon-sm"
-              title="Watchers"
-              aria-label="Watchers"
-              disabled
+          <div className="row gap-2 task-detail__head-actions">
+            <Dropdown
+              align="end"
+              trigger={
+                <button type="button" className="icon-btn" title="More" aria-label="More">
+                  <MoreHorizontal size={16} aria-hidden="true" />
+                </button>
+              }
             >
-              <Eye size={13} aria-hidden="true" />
-            </button>
+              <Dropdown.Item icon={<Copy size={14} aria-hidden="true" />} onSelect={copyKey}>
+                Copy task key
+              </Dropdown.Item>
+              <Dropdown.Item icon={<Eye size={14} aria-hidden="true" />} disabled>
+                Watchers
+              </Dropdown.Item>
+              <Dropdown.Item icon={<ArrowUpRight size={14} aria-hidden="true" />} disabled>
+                Open full page
+              </Dropdown.Item>
+              <Dropdown.Divider />
+              <Dropdown.Item icon={<Trash2 size={14} aria-hidden="true" />} danger onSelect={deleteTask}>
+                Delete task
+              </Dropdown.Item>
+            </Dropdown>
             <button
               type="button"
-              className="btn btn-ghost btn-icon-sm"
-              title="Open full page"
-              aria-label="Open full page"
-              disabled
-            >
-              <ArrowUpRight size={13} aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              className="btn btn-ghost btn-icon-sm"
-              title="More"
-              aria-label="More"
-            >
-              <MoreHorizontal size={13} aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              className="btn btn-ghost btn-icon-sm"
+              className="icon-btn"
               onClick={onClose}
               title="Close"
               aria-label="Close"
             >
-              <X size={13} aria-hidden="true" />
+              <X size={16} aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -579,178 +577,111 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
         {/* Body */}
         <div className="drawer-body task-detail__body">
           <div className="task-detail__main">
-            {/* Properties */}
-            <div className="col task-detail__props">
-              <div className="drawer-prop">
-                <span className="label-key">Status</span>
-                <StatusDropdown status={task.status} onChange={changeStatus} />
-              </div>
-              <div className="drawer-prop">
-                <span className="label-key">Assignee</span>
-                <AssigneePicker orgSlug={orgSlug} value={task.assigneeId ?? null} onChange={changeAssignee} />
-              </div>
-              <div className="drawer-prop">
-                <span className="label-key">Reviewer</span>
-                <AssigneePicker orgSlug={orgSlug} value={task.reviewerId ?? null} onChange={changeReviewer} />
-              </div>
-              <div className="drawer-prop">
-                <span className="label-key">Priority</span>
-                <PriorityDropdown value={task.priority} onChange={changePriority} />
-              </div>
-              <div className="drawer-prop">
-                <span className="label-key">Points</span>
-                <div className="task-detail__pts-row">
-                  <input
-                    type="number"
-                    min={0}
-                    max={200}
-                    value={pointsDraft}
-                    onChange={(e) => setPointsDraft(e.target.value)}
-                    onBlur={commitPoints}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        e.currentTarget.blur();
-                      }
-                    }}
-                    placeholder="—"
-                    className="task-detail__pts-input"
-                    aria-label="Story points"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={requestAiEstimate}
-                    disabled={aiEstimateLoading}
-                    title="Ask the AI to estimate points based on similar past tasks."
-                  >
-                    <Sparkles size={11} aria-hidden="true" />{' '}
-                    {aiEstimateLoading ? 'Thinking…' : 'AI'}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setPokerOpen(true)}
-                    title="Estimate as a group with planning poker."
-                  >
-                    <Users size={11} aria-hidden="true" /> Poker
-                  </Button>
-                </div>
-              </div>
-              <div className="drawer-prop">
-                <span className="label-key">Due</span>
-                <div className="task-detail__date-wrap">
-                  <input
-                    type="date"
-                    value={toDateInput(task.dueDate)}
-                    onChange={(e) => commitDueDate(e.target.value)}
-                    className="task-detail__date-input"
-                    aria-label="Due date"
-                  />
-                  {task.dueDate && (
-                    <button
-                      type="button"
-                      className="task-detail__date-clear"
-                      onClick={() => commitDueDate('')}
-                      aria-label="Clear due date"
-                      title="Clear"
-                    >
-                      <X size={11} aria-hidden="true" />
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div className="drawer-prop">
-                <span className="label-key">Sprint</span>
-                <SprintPicker projectId={projectId} value={task.sprintId ?? null} onChange={changeSprint} />
-              </div>
-              <div className="drawer-prop">
-                <span className="label-key">Epic</span>
-                <EpicPicker projectId={projectId} value={task.epicId ?? null} onChange={changeEpic} />
-              </div>
-              {reporter && (
-                <div className="drawer-prop">
-                  <span className="label-key">Reporter</span>
-                  <span>{reporter.fullName}</span>
-                </div>
-              )}
-              <div className="drawer-prop">
-                <span className="label-key">PR URL</span>
-                {editingPrUrl ? (
-                  <input
-                    type="url"
-                    value={prUrlDraft}
-                    autoFocus
-                    className="task-detail__pr-input"
-                    placeholder="https://github.com/…"
-                    onChange={(e) => setPrUrlDraft(e.target.value)}
-                    onBlur={commitPrUrl}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        e.currentTarget.blur();
-                      } else if (e.key === 'Escape') {
-                        setPrUrlDraft(task.prUrl ?? '');
-                        setEditingPrUrl(false);
-                      }
-                    }}
-                  />
-                ) : task.prUrl ? (
-                  <span className="row task-detail__pr-link">
-                    <a href={task.prUrl} target="_blank" rel="noreferrer noopener" title={task.prUrl}>
-                      <ExternalLink size={11} aria-hidden="true" /> Open PR
-                    </a>
-                    <button
-                      type="button"
-                      className="task-detail__pr-edit"
-                      onClick={() => setEditingPrUrl(true)}
-                    >
-                      edit
-                    </button>
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    className="task-detail__pr-empty"
-                    onClick={() => setEditingPrUrl(true)}
-                  >
-                    Add URL…
-                  </button>
-                )}
-              </div>
-
-              {task.ciStatus && (
-                <div className="drawer-prop">
-                  <span className="label-key">CI</span>
-                  <span className="row task-detail__pr-link">
-                    <Badge tone={CI_TONE[task.ciStatus] ?? 'neutral'}>
-                      <CiIcon status={task.ciStatus} /> {task.ciStatus}
-                    </Badge>
-                    {task.ciUrl && (
-                      <a href={task.ciUrl} target="_blank" rel="noreferrer noopener" title="View CI run">
-                        <ExternalLink size={11} aria-hidden="true" /> Logs
-                      </a>
-                    )}
-                  </span>
-                </div>
-              )}
-
-              <div className="drawer-prop drawer-prop--block">
-                <span className="label-key">Labels</span>
-                <LabelsSection
-                  taskId={task.id}
-                  projectId={projectId}
-                  initial={labels}
-                  onChange={setLabels}
+            {/* Description */}
+            <section className="task-detail__block">
+              <h3 className="task-detail__block-title">Description</h3>
+              {editingDesc ? (
+                <textarea
+                  className="task-detail__desc-input"
+                  value={descDraft}
+                  autoFocus
+                  rows={4}
+                  onChange={(e) => setDescDraft(e.target.value)}
+                  onBlur={commitDesc}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') {
+                      setDescDraft(task.description ?? '');
+                      setEditingDesc(false);
+                    } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                      e.preventDefault();
+                      commitDesc();
+                    }
+                  }}
                 />
-              </div>
+              ) : task.description ? (
+                <p
+                  className="task-detail__desc task-detail__desc--edit"
+                  onClick={() => setEditingDesc(true)}
+                  title="Click to edit"
+                >
+                  {task.description}
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  className="task-detail__desc-empty"
+                  onClick={() => setEditingDesc(true)}
+                >
+                  Add a description…
+                </button>
+              )}
+            </section>
 
-              <div className="drawer-prop drawer-prop--block">
-                <DependenciesSection taskId={task.id} projectId={projectId} />
+            {/* Acceptance criteria (subtasks) + AI breakdown */}
+            <section className="task-detail__block">
+              <div className="task-detail__block-head">
+                <h3 className="task-detail__block-title">
+                  Acceptance criteria
+                  {subtasks.length > 0 && (
+                    <span className="task-detail__block-count">
+                      {doneSubs}/{subtasks.length}
+                    </span>
+                  )}
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setAiBreakdownOpen(true)}
+                  title="Draft a description and acceptance criteria with AI"
+                >
+                  <Sparkles size={13} aria-hidden="true" /> AI breakdown
+                </Button>
               </div>
-
-              <CustomFieldsSection taskId={task.id} projectId={projectId} />
-            </div>
+              {subtasks.length === 0 && (
+                <p className="task-detail__placeholder">No acceptance criteria yet.</p>
+              )}
+              <ul className="task-detail__ac">
+                {subtasks.map((s) => (
+                  <li key={s.id} className="task-detail__ac-row">
+                    <label className="task-detail__ac-check">
+                      <input
+                        type="checkbox"
+                        checked={s.completed}
+                        onChange={() => toggleSubtask(s)}
+                      />
+                      <span className="task-detail__ac-box" aria-hidden="true">
+                        {s.completed && <Check size={10} strokeWidth={3} />}
+                      </span>
+                      <span className={s.completed ? 'task-detail__ac-done' : ''}>{s.title}</span>
+                    </label>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-icon-sm task-detail__ac-remove"
+                      onClick={() => removeSubtask(s)}
+                      aria-label="Remove criterion"
+                    >
+                      <Trash2 size={12} aria-hidden="true" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <form onSubmit={addSubtask} className="task-detail__ac-form">
+                <Plus size={14} aria-hidden="true" className="task-detail__ac-plus" />
+                <input
+                  type="text"
+                  value={newSub}
+                  onChange={(e) => setNewSub(e.target.value)}
+                  placeholder="Add criterion…"
+                  className="task-detail__ac-input"
+                  aria-label="New acceptance criterion"
+                />
+                {newSub.trim().length > 0 && (
+                  <Button size="sm" variant="secondary" type="submit">
+                    Add
+                  </Button>
+                )}
+              </form>
+            </section>
 
             {aiEstimate && (
               <div className="task-detail__ai-estimate">
@@ -766,109 +697,166 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
               </div>
             )}
 
-            {/* AI breakdown — description + acceptance criteria in an ai-card */}
-            <div className="ai-card task-detail__breakdown">
-              <div className="ai-card-body">
-                <div className="row gap-4" style={{ marginBottom: 'var(--s-4)' }}>
-                  <div className="ai-mark"><Sparkles size={14} /></div>
-                  <strong>AI breakdown</strong>
-                  <span style={{ marginLeft: 'auto' }}>
-                    <Button variant="ghost" size="sm" onClick={() => setAiBreakdownOpen(true)}>
-                      <Sparkles size={11} aria-hidden="true" /> Re-run
+            {/* Details — every other editable property, label/value pairs */}
+            <section className="task-detail__block">
+              <h3 className="task-detail__block-title">Details</h3>
+              <div className="task-detail__props">
+                <div className="drawer-prop">
+                  <span className="label-key">Reviewer</span>
+                  <AssigneePicker orgSlug={orgSlug} value={task.reviewerId ?? null} onChange={changeReviewer} />
+                </div>
+                <div className="drawer-prop">
+                  <span className="label-key">Points</span>
+                  <div className="task-detail__pts-row">
+                    <input
+                      type="number"
+                      min={0}
+                      max={200}
+                      value={pointsDraft}
+                      onChange={(e) => setPointsDraft(e.target.value)}
+                      onBlur={commitPoints}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          e.currentTarget.blur();
+                        }
+                      }}
+                      placeholder="—"
+                      className="task-detail__pts-input"
+                      aria-label="Story points"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={requestAiEstimate}
+                      disabled={aiEstimateLoading}
+                      title="Ask the AI to estimate points based on similar past tasks."
+                    >
+                      <Sparkles size={12} aria-hidden="true" />{' '}
+                      {aiEstimateLoading ? 'Thinking…' : 'Estimate'}
                     </Button>
-                  </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setPokerOpen(true)}
+                      title="Estimate as a group with planning poker."
+                    >
+                      <Users size={12} aria-hidden="true" /> Poker
+                    </Button>
+                  </div>
                 </div>
-
-                <div className="eyebrow" style={{ marginBottom: 'var(--s-3)' }}>Description</div>
-                {editingDesc ? (
-                  <textarea
-                    className="task-detail__desc-input"
-                    value={descDraft}
-                    autoFocus
-                    rows={4}
-                    onChange={(e) => setDescDraft(e.target.value)}
-                    onBlur={commitDesc}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Escape') {
-                        setDescDraft(task.description ?? '');
-                        setEditingDesc(false);
-                      } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-                        e.preventDefault();
-                        commitDesc();
-                      }
-                    }}
-                  />
-                ) : task.description ? (
-                  <p
-                    className="task-detail__desc task-detail__desc--edit"
-                    onClick={() => setEditingDesc(true)}
-                    title="Click to edit"
-                  >
-                    {task.description}
-                  </p>
-                ) : (
-                  <button
-                    type="button"
-                    className="task-detail__desc-empty"
-                    onClick={() => setEditingDesc(true)}
-                  >
-                    Add a description…
-                  </button>
-                )}
-
-                <div className="eyebrow task-detail__ac-eyebrow">
-                  Acceptance criteria
-                  {subtasks.length > 0 && (
-                    <span className="muted task-detail__ac-progress">
-                      {doneSubs}/{subtasks.length}
-                    </span>
-                  )}
-                </div>
-                {subtasks.length === 0 && (
-                  <p className="task-detail__placeholder">No acceptance criteria yet.</p>
-                )}
-                <ul className="task-detail__ac">
-                  {subtasks.map((s) => (
-                    <li key={s.id} className="task-detail__ac-row">
-                      <label className="task-detail__ac-check">
-                        <input
-                          type="checkbox"
-                          checked={s.completed}
-                          onChange={() => toggleSubtask(s)}
-                        />
-                        <span className="task-detail__ac-box" aria-hidden="true">
-                          {s.completed && <Check size={10} strokeWidth={3} />}
-                        </span>
-                        <span className={s.completed ? 'task-detail__ac-done' : ''}>{s.title}</span>
-                      </label>
+                <div className="drawer-prop">
+                  <span className="label-key">Due</span>
+                  <div className="task-detail__date-wrap">
+                    <input
+                      type="date"
+                      value={toDateInput(task.dueDate)}
+                      onChange={(e) => commitDueDate(e.target.value)}
+                      className="task-detail__date-input"
+                      aria-label="Due date"
+                    />
+                    {task.dueDate && (
                       <button
                         type="button"
-                        className="btn btn-ghost btn-icon-sm task-detail__ac-remove"
-                        onClick={() => removeSubtask(s)}
-                        aria-label="Remove criterion"
+                        className="task-detail__date-clear"
+                        onClick={() => commitDueDate('')}
+                        aria-label="Clear due date"
+                        title="Clear"
                       >
-                        <Trash2 size={12} aria-hidden="true" />
+                        <X size={12} aria-hidden="true" />
                       </button>
-                    </li>
-                  ))}
-                </ul>
-                <form onSubmit={addSubtask} className="task-detail__ac-form">
-                  <input
-                    type="text"
-                    value={newSub}
-                    onChange={(e) => setNewSub(e.target.value)}
-                    placeholder="Add criterion…"
-                    className="input task-detail__ac-input"
+                    )}
+                  </div>
+                </div>
+                <div className="drawer-prop">
+                  <span className="label-key">Sprint</span>
+                  <SprintPicker projectId={projectId} value={task.sprintId ?? null} onChange={changeSprint} />
+                </div>
+                <div className="drawer-prop">
+                  <span className="label-key">Epic</span>
+                  <EpicPicker projectId={projectId} value={task.epicId ?? null} onChange={changeEpic} />
+                </div>
+                <div className="drawer-prop">
+                  <span className="label-key">Labels</span>
+                  <LabelsSection
+                    taskId={task.id}
+                    projectId={projectId}
+                    initial={labels}
+                    onChange={setLabels}
                   />
-                  <Button size="sm" type="submit" disabled={newSub.trim().length === 0}>
-                    Add
-                  </Button>
-                </form>
+                </div>
+                <div className="drawer-prop">
+                  <span className="label-key">Pull request</span>
+                  {editingPrUrl ? (
+                    <input
+                      type="url"
+                      value={prUrlDraft}
+                      autoFocus
+                      className="task-detail__pr-input"
+                      placeholder="https://github.com/…"
+                      onChange={(e) => setPrUrlDraft(e.target.value)}
+                      onBlur={commitPrUrl}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          e.currentTarget.blur();
+                        } else if (e.key === 'Escape') {
+                          setPrUrlDraft(task.prUrl ?? '');
+                          setEditingPrUrl(false);
+                        }
+                      }}
+                    />
+                  ) : task.prUrl ? (
+                    <span className="row task-detail__pr-link">
+                      <a href={task.prUrl} target="_blank" rel="noreferrer noopener" title={task.prUrl}>
+                        <ExternalLink size={12} aria-hidden="true" /> Open PR
+                      </a>
+                      <button
+                        type="button"
+                        className="task-detail__pr-edit"
+                        onClick={() => setEditingPrUrl(true)}
+                      >
+                        Edit
+                      </button>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      className="task-detail__pr-empty"
+                      onClick={() => setEditingPrUrl(true)}
+                    >
+                      Add URL…
+                    </button>
+                  )}
+                </div>
+                {task.ciStatus && (
+                  <div className="drawer-prop">
+                    <span className="label-key">CI</span>
+                    <span className="row task-detail__pr-link">
+                      <span className={`task-detail__meta-item tone-${CI_TONE[task.ciStatus] ?? 'neutral'}`}>
+                        <CiIcon status={task.ciStatus} /> {task.ciStatus}
+                      </span>
+                      {task.ciUrl && (
+                        <a href={task.ciUrl} target="_blank" rel="noreferrer noopener" title="View CI run">
+                          <ExternalLink size={12} aria-hidden="true" /> Logs
+                        </a>
+                      )}
+                    </span>
+                  </div>
+                )}
+                {reporter && (
+                  <div className="drawer-prop">
+                    <span className="label-key">Reporter</span>
+                    <span>{reporter.fullName}</span>
+                  </div>
+                )}
               </div>
-            </div>
+            </section>
 
-            {/* F2-07 PM-18 attachments + PM-20 time logs */}
-            <div className="task-detail__addons">
+            {/* Secondary sections — collapsed by default, summaries visible */}
+            <div className="task-detail__sections">
+              <DependenciesSection taskId={task.id} projectId={projectId} />
+              <CustomFieldsSection taskId={task.id} projectId={projectId} />
               <AttachmentsSection taskId={task.id} />
               <TimeLogsSection
                 taskId={task.id}
@@ -886,70 +874,60 @@ export function TaskDetail({ task, projectId, onClose, onUpdated, onDeleted }) {
             </div>
 
             {/* Activity */}
-            <div className="eyebrow">Activity</div>
-            <div className="tabs task-detail__tabs">
-              <button
-                type="button"
-                className={activeTab === 'comments' ? 'is-active' : ''}
-                onClick={() => setActiveTab('comments')}
-              >
-                <MessageSquare size={12} aria-hidden="true" /> Comments
-                <span className="tab-count">{comments.length}</span>
-              </button>
-              <button
-                type="button"
-                className={activeTab === 'history' ? 'is-active' : ''}
-                onClick={() => setActiveTab('history')}
-              >
-                <History size={12} aria-hidden="true" /> History
-              </button>
-              <button
-                type="button"
-                className={activeTab === 'commits' ? 'is-active' : ''}
-                onClick={() => setActiveTab('commits')}
-              >
-                <GitPullRequest size={12} aria-hidden="true" /> Commits
-              </button>
-            </div>
+            <section className="task-detail__block">
+              <div className="tabs task-detail__tabs">
+                <button
+                  type="button"
+                  className={activeTab === 'comments' ? 'is-active' : ''}
+                  onClick={() => setActiveTab('comments')}
+                >
+                  Comments
+                  <span className="tab-count">{comments.length}</span>
+                </button>
+                <button
+                  type="button"
+                  className={activeTab === 'history' ? 'is-active' : ''}
+                  onClick={() => setActiveTab('history')}
+                >
+                  History
+                </button>
+                <button
+                  type="button"
+                  className={activeTab === 'commits' ? 'is-active' : ''}
+                  onClick={() => setActiveTab('commits')}
+                >
+                  Commits
+                </button>
+              </div>
 
-            <div className="task-detail__activity">
-              {activeTab === 'comments' && (
-                <CommentList
-                  projectId={projectId}
-                  comments={comments}
-                  onChanged={refreshComments}
-                />
-              )}
-              {activeTab === 'history' && (
-                <p className="task-detail__placeholder">
-                  <GitCommit size={12} style={{ verticalAlign: 'middle', marginRight: 6 }} />
-                  Field-change history isn’t wired up yet — coming in Phase 2.
-                </p>
-              )}
-              {activeTab === 'commits' && (
-                <p className="task-detail__placeholder">
-                  <Maximize2 size={12} style={{ verticalAlign: 'middle', marginRight: 6 }} />
-                  Connect a repo in Settings to surface commits and PRs here.
-                </p>
-              )}
-            </div>
+              <div className="task-detail__activity">
+                {activeTab === 'comments' && (
+                  <div className="task-detail__comments">
+                    <CommentList
+                      projectId={projectId}
+                      comments={comments}
+                      onChanged={refreshComments}
+                    />
+                    <CommentInput projectId={projectId} onSubmit={postComment} />
+                  </div>
+                )}
+                {activeTab === 'history' && (
+                  <p className="task-detail__placeholder">
+                    <History size={12} aria-hidden="true" className="task-detail__inline-icon" />
+                    Field-change history isn’t wired up yet — coming in Phase 2.
+                  </p>
+                )}
+                {activeTab === 'commits' && (
+                  <p className="task-detail__placeholder">
+                    <GitCommit size={12} aria-hidden="true" className="task-detail__inline-icon" />
+                    Connect a repo in Settings to surface commits and PRs here.
+                  </p>
+                )}
+              </div>
+            </section>
           </div>
-
         </div>
 
-        {/* Composer */}
-        <div className="task-detail__composer">
-          <CommentInput projectId={projectId} onSubmit={postComment} />
-        </div>
-
-        {/* Footer action bar */}
-        <div className="task-detail__footer">
-          <button type="button" className="btn btn-ghost btn-sm task-detail__delete" onClick={deleteTask}>
-            <Trash2 size={12} aria-hidden="true" /> Delete
-          </button>
-          <div style={{ flex: 1 }} />
-          <Button variant="ghost" size="sm" onClick={onClose}>Close</Button>
-        </div>
       </aside>
     </>
   );

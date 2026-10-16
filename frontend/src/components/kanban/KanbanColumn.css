@@ -1,10 +1,44 @@
 /* Base .kanban-col / .kanban-col-head / .kanban-col-title / .kanban-col-body
-   live in stratos.css. This file adds the drop-state, inline add-task form,
-   and column-collapsed checkbox styles used by ColumnsButton. */
+   live in stratos.css. This file adds the quiet header read-outs, the
+   drop state, WIP-limit visuals and the inline add-task form. */
+
+.kanban-col-title-dot { background: var(--col-dot, var(--text-muted)); }
+
+.kanban-col-num {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.kanban-col-num-limit {
+  color: var(--text-subtle);
+  font-weight: var(--fw-regular);
+}
+
+.kanban-col-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+.kanban-col-pts {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Header "+" stays out of the way until the column is hovered / focused.
+   The "Add task" trigger at the bottom of each column is always visible. */
+.kanban-col-add-icon {
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.kanban-col:hover .kanban-col-add-icon,
+.kanban-col-add-icon:focus-visible {
+  opacity: 1;
+}
 
 .kanban-col.is-over {
   background: var(--accent-soft);
-  border-color: var(--accent-border);
 }
 
 .kanban-col-add-form {
@@ -21,36 +55,31 @@
   width: 100%;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: var(--s-3);
   background: transparent;
-  border: 1px dashed var(--border);
+  border: 0;
   color: var(--text-muted);
+  font: inherit;
   font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
   padding: var(--s-4) var(--s-5);
-  border-radius: var(--r-md);
+  border-radius: var(--r-lg);
   cursor: pointer;
-  transition: border-color var(--dur-fast) var(--ease-out),
+  transition: background var(--dur-fast) var(--ease-out),
               color var(--dur-fast) var(--ease-out);
 }
-.kanban-col-add-trigger:hover {
-  border-color: var(--border-strong);
-  color: var(--text-secondary);
+.kanban-col-add-trigger:hover,
+.kanban-col-add-trigger:focus-visible {
+  background: var(--surface-hover);
+  color: var(--text);
+  outline: none;
 }
 
 /* PM-21 WIP limit visuals — advisory only; the column still accepts drops. */
 .kanban-col.is-wip-exceeded {
-  outline: 1.5px solid var(--warning);
-  outline-offset: -1.5px;
+  box-shadow: inset 0 0 0 2px var(--warning-border);
 }
-
-.kanban-col-count.is-over-limit {
+.kanban-col-num.is-over-limit {
   color: var(--warning);
   font-weight: var(--fw-semibold);
-}
-
-.kanban-col-count__limit {
-  color: var(--text-muted);
-  font-weight: var(--fw-regular);
-  margin-left: 1px;
 }

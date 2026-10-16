@@ -1,30 +1,44 @@
-/* F2-16 chat layout: a left-rail channel list, a centre conversation
-   pane (placeholder until F2-18), and a right-rail member list. Lives
-   under the AppShell main, so it inherits .main padding. */
+/* Chat — a calm messenger layout: a channel list card on the left and a
+   conversation card on the right. Lives directly under the AppShell
+   .main (no .main-inner), so it supplies its own page gutter and fills
+   the viewport height so the stream scrolls while the composer stays put. */
 
 .chat-layout {
   display: grid;
-  grid-template-columns: 240px 1fr;
-  gap: var(--s-5);
-  min-height: calc(100vh - var(--topbar-h) - var(--s-8));
+  grid-template-columns: 264px minmax(0, 1fr);
+  gap: var(--s-7);
+  height: calc(100vh - var(--topbar-h));
+  padding: var(--s-6) var(--s-10) var(--s-8);
+  max-width: var(--content-max);
+  margin: 0 auto;
 }
 
 @media (max-width: 1120px) {
-  .chat-layout { grid-template-columns: 200px 1fr; }
+  .chat-layout {
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: var(--s-6);
+    padding: var(--s-5) var(--s-7) var(--s-7);
+  }
 }
 @media (max-width: 760px) {
-  .chat-layout { grid-template-columns: 1fr; }
+  .chat-layout { grid-template-columns: 1fr; padding: var(--s-4); }
   .chat-sidebar { display: none; }
 }
 
-/* ---- sidebar ---- */
+/* The modal Input labels sit inside .input-group, which stratos.css
+   centres; keep them start-aligned in chat dialogs. */
+.chat-layout .input-group,
+.chat-dialog .input-group { align-items: stretch; }
+
+/* ---- channel list ---- */
 
 .chat-sidebar {
   display: flex;
   flex-direction: column;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
   min-height: 0;
 }
@@ -33,38 +47,38 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--s-4) var(--s-5);
-  border-bottom: 1px solid var(--divider);
+  padding: var(--s-6) var(--s-6) var(--s-4) var(--s-7);
 }
 
 .chat-sidebar-title {
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
   color: var(--text);
+  letter-spacing: var(--tracking-snug);
 }
 
 .chat-sidebar-scroll {
   flex: 1;
   overflow-y: auto;
-  padding: var(--s-3) var(--s-2) var(--s-5);
+  padding: 0 var(--s-4) var(--s-6);
 }
 
-.chat-sidebar-section { margin-bottom: var(--s-4); }
+.chat-sidebar-section + .chat-sidebar-section { margin-top: var(--s-6); }
 
 .chat-sidebar-label {
-  font-size: var(--fs-2xs);
+  font-size: var(--fs-xs);
   font-weight: var(--fw-medium);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: var(--text-muted);
-  padding: var(--s-2) var(--s-4);
+  padding: var(--s-2) var(--s-4) var(--s-3);
 }
 
 .chat-sidebar-item {
   display: flex;
   align-items: center;
-  gap: var(--s-3);
-  padding: var(--s-2) var(--s-4);
+  gap: var(--s-4);
+  min-height: var(--row-h);
+  padding: 0 var(--s-4);
   border-radius: var(--r-md);
   color: var(--text-secondary);
   font-size: var(--fs-md);
@@ -79,41 +93,59 @@
 }
 .chat-sidebar-item.is-active {
   background: var(--accent-soft);
-  color: var(--text);
+  color: var(--accent);
+  font-weight: var(--fw-semibold);
 }
+
+.chat-sidebar-item-icon {
+  display: inline-flex;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.chat-sidebar-item.is-active .chat-sidebar-item-icon { color: var(--accent); }
 
 .chat-sidebar-item-name { flex: 1; min-width: 0; }
 
+.chat-sidebar-archived { color: var(--text-subtle); flex-shrink: 0; }
+
 .chat-sidebar-unread {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  width: var(--s-4);
+  height: var(--s-4);
+  border-radius: var(--r-pill);
   background: var(--accent);
+  flex-shrink: 0;
 }
 
 .chat-sidebar-empty {
-  padding: var(--s-5);
-  font-size: var(--fs-xs);
+  margin: 0;
+  padding: var(--s-4) var(--s-7);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
 }
+.chat-sidebar-error { color: var(--danger); }
 
-/* ---- content pane ---- */
+/* ---- conversation card ---- */
 
 .chat-content {
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-card);
   min-height: 0;
   overflow: hidden;
 }
+/* Routes wrap the pane in a keyed <div>; let it fill the card. */
+.chat-content > div { height: 100%; }
 
 .chat-pane {
   display: grid;
-  grid-template-columns: 1fr 240px;
-  grid-template-rows: auto 1fr;
-  min-height: 100%;
+  grid-template-columns: minmax(0, 1fr) 248px;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
 }
 @media (max-width: 1120px) {
-  .chat-pane { grid-template-columns: 1fr 200px; }
+  .chat-pane { grid-template-columns: minmax(0, 1fr) 208px; }
 }
 @media (max-width: 760px) {
   .chat-pane { grid-template-columns: 1fr; }
@@ -125,21 +157,62 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--s-3);
-  padding: var(--s-4) var(--s-6);
-  border-bottom: 1px solid var(--divider);
+  gap: var(--s-5);
+  padding: var(--s-6) var(--s-8) var(--s-5);
+}
+
+.chat-pane-ident {
+  display: flex;
+  align-items: center;
+  gap: var(--s-5);
+  min-width: 0;
+}
+
+.chat-pane-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .chat-pane-title {
   margin: 0;
-  font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
   color: var(--text);
+  letter-spacing: var(--tracking-snug);
+  line-height: var(--lh-tight);
 }
 
+.chat-pane-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  margin: var(--s-2) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+.chat-pane-sub-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+.chat-pane-sub-item + .chat-pane-sub-item::before {
+  content: "·";
+  margin-right: var(--s-2);
+  color: var(--text-subtle);
+}
+.chat-pane-sub-epic { color: var(--violet); }
+
 .chat-pane-body {
-  /* Holds the F2-18 MessageList — positioning context for the thread
-     side panel, flex column so the scroller fills available height. */
+  /* Holds the MessageList — positioning context for the thread side
+     panel, flex column so the scroller fills available height. */
   position: relative;
   display: flex;
   flex-direction: column;
@@ -147,55 +220,46 @@
   overflow: hidden;
 }
 
-.chat-pane-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--s-3);
-  padding: var(--s-8) var(--s-6);
-  background: var(--ai-gradient-soft);
-  border: 1px dashed var(--ai-border);
-  border-radius: var(--r-lg);
-  text-align: center;
-  max-width: 520px;
-}
-
-.chat-placeholder-title {
-  margin: 0;
-  font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
-  color: var(--text);
-}
-
-.chat-placeholder-sub {
-  margin: 0;
-  font-size: var(--fs-md);
-  color: var(--text-secondary);
-  line-height: var(--lh-normal);
-}
-
 .chat-pane-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--s-3);
+  gap: var(--s-4);
+  height: 100%;
   padding: var(--s-9);
+  text-align: center;
+}
+.chat-pane-empty-icon {
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .chat-pane-members {
-  border-left: 1px solid var(--divider);
-  padding: var(--s-4) var(--s-5);
+  padding: var(--s-2) var(--s-6) var(--s-6);
   overflow-y: auto;
+  background: var(--surface-2);
+  border-top-left-radius: var(--r-lg);
 }
 
 .chat-pane-members-head {
-  font-size: var(--fs-2xs);
-  font-weight: var(--fw-medium);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  padding: var(--s-5) 0 var(--s-4);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+}
+.chat-pane-members-count {
+  font-weight: var(--fw-regular);
   color: var(--text-muted);
-  margin-bottom: var(--s-3);
 }
 
 .chat-members-list {
@@ -204,19 +268,26 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--s-2);
+  gap: var(--s-3);
 }
 
 .chat-member-row {
   display: flex;
   align-items: center;
-  gap: var(--s-3);
-  padding: var(--s-2);
-  border-radius: var(--r-md);
+  gap: var(--s-4);
+  min-width: 0;
+}
+
+.chat-member-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
 }
 
 .chat-member-name {
   font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
   color: var(--text);
 }
 
@@ -225,68 +296,86 @@
   color: var(--text-muted);
 }
 
-/* F2-17 — DM picker chips + member result list. Used inside the
-   "New direct message" modal. */
+.chat-members-empty {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+/* ---- dialogs (new topic / new DM) ---- */
+
+.chat-modal-note {
+  margin: var(--s-4) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  line-height: var(--lh-normal);
+}
+
 .dm-chip-row {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--s-2);
-  margin-bottom: var(--s-3);
+  gap: var(--s-3);
+  margin-bottom: var(--s-5);
 }
 
 .dm-chip {
   display: inline-flex;
   align-items: center;
-  gap: var(--s-2);
+  gap: var(--s-3);
   max-width: 200px;
-  padding: 4px var(--s-2) 4px 4px;
+  padding: var(--s-1) var(--s-2) var(--s-1) var(--s-1);
   background: var(--accent-soft);
   color: var(--text);
-  border: 1px solid var(--accent-border);
   border-radius: var(--r-pill);
-  font-size: var(--fs-xs);
+  font-size: var(--fs-sm);
 }
 
 .dm-chip-x {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   background: transparent;
   color: var(--text-secondary);
   border: 0;
   border-radius: var(--r-pill);
   cursor: pointer;
 }
-.dm-chip-x:hover { color: var(--danger); background: var(--surface-hover); }
+.dm-chip-x:hover { color: var(--danger); background: var(--surface); }
 
 .dm-result-list {
-  margin: var(--s-3) 0 0;
-  padding: 0;
+  margin: var(--s-4) 0 0;
+  padding: var(--s-2);
   list-style: none;
   display: flex;
   flex-direction: column;
   gap: var(--s-1);
-  max-height: 220px;
+  max-height: 240px;
   overflow-y: auto;
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  background: var(--surface);
+  border-radius: var(--r-lg);
+  background: var(--surface-2);
 }
 
 .dm-result-row {
   display: flex;
   width: 100%;
   align-items: center;
-  gap: var(--s-3);
-  padding: var(--s-2) var(--s-4);
+  gap: var(--s-4);
+  padding: var(--s-3) var(--s-4);
   background: transparent;
   border: 0;
+  border-radius: var(--r-md);
   text-align: left;
   cursor: pointer;
 }
-.dm-result-row:hover { background: var(--surface-hover); }
+.dm-result-row:hover { background: var(--surface); }
+
+.dm-result-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
 
 .dm-result-name {
   font-size: var(--fs-md);

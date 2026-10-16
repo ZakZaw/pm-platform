@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ChevronLeft, Layers, Plus, Sparkles } from 'lucide-react';
-import { Avatar, AssigneePicker, Badge, Button, Card, useToast } from '@/components/ui';
+import { ChevronLeft, Plus, Sparkles } from 'lucide-react';
+import { Avatar, AssigneePicker, Button, Card, Priority, StatusBadge, useToast } from '@/components/ui';
 import { TaskDetailDrawer } from '@/components/tasks/TaskDetailDrawer';
 import { AITaskListWizardModal } from '@/components/ai/AITaskListWizardModal';
 import { projectsApi } from '@/api/projects.api';
@@ -10,18 +10,18 @@ import { tasksApi } from '@/api/tasks.api';
 import { useOrgMembers } from '@/hooks/useOrgMembers';
 import './EpicDetailPage.css';
 
-const PRIORITY_TONE = {
-  Urgent: 'danger',
-  High: 'warning',
-  Medium: 'info',
-  Low: 'neutral',
-};
-
 const STATUS_TONE = {
   Planning: 'neutral',
   InProgress: 'info',
   Done: 'success',
   Archived: 'neutral',
+};
+
+const STATUS_LABEL = {
+  Planning: 'Planning',
+  InProgress: 'In progress',
+  Done: 'Done',
+  Archived: 'Archived',
 };
 
 const STATUS_OPTIONS = ['Planning', 'InProgress', 'Done', 'Archived'];
@@ -181,44 +181,43 @@ export function EpicDetailPage() {
       </Link>
 
       <header
-        className="epic-detail-header"
+        className="page-head epic-detail-header"
         style={{ '--epic-color': epic.color || 'var(--accent)' }}
       >
-        <span
-          className="epic-detail-color"
-          style={{ background: epic.color || 'var(--accent)' }}
-        />
-        <div className="epic-detail-head-text">
-          <div className="epic-detail-head-row">
-            <Layers size={18} aria-hidden="true" style={{ color: epic.color || 'var(--accent)' }} />
-            {editingTitle ? (
-              <input
-                className="epic-detail-title-input"
-                value={titleDraft}
-                autoFocus
-                maxLength={200}
-                onChange={(e) => setTitleDraft(e.target.value)}
-                onBlur={commitTitle}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    commitTitle();
-                  } else if (e.key === 'Escape') {
-                    setTitleDraft(epic.title);
-                    setEditingTitle(false);
-                  }
-                }}
-              />
-            ) : (
-              <button
-                type="button"
-                className="epic-detail-title epic-detail-title-edit"
-                onClick={() => setEditingTitle(true)}
-                title="Click to rename"
-              >
-                {epic.title}
-              </button>
-            )}
+        <div className="eyebrow">{project.name}</div>
+        <div className="epic-detail-head-row">
+          <span className="epic-detail-color" aria-hidden="true" />
+          {editingTitle ? (
+            <input
+              className="epic-detail-title-input"
+              value={titleDraft}
+              autoFocus
+              maxLength={200}
+              onChange={(e) => setTitleDraft(e.target.value)}
+              onBlur={commitTitle}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  commitTitle();
+                } else if (e.key === 'Escape') {
+                  setTitleDraft(epic.title);
+                  setEditingTitle(false);
+                }
+              }}
+            />
+          ) : (
+            <button
+              type="button"
+              className="page-title epic-detail-title epic-detail-title-edit"
+              onClick={() => setEditingTitle(true)}
+              title="Click to rename"
+            >
+              {epic.title}
+            </button>
+          )}
+        </div>
+        <div className="epic-detail-controls">
+          <label className={`epic-detail-status-wrap tone-${STATUS_TONE[epic.status] ?? 'neutral'}`}>
             <select
               className="epic-detail-status"
               value={epic.status}
@@ -226,31 +225,41 @@ export function EpicDetailPage() {
               aria-label="Epic status"
             >
               {STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s}>{s}</option>
+                <option key={s} value={s}>{STATUS_LABEL[s] ?? s}</option>
               ))}
             </select>
-            <label className="epic-detail-risk">
-              <input
-                type="checkbox"
-                checked={epic.riskFlag}
-                onChange={(e) => patch({ riskFlag: e.target.checked }, 'Could not change risk flag.')}
-              />
-              <span>At risk</span>
-            </label>
-          </div>
-          <div className="epic-detail-meta">
-            <span>{epic.taskCount} {epic.taskCount === 1 ? 'task' : 'tasks'}</span>
-            <span>·</span>
-            <span>{epic.doneStoryPoints}/{epic.totalStoryPoints} pts</span>
-            <span>·</span>
-            <span>{pct}% complete</span>
-            <Badge tone={STATUS_TONE[epic.status] ?? 'neutral'}>{epic.status}</Badge>
-          </div>
-          <div className="epic-detail-bar" aria-label={`Progress ${pct}%`}>
-            <div className="epic-detail-bar-fill" style={{ width: `${pct}%`, background: epic.color || 'var(--accent)' }} />
-          </div>
+          </label>
+          <label className={`epic-detail-risk ${epic.riskFlag ? 'is-on' : ''}`}>
+            <input
+              type="checkbox"
+              className="cb"
+              checked={epic.riskFlag}
+              onChange={(e) => patch({ riskFlag: e.target.checked }, 'Could not change risk flag.')}
+            />
+            <span>At risk</span>
+          </label>
         </div>
       </header>
+
+      <div className="card epic-detail-progress">
+        <div className="epic-detail-kpis">
+          <div className="epic-detail-kpi">
+            <span className="epic-detail-kpi-value">{pct}%</span>
+            <span className="epic-detail-kpi-label">Complete</span>
+          </div>
+          <div className="epic-detail-kpi">
+            <span className="epic-detail-kpi-value">{epic.doneStoryPoints}<span className="epic-detail-kpi-of">/{epic.totalStoryPoints}</span></span>
+            <span className="epic-detail-kpi-label">Points done</span>
+          </div>
+          <div className="epic-detail-kpi">
+            <span className="epic-detail-kpi-value">{epic.taskCount}</span>
+            <span className="epic-detail-kpi-label">{epic.taskCount === 1 ? 'Task' : 'Tasks'}</span>
+          </div>
+        </div>
+        <div className="epic-detail-bar" aria-label={`Progress ${pct}%`}>
+          <div className="epic-detail-bar-fill" style={{ width: `${pct}%` }} />
+        </div>
+      </div>
 
       <div className="epic-detail-row">
         <Card className="epic-detail-section">
@@ -293,27 +302,6 @@ export function EpicDetailPage() {
         </Card>
 
         <Card className="epic-detail-section epic-detail-section-meta">
-          <h2 className="epic-detail-heading">Settings</h2>
-
-          <div className="epic-detail-field">
-            <span className="epic-detail-field-label">Color</span>
-            <div className="epic-detail-color-grid">
-              {COLOR_OPTIONS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  className={[
-                    'epic-detail-color-swatch',
-                    epic.color === c ? 'is-active' : '',
-                  ].filter(Boolean).join(' ')}
-                  style={{ background: c }}
-                  onClick={() => patch({ color: normalizeColor(c) }, 'Could not change color.')}
-                  aria-label={`Set color to ${c}`}
-                />
-              ))}
-            </div>
-          </div>
-
           <div className="epic-detail-field">
             <span className="epic-detail-field-label">Owner</span>
             <AssigneePicker
@@ -327,14 +315,35 @@ export function EpicDetailPage() {
               }
             />
           </div>
+
+          <div className="epic-detail-field">
+            <span className="epic-detail-field-label">Color</span>
+            <div className="epic-detail-color-grid">
+              {COLOR_OPTIONS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  className={[
+                    'epic-detail-color-swatch',
+                    epic.color === c ? 'is-active' : '',
+                  ].filter(Boolean).join(' ')}
+                  style={{ '--swatch': c }}
+                  onClick={() => patch({ color: normalizeColor(c) }, 'Could not change color.')}
+                  aria-label={`Set color to ${c}`}
+                />
+              ))}
+            </div>
+          </div>
         </Card>
       </div>
 
       <Card className="epic-detail-section">
         <header className="epic-detail-tasks-head">
-          <h2 className="epic-detail-heading">Tasks ({tasks.length})</h2>
-          <Button variant="ai" size="sm" onClick={() => setAiOpen(true)}>
-            <Sparkles size={12} aria-hidden="true" /> AI tasks
+          <h2 className="epic-detail-heading">
+            Tasks <span className="epic-detail-count">{tasks.length}</span>
+          </h2>
+          <Button variant="secondary" size="sm" onClick={() => setAiOpen(true)}>
+            <Sparkles size={14} aria-hidden="true" /> AI tasks
           </Button>
         </header>
 
@@ -350,24 +359,6 @@ export function EpicDetailPage() {
           }}
         />
 
-        <form className="epic-detail-create" onSubmit={addTaskToEpic}>
-          <input
-            type="text"
-            className="epic-detail-create-input"
-            placeholder="Add a task to this epic…"
-            value={newTaskTitle}
-            onChange={(e) => setNewTaskTitle(e.target.value)}
-            maxLength={200}
-          />
-          <Button
-            type="submit"
-            size="sm"
-            disabled={creating || newTaskTitle.trim().length < 2}
-          >
-            <Plus size={14} aria-hidden="true" /> Add
-          </Button>
-        </form>
-
         {tasks.length === 0 ? (
           <p className="epic-detail-placeholder">No tasks in this epic yet.</p>
         ) : (
@@ -382,6 +373,27 @@ export function EpicDetailPage() {
             ))}
           </ul>
         )}
+
+        <form className="epic-detail-create" onSubmit={addTaskToEpic}>
+          <Plus size={16} aria-hidden="true" className="epic-detail-create-icon" />
+          <input
+            type="text"
+            className="epic-detail-create-input"
+            placeholder="Add a task to this epic…"
+            aria-label="New task title"
+            value={newTaskTitle}
+            onChange={(e) => setNewTaskTitle(e.target.value)}
+            maxLength={200}
+          />
+          <Button
+            type="submit"
+            size="sm"
+            variant="secondary"
+            disabled={creating || newTaskTitle.trim().length < 2}
+          >
+            Add
+          </Button>
+        </form>
       </Card>
 
       <TaskDetailDrawer
@@ -408,14 +420,19 @@ function TaskRow({ task, assignee, onOpen }) {
         }
       }}
     >
+      {task.key && <span className="mono epic-detail-task-key">{task.key}</span>}
       <span className="epic-detail-task-title">{task.title}</span>
       <div className="epic-detail-task-meta">
-        <Badge tone="neutral">{task.status}</Badge>
-        <Badge tone={PRIORITY_TONE[task.priority] ?? 'neutral'}>{task.priority}</Badge>
-        {task.storyPoints != null && <Badge tone="purple">{task.storyPoints} pts</Badge>}
-        {assignee && (
-          <Avatar src={assignee.avatarUrl} name={assignee.fullName} size="xs" />
-        )}
+        <StatusBadge status={task.status} />
+        <span className="epic-detail-task-pri"><Priority level={task.priority} showLabel /></span>
+        <span className="epic-detail-task-pts">
+          {task.storyPoints != null ? `${task.storyPoints} pts` : ''}
+        </span>
+        <span className="epic-detail-task-avatar">
+          {assignee && (
+            <Avatar src={assignee.avatarUrl} name={assignee.fullName} size="xs" />
+          )}
+        </span>
       </div>
     </li>
   );

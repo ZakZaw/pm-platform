@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Plus, RefreshCw } from 'lucide-react';
-import { Avatar, Button, Skeleton, StatusBadge, Priority, useToast } from '@/components/ui';
+import { Avatar, Button, Skeleton, Priority, useToast } from '@/components/ui';
 import { useAuthStore } from '@/store/authStore';
 import { projectsApi } from '@/api/projects.api';
 import { supportApi } from '@/api/support.api';
 import { TicketDetailDrawer } from '@/components/tickets/TicketDetailDrawer';
 import { CreateTicketModal } from '@/components/tickets/CreateTicketModal';
+import { TICKET_STATUS_CLASS } from '@/components/tickets/ticketStatus';
 import { useSlaTick } from '@/hooks/useSlaTick';
 import { useOrgMembers } from '@/hooks/useOrgMembers';
 import './QueuePage.css';
@@ -29,7 +30,7 @@ function fmtCountdown(slaDueAt, now) {
   if (days >= 1) body = `${days}d ${hrs % 24}h`;
   else if (hrs >= 1) body = `${hrs}h ${mins % 60}m`;
   else body = `${mins}m`;
-  return breach ? `-${body}` : body;
+  return breach ? `${body} overdue` : `${body} left`;
 }
 
 const TABS = [
@@ -105,7 +106,9 @@ export function QueuePage() {
     return (
       <div className="main-inner queue-page">
         <div className="page-head">
-          <h1 className="page-title">Queue</h1>
+          <div className="page-title-row">
+            <h1 className="page-title">Queue</h1>
+          </div>
         </div>
         <div className="col gap-4">
           {[0, 1, 2].map((i) => <Skeleton key={i} height={48} />)}
@@ -119,16 +122,24 @@ export function QueuePage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>Support · Queue</div>
-            <h1 className="page-title">{project.name}</h1>
+            <h1 className="page-title">Queue</h1>
             <div className="page-subtitle">
-              {counts.All} ticket{counts.All === 1 ? '' : 's'} · {counts.Breaching} breaching SLA
+              {counts.All} ticket{counts.All === 1 ? '' : 's'}
+              {counts.Breaching > 0 && (
+                <> · <span className="queue-page-breach">{counts.Breaching} breaching SLA</span></>
+              )}
             </div>
           </div>
           <div className="row gap-3">
-            <Button variant="ghost" size="sm" onClick={() => refresh(project.id).catch(() => {})}>
-              <RefreshCw size={13} aria-hidden="true" /> Refresh
-            </Button>
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => refresh(project.id).catch(() => {})}
+              aria-label="Refresh"
+              title="Refresh"
+            >
+              <RefreshCw size={15} aria-hidden="true" />
+            </button>
             <Button variant="primary" size="sm" onClick={() => setCreating(true)}>
               <Plus size={13} aria-hidden="true" /> New ticket
             </Button>
@@ -150,7 +161,7 @@ export function QueuePage() {
         ))}
       </div>
 
-      <div style={{ marginTop: 'var(--s-6)' }}>
+      <div className="queue-page-body">
         <div className="queue">
           <div className="queue-row queue-head">
             <div>ID</div>
@@ -172,7 +183,7 @@ export function QueuePage() {
             return (
               <div
                 key={t.id}
-                className={['queue-row', sla === 'danger' ? 'is-urgent' : ''].filter(Boolean).join(' ')}
+                className="queue-row"
                 role="button"
                 tabIndex={0}
                 onClick={() => setOpenTicketId(t.id)}
@@ -186,14 +197,18 @@ export function QueuePage() {
                 <div className="queue-id">{t.key ?? t.id?.slice(0, 6)}</div>
                 <div>
                   <div className="queue-subj truncate">{t.subject}</div>
-                  <div className="muted" style={{ fontSize: 'var(--fs-xs)', marginTop: 2 }}>
+                  <div className="queue-page-sub truncate">
                     {t.queueName}
                     {t.customerTier ? ` · ${t.customerTier}` : ''}
                   </div>
                 </div>
-                <div className="muted" style={{ fontSize: 'var(--fs-xs)' }}>{t.customerName}</div>
-                <div><Priority level={t.priority} /></div>
-                <div><StatusBadge status={t.status} /></div>
+                <div className="queue-page-customer truncate">{t.customerName}</div>
+                <div><Priority level={t.priority} showLabel /></div>
+                <div>
+                  <span className={`status ${TICKET_STATUS_CLASS[t.status] ?? 'status-todo'}`}>
+                    {t.status}
+                  </span>
+                </div>
                 <div>
                   <span className={`sla is-${sla}`}>
                     <span className="sla-dot" />
@@ -204,7 +219,7 @@ export function QueuePage() {
                   {assignee ? (
                     <Avatar src={assignee.avatarUrl} name={assignee.fullName} size="sm" />
                   ) : (
-                    <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>—</span>
+                    <span className="muted">—</span>
                   )}
                 </div>
               </div>

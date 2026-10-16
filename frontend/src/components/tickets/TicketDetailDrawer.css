@@ -9,10 +9,10 @@
 }
 
 .ticket-drawer {
-  width: min(760px, 100vw);
+  width: min(680px, 100vw);
   height: 100vh;
   background: var(--surface);
-  border-left: 1px solid var(--border);
+  border-left: 1px solid var(--card-border);
   box-shadow: var(--shadow-xl);
   overflow-y: auto;
   animation: ticket-drawer-slide var(--dur-base) var(--ease-out);
@@ -24,12 +24,18 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--s-5) var(--s-6);
-  border-bottom: 1px solid var(--border-subtle);
+  padding: var(--s-6) var(--s-8) 0;
+}
+
+.ticket-drawer__head-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--s-5);
+  font-size: var(--fs-sm);
 }
 
 .ticket-drawer__error {
-  padding: var(--s-5) var(--s-6);
+  padding: var(--s-6) var(--s-8);
   color: var(--danger);
 }
 
@@ -39,31 +45,68 @@
 }
 
 .ticket-drawer__body {
-  padding: var(--s-6);
+  padding: var(--s-5) var(--s-8) var(--s-10);
   display: flex;
   flex-direction: column;
-  gap: var(--s-5);
+  gap: var(--s-7);
 }
 
 .ticket-drawer__title {
-  font-size: var(--fs-xl);
-  font-weight: var(--fw-semibold);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--lh-tight);
   margin: 0;
   color: var(--text);
 }
 
 .ticket-drawer__meta {
-  gap: var(--s-4);
+  display: flex;
+  align-items: center;
+  gap: var(--s-5);
 }
+.ticket-drawer__meta .input-group { min-width: 160px; }
+
+/* SLA read-out: dot + coloured text. */
+.ticket-drawer__sla {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--text-secondary);
+}
+.ticket-drawer__sla::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-pill);
+  background: currentColor;
+}
+.ticket-drawer__sla.is-danger { color: var(--danger); }
+.ticket-drawer__sla.is-ok { color: var(--success); }
 
 .ticket-drawer__body-md {
-  padding: var(--s-5);
-  background: var(--surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-md);
+  padding: var(--s-6);
+  background: var(--surface-2);
+  border-radius: var(--r-lg);
   white-space: pre-wrap;
   color: var(--text);
   font-size: var(--fs-md);
+  line-height: var(--lh-relaxed);
+}
+
+.ticket-drawer__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+.ticket-drawer__section-title {
+  margin: 0;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
 }
 
 .ticket-drawer__replies {
@@ -75,31 +118,67 @@
   gap: var(--s-4);
 }
 
+.ticket-drawer__empty {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
 .ticket-drawer__reply {
-  padding: var(--s-5);
-  background: var(--surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-md);
+  padding: var(--s-5) var(--s-6);
+  background: var(--surface-2);
+  border-radius: var(--r-lg);
 }
 
 .ticket-drawer__reply.is-internal {
   background: var(--warning-soft);
-  border-color: var(--warning-border);
 }
 
 .ticket-drawer__reply-head {
+  display: flex;
+  align-items: center;
   gap: var(--s-4);
-  margin-bottom: var(--s-4);
+  margin-bottom: var(--s-3);
+}
+
+.ticket-drawer__reply-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--info);
+}
+.ticket-drawer__reply-kind.is-internal { color: var(--warning); }
+
+.ticket-drawer__reply-time {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
 }
 
 .ticket-drawer__reply-body {
   white-space: pre-wrap;
   color: var(--text);
   font-size: var(--fs-md);
+  line-height: var(--lh-normal);
 }
 
 .ticket-drawer__reply-form {
-  margin-top: var(--s-5);
+  margin-top: var(--s-3);
+}
+
+.ticket-drawer__reply-actions {
+  display: flex;
+  align-items: center;
+  margin-top: var(--s-4);
+}
+
+.ticket-drawer__internal-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  cursor: pointer;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
 }
 
 @keyframes ticket-drawer-fade {
@@ -115,3 +194,4 @@
 @media (max-width: 640px) {
   .ticket-drawer { width: 100vw; }
 }
+

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Trash2 } from 'lucide-react';
-import { Avatar, Badge, Button, Card, Select, useToast } from '@/components/ui';
+import { Avatar, Button, Select, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { useOrgMembers } from '@/hooks/useOrgMembers';
 import { useConfirm } from '@/hooks/useConfirm';
@@ -13,13 +13,6 @@ const ROLE_OPTIONS = [
   { value: 'Contributor', label: 'Contributor' },
   { value: 'Viewer', label: 'Viewer' },
 ];
-
-const ROLE_TONE = {
-  PM: 'purple',
-  TeamLead: 'info',
-  Contributor: 'success',
-  Viewer: 'neutral',
-};
 
 export function ProjectMembersPage() {
   const { slug: orgSlug, projectSlug } = useParams();
@@ -125,19 +118,21 @@ export function ProjectMembersPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>{project?.name ?? 'Project'}</div>
+            <div className="eyebrow">{project?.name ?? 'Project'} · Settings</div>
             <h1 className="page-title">Members</h1>
             <div className="page-subtitle">
-              Only members of {project?.orgSlug ? `the "${project.orgSlug}" org` : 'this organisation'} can be added.
+              {members.length} {members.length === 1 ? 'person' : 'people'} on this project. Only members of{' '}
+              {project?.orgSlug ? `the "${project.orgSlug}" org` : 'this organisation'} can be added.
             </div>
           </div>
         </div>
       </div>
 
-      <Card className="pmembers-card" title="Add a member">
+      <section className="card pmembers-card" aria-labelledby="pmembers-add-title">
+        <h2 id="pmembers-add-title" className="pmembers-section-title">Add a member</h2>
         <div className="pmembers-add">
           <Select
-            label="Org member"
+            aria-label="Org member"
             value={pickUserId}
             onChange={(e) => setPickUserId(e.target.value)}
             options={[
@@ -149,7 +144,7 @@ export function ProjectMembersPage() {
             ]}
           />
           <Select
-            label="Role"
+            aria-label="Role"
             value={pickRole}
             onChange={(e) => setPickRole(e.target.value)}
             options={ROLE_OPTIONS}
@@ -158,11 +153,11 @@ export function ProjectMembersPage() {
             {busy ? 'Adding…' : 'Add to project'}
           </Button>
         </div>
-      </Card>
+      </section>
 
-      <Card className="pmembers-card" title={`Members (${members.length})`}>
+      <section className="card pmembers-list-card" aria-label={`Members (${members.length})`}>
         {members.length === 0 ? (
-          <p className="muted">No members yet.</p>
+          <p className="muted pmembers-empty">No members yet.</p>
         ) : (
           <ul className="pmembers-list">
             {members.map((m) => (
@@ -172,8 +167,9 @@ export function ProjectMembersPage() {
                   <div>{m.fullName}</div>
                   <div className="pmembers-row-email">{m.email}</div>
                 </div>
-                <Badge tone={ROLE_TONE[m.role] ?? 'neutral'}>{m.role}</Badge>
+                {/* The select is the role read-out; styled as plain text until hovered. */}
                 <Select
+                  className="pmembers-role"
                   value={m.role}
                   onChange={(e) => changeRole(m.userId, e.target.value)}
                   options={ROLE_OPTIONS}
@@ -181,9 +177,10 @@ export function ProjectMembersPage() {
                 />
                 <button
                   type="button"
-                  className="pmembers-delete"
+                  className="icon-btn icon-btn-sm pmembers-delete"
                   onClick={() => removeMember(m.userId)}
                   aria-label={`Remove ${m.fullName}`}
+                  title="Remove from project"
                 >
                   <Trash2 size={14} aria-hidden="true" />
                 </button>
@@ -191,7 +188,7 @@ export function ProjectMembersPage() {
             ))}
           </ul>
         )}
-      </Card>
+      </section>
     </div>
   );
 }

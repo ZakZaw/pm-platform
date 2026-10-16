@@ -1,50 +1,64 @@
-/* Project members page — add form on top, member rows below.
+/* Project members page: compact add row on top, one calm member list below.
    Header is the stratos page-head; only domain bits live here. */
 
 .pmembers {
   max-width: 900px;
 }
 
+/* Page-scoped fix: stratos' `.input-group` centres its children. */
+.pmembers .input-group {
+  align-items: stretch;
+  gap: 0;
+}
+
 .pmembers-card {
-  padding: var(--s-6);
-  margin-bottom: var(--s-6);
+  padding: var(--s-8);
+  margin-bottom: var(--s-9);
+}
+
+.pmembers-section-title {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+  margin: 0 0 var(--s-6);
 }
 
 .pmembers-add {
   display: grid;
   grid-template-columns: minmax(220px, 2fr) minmax(140px, 1fr) auto;
-  align-items: end;
-  gap: var(--s-5);
+  align-items: center;
+  gap: var(--s-4);
 }
 
-@media (max-width: 720px) {
-  .pmembers-add {
-    grid-template-columns: 1fr;
-  }
+.pmembers-list-card {
+  padding: var(--s-3) 0;
+}
+
+.pmembers-empty {
+  padding: var(--s-8);
 }
 
 .pmembers-list {
   list-style: none;
   padding: 0;
   margin: 0;
-  display: grid;
-  gap: var(--s-4);
 }
 
 .pmembers-row {
   display: grid;
-  grid-template-columns: auto minmax(180px, 1fr) auto 160px auto;
+  grid-template-columns: auto minmax(180px, 1fr) 160px auto;
   align-items: center;
-  gap: var(--s-5);
-  padding: var(--s-5);
-  background: var(--surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-md);
+  gap: var(--s-6);
+  padding: var(--s-5) var(--s-8);
+}
+
+.pmembers-row + .pmembers-row {
+  border-top: 1px solid var(--border-subtle);
 }
 
 .pmembers-row-name {
   display: grid;
-  gap: 2px;
+  gap: var(--s-1);
   min-width: 0;
 }
 
@@ -58,35 +72,53 @@
 }
 
 .pmembers-row-email {
-  font-size: var(--fs-xs);
+  font-size: var(--fs-sm);
   color: var(--text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.pmembers-delete {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--text-muted);
-  cursor: pointer;
-  border-radius: var(--r-sm);
+/* Role select reads as plain text until the row is hovered / focused. */
+.pmembers .pmembers-role {
+  border-color: transparent;
+  background-color: transparent;
+  color: var(--text-secondary);
+}
+.pmembers-row:hover .pmembers-role,
+.pmembers .pmembers-role:focus {
+  border-color: var(--border);
+  background-color: var(--surface);
+  color: var(--text);
 }
 
-.pmembers-delete:hover {
+/* Remove is revealed on row hover / keyboard focus. */
+.pmembers .pmembers-delete {
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.pmembers-row:hover .pmembers-delete,
+.pmembers .pmembers-delete:focus-visible {
+  opacity: 1;
+}
+.pmembers .pmembers-delete:hover {
   background: var(--danger-soft);
   color: var(--danger);
-  border-color: var(--danger-border);
+  box-shadow: none;
+}
+
+@media (hover: none) {
+  .pmembers .pmembers-delete { opacity: 1; }
 }
 
 @media (max-width: 720px) {
-  .pmembers-row {
+  .pmembers-add {
     grid-template-columns: 1fr;
-    align-items: stretch;
+  }
+  .pmembers-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+  .pmembers-row .input-group {
+    grid-column: 2 / 3;
   }
 }

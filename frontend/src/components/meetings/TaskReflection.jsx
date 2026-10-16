@@ -1,15 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Check, Link2, RotateCcw, Sparkles, Trash2, X } from 'lucide-react';
-import { Avatar, Badge, Button, Input, StatusBadge, useToast } from '@/components/ui';
+import { Check, Link2, Sparkles, Trash2 } from 'lucide-react';
+import { Avatar, Button, Input, Priority, StatusBadge, useToast } from '@/components/ui';
 import { meetingsApi } from '@/api/meetings.api';
 import { tasksApi } from '@/api/tasks.api';
-
-const PRIORITY_TONES = {
-  Urgent: 'danger',
-  High: 'warning',
-  Medium: 'info',
-  Low: 'neutral',
-};
 
 /**
  * F2-22 — one card per action-item draft. Surfaces the AI's
@@ -130,6 +123,7 @@ export function TaskReflection({
   return (
     <article className={[
       'ar-card',
+      isPending && 'has-check',
       isAccepted && 'is-accepted',
       isDismissed && 'is-dismissed',
     ].filter(Boolean).join(' ')}>
@@ -137,7 +131,7 @@ export function TaskReflection({
         {isPending && (
           <input
             type="checkbox"
-            className="ar-card-check"
+            className="cb ar-card-check"
             checked={isSelected}
             onChange={() => onSelectionToggle?.(item.id)}
             aria-label={`Include "${item.title}" in bulk accept`}
@@ -153,19 +147,12 @@ export function TaskReflection({
           ) : (
             <h3 className="ar-card-title">{item.title}</h3>
           )}
-          <div className="row gap-1">
-            <Badge tone={PRIORITY_TONES[item.suggestedPriority] ?? 'neutral'}>
-              {item.suggestedPriority}
-            </Badge>
+          <div className="ar-card-state">
             {isAccepted && (
-              <Badge tone="success">
-                <Check size={9} aria-hidden="true" /> Accepted
-              </Badge>
+              <span className="mtg-dot mtg-dot-rsvp-accepted">Accepted</span>
             )}
             {isDismissed && (
-              <Badge tone="neutral">
-                <X size={9} aria-hidden="true" /> Dismissed
-              </Badge>
+              <span className="mtg-dot mtg-dot-rsvp-pending">Dismissed</span>
             )}
           </div>
         </div>
@@ -222,8 +209,13 @@ export function TaskReflection({
 
       <footer className="ar-card-foot">
         <div className="ar-card-meta">
+          {item.suggestedPriority && (
+            <span className="ar-card-pri">
+              <Priority level={item.suggestedPriority} showLabel />
+            </span>
+          )}
           {item.suggestedOwnerFullName && !editing && (
-            <span className="row gap-1" style={{ alignItems: 'center' }}>
+            <span className="ar-card-owner">
               <Avatar size="xs" name={item.suggestedOwnerFullName} />
               <span>{item.suggestedOwnerFullName}</span>
             </span>
@@ -241,17 +233,17 @@ export function TaskReflection({
             {editing ? (
               <>
                 <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>
-                  <RotateCcw size={10} aria-hidden="true" /> Cancel
+                  Cancel
                 </Button>
                 <Button size="sm" variant="primary" onClick={accept} disabled={busy}>
-                  <Sparkles size={10} aria-hidden="true" />
+                  <Sparkles size={13} aria-hidden="true" />
                   {busy ? 'Saving…' : 'Create task'}
                 </Button>
               </>
             ) : (
               <>
                 <Button size="sm" variant="ghost" onClick={dismiss} disabled={busy}>
-                  <Trash2 size={10} aria-hidden="true" /> Dismiss
+                  <Trash2 size={13} aria-hidden="true" /> Dismiss
                 </Button>
                 <div className="ar-link-wrap" ref={linkRef}>
                   <Button
@@ -260,7 +252,7 @@ export function TaskReflection({
                     onClick={() => setLinkOpen((v) => !v)}
                     disabled={busy}
                   >
-                    <Link2 size={10} aria-hidden="true" /> Link existing
+                    <Link2 size={13} aria-hidden="true" /> Link existing
                   </Button>
                   {linkOpen && (
                     <div className="menu ar-link-menu" role="menu">
@@ -300,8 +292,8 @@ export function TaskReflection({
                 <Button size="sm" variant="ghost" onClick={() => setEditing(true)}>
                   Edit
                 </Button>
-                <Button size="sm" variant="primary" onClick={accept} disabled={busy}>
-                  <Check size={10} aria-hidden="true" /> Accept
+                <Button size="sm" variant="secondary" onClick={accept} disabled={busy}>
+                  <Check size={13} aria-hidden="true" /> Accept
                 </Button>
               </>
             )}

@@ -10,8 +10,8 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Filter, Plus, RefreshCw } from 'lucide-react';
-import { Button, Skeleton, useToast } from '@/components/ui';
+import { Filter, MoreHorizontal, Plus, RefreshCw } from 'lucide-react';
+import { Button, Dropdown, Skeleton, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { salesApi } from '@/api/sales.api';
 import { DealDetailDrawer } from '@/components/deals/DealDetailDrawer';
@@ -40,10 +40,10 @@ function fmtMixed(stage) {
     .format(stage.totalValue ?? 0);
 }
 
-function stageBarColor(stage) {
-  if (stage.isTerminalWon) return 'var(--success)';
-  if (stage.isTerminalLost) return 'var(--danger)';
-  return 'var(--accent)';
+function stageTone(stage) {
+  if (stage.isTerminalWon) return 'is-won';
+  if (stage.isTerminalLost) return 'is-lost';
+  return '';
 }
 
 export function PipelinePage() {
@@ -185,11 +185,9 @@ export function PipelinePage() {
         </div>
         <div className="pipeline">
           {[0, 1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="pipe-col">
+            <div key={i} className="pipe-col pipe-col-skeleton">
               <Skeleton height={20} width="60%" />
-              <div style={{ marginTop: 12 }}>
-                <Skeleton height={64} />
-              </div>
+              <Skeleton height={64} />
             </div>
           ))}
         </div>
@@ -210,19 +208,30 @@ export function PipelinePage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>Sales · Pipeline</div>
             <h1 className="page-title">Pipeline</h1>
             <div className="page-subtitle">
               {totalOpenCount} open deals · {fmtCurrency(totalOpenValue, 'USD')} in flight
             </div>
           </div>
           <div className="row gap-3">
-            <Button variant="ghost" size="sm" disabled>
-              <Filter size={13} aria-hidden="true" /> Filter
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => refresh(project.id).catch(() => {})}>
-              <RefreshCw size={13} aria-hidden="true" /> Refresh
-            </Button>
+            <Dropdown
+              align="end"
+              trigger={(
+                <button type="button" className="icon-btn" aria-label="More actions" title="More actions">
+                  <MoreHorizontal size={16} aria-hidden="true" />
+                </button>
+              )}
+            >
+              <Dropdown.Item
+                icon={<RefreshCw size={13} aria-hidden="true" />}
+                onSelect={() => refresh(project.id).catch(() => {})}
+              >
+                Refresh
+              </Dropdown.Item>
+              <Dropdown.Item icon={<Filter size={13} aria-hidden="true" />} disabled>
+                Filter (coming soon)
+              </Dropdown.Item>
+            </Dropdown>
             <Button variant="primary" size="sm" onClick={() => setCreateOpen(true)}>
               <Plus size={13} aria-hidden="true" /> New deal
             </Button>
@@ -286,15 +295,16 @@ function PipelineColumn({ stage, onOpenDeal }) {
       className={['pipe-col', isOver ? 'is-over' : ''].filter(Boolean).join(' ')}
     >
       <div className="pipe-col-head">
-        <div className="pipe-stage-bar" style={{ background: stageBarColor(stage) }} />
         <div className="pipe-col-title">
-          <span className="pipe-col-name">{stage.name}</span>
-          <span className="pipe-col-amount">{fmtMixed(stage)}</span>
+          <span className={['pipe-col-name', stageTone(stage)].filter(Boolean).join(' ')}>
+            {stage.name}
+          </span>
         </div>
+        <div className="pipe-col-amount">{fmtMixed(stage)}</div>
         <div className="pipe-col-sub">
           <span>{stage.dealCount} {stage.dealCount === 1 ? 'deal' : 'deals'}</span>
           {stage.defaultProbability != null && (
-            <span className="mono">{stage.defaultProbability}%</span>
+            <span>{stage.defaultProbability}% probability</span>
           )}
         </div>
       </div>
@@ -316,8 +326,9 @@ function DealCardView({ deal, onOpen, isOverlay = false }) {
     disabled: isOverlay,
   });
   const { attributes, listeners, setNodeRef, transform, isDragging } = draggable;
+  // Drag transform is computed per frame by dnd-kit, so it has to stay inline.
   const style = isOverlay
-    ? { boxShadow: 'var(--shadow-lg)' }
+    ? undefined
     : {
         transform: CSS.Translate.toString(transform),
         opacity: isDragging ? 0 : 1,
@@ -335,7 +346,7 @@ function DealCardView({ deal, onOpen, isOverlay = false }) {
       style={style}
       {...listeners}
       {...attributes}
-      className="deal-card"
+      className={['deal-card', isOverlay ? 'is-overlay' : ''].filter(Boolean).join(' ')}
       role="button"
       tabIndex={0}
       onClick={handleClick}
@@ -350,9 +361,7 @@ function DealCardView({ deal, onOpen, isOverlay = false }) {
       <div className="deal-company truncate">{deal.accountName}</div>
       <div className="deal-meta">
         <span className="deal-amt">{fmtCurrency(deal.value, deal.currency)}</span>
-        <span className="mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)' }}>
-          {deal.probability}%
-        </span>
+        <span className="deal-prob">{deal.probability}%</span>
       </div>
     </div>
   );

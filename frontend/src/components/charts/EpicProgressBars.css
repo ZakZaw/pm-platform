@@ -1,7 +1,7 @@
 .epic-bars {
   display: flex;
   flex-direction: column;
-  gap: var(--s-5);
+  gap: var(--s-6);
 }
 
 .epic-bars-empty {
@@ -13,7 +13,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--s-2);
+  gap: var(--s-4);
+  margin-bottom: var(--s-3);
 }
 
 .epic-bar-name {
@@ -21,26 +22,34 @@
   align-items: center;
   gap: var(--s-3);
   min-width: 0;
-  font-size: var(--fs-sm);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
   color: var(--text);
 }
 
 .epic-bar-swatch {
   flex: none;
-  width: 10px;
-  height: 10px;
-  border-radius: var(--r-xs);
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-pill);
 }
 
 .epic-bar-count {
   flex: none;
-  font-size: var(--fs-xs);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.epic-bar-total {
+  color: var(--text-muted);
+  font-weight: var(--fw-regular);
 }
 
 .epic-bar-track {
   height: 6px;
   border-radius: var(--r-pill);
-  background: var(--surface-hover);
+  background: var(--surface-active);
   overflow: hidden;
 }
 

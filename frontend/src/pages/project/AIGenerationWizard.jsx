@@ -17,8 +17,6 @@ import {
   Trash2,
 } from 'lucide-react';
 import {
-  AIChip,
-  Badge,
   Button,
   Card,
   Input,
@@ -51,7 +49,7 @@ function StepDot({ n, label, state }) {
   const isDone = state === 'done';
   const isActive = state === 'active';
   return (
-    <div className="row" style={{ gap: 8 }}>
+    <div className="row ai-wizard-stepdot">
       <div
         className={[
           'wizard-step',
@@ -218,15 +216,14 @@ export function AIGenerationWizard() {
     : null;
   const typedTotalsLabel = isTypedPreview ? typedDraftTotals(preview) : null;
 
+  const answeredCount = questions.filter((q) => (answers[q] ?? '').trim().length > 0).length;
+
   return (
     <div className="ai-wizard">
       <div className="ai-wizard-inner">
         {/* Header */}
         <div className="ai-wizard-header">
-          <div className="row gap-4" style={{ justifyContent: 'center', marginBottom: 'var(--s-5)' }}>
-            <div className="ai-mark"><Sparkles size={14} /></div>
-            <AIChip label={preview?.provider ?? 'Plan with AI'} />
-          </div>
+          <div className="ai-mark ai-wizard-mark"><Sparkles size={16} /></div>
           <h1 className="ai-wizard-title">
             {step === 'preview' ? 'Review your generated plan' : 'New project with AI'}
           </h1>
@@ -240,7 +237,7 @@ export function AIGenerationWizard() {
         {/* Stepper */}
         <div className="ai-wizard-stepper">
           {STEPS.map((s, i) => (
-            <span key={s.key} className="row" style={{ gap: 24 }}>
+            <span key={s.key} className="row ai-wizard-stepper-item">
               <StepDot n={i + 1} label={s.label} state={stepState(s.key, step)} />
               {i < STEPS.length - 1 && <span className="ai-wizard-step-connector" />}
             </span>
@@ -250,7 +247,7 @@ export function AIGenerationWizard() {
         {error && <p className="ai-wizard-error">{error}</p>}
 
         {step === 'describe' && (
-          <Card variant="ai" className="ai-wizard-card">
+          <Card className="ai-wizard-card">
             <label className="ai-wizard-label" htmlFor="ai-desc">
               What are you building?
             </label>
@@ -285,7 +282,7 @@ export function AIGenerationWizard() {
         )}
 
         {step === 'clarify' && (
-          <Card variant="ai" className="ai-wizard-card">
+          <Card className="ai-wizard-card">
             <h2 className="ai-wizard-heading">A few clarifying questions</h2>
             {questions.length === 0 ? (
               <p className="ai-wizard-placeholder">AI had no follow-up questions.</p>
@@ -307,7 +304,7 @@ export function AIGenerationWizard() {
               <Button variant="ghost" onClick={() => setStep('describe')}>
                 Back
               </Button>
-              <Button variant="secondary" onClick={() => generate(false)} disabled={loading}>
+              <Button variant="ghost" onClick={() => generate(false)} disabled={loading}>
                 Skip — generate with assumptions
               </Button>
               <Button variant="ai" onClick={() => generate(true)} disabled={loading}>
@@ -319,71 +316,54 @@ export function AIGenerationWizard() {
 
         {step === 'preview' && preview && (
           <>
-            {/* Prompt recap */}
-            <div className="card ai-wizard-prompt">
-              <div className="row" style={{ gap: 6, marginBottom: 6 }}>
-                <Quote size={12} color="var(--text-muted)" aria-hidden="true" />
-                <span
-                  className="muted"
-                  style={{
-                    fontSize: 11,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.06em',
-                    fontWeight: 600,
-                  }}
-                >
-                  Your prompt
-                </span>
-                <span className="fill" />
-                <Button variant="ghost" size="sm" onClick={() => setStep('describe')}>
-                  <Edit3 size={11} aria-hidden="true" /> Edit
-                </Button>
-              </div>
-              <div
-                style={{
-                  fontSize: 14,
-                  color: 'var(--text-secondary)',
-                  lineHeight: 1.55,
-                }}
-              >
-                “{description}”
-              </div>
-              {questions.length > 0 && (
-                <div className="row" style={{ gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-                  {questions.map((q) => (
-                    <Badge key={q} tone="purple">{q}</Badge>
-                  ))}
+            {/* Prompt recap + project name in one calm card */}
+            <div className="card ai-wizard-card">
+              <div className="ai-wizard-prompt">
+                <div className="row ai-wizard-prompt-head">
+                  <Quote size={14} aria-hidden="true" />
+                  <span>Your prompt</span>
+                  <span className="fill" />
+                  <Button variant="ghost" size="sm" onClick={() => setStep('describe')}>
+                    <Edit3 size={12} aria-hidden="true" /> Edit
+                  </Button>
                 </div>
-              )}
-            </div>
+                <p className="ai-wizard-prompt-text">“{description}”</p>
+                {questions.length > 0 && (
+                  <ul className="ai-wizard-prompt-questions">
+                    {questions.map((q) => (
+                      <li key={q}>{q}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
 
-            {/* Project name */}
-            <Card variant="ai" className="ai-wizard-card">
               <Input
                 label="Project name"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
                 help={`Suggested by ${preview.provider} (${preview.model}). Edit anything below before confirming.`}
               />
-            </Card>
+            </div>
 
             {/* Generated plan */}
-            <div className="card-ai ai-wizard-plan">
+            <div className="card ai-wizard-plan">
               <div className="row ai-wizard-plan-head">
-                <Sparkles size={14} color="var(--ai-2)" aria-hidden="true" />
-                <span style={{ fontSize: 13, fontWeight: 600 }}>
+                <span className="ai-wizard-plan-icon" aria-hidden="true">
+                  <Sparkles size={14} />
+                </span>
+                <span className="ai-wizard-plan-title">
                   {isTypedPreview ? `${preview.type} project` : 'Generated plan'}
                 </span>
                 {totals && (
-                  <span className="mono muted" style={{ fontSize: 11 }}>
+                  <span className="ai-wizard-plan-totals">
                     · {totals.epics} epics · {totals.tasks} tasks · {totals.points} points
                   </span>
                 )}
                 {isTypedPreview && typedTotalsLabel && (
-                  <span className="mono muted" style={{ fontSize: 11 }}>· {typedTotalsLabel}</span>
+                  <span className="ai-wizard-plan-totals">· {typedTotalsLabel}</span>
                 )}
                 <span className="fill" />
-                <span className="muted" style={{ fontSize: 11 }}>
+                <span className="ai-wizard-plan-provider">
                   Powered by {preview.provider}
                 </span>
               </div>
@@ -403,7 +383,7 @@ export function AIGenerationWizard() {
                       />
                     ))}
                     {preview.epics.length === 0 && (
-                      <p className="ai-wizard-placeholder" style={{ padding: 16 }}>
+                      <p className="ai-wizard-placeholder ai-wizard-placeholder-pad">
                         All epics removed. Regenerate to start over.
                       </p>
                     )}
@@ -412,15 +392,15 @@ export function AIGenerationWizard() {
               </div>
               <div className="row ai-wizard-plan-foot">
                 <Button variant="ghost" size="md" onClick={regenerate} disabled={loading}>
-                  <RefreshCw size={13} aria-hidden="true" /> Regenerate
+                  <RefreshCw size={14} aria-hidden="true" /> Regenerate
                 </Button>
                 {!isTypedPreview && (
                   <Button variant="ghost" size="md" disabled>
-                    <Plus size={13} aria-hidden="true" /> Add epic
+                    <Plus size={14} aria-hidden="true" /> Add epic
                   </Button>
                 )}
                 <span className="fill" />
-                <Button variant="secondary" size="md" disabled>
+                <Button variant="ghost" size="md" disabled>
                   Save as draft
                 </Button>
                 <Button
@@ -433,61 +413,48 @@ export function AIGenerationWizard() {
                     || projectName.trim().length < 2
                   }
                 >
-                  <Check size={13} aria-hidden="true" />
+                  <Check size={14} aria-hidden="true" />
                   {loading ? ' Creating…' : ' Confirm & create'}
                 </Button>
               </div>
             </div>
 
-            {/* Previous steps recap */}
-            <div
-              className="muted"
-              style={{
-                textAlign: 'center',
-                marginTop: 24,
-                fontSize: 11,
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-              }}
-            >
-              Previous steps
-            </div>
-            <div className="grid-2" style={{ marginTop: 8 }}>
-              <div className="card ai-wizard-recap">
-                <div className="row" style={{ gap: 6, marginBottom: 8 }}>
-                  <MessageSquareText size={12} aria-hidden="true" />
-                  <span style={{ fontSize: 12, fontWeight: 600 }}>Step 1 — Describe</span>
-                  <Badge tone="success">
-                    <Check size={11} aria-hidden="true" /> Done
-                  </Badge>
+            {/* Previous steps recap, collapsed by default */}
+            <details className="ai-wizard-recap">
+              <summary>Previous steps</summary>
+              <div className="grid-2 ai-wizard-recap-grid">
+                <div className="ai-wizard-recap-item">
+                  <div className="row ai-wizard-recap-head">
+                    <MessageSquareText size={14} aria-hidden="true" />
+                    <span>Step 1 — Describe</span>
+                    <span className="ai-wizard-recap-done">Done</span>
+                  </div>
+                  <p className="ai-wizard-recap-text">
+                    {description.length > 160 ? `${description.slice(0, 157)}…` : description}
+                  </p>
                 </div>
-                <p className="ai-wizard-recap-text">
-                  {description.length > 160 ? `${description.slice(0, 157)}…` : description}
-                </p>
-              </div>
-              <div className="card ai-wizard-recap">
-                <div className="row" style={{ gap: 6, marginBottom: 8 }}>
-                  <ListChecks size={12} aria-hidden="true" />
-                  <span style={{ fontSize: 12, fontWeight: 600 }}>Step 2 — Clarify</span>
-                  <Badge tone="success">
-                    <Check size={11} aria-hidden="true" />
-                    {' '}
-                    {questions.filter((q) => (answers[q] ?? '').trim().length > 0).length} of {questions.length}
-                  </Badge>
+                <div className="ai-wizard-recap-item">
+                  <div className="row ai-wizard-recap-head">
+                    <ListChecks size={14} aria-hidden="true" />
+                    <span>Step 2 — Clarify</span>
+                    <span className="ai-wizard-recap-done">
+                      {answeredCount} of {questions.length}
+                    </span>
+                  </div>
+                  <ul className="ai-wizard-recap-list">
+                    {questions.length === 0 && <li>· No clarifying questions</li>}
+                    {questions.map((q) => (
+                      <li key={q}>
+                        · {q.length > 40 ? `${q.slice(0, 37)}…` : q} →{' '}
+                        <span className={(answers[q] ?? '').trim() ? 'ai-wizard-recap-answer' : 'ai-wizard-recap-skipped'}>
+                          {(answers[q] ?? '').trim() || 'Skipped'}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <ul className="ai-wizard-recap-list">
-                  {questions.length === 0 && <li>· No clarifying questions</li>}
-                  {questions.map((q) => (
-                    <li key={q}>
-                      · {q.length > 40 ? `${q.slice(0, 37)}…` : q} →{' '}
-                      <span style={{ color: (answers[q] ?? '').trim() ? 'var(--text-secondary)' : 'var(--text-muted)' }}>
-                        {(answers[q] ?? '').trim() || 'Skipped'}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
               </div>
-            </div>
+            </details>
           </>
         )}
       </div>
@@ -537,7 +504,7 @@ function EpicNode({ epic, onChange, onRemove, onChangeTask, onRemoveTask }) {
             />
           ))}
           {epic.description && (
-            <p className="ai-wizard-epic-desc" style={{ marginLeft: 36 }}>
+            <p className="ai-wizard-epic-desc">
               {epic.description}
             </p>
           )}
@@ -555,7 +522,7 @@ function TaskNode({ task, depth, onChange, onRemove }) {
       title={task.title}
       onTitleChange={(v) => onChange({ title: v })}
       badges={[
-        <Badge key="prio" tone="info">{task.priority}</Badge>,
+        <span key="prio" className="ai-wizard-tree-prio">{task.priority}</span>,
       ]}
       points={task.storyPoints}
       onRemove={onRemove}
@@ -564,9 +531,9 @@ function TaskNode({ task, depth, onChange, onRemove }) {
 }
 
 const KIND_STYLE = {
-  epic:  { icon: Layers,      tone: 'purple',  label: 'EPIC' },
-  task:  { icon: CheckSquare, tone: 'neutral', label: 'TASK' },
-  story: { icon: BookOpen,    tone: 'info',    label: 'STORY' },
+  epic:  { icon: Layers,      label: 'Epic' },
+  task:  { icon: CheckSquare, label: 'Task' },
+  story: { icon: BookOpen,    label: 'Story' },
 };
 
 function TreeRow({
@@ -581,13 +548,10 @@ function TreeRow({
   points,
   onRemove,
 }) {
-  const { icon: Icon, tone, label } = KIND_STYLE[kind];
+  const { icon: Icon, label } = KIND_STYLE[kind];
   const [editing, setEditing] = useState(false);
   return (
-    <div
-      className="ai-wizard-tree-row row"
-      style={{ marginLeft: depth * 18 }}
-    >
+    <div className={`ai-wizard-tree-row row is-${kind} depth-${depth}`}>
       {hasChildren ? (
         <button
           type="button"
@@ -598,11 +562,12 @@ function TreeRow({
           {open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
         </button>
       ) : (
-        <span style={{ width: 12, flexShrink: 0 }} />
+        <span className="ai-wizard-chevron-spacer" />
       )}
-      <Badge tone={tone}>
-        <Icon size={11} aria-hidden="true" /> {label}
-      </Badge>
+      <span className={`ai-wizard-kind is-${kind}`} title={label}>
+        <Icon size={14} aria-hidden="true" />
+        <span className="ai-wizard-sr">{label}</span>
+      </span>
       {editing ? (
         <input
           className="input ai-wizard-tree-input grow"
@@ -615,10 +580,7 @@ function TreeRow({
           }}
         />
       ) : (
-        <span
-          className="fill ai-wizard-tree-title"
-          style={{ fontWeight: kind === 'epic' ? 500 : 400 }}
-        >
+        <span className="fill ai-wizard-tree-title">
           {title}
         </span>
       )}
@@ -626,11 +588,11 @@ function TreeRow({
         <span key={i}>{b}</span>
       ))}
       {points != null && (
-        <span className="mono muted ai-wizard-tree-pts">{points}pt</span>
+        <span className="ai-wizard-tree-pts">{points} pt</span>
       )}
       <button
         type="button"
-        className="btn btn-ghost btn-icon-sm"
+        className="btn btn-ghost btn-icon-sm ai-wizard-tree-action"
         onClick={() => setEditing((v) => !v)}
         aria-label="Edit"
         title="Edit"
@@ -639,7 +601,7 @@ function TreeRow({
       </button>
       <button
         type="button"
-        className="btn btn-ghost btn-icon-sm"
+        className="btn btn-ghost btn-icon-sm ai-wizard-tree-action"
         onClick={onRemove}
         aria-label="Remove"
         title="Remove"

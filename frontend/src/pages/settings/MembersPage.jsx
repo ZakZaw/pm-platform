@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Avatar, Badge, Button, Card, Input, Select, Table } from '@/components/ui';
+import { Avatar, Button, Input, Select, Table } from '@/components/ui';
 import { invitationsApi } from '@/api/invitations.api';
 import { orgsApi } from '@/api/orgs.api';
 import { useOrgRole } from '@/hooks/useOrgRole';
@@ -20,13 +20,6 @@ const ROLE_FILTER_OPTIONS = [
   { value: 'Member', label: 'Member' },
   { value: 'Guest', label: 'Guest' },
 ];
-
-const ROLE_TONE = {
-  Owner: 'purple',
-  Admin: 'info',
-  Member: 'neutral',
-  Guest: 'neutral',
-};
 
 const PAGE_SIZE = 20;
 
@@ -91,10 +84,18 @@ export function MembersPage() {
   }, [slug, page, debouncedSearch, roleFilter, refreshKey, myRole]);
 
   if (!loaded) {
-    return <p className="members__placeholder">Loading…</p>;
+    return (
+      <div className="main-inner">
+        <p className="members__placeholder">Loading…</p>
+      </div>
+    );
   }
   if (!myRole) {
-    return <p className="members__placeholder">You don't have access to this organization.</p>;
+    return (
+      <div className="main-inner">
+        <p className="members__placeholder">You don't have access to this organization.</p>
+      </div>
+    );
   }
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -119,15 +120,30 @@ export function MembersPage() {
   };
 
   return (
-    <div className="page members">
+    <div className="main-inner members">
       {dialog}
-      <h1 className="members__title">Members</h1>
+      <header className="page-head">
+        <div className="page-title-row">
+          <div>
+            <p className="eyebrow">Settings</p>
+            <h1 className="page-title">Members</h1>
+            <p className="page-subtitle">
+              {total > 0
+                ? `${total} ${total === 1 ? 'person has' : 'people have'} access to this organization.`
+                : 'People with access to this organization.'}
+            </p>
+          </div>
+        </div>
+      </header>
 
       {isAdminOrAbove && (
-        <Card title="Invite a member" className="members__card">
-          <form className="members__form" onSubmit={onInvite}>
+        <section className="card members__invite-card" aria-labelledby="members-invite-title">
+          <h2 id="members-invite-title" className="members__section-title">
+            Invite a member
+          </h2>
+          <form className="members__invite" onSubmit={onInvite}>
             <Input
-              label="Email"
+              aria-label="Email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -136,36 +152,34 @@ export function MembersPage() {
               autoComplete="off"
             />
             <Select
-              label="Role"
+              aria-label="Role"
               options={ROLE_OPTIONS}
               value={inviteRole}
               onChange={(e) => setInviteRole(e.target.value)}
             />
-
-            {inviteError && <p className="members__error">{inviteError}</p>}
-            {inviteSuccess && <p className="members__success">{inviteSuccess}</p>}
-
             <Button type="submit" disabled={inviting || email.trim().length === 0}>
               {inviting ? 'Sending…' : 'Send invitation'}
             </Button>
           </form>
-        </Card>
+          {inviteError && <p className="members__error">{inviteError}</p>}
+          {inviteSuccess && <p className="members__success">{inviteSuccess}</p>}
+        </section>
       )}
 
-      <Card title="Directory" className="members__card">
+      <section className="members__directory" aria-label="Directory">
         <div className="members__filters">
           <Input
-            label="Search"
+            aria-label="Search"
             type="search"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setPage(1);
             }}
-            placeholder="Name or email…"
+            placeholder="Search by name or email…"
           />
           <Select
-            label="Filter by role"
+            aria-label="Filter by role"
             options={ROLE_FILTER_OPTIONS}
             value={roleFilter}
             onChange={(e) => {
@@ -229,7 +243,7 @@ export function MembersPage() {
             </Button>
           </div>
         )}
-      </Card>
+      </section>
     </div>
   );
 }
@@ -259,7 +273,9 @@ function MemberTable({ members, isOwner, isAdminOrAbove, loading, onRoleChange, 
           <Table.Header>Name</Table.Header>
           <Table.Header>Role</Table.Header>
           <Table.Header>Joined</Table.Header>
-          <Table.Header align="right">Actions</Table.Header>
+          <Table.Header align="right">
+            <span className="members__sr">Actions</span>
+          </Table.Header>
         </Table.Row>
       </Table.Head>
       <Table.Body>
@@ -270,36 +286,43 @@ function MemberTable({ members, isOwner, isAdminOrAbove, loading, onRoleChange, 
               <Table.Cell>
                 <div className="members__person">
                   <Avatar src={m.avatarUrl} name={m.fullName} size="sm" />
-                  <div>
+                  <div className="members__person-text">
                     <div className="members__person-name">{m.fullName}</div>
                     <div className="members__person-email">{m.email}</div>
                   </div>
                 </div>
               </Table.Cell>
               <Table.Cell>
-                <Badge tone={ROLE_TONE[m.role] ?? 'neutral'}>{m.role}</Badge>
+                {/* The role select doubles as the role read-out for manageable
+                    rows; everyone else sees plain text. */}
+                {canManage ? (
+                  <Select
+                    className="members__role-select"
+                    options={allRoleOptions.filter(
+                      // Only Owners can promote anyone to Owner.
+                      (o) => o.value !== 'Owner' || isOwner,
+                    )}
+                    value={m.role}
+                    onChange={(e) => onRoleChange(m, e.target.value)}
+                    aria-label={`Role for ${m.fullName}`}
+                  />
+                ) : (
+                  <span className="members__role">{m.role}</span>
+                )}
               </Table.Cell>
-              <Table.Cell>
+              <Table.Cell className="members__joined">
                 {new Date(m.joinedAt).toLocaleDateString()}
               </Table.Cell>
               <Table.Cell align="right">
-                {canManage ? (
-                  <div className="members__row-actions">
-                    <Select
-                      options={allRoleOptions.filter(
-                        // Only Owners can promote anyone to Owner.
-                        (o) => o.value !== 'Owner' || isOwner,
-                      )}
-                      value={m.role}
-                      onChange={(e) => onRoleChange(m, e.target.value)}
-                      aria-label={`Role for ${m.fullName}`}
-                    />
-                    <Button variant="ghost" size="sm" onClick={() => onRemove(m)}>
-                      Remove
-                    </Button>
-                  </div>
-                ) : (
-                  <span className="members__dim">—</span>
+                {canManage && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="members__remove"
+                    onClick={() => onRemove(m)}
+                  >
+                    Remove
+                  </Button>
                 )}
               </Table.Cell>
             </Table.Row>

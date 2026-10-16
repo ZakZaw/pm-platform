@@ -62,7 +62,7 @@ export function MessageInput({
     <div className="msg-input">
       {parent && (
         <div className="msg-input-reply-to">
-          <CornerDownLeft size={11} aria-hidden="true" />
+          <CornerDownLeft size={12} aria-hidden="true" />
           Replying to <strong>{parent.authorName || parent.authorEmail}</strong>
           <button type="button" className="msg-input-reply-cancel" onClick={onCancelReply}>
             Cancel
@@ -95,17 +95,19 @@ export function MessageInput({
             title="Add emoji"
             disabled={disabled || sending}
           >
-            <Smile size={13} aria-hidden="true" />
+            <Smile size={18} aria-hidden="true" />
           </button>
           <Button
             type="button"
             size="sm"
             variant="primary"
+            className="msg-send"
             onClick={submit}
             disabled={disabled || sending || !value.trim()}
+            aria-label={sending ? 'Sending…' : 'Send'}
+            title={sending ? 'Sending…' : 'Send (Enter)'}
           >
-            <Send size={11} aria-hidden="true" />
-            {sending ? 'Sending…' : 'Send'}
+            <Send size={15} aria-hidden="true" />
           </Button>
         </div>
       </div>
@@ -127,8 +129,9 @@ export function MessageInput({
           ))}
         </div>
       )}
-      <p className="msg-input-hint muted">
-        Markdown supported · <code>:tada:</code> for emoji · <code>[[task:KEY]]</code> embeds a task
+      <p className="msg-input-hint">
+        Enter to send · Shift+Enter for a new line · Markdown · <code>:tada:</code> emoji
+        · <code>[[task:KEY]]</code> embeds a task
       </p>
     </div>
   );

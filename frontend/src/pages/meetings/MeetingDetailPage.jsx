@@ -1,24 +1,21 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-  Calendar,
-  Check,
   CheckCircle2,
-  Clock,
   Copy,
-  Link as LinkIcon,
+  Download,
+  MoreHorizontal,
   Repeat,
   Sparkles,
   Trash2,
-  Users,
   Video,
-  X,
 } from 'lucide-react';
 import {
   Avatar,
-  Badge,
   Button,
+  Dropdown,
   Input,
+  Segmented,
   Skeleton,
   useToast,
 } from '@/components/ui';
@@ -27,20 +24,27 @@ import { useAuthStore } from '@/store/authStore';
 import { describeRecurrence } from '@/components/meetings/recurrence';
 import '@/components/meetings/meetings.css';
 
-const TYPE_TONES = {
-  Standup: 'info',
-  Planning: 'purple',
-  Review: 'success',
-  Retrospective: 'warning',
-  OneOnOne: 'neutral',
-  Other: 'neutral',
+const TYPE_LABELS = {
+  Standup: 'Standup',
+  Planning: 'Planning',
+  Review: 'Review',
+  Retrospective: 'Retrospective',
+  OneOnOne: '1:1',
+  Other: 'Meeting',
 };
 
 const RSVP_OPTIONS = [
-  { value: 'Accepted', label: 'Accept', icon: Check, tone: 'success' },
-  { value: 'Tentative', label: 'Maybe', icon: Clock, tone: 'warning' },
-  { value: 'Declined', label: 'Decline', icon: X, tone: 'danger' },
+  { value: 'Accepted', label: 'Accept' },
+  { value: 'Tentative', label: 'Maybe' },
+  { value: 'Declined', label: 'Decline' },
 ];
+
+const RESPONSE_LABELS = {
+  Accepted: 'Accepted',
+  Declined: 'Declined',
+  Tentative: 'Tentative',
+  Pending: 'No reply',
+};
 
 /**
  * F2-19 — meeting detail. Shows the schedule, attendees, agenda, and
@@ -161,6 +165,8 @@ export function MeetingDetailPage() {
 
   const recurrenceLabel = describeRecurrence(meeting.recurrenceRule);
 
+  const acceptedCount = meeting.attendees.filter((a) => a.response === 'Accepted').length;
+
   return (
     <div className="main-inner">
       <header className="page-head">
@@ -168,34 +174,23 @@ export function MeetingDetailPage() {
           <div>
             <p className="eyebrow">{meeting.projectName} · Meetings</p>
             <h1 className="page-title">{meeting.title}</h1>
-            <div className="row gap-2" style={{ marginTop: 'var(--s-2)', flexWrap: 'wrap' }}>
-              <Badge tone={TYPE_TONES[meeting.type] ?? 'neutral'}>{meeting.type}</Badge>
+            <p className="mtg-head-meta">
+              <span>{TYPE_LABELS[meeting.type] ?? meeting.type}</span>
               {meeting.status === 'InProgress' ? (
-                <Badge tone="warning" dot>Live now</Badge>
+                <span className="mtg-dot mtg-dot-inprogress">Live now</span>
               ) : meeting.status !== 'Scheduled' && (
-                <Badge tone={meeting.status === 'Cancelled' ? 'danger' : 'neutral'}>
+                <span className={`mtg-dot mtg-dot-${meeting.status.toLowerCase()}`}>
                   {meeting.status}
-                </Badge>
+                </span>
               )}
               {recurrenceLabel && (
-                <Badge tone="purple">
-                  <Repeat size={10} aria-hidden="true" /> {recurrenceLabel}
-                </Badge>
+                <span className="mtg-row-repeat">
+                  <Repeat size={13} aria-hidden="true" /> {recurrenceLabel}
+                </span>
               )}
-            </div>
+            </p>
           </div>
-          <div className="row gap-2">
-            {isLive && (
-              <Button
-                variant="primary"
-                onClick={() =>
-                  navigate(`/${orgSlug}/projects/${projectSlug}/meetings/${meeting.id}/room`)
-                }
-              >
-                <Video size={12} aria-hidden="true" />
-                {meeting.status === 'InProgress' ? ' Rejoin meeting' : ' Join meeting'}
-              </Button>
-            )}
+          <div className="row gap-3">
             {isOrganiser && isLive && (
               <FinaliseButton
                 meetingId={meeting.id}
@@ -205,6 +200,17 @@ export function MeetingDetailPage() {
                 }}
               />
             )}
+            {isLive && (
+              <Button
+                variant="primary"
+                onClick={() =>
+                  navigate(`/${orgSlug}/projects/${projectSlug}/meetings/${meeting.id}/room`)
+                }
+              >
+                <Video size={14} aria-hidden="true" />
+                {meeting.status === 'InProgress' ? ' Rejoin meeting' : ' Join meeting'}
+              </Button>
+            )}
             {meeting.status === 'Completed' && (
               <Button
                 variant="primary"
@@ -212,128 +218,140 @@ export function MeetingDetailPage() {
                   navigate(`/${orgSlug}/projects/${projectSlug}/meetings/${meeting.id}/summary`)
                 }
               >
-                <Sparkles size={12} aria-hidden="true" /> View summary
+                <Sparkles size={14} aria-hidden="true" /> View summary
               </Button>
             )}
             {isOrganiser && isLive && (
-              <Button variant="ghost" onClick={cancelMeeting}>
-                <Trash2 size={12} aria-hidden="true" /> Cancel meeting
-              </Button>
+              <Dropdown
+                align="end"
+                trigger={(
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    aria-label="More meeting actions"
+                    title="More actions"
+                  >
+                    <MoreHorizontal size={18} aria-hidden="true" />
+                  </button>
+                )}
+              >
+                <Dropdown.Item
+                  danger
+                  onSelect={cancelMeeting}
+                  icon={<Trash2 size={13} aria-hidden="true" />}
+                >
+                  Cancel meeting
+                </Dropdown.Item>
+              </Dropdown>
             )}
           </div>
         </div>
       </header>
 
-      <div className="meeting-detail-grid">
-        <section className="meeting-detail-card">
-          <div className="row between">
-            <h2>Agenda</h2>
-            {canEditAgenda && !editingAgenda && (
-              <Button size="sm" variant="ghost" onClick={() => setEditingAgenda(true)}>
-                Edit
-              </Button>
-            )}
-          </div>
-          {editingAgenda ? (
-            <>
-              <textarea
-                className="meeting-agenda-textarea"
-                value={agendaDraft}
-                onChange={(e) => setAgendaDraft(e.target.value)}
-                autoFocus
-              />
-              <div className="row gap-2">
-                <Button size="sm" variant="ghost" onClick={() => {
-                  setAgendaDraft(meeting.agendaMd ?? '');
-                  setEditingAgenda(false);
-                }}>Cancel</Button>
-                <Button size="sm" variant="primary" onClick={saveAgenda} disabled={savingAgenda}>
-                  {savingAgenda ? 'Saving…' : 'Save'}
+      <div className="mtg-detail">
+        <div className="mtg-detail-main">
+          <section className="card mtg-section">
+            <div className="mtg-section-head">
+              <h2 className="mtg-section-title">Agenda</h2>
+              {canEditAgenda && !editingAgenda && (
+                <Button size="sm" variant="ghost" onClick={() => setEditingAgenda(true)}>
+                  Edit
                 </Button>
-              </div>
-            </>
-          ) : meeting.agendaMd ? (
-            <pre className="meeting-agenda-body">{meeting.agendaMd}</pre>
-          ) : (
-            <p className="muted">No agenda yet.</p>
-          )}
-          {meeting.agendaFromAi && meeting.agendaMd && (
-            <p className="muted" style={{ fontSize: 'var(--fs-xs)' }}>Drafted by AI.</p>
-          )}
-        </section>
-
-        <section className="meeting-detail-card">
-          <h2>Schedule</h2>
-          <div className="row gap-2" style={{ alignItems: 'baseline' }}>
-            <Calendar size={13} aria-hidden="true" color="var(--text-muted)" />
-            <span>
-              {start.toLocaleString([], {
-                weekday: 'short', month: 'short', day: 'numeric',
-                hour: 'numeric', minute: '2-digit',
-              })}
-              {' '}–{' '}
-              {end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-              {' '}({meeting.durationMinutes} min)
-            </span>
-          </div>
-          {meeting.description && (
-            <p style={{ margin: 0, color: 'var(--text-secondary)' }}>{meeting.description}</p>
-          )}
-
-          {canRsvp && (
-            <>
-              <h2 style={{ marginTop: 'var(--s-3)' }}>Your RSVP</h2>
-              <div className="meeting-rsvp-row">
-                {RSVP_OPTIONS.map(({ value, label, icon: Icon }) => {
-                  const mine = myAttendance?.response === value;
-                  return (
-                    <Button
-                      key={value}
-                      type="button"
-                      size="sm"
-                      variant={mine ? 'primary' : 'secondary'}
-                      onClick={() => rsvp(value)}
-                      disabled={rsvpBusy}
-                    >
-                      <Icon size={11} aria-hidden="true" /> {label}
-                    </Button>
-                  );
-                })}
-              </div>
-            </>
-          )}
-
-          <h2 style={{ marginTop: 'var(--s-3)' }}>
-            <Users size={12} aria-hidden="true" /> Attendees · {meeting.attendees.length}
-          </h2>
-          <ul className="meeting-attendee-list">
-            {meeting.attendees.map((a) => (
-              <li key={a.userId} className="meeting-attendee-list-row">
-                <Avatar src={a.avatarUrl} name={a.fullName || a.email} size="sm" />
-                <div className="meeting-attendee-meta">
-                  <div className="meeting-attendee-name truncate">{a.fullName}</div>
-                  <div className="meeting-attendee-mail truncate">{a.email}</div>
+              )}
+            </div>
+            {editingAgenda ? (
+              <>
+                <textarea
+                  className="mtg-textarea"
+                  value={agendaDraft}
+                  onChange={(e) => setAgendaDraft(e.target.value)}
+                  autoFocus
+                />
+                <div className="row gap-2">
+                  <Button size="sm" variant="ghost" onClick={() => {
+                    setAgendaDraft(meeting.agendaMd ?? '');
+                    setEditingAgenda(false);
+                  }}>Cancel</Button>
+                  <Button size="sm" variant="primary" onClick={saveAgenda} disabled={savingAgenda}>
+                    {savingAgenda ? 'Saving…' : 'Save'}
+                  </Button>
                 </div>
-                {!a.required && <Badge tone="neutral">Optional</Badge>}
-                <Badge tone={a.response === 'Accepted'
-                  ? 'success'
-                  : a.response === 'Declined'
-                  ? 'danger'
-                  : a.response === 'Tentative'
-                  ? 'warning'
-                  : 'neutral'}>
-                  {a.response === 'Pending' ? 'No reply' : a.response}
-                </Badge>
-              </li>
-            ))}
-          </ul>
-        </section>
+              </>
+            ) : meeting.agendaMd ? (
+              <pre className="mtg-agenda">{meeting.agendaMd}</pre>
+            ) : (
+              <p className="mtg-empty">No agenda yet.</p>
+            )}
+            {meeting.agendaFromAi && meeting.agendaMd && (
+              <p className="mtg-note">Drafted by AI.</p>
+            )}
+          </section>
 
-        {isOrganiser && isLive && (
-          <GuestLinksCard meetingId={meeting.id} toast={toast} />
-        )}
+          <TranscriptCard meetingId={meeting.id} toast={toast} />
 
-        <TranscriptCard meetingId={meeting.id} toast={toast} />
+          {isOrganiser && isLive && (
+            <GuestLinksCard meetingId={meeting.id} toast={toast} />
+          )}
+        </div>
+
+        <div className="mtg-detail-side">
+          <section className="card mtg-section">
+            <p className="mtg-when-label">When</p>
+            <div>
+              <p className="mtg-when">
+                {start.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
+              </p>
+              <p className="mtg-when-time">
+                {start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                {' – '}
+                {end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                {' · '}
+                {meeting.durationMinutes} min
+              </p>
+            </div>
+            {meeting.description && (
+              <p className="mtg-desc">{meeting.description}</p>
+            )}
+
+            {canRsvp && (
+              <div className="mtg-rsvp">
+                <p className="mtg-when-label">Your RSVP</p>
+                <Segmented
+                  ariaLabel="Your RSVP"
+                  value={myAttendance?.response}
+                  onChange={rsvp}
+                  options={RSVP_OPTIONS.map((o) => ({ ...o, disabled: rsvpBusy }))}
+                />
+              </div>
+            )}
+          </section>
+
+          <section className="card mtg-section">
+            <div className="mtg-section-head">
+              <h2 className="mtg-section-title">Attendees</h2>
+              <span className="mtg-section-count">
+                {acceptedCount} of {meeting.attendees.length} accepted
+              </span>
+            </div>
+            <ul className="mtg-people">
+              {meeting.attendees.map((a) => (
+                <li key={a.userId} className="mtg-person">
+                  <Avatar src={a.avatarUrl} name={a.fullName || a.email} size="md" />
+                  <div className="mtg-person-meta">
+                    <div className="mtg-person-name truncate">
+                      {a.fullName}
+                      {!a.required && <span className="mtg-person-optional"> · Optional</span>}
+                    </div>
+                    <div className="mtg-person-mail truncate">{a.email}</div>
+                  </div>
+                  <span className={`mtg-dot mtg-dot-rsvp-${(a.response ?? 'Pending').toLowerCase()}`}>
+                    {RESPONSE_LABELS[a.response] ?? a.response}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
       </div>
     </div>
   );
@@ -394,11 +412,11 @@ function TranscriptCard({ meetingId, toast }) {
   const hasSegments = (transcript?.segments?.length ?? 0) > 0;
 
   return (
-    <section className="meeting-detail-card" style={{ gridColumn: '1 / -1' }}>
-      <div className="row between">
-        <h2>Transcript</h2>
+    <section className="card mtg-section">
+      <div className="mtg-section-head">
+        <h2 className="mtg-section-title">Transcript</h2>
         {transcript?.lastSegmentAt && (
-          <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>
+          <span className="mtg-section-count">
             Last segment {new Date(transcript.lastSegmentAt).toLocaleString([], {
               month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
             })}
@@ -406,23 +424,23 @@ function TranscriptCard({ meetingId, toast }) {
         )}
       </div>
       {loading ? (
-        <p className="muted">Loading transcript…</p>
+        <p className="mtg-empty">Loading transcript…</p>
       ) : hasSegments ? (
-        <>
-          <p className="muted">
-            {transcript.segments.length} segments captured.
+        <div className="mtg-transcript-row">
+          <p className="mtg-transcript-stat">
+            <strong>{transcript.segments.length}</strong> segments captured
           </p>
           <div className="row gap-2">
             <Button size="sm" variant="ghost" onClick={() => download('txt')} disabled={downloading}>
-              Download .txt
+              <Download size={13} aria-hidden="true" /> Download .txt
             </Button>
             <Button size="sm" variant="ghost" onClick={() => download('vtt')} disabled={downloading}>
-              Download .vtt
+              <Download size={13} aria-hidden="true" /> Download .vtt
             </Button>
           </div>
-        </>
+        </div>
       ) : (
-        <p className="muted">
+        <p className="mtg-empty">
           No transcript yet. Once participants enable captions in the room,
           segments appear here.
         </p>
@@ -501,15 +519,13 @@ function GuestLinksCard({ meetingId, toast }) {
   }
 
   return (
-    <section className="meeting-detail-card" style={{ gridColumn: '1 / -1' }}>
-      <div className="row between">
-        <h2><LinkIcon size={12} aria-hidden="true" /> Guest links</h2>
-        <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>
-          Anyone with the link can join without an account.
-        </span>
+    <section className="card mtg-section">
+      <div>
+        <h2 className="mtg-section-title">Guest links</h2>
+        <p className="mtg-section-sub">Anyone with the link can join without an account.</p>
       </div>
-      <div className="row gap-2" style={{ alignItems: 'flex-end' }}>
-        <div style={{ flex: 1 }}>
+      <div className="mtg-guest-create">
+        <div className="mtg-guest-input">
           <Input
             label="Optional label"
             value={label}
@@ -517,51 +533,59 @@ function GuestLinksCard({ meetingId, toast }) {
             placeholder="e.g. Client review"
           />
         </div>
-        <Button variant="primary" onClick={create} disabled={busy}>
+        <Button variant="secondary" onClick={create} disabled={busy}>
           {busy ? 'Creating…' : 'Create link'}
         </Button>
       </div>
 
       {loading ? (
-        <p className="muted">Loading links…</p>
+        <p className="mtg-empty">Loading links…</p>
       ) : links.length === 0 ? (
-        <p className="muted">No guest links yet.</p>
+        <p className="mtg-empty">No guest links yet.</p>
       ) : (
-        <ul className="meeting-attendee-list">
+        <ul className="mtg-people">
           {links.map((g) => {
             const expired = new Date(g.expiresAt).getTime() < Date.now();
             const dead = !!g.revokedAt || expired;
             return (
-              <li key={g.id} className="meeting-attendee-list-row">
-                <div className="meeting-attendee-meta">
-                  <div className="meeting-attendee-name truncate">
+              <li key={g.id} className="mtg-person">
+                <div className="mtg-person-meta">
+                  <div className="mtg-person-name truncate">
                     {g.guestLabel || 'Guest link'}
                   </div>
-                  <div className="meeting-attendee-mail truncate" title={g.url}>
+                  <div className="mtg-person-mail truncate" title={g.url}>
                     {g.url}
                   </div>
                 </div>
                 {g.revokedAt ? (
-                  <Badge tone="danger">Revoked</Badge>
+                  <span className="mtg-dot mtg-dot-cancelled">Revoked</span>
                 ) : expired ? (
-                  <Badge tone="warning">Expired</Badge>
+                  <span className="mtg-dot mtg-dot-rsvp-tentative">Expired</span>
                 ) : (
-                  <Badge tone="success">
+                  <span className="mtg-dot mtg-dot-rsvp-accepted">
                     Expires {new Date(g.expiresAt).toLocaleString([], {
                       month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
                     })}
-                  </Badge>
+                  </span>
                 )}
-                {!dead && (
-                  <Button size="sm" variant="ghost" onClick={() => copy(g.url)} title="Copy link">
-                    <Copy size={11} aria-hidden="true" />
-                  </Button>
-                )}
-                {!g.revokedAt && (
-                  <Button size="sm" variant="ghost" onClick={() => revoke(g.id)}>
-                    Revoke
-                  </Button>
-                )}
+                <div className="mtg-guest-actions">
+                  {!dead && (
+                    <button
+                      type="button"
+                      className="icon-btn icon-btn-sm"
+                      onClick={() => copy(g.url)}
+                      title="Copy link"
+                      aria-label="Copy link"
+                    >
+                      <Copy size={14} aria-hidden="true" />
+                    </button>
+                  )}
+                  {!g.revokedAt && (
+                    <Button size="sm" variant="ghost" onClick={() => revoke(g.id)}>
+                      Revoke
+                    </Button>
+                  )}
+                </div>
               </li>
             );
           })}
@@ -599,8 +623,8 @@ function FinaliseButton({ meetingId, onFinalised }) {
     }
   }
   return (
-    <Button variant="primary" onClick={run} disabled={busy}>
-      <CheckCircle2 size={12} aria-hidden="true" />
+    <Button variant="secondary" onClick={run} disabled={busy}>
+      <CheckCircle2 size={14} aria-hidden="true" />
       {busy ? ' Finalising…' : ' Finalise & summarise'}
     </Button>
   );

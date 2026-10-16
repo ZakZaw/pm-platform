@@ -2,16 +2,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
-  padding-top: var(--s-4);
-  margin-top: var(--s-4);
-  border-top: 1px solid var(--divider);
-}
-
-.cf-section__title {
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wide);
-  font-size: var(--fs-2xs);
-  color: var(--text-muted);
 }
 
 .cf-section__grid {

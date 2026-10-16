@@ -3,24 +3,25 @@ import './DashboardWidget.css';
 
 // Theme-aware palette for stacked-bar / legend segments. Token references
 // (not hex) so the swatches track light/dark and the design system — cycle
-// through it with `SEGMENT_TOKENS[i % SEGMENT_TOKENS.length]`.
+// through it with `SEGMENT_TOKENS[i % SEGMENT_TOKENS.length]`. Accent leads;
+// the rest are the calmer categorical hues.
 export const SEGMENT_TOKENS = [
   'var(--accent)',
-  'var(--info)',
-  'var(--violet)',
   'var(--teal)',
-  'var(--success)',
+  'var(--violet)',
   'var(--amber)',
+  'var(--info)',
   'var(--rose)',
+  'var(--success)',
   'var(--warning)',
 ];
 
-// Shared shell for typed-dashboard widgets — common header layout,
-// optional eyebrow label, loading + empty states. Keeps each widget
-// component focused on its own data fetch.
+// Shared shell for typed-dashboard widgets — common header layout, loading
+// + empty states. Keeps each widget component focused on its own data.
+// (The old per-card `eyebrow` type label was dropped — the page header
+// already names the project type.)
 export function DashboardWidget({
   title,
-  eyebrow,
   loading,
   empty,
   emptyText = 'No data yet.',
@@ -35,10 +36,7 @@ export function DashboardWidget({
       className={`dashboard-widget dashboard-widget--span-${span}`}
     >
       <header className="dashboard-widget__head">
-        <div className="dashboard-widget__heading">
-          {eyebrow && <span className="subsection-eyebrow">{eyebrow}</span>}
-          <h3 className="dashboard-widget__title">{title}</h3>
-        </div>
+        <h3 className="dashboard-widget__title">{title}</h3>
         {action}
       </header>
       {loading ? (
@@ -56,22 +54,47 @@ export function DashboardWidget({
   );
 }
 
-export function MetricRow({ label, value, sublabel, accent }) {
+/**
+ * One big number with a plain label. `tone` (success / warning / danger /
+ * info) renders as a coloured dot + text on the sublabel — or on the label
+ * when there's no sublabel — so the number itself stays calm.
+ */
+export function MetricRow({ label, value, sublabel, tone }) {
+  const toneClass = tone ? ` dash-tone dash-tone-${tone}` : '';
   return (
     <div className="dashboard-widget__metric">
-      <div className="dashboard-widget__metric-label">{label}</div>
-      <div
-        className="dashboard-widget__metric-value"
-        style={accent ? { color: accent } : undefined}
-      >
-        {value}
-      </div>
-      {sublabel && <div className="muted dashboard-widget__metric-sub">{sublabel}</div>}
+      <div className="dashboard-widget__metric-value">{value}</div>
+      <div className={`dashboard-widget__metric-label${sublabel ? '' : toneClass}`}>{label}</div>
+      {sublabel && <div className={`dashboard-widget__metric-sub${toneClass}`}>{sublabel}</div>}
     </div>
   );
 }
 
-export function StackedBar({ segments }) {
+/** Thin progress bar using the stratos `.bar` vocabulary. */
+export function ProgressBar({ pct, tone }) {
+  const clamped = Math.max(0, Math.min(100, pct ?? 0));
+  return (
+    <div className="bar" aria-hidden="true">
+      <div className={`bar-fill${tone ? ` bar-fill-${tone}` : ''}`} style={{ width: `${clamped}%` }} />
+    </div>
+  );
+}
+
+/** Label + value list (deal / ticket / run rows). */
+export function WidgetRows({ rows }) {
+  return (
+    <ul className="dashboard-widget__rows">
+      {rows.map((r) => (
+        <li key={r.key} className="dashboard-widget__row">
+          <span className="truncate">{r.label}</span>
+          <span className="dashboard-widget__row-meta">{r.meta}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function StackedBar({ segments, format = (v) => v }) {
   // `segments` is `[{ label, value, color }]`. Renders a horizontal
   // stacked bar with proportional widths and a legend underneath.
   const total = segments.reduce((s, x) => s + x.value, 0);
@@ -87,7 +110,7 @@ export function StackedBar({ segments }) {
               width: `${(s.value / total) * 100}%`,
               background: s.color,
             }}
-            title={`${s.label}: ${s.value}`}
+            title={`${s.label}: ${format(s.value)}`}
           />
         ))}
       </div>
@@ -95,8 +118,8 @@ export function StackedBar({ segments }) {
         {segments.map((s) => (
           <li key={s.label}>
             <span className="dashboard-widget__legend-swatch" style={{ background: s.color }} />
-            <span>{s.label}</span>
-            <span className="mono dim">{s.value}</span>
+            <span className="truncate">{s.label}</span>
+            <span className="dashboard-widget__legend-value">{format(s.value)}</span>
           </li>
         ))}
       </ul>

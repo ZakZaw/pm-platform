@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Plus, Search } from 'lucide-react';
+import { Contact, Plus, Search } from 'lucide-react';
 import {
-  Badge,
   Button,
+  EmptyState,
   Input,
   Modal,
   ModalBody,
@@ -45,22 +45,21 @@ export function CustomersPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>{project?.name ?? 'Support'}</div>
             <h1 className="page-title">Customers</h1>
             <div className="page-subtitle">
               People and companies who file tickets. Open counts surface who's escalating.
             </div>
           </div>
-          <div className="row gap-2">
-            <div className="customers-page-search">
-              <Search size={13} aria-hidden="true" />
+          <div className="row gap-3">
+            <label className="customers-page-search">
+              <Search size={14} aria-hidden="true" />
               <input
-                className="input"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by name, email, company…"
+                aria-label="Search customers"
               />
-            </div>
+            </label>
             <Button size="sm" onClick={() => setCreating(true)}>
               <Plus size={13} aria-hidden="true" /> New customer
             </Button>
@@ -69,34 +68,43 @@ export function CustomersPage() {
       </div>
 
       {!customers ? (
-        <div className="col" style={{ gap: 8 }}>
+        <div className="col gap-3">
           {[0, 1, 2, 3].map((i) => <Skeleton key={i} height={48} />)}
         </div>
       ) : customers.length === 0 ? (
-        <div className="muted" style={{ padding: 24, textAlign: 'center' }}>
-          {search ? `No customers match "${search}".` : 'No customers yet.'}
-        </div>
+        <EmptyState
+          icon={<Contact size={20} aria-hidden="true" />}
+          title={search ? `No customers match "${search}".` : 'No customers yet.'}
+        />
       ) : (
-        <div className="customers-page-table" role="table">
-          <div className="customers-page-row customers-page-row-head" role="row">
-            <span>Name</span>
-            <span>Email</span>
-            <span>Company</span>
-            <span>Tier</span>
-            <span>Open / Total</span>
-          </div>
-          {customers.map((c) => (
-            <div key={c.id} className="customers-page-row" role="row">
-              <span className="customers-page-name">{c.name}</span>
-              <span className="muted">{c.email ?? '—'}</span>
-              <span className="muted">{c.company ?? '—'}</span>
-              <span>{c.tier ? <Badge tone="purple">{c.tier}</Badge> : <span className="muted">—</span>}</span>
-              <span className="mono">
-                <Badge tone={c.openTicketCount > 0 ? 'info' : 'neutral'}>{c.openTicketCount}</Badge>
-                <span className="muted"> / {c.totalTicketCount}</span>
-              </span>
-            </div>
-          ))}
+        <div className="card customers-page-card">
+          <table className="tbl">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Company</th>
+                <th>Tier</th>
+                <th className="customers-page-num">Open / Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {customers.map((c) => (
+                <tr key={c.id}>
+                  <td className="customers-page-name">{c.name}</td>
+                  <td className="muted">{c.email ?? '—'}</td>
+                  <td className="muted">{c.company ?? '—'}</td>
+                  <td className="customers-page-tier">{c.tier ?? <span className="muted">—</span>}</td>
+                  <td className="customers-page-num">
+                    <span className={c.openTicketCount > 0 ? 'customers-page-open' : 'muted'}>
+                      {c.openTicketCount}
+                    </span>
+                    <span className="muted"> / {c.totalTicketCount}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -146,15 +154,15 @@ function CreateCustomerModal({ projectId, onClose, onCreated }) {
     <Modal open onClose={onClose} labelledBy="create-customer-title">
       <form onSubmit={submit}>
         <ModalHeader>
-          <h2 id="create-customer-title" style={{ margin: 0, fontSize: 16 }}>New customer</h2>
+          <h2 id="create-customer-title" className="modal-title">New customer</h2>
         </ModalHeader>
         <ModalBody>
-          <div className="col" style={{ gap: 12 }}>
+          <div className="col gap-5">
             <Input label="Name" autoFocus value={name} onChange={(e) => setName(e.target.value)} required />
             <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             <Input label="Company" value={company} onChange={(e) => setCompany(e.target.value)} />
             <Input label="Tier" value={tier} onChange={(e) => setTier(e.target.value)} placeholder="Free / Standard / Premium / Enterprise" />
-            {error && <p style={{ color: 'var(--danger)', margin: 0 }}>{error}</p>}
+            {error && <p className="input-help is-error">{error}</p>}
           </div>
         </ModalBody>
         <ModalFooter>

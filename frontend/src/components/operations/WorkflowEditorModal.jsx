@@ -12,6 +12,7 @@ import {
   useToast,
 } from '@/components/ui';
 import { operationsApi, RECURRENCE_PRESETS } from '@/api/operations.api';
+import './WorkflowEditorModal.css';
 
 // Single modal handles both create + edit. Pass workflowId=null to
 // create a fresh workflow, or a guid to edit an existing one.
@@ -121,7 +122,7 @@ export function WorkflowEditorModal({ projectId, workflowId, onClose, onSaved })
     <Modal open onClose={saving ? undefined : onClose} labelledBy="workflow-editor-title" size="md">
       <form onSubmit={save}>
         <ModalHeader>
-          <h2 id="workflow-editor-title" style={{ margin: 0, fontSize: 16 }}>
+          <h2 id="workflow-editor-title" className="modal-title">
             {isEdit ? 'Edit workflow' : 'New workflow'}
           </h2>
         </ModalHeader>
@@ -129,7 +130,7 @@ export function WorkflowEditorModal({ projectId, workflowId, onClose, onSaved })
           {loading ? (
             <p className="muted">Loading…</p>
           ) : (
-            <div className="vstack" style={{ gap: 12 }}>
+            <div className="col gap-5">
               <Input
                 label="Name"
                 autoFocus
@@ -151,12 +152,10 @@ export function WorkflowEditorModal({ projectId, workflowId, onClose, onSaved })
                 options={RECURRENCE_PRESETS.map((p) => ({ value: p.rule, label: p.label }))}
               />
               <div>
-                <div className="subsection-eyebrow" style={{ marginBottom: 6 }}>
-                  Checklist template
-                </div>
-                <ul className="vstack" style={{ gap: 6, listStyle: 'none', padding: 0, margin: 0 }}>
+                <div className="input-label">Checklist template</div>
+                <ul className="wf-editor__items">
                   {template.map((item, i) => (
-                    <li key={i} className="hstack" style={{ gap: 6, alignItems: 'center' }}>
+                    <li key={i} className="wf-editor__item">
                       <button
                         type="button"
                         className="icon-btn icon-btn-sm"
@@ -172,21 +171,11 @@ export function WorkflowEditorModal({ projectId, workflowId, onClose, onSaved })
                         value={item.title}
                         onChange={(e) => setItem(i, { title: e.target.value })}
                         placeholder={`Item ${i + 1}`}
+                        aria-label={`Checklist item ${i + 1}`}
                         maxLength={300}
-                        style={{
-                          flex: 1,
-                          background: 'var(--surface)',
-                          border: '1px solid var(--border)',
-                          borderRadius: 'var(--r-sm)',
-                          color: 'var(--text)',
-                          font: 'inherit',
-                          fontSize: 'var(--fs-md)',
-                          padding: '0 8px',
-                          height: 30,
-                          outline: 'none',
-                        }}
+                        className="input wf-editor__input"
                       />
-                      <label className="hstack" style={{ gap: 4, fontSize: 11, color: 'var(--text-muted)' }}>
+                      <label className="wf-editor__seq">
                         <input
                           type="checkbox"
                           checked={item.sequential}
@@ -205,9 +194,11 @@ export function WorkflowEditorModal({ projectId, workflowId, onClose, onSaved })
                     </li>
                   ))}
                 </ul>
-                <Button type="button" variant="ghost" size="sm" onClick={addItem} style={{ marginTop: 6 }}>
-                  <Plus size={13} aria-hidden="true" /> Add item
-                </Button>
+                <div className="wf-editor__add">
+                  <Button type="button" variant="ghost" size="sm" onClick={addItem}>
+                    <Plus size={13} aria-hidden="true" /> Add item
+                  </Button>
+                </div>
               </div>
             </div>
           )}

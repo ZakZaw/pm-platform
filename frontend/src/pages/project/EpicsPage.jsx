@@ -3,7 +3,6 @@ import { Link, useParams } from 'react-router-dom';
 import { ChevronRight, Layers, Plus, Sparkles } from 'lucide-react';
 import {
   Avatar,
-  Badge,
   Button,
   Card,
   EmptyState,
@@ -27,17 +26,17 @@ const STATUS_TONE = {
   AtRisk: 'warning',
   Done: 'success',
   Archived: 'neutral',
+  Planning: 'neutral',
 };
 
-function epicTile(color) {
-  // Use the supplied epic color for the swatch; fall back to accent if absent.
-  const c = color || 'var(--accent)';
-  return {
-    background: 'color-mix(in srgb, ' + c + ' 15%, transparent)',
-    color: c,
-    border: `1px solid color-mix(in srgb, ${c} 30%, transparent)`,
-  };
-}
+const STATUS_LABEL = {
+  NotStarted: 'Not started',
+  Planning: 'Planning',
+  InProgress: 'In progress',
+  AtRisk: 'At risk',
+  Done: 'Done',
+  Archived: 'Archived',
+};
 
 function fmtDate(iso) {
   if (!iso) return '—';
@@ -119,24 +118,15 @@ export function EpicsPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>{project.name} · Epics</div>
-            <h1 className="page-title" style={{ fontSize: 'var(--fs-2xl)' }}>Epics</h1>
-            <p className="page-subtitle" style={{ marginTop: 6 }}>
+            <div className="eyebrow">{project.name}</div>
+            <h1 className="page-title">Epics</h1>
+            <p className="page-subtitle">
               {epics.length} epic{epics.length === 1 ? '' : 's'} · {tasks.length} task{tasks.length === 1 ? '' : 's'} · {totalPoints} points scoped
             </p>
           </div>
           <div className="row gap-3">
-            <label className="row gap-3 muted" style={{ fontSize: 'var(--fs-xs)' }}>
-              <input
-                type="checkbox"
-                className="cb"
-                checked={includeArchived}
-                onChange={(e) => setIncludeArchived(e.target.checked)}
-              />
-              Show archived
-            </label>
-            <Button variant="ai" size="sm" onClick={() => setAiOpen(true)}>
-              <Sparkles size={13} aria-hidden="true" /> Decompose with AI
+            <Button variant="secondary" size="sm" onClick={() => setAiOpen(true)}>
+              <Sparkles size={14} aria-hidden="true" /> Decompose with AI
             </Button>
             <Button variant="primary" size="sm" onClick={() => setCreating(true)}>
               <Plus size={14} aria-hidden="true" /> New epic
@@ -145,16 +135,26 @@ export function EpicsPage() {
         </div>
       </div>
 
-      <div className="row gap-3" style={{ marginBottom: 'var(--s-6)' }}>
-        <div style={{ flex: 1 }} />
+      <div className="row between epics-page-toolbar">
+        <label className="row gap-3 muted epics-page-archived">
+          <input
+            type="checkbox"
+            className="cb"
+            checked={includeArchived}
+            onChange={(e) => setIncludeArchived(e.target.checked)}
+          />
+          Show archived
+        </label>
         <Segmented
           value={view}
           onChange={setView}
+          size="sm"
           options={[
             { value: 'list', label: 'List' },
             { value: 'tree', label: 'Tree', disabled: true },
             { value: 'gantt', label: 'Timeline', disabled: true },
           ]}
+          ariaLabel="Epics view"
         />
       </div>
 
@@ -190,15 +190,15 @@ export function EpicsPage() {
           title="No epics yet"
           subtitle="Group related tasks into epics to track progress and timing as one. AI can draft one from a description in seconds."
         >
-          <Button variant="ai" onClick={() => setAiOpen(true)}>
-            <Sparkles size={13} aria-hidden="true" /> Draft with AI
+          <Button variant="secondary" onClick={() => setAiOpen(true)}>
+            <Sparkles size={14} aria-hidden="true" /> Draft with AI
           </Button>
-          <Button variant="secondary" onClick={() => setCreating(true)}>
+          <Button variant="primary" onClick={() => setCreating(true)}>
             New epic
           </Button>
         </EmptyState>
       ) : (
-        <div className="col gap-4">
+        <div className="col epics-page-list">
           {epics.map((e) => {
             const epicTasks = tasksByEpic.get(e.id) ?? [];
             const done = epicTasks.filter((t) => t.status === 'Done').length;
@@ -218,72 +218,74 @@ export function EpicsPage() {
                   onClick={() => setExpanded((cur) => ({ ...cur, [e.id]: !open }))}
                   aria-expanded={open}
                 >
-                  <div className="epics-page-icon" style={epicTile(e.color)}>
+                  <div className="epics-page-icon" style={{ '--epic-color': e.color || 'var(--accent)' }}>
                     {(e.title ?? '?')[0].toUpperCase()}
                   </div>
                   <div className="epics-page-title">
-                    <div className="row gap-3" style={{ marginBottom: 4 }}>
-                      <h3 className="h-card">{e.title}</h3>
-                      <Badge tone={STATUS_TONE[status] ?? 'neutral'} dot>{status}</Badge>
+                    <h3 className="h-card">{e.title}</h3>
+                    <div className="row gap-4 epics-page-sub">
+                      <span className={`epics-page-status tone-${STATUS_TONE[status] ?? 'neutral'}`}>
+                        {STATUS_LABEL[status] ?? status}
+                      </span>
+                      {e.description && (
+                        <span className="muted truncate epics-page-desc">{e.description}</span>
+                      )}
                     </div>
-                    {e.description && (
-                      <div className="muted truncate epics-page-desc">{e.description}</div>
-                    )}
                   </div>
-                  <div className="col" style={{ gap: 4 }}>
+                  <div className="col epics-page-progress">
                     <div className="row between">
-                      <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>{donePts}/{points} pts</span>
-                      <span className="mono" style={{ fontSize: 'var(--fs-xs)', fontWeight: 600 }}>{pct}%</span>
+                      <span className="epics-page-pct">{pct}%</span>
+                      <span className="muted epics-page-pts">{donePts}/{points} pts</span>
                     </div>
                     <div className="bar"><div className={`bar-fill ${status === 'AtRisk' ? 'bar-fill-warning' : pct >= 80 ? 'bar-fill-success' : ''}`} style={{ width: `${pct}%` }} /></div>
                     <div className="row gap-4 epics-page-counts">
-                      <span><span className="mono epics-page-count-done">{done}</span> done</span>
-                      <span><span className="mono epics-page-count-active">{inProg}</span> active</span>
-                      {blocked > 0 && <span><span className="mono epics-page-count-blocked">{blocked}</span> blocked</span>}
+                      <span><span className="epics-page-count-done">{done}</span> done</span>
+                      <span><span className="epics-page-count-active">{inProg}</span> active</span>
+                      {blocked > 0 && <span><span className="epics-page-count-blocked">{blocked}</span> blocked</span>}
                     </div>
                   </div>
-                  <div className="col" style={{ gap: 0 }}>
+                  <div className="col epics-page-target">
                     <span className="muted epics-page-target-label">Target</span>
-                    <span style={{ fontSize: 'var(--fs-sm)', fontWeight: 500 }}>{fmtDate(e.targetDate)}</span>
+                    <span className="epics-page-target-date">{fmtDate(e.targetDate)}</span>
                   </div>
                   <div>
-                    <Link to={`/${orgSlug}/projects/${projectSlug}/epics/${e.id}`} onClick={(ev) => ev.stopPropagation()} className="muted epics-page-open">
+                    <Link to={`/${orgSlug}/projects/${projectSlug}/epics/${e.id}`} onClick={(ev) => ev.stopPropagation()} className="epics-page-open">
                       Open
                     </Link>
                   </div>
-                  <ChevronRight size={14} className={['epics-page-chev', open ? 'is-open' : ''].filter(Boolean).join(' ')} />
+                  <ChevronRight size={16} className={['epics-page-chev', open ? 'is-open' : ''].filter(Boolean).join(' ')} />
                 </button>
 
                 {open && (
                   <div className="epics-page-tasks">
                     {epicTasks.length === 0 ? (
-                      <p className="muted" style={{ padding: 'var(--s-5) var(--s-7)', margin: 0, fontSize: 'var(--fs-sm)' }}>
+                      <p className="muted epics-page-tasks-empty">
                         No tasks linked to this epic yet.
                       </p>
                     ) : (
-                      <table className="tbl tbl-clean">
+                      <table className="tbl tbl-clean epics-page-table">
                         <thead>
                           <tr>
-                            <th style={{ width: 80 }}>Key</th>
+                            <th className="epics-page-col-key">Key</th>
                             <th>Task</th>
-                            <th style={{ width: 130 }}>Status</th>
-                            <th style={{ width: 110 }}>Priority</th>
-                            <th style={{ width: 70 }}>Pts</th>
-                            <th style={{ width: 60 }}>Owner</th>
+                            <th className="epics-page-col-status">Status</th>
+                            <th className="epics-page-col-pri">Priority</th>
+                            <th className="epics-page-col-pts">Pts</th>
+                            <th className="epics-page-col-owner">Owner</th>
                           </tr>
                         </thead>
                         <tbody>
                           {epicTasks.map((t) => (
                             <tr
                               key={t.id}
+                              className="epics-page-task-row"
                               onClick={() => setOpenedTaskId(t.id)}
-                              style={{ cursor: 'pointer' }}
                             >
-                              <td className="mono muted" style={{ fontSize: 'var(--fs-xs)' }}>{t.key ?? '—'}</td>
-                              <td><span style={{ fontWeight: 500 }}>{t.title}</span></td>
+                              <td className="mono muted epics-page-key">{t.key ?? '—'}</td>
+                              <td className="epics-page-task-title">{t.title}</td>
                               <td><StatusBadge status={t.status} /></td>
                               <td><Priority level={t.priority} /></td>
-                              <td className="mono" style={{ fontSize: 'var(--fs-xs)', fontWeight: 600 }}>{t.storyPoints ?? '—'}</td>
+                              <td className="epics-page-task-pts">{t.storyPoints ?? '—'}</td>
                               <td>{t.assigneeName ? <Avatar name={t.assigneeName} size="sm" /> : <span className="muted">—</span>}</td>
                             </tr>
                           ))}

@@ -13,12 +13,12 @@ import { CSS } from '@dnd-kit/utilities';
 import { ListTodo, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
 import {
   Avatar,
-  Badge,
   Button,
   Card,
   ConfirmDialog,
   Dropdown,
   EmptyState,
+  Priority,
   Skeleton,
   StatusBadge,
   useToast,
@@ -229,9 +229,9 @@ export function ListsPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>{project.name} · Lists</div>
-            <h1 className="page-title" style={{ fontSize: 'var(--fs-2xl)' }}>Lists</h1>
-            <p className="page-subtitle" style={{ marginTop: 6 }}>
+            <div className="eyebrow">{project.name}</div>
+            <h1 className="page-title">Lists</h1>
+            <p className="page-subtitle">
               {totalTasks} task{totalTasks === 1 ? '' : 's'} across {view.lists.length} list{view.lists.length === 1 ? '' : 's'}
             </p>
           </div>
@@ -316,8 +316,8 @@ function NewListButton({ creating, setCreating, onSubmit }) {
   const [name, setName] = useState('');
   if (!creating) {
     return (
-      <Button size="sm" onClick={() => setCreating(true)}>
-        <Plus size={13} aria-hidden="true" /> New list
+      <Button variant="primary" size="sm" onClick={() => setCreating(true)}>
+        <Plus size={14} aria-hidden="true" /> New list
       </Button>
     );
   }
@@ -342,7 +342,7 @@ function NewListButton({ creating, setCreating, onSubmit }) {
           if (e.key === 'Escape') { setCreating(false); setName(''); }
         }}
       />
-      <Button type="submit" size="sm" disabled={name.trim().length === 0}>Add</Button>
+      <Button type="submit" size="sm" variant="primary" disabled={name.trim().length === 0}>Add</Button>
       <Button
         type="button"
         size="sm"
@@ -450,20 +450,6 @@ function ListSection({
         )}
       </header>
 
-      <form className="lists-page__create" onSubmit={submitTask}>
-        <input
-          type="text"
-          className="lists-page__create-input"
-          placeholder="Add a task…"
-          value={newTitle}
-          onChange={(e) => setNewTitle(e.target.value)}
-          maxLength={200}
-        />
-        <Button type="submit" size="sm" disabled={newTitle.trim().length < 2}>
-          <Plus size={13} aria-hidden="true" /> Add
-        </Button>
-      </form>
-
       <div ref={setNodeRef} className="lists-page__droparea">
         {list.tasks.length === 0 ? (
           <p className="lists-page__placeholder">
@@ -482,6 +468,24 @@ function ListSection({
           </ul>
         )}
       </div>
+
+      <form className="lists-page__create" onSubmit={submitTask}>
+        <Plus size={16} aria-hidden="true" className="lists-page__create-icon" />
+        <input
+          type="text"
+          className="lists-page__create-input"
+          placeholder="Add a task…"
+          aria-label={`Add a task to ${list.name}`}
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          maxLength={200}
+        />
+        {newTitle.trim().length > 0 && (
+          <Button type="submit" size="sm" variant="secondary" disabled={newTitle.trim().length < 2}>
+            Add
+          </Button>
+        )}
+      </form>
     </Card>
   );
 }
@@ -502,19 +506,6 @@ function UnsortedSection({ tasks, memberById, onCreateTask, onOpenTask }) {
         <h2 className="lists-page__list-title">Unsorted</h2>
         <span className="muted lists-page__list-count">{tasks.length}</span>
       </header>
-      <form className="lists-page__create" onSubmit={submit}>
-        <input
-          type="text"
-          className="lists-page__create-input"
-          placeholder="Add a task to Unsorted…"
-          value={newTitle}
-          onChange={(e) => setNewTitle(e.target.value)}
-          maxLength={200}
-        />
-        <Button type="submit" size="sm" disabled={newTitle.trim().length < 2}>
-          <Plus size={13} aria-hidden="true" /> Add
-        </Button>
-      </form>
       <div ref={setNodeRef} className="lists-page__droparea">
         {tasks.length === 0 ? (
           <p className="lists-page__placeholder">
@@ -533,6 +524,23 @@ function UnsortedSection({ tasks, memberById, onCreateTask, onOpenTask }) {
           </ul>
         )}
       </div>
+      <form className="lists-page__create" onSubmit={submit}>
+        <Plus size={16} aria-hidden="true" className="lists-page__create-icon" />
+        <input
+          type="text"
+          className="lists-page__create-input"
+          placeholder="Add a task to Unsorted…"
+          aria-label="Add a task to Unsorted"
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          maxLength={200}
+        />
+        {newTitle.trim().length > 0 && (
+          <Button type="submit" size="sm" variant="secondary" disabled={newTitle.trim().length < 2}>
+            Add
+          </Button>
+        )}
+      </form>
     </Card>
   );
 }
@@ -566,10 +574,7 @@ function DraggableTaskRow({ task, assignee, onOpen }) {
 
 function DragTaskRow({ task, assignee }) {
   return (
-    <li
-      className="lists-page__item is-overlay"
-      style={{ listStyle: 'none', boxShadow: 'var(--shadow-lg)' }}
-    >
+    <li className="lists-page__item is-overlay">
       <TaskRow task={task} assignee={assignee} />
     </li>
   );
@@ -579,17 +584,19 @@ function TaskRow({ task, assignee }) {
   return (
     <>
       <StatusBadge status={task.status} />
-      <span className="lists-page__item-title">{task.title}</span>
-      <span className="muted lists-page__item-key mono">{task.key}</span>
+      <span className="lists-page__item-title">
+        {task.key && <span className="muted lists-page__item-key mono">{task.key}</span>}
+        {task.title}
+      </span>
       <div className="lists-page__item-meta">
-        <Badge tone="info">{task.priority}</Badge>
+        <Priority level={task.priority} showLabel />
         {task.subtaskCount > 0 && (
           <span className="lists-page__item-sub">
             {task.completedSubtaskCount}/{task.subtaskCount}
           </span>
         )}
         {task.dueDate && (
-          <span className="muted" style={{ fontSize: 11 }}>
+          <span className="muted lists-page__item-due">
             Due {new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
           </span>
         )}

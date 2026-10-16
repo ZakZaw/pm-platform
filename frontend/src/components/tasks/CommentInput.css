@@ -11,9 +11,9 @@
   width: 100%;
   min-height: 64px;
   padding: var(--s-5);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
+  background: var(--bg-subtle);
+  border: 1px solid transparent;
+  border-radius: var(--r-lg);
   color: var(--text);
   font-family: var(--font-sans);
   font-size: var(--fs-base);
@@ -23,7 +23,8 @@
 
 .comment-input__textarea:focus {
   outline: none;
-  border-color: var(--accent-bright);
+  background: var(--surface);
+  border-color: var(--accent-border);
   box-shadow: var(--shadow-focus);
 }
 
@@ -31,7 +32,7 @@
   position: absolute;
   top: 100%;
   left: 0;
-  margin-top: 4px;
+  margin-top: var(--s-2);
   width: 280px;
   max-width: 100%;
   background: var(--surface-2);

@@ -166,9 +166,9 @@ export function AIEpicWizardModal({ open, projectId, onClose, onCreated }) {
           <div className="ai-draft__plan">
             <div className="ai-draft__plan-head hstack">
               <Sparkles size={14} color="var(--ai-2)" aria-hidden="true" />
-              <span style={{ fontSize: 13, fontWeight: 600 }}>Generated epic</span>
+              <span className="ai-draft__plan-title">Generated epic</span>
               {totals && (
-                <span className="mono dim" style={{ fontSize: 11 }}>
+                <span className="dim ai-draft__plan-totals">
                   · {totals.tasks} tasks · {totals.points} points
                 </span>
               )}
@@ -277,7 +277,7 @@ function TimelineImpactPanel({ impact }) {
         {' '}{velocityNote}
       </div>
 
-      <div className="ai-draft__impact-head" style={{ fontSize: 'var(--fs-xs)' }}>Open sprints</div>
+      <div className="ai-draft__impact-head ai-draft__impact-head--sub">Open sprints</div>
       {impact.sprints.length === 0 ? (
         <p className="ai-draft__impact-empty">No planning or active sprints in this project.</p>
       ) : (
@@ -301,7 +301,7 @@ function TimelineImpactPanel({ impact }) {
         </ul>
       )}
 
-      <div className="ai-draft__impact-head" style={{ fontSize: 'var(--fs-xs)' }}>Milestones in next 90 days</div>
+      <div className="ai-draft__impact-head ai-draft__impact-head--sub">Milestones in next 90 days</div>
       {impact.milestones.length === 0 ? (
         <p className="ai-draft__impact-empty">No upcoming milestones within the projection window.</p>
       ) : (

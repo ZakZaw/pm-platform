@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Briefcase, FileText, Sparkles } from 'lucide-react';
-import { Button, Card, Input, useToast } from '@/components/ui';
+import { Button, Input, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { useProjectStore } from '@/store/projectStore';
 import { PROJECT_TYPES, DEFAULT_PROJECT_TYPE_ID } from '@/constants/projectTypes';
@@ -74,13 +74,23 @@ export function CreateProjectPage() {
   };
 
   return (
-    <div className="page page-narrow create-project">
-      <h1 className="create-project__title">New project</h1>
-      <p className="create-project__subtitle">
-        Pick a project type, then how to start it. You can change the structure later.
-      </p>
+    <div className="main-inner create-project">
+      <header className="page-head">
+        <div className="page-title-row">
+          <div>
+            <p className="eyebrow">Projects</p>
+            <h1 className="page-title">New project</h1>
+            <p className="page-subtitle">
+              Pick a project type, then how to start it. You can change the structure later.
+            </p>
+          </div>
+        </div>
+      </header>
 
-      <div className="create-project__section-eyebrow">Project type</div>
+      <h2 className="create-project__section-title">
+        <span className="create-project__step" aria-hidden="true">1</span>
+        Project type
+      </h2>
       <div
         className="create-project__types"
         role="radiogroup"
@@ -98,15 +108,22 @@ export function CreateProjectPage() {
               className={['type-card', active ? 'is-active' : ''].filter(Boolean).join(' ')}
               onClick={() => setTypeId(t.id)}
             >
-              <Icon className="type-card__icon" aria-hidden="true" size={18} />
-              <div className="type-card__title">{t.label}</div>
-              <div className="type-card__desc">{t.description}</div>
+              <span className={`proj-icon proj-icon-${t.id.toLowerCase()}`} aria-hidden="true">
+                <Icon size={18} />
+              </span>
+              <span className="type-card__text">
+                <span className="type-card__title">{t.label}</span>
+                <span className="type-card__desc">{t.description}</span>
+              </span>
             </button>
           );
         })}
       </div>
 
-      <div className="create-project__section-eyebrow">Starting point</div>
+      <h2 className="create-project__section-title">
+        <span className="create-project__step" aria-hidden="true">2</span>
+        Starting point
+      </h2>
       <div className="create-project__modes" role="radiogroup" aria-label="Project mode">
         {MODES.map((m) => {
           const Icon = m.Icon;
@@ -117,33 +134,35 @@ export function CreateProjectPage() {
               type="button"
               role="radio"
               aria-checked={active}
-              className={['mode-card', active ? 'is-active' : ''].filter(Boolean).join(' ')}
+              className={['mode-card', `mode-card-${m.key}`, active ? 'is-active' : ''].filter(Boolean).join(' ')}
               onClick={() => setMode(m.key)}
             >
-              <Icon className="mode-card__icon" aria-hidden="true" size={20} />
-              <div className="mode-card__title">{m.title}</div>
-              <div className="mode-card__desc">{m.description}</div>
+              <Icon className="mode-card__icon" aria-hidden="true" size={18} />
+              <span className="mode-card__title">{m.title}</span>
+              <span className="mode-card__desc">{m.description}</span>
             </button>
           );
         })}
       </div>
 
-      <Card className="create-project__form-card">
-        <form onSubmit={onSubmit} className="create-project__form">
-          <Input
-            label="Project name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Customer portal v2"
-            required
-            autoComplete="off"
-          />
+      <h2 className="create-project__section-title">
+        <span className="create-project__step" aria-hidden="true">3</span>
+        Name it
+      </h2>
+      <form onSubmit={onSubmit} className="card create-project__form">
+        <Input
+          aria-label="Project name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Project name, e.g. Customer portal v2"
+          required
+          autoComplete="off"
+        />
 
-          <Button type="submit" disabled={submitting || (mode !== 'ai' && name.trim().length < 2)}>
-            {submitting ? 'Creating…' : mode === 'ai' ? 'Continue with AI' : 'Create project'}
-          </Button>
-        </form>
-      </Card>
+        <Button type="submit" disabled={submitting || (mode !== 'ai' && name.trim().length < 2)}>
+          {submitting ? 'Creating…' : mode === 'ai' ? 'Continue with AI' : 'Create project'}
+        </Button>
+      </form>
     </div>
   );
 }

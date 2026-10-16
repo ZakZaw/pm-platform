@@ -13,20 +13,12 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button, Skeleton, useToast } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { marketingApi } from '@/api/marketing.api';
-import { MARKETING_CHANNELS, channelTokens } from '@/constants/projectTypes';
+import { MARKETING_CHANNELS } from '@/constants/projectTypes';
+import { channelClass } from '@/components/marketing/channel';
+import '@/components/marketing/channel.css';
 import './ContentCalendarPage.css';
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-// Maps an asset channel to the .evt-{key} class in stratos.css.
-const CHANNEL_TO_EVT = {
-  Email: 'evt-email',
-  Social: 'evt-social',
-  Blog: 'evt-blog',
-  Paid: 'evt-ad',
-  Event: 'evt-event',
-  Other: 'evt-blog',
-};
 
 function startOfMonth(d) {
   return new Date(d.getFullYear(), d.getMonth(), 1);
@@ -52,7 +44,7 @@ export function ContentCalendarPage() {
   const { slug: orgSlug, projectSlug } = useParams();
   const toast = useToast();
 
-  const [project, setProject] = useState(null);
+  const [, setProject] = useState(null);
   const [anchor, setAnchor] = useState(() => startOfMonth(new Date()));
   const [calendar, setCalendar] = useState(null);
   const [error, setError] = useState(null);
@@ -134,7 +126,7 @@ export function ContentCalendarPage() {
   const today = ymd(new Date());
 
   if (error) {
-    return <div className="main-inner"><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
+    return <div className="main-inner"><p className="calendar-page-error">{error}</p></div>;
   }
 
   return (
@@ -142,35 +134,36 @@ export function ContentCalendarPage() {
       <div className="page-head">
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>
-              {project?.name ? `${project.name} · ` : ''}Content calendar
-            </div>
+            <div className="eyebrow">Content calendar</div>
             <h1 className="page-title">{monthLabel}</h1>
+            <div className="page-subtitle">Drag an asset to another day to reschedule it.</div>
           </div>
-          <div className="row gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
+          <div className="row gap-2">
+            <button
+              type="button"
+              className="icon-btn"
               onClick={() => setAnchor(new Date(anchor.getFullYear(), anchor.getMonth() - 1, 1))}
               aria-label="Previous month"
+              title="Previous month"
             >
-              <ChevronLeft size={14} aria-hidden="true" />
-            </Button>
+              <ChevronLeft size={16} aria-hidden="true" />
+            </button>
             <Button
-              variant="ghost"
+              variant="secondary"
               size="sm"
               onClick={() => setAnchor(startOfMonth(new Date()))}
             >
               Today
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
+              type="button"
+              className="icon-btn"
               onClick={() => setAnchor(new Date(anchor.getFullYear(), anchor.getMonth() + 1, 1))}
               aria-label="Next month"
+              title="Next month"
             >
-              <ChevronRight size={14} aria-hidden="true" />
-            </Button>
+              <ChevronRight size={16} aria-hidden="true" />
+            </button>
           </div>
         </div>
       </div>
@@ -218,15 +211,12 @@ export function ContentCalendarPage() {
       )}
 
       <div className="calendar-channel-legend">
-        {MARKETING_CHANNELS.map((ch) => {
-          const t = channelTokens(ch);
-          return (
-            <span key={ch}>
-              <span className="calendar-channel-legend__swatch" style={{ background: t.fg }} />
-              {ch}
-            </span>
-          );
-        })}
+        {MARKETING_CHANNELS.map((ch) => (
+          <span key={ch} className={channelClass(ch)}>
+            <span className="mkt-ch-dot" aria-hidden="true" />
+            {ch}
+          </span>
+        ))}
       </div>
     </div>
   );
@@ -255,8 +245,7 @@ function AssetChip({ asset, overlay = false }) {
     id: asset.id,
     disabled: overlay,
   });
-  const evtClass = CHANNEL_TO_EVT[asset.channel] ?? 'evt-blog';
-  const classes = ['cal-event', evtClass, isDragging && !overlay && 'is-dragging']
+  const classes = ['cal-event', channelClass(asset.channel), isDragging && !overlay && 'is-dragging']
     .filter(Boolean)
     .join(' ');
   return (

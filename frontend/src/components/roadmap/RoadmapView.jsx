@@ -211,8 +211,8 @@ export function RoadmapView({
           {points.length > 0 && (
             <div className="roadmap-view__points-area">
               <div className="roadmap-view__points-head">
-                <span className="subsection-eyebrow">Markers</span>
-                <span className="muted mono">{points.length}</span>
+                <span className="roadmap-view__points-title">Markers</span>
+                <span className="muted">{points.length}</span>
               </div>
               <div className="roadmap-view__points-track">
                 {layout.todayPct != null && (
@@ -245,7 +245,7 @@ export function RoadmapView({
                       style={{ background: p.color }}
                     />
                     <span className="truncate">{p.label}</span>
-                    <span className="mono dim">{formatDate(p.at)}</span>
+                    <span className="muted">{formatDate(p.at)}</span>
                   </li>
                 ))}
                 {points.length > 8 && (

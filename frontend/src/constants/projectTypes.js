@@ -96,11 +96,13 @@ export function navItemsForType(typeId) {
     { key: 'dashboard', label: 'Dashboard', icon: BarChart3, path: 'dashboard' },
     { key: 'ai', label: 'AI Inbox', icon: Sparkles, path: 'ai' },
   ];
+  // `group: 'settings'` items fold into a collapsible "Settings" entry in
+  // the sidebar so the day-to-day nav stays short.
   const settings = [
-    { key: 'members', label: 'Members', icon: Users, path: 'settings/members' },
-    { key: 'workflow', label: 'Workflow', icon: Settings, path: 'settings/workflow' },
-    { key: 'fields', label: 'Fields', icon: ListTodo, path: 'settings/fields' },
-    { key: 'ai-settings', label: 'AI', icon: Sparkles, path: 'settings/ai' },
+    { key: 'members', label: 'Members', icon: Users, path: 'settings/members', group: 'settings' },
+    { key: 'workflow', label: 'Workflow', icon: Settings, path: 'settings/workflow', group: 'settings' },
+    { key: 'fields', label: 'Fields', icon: ListTodo, path: 'settings/fields', group: 'settings' },
+    { key: 'ai-settings', label: 'AI', icon: Sparkles, path: 'settings/ai', group: 'settings' },
   ];
 
   if (typeId === 'Engineering') {

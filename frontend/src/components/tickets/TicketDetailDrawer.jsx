@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Eye, EyeOff, Lock, X } from 'lucide-react';
-import { Badge, Button, Select, useToast } from '@/components/ui';
+import { Button, Select, useToast } from '@/components/ui';
 import { supportApi } from '@/api/support.api';
 import { useSlaTick } from '@/hooks/useSlaTick';
+import { TICKET_STATUS_CLASS } from './ticketStatus';
 import './TicketDetailDrawer.css';
 
 const STATUS_OPTIONS = [
@@ -14,15 +15,6 @@ const STATUS_OPTIONS = [
   { value: 'Closed', label: 'Closed' },
   { value: 'Reopened', label: 'Reopened' },
 ];
-
-const STATUS_TONE = {
-  New: 'info',
-  Open: 'info',
-  Pending: 'warning',
-  Reopened: 'warning',
-  Resolved: 'success',
-  Closed: 'neutral',
-};
 
 function slaLabel(ticket, now) {
   if (ticket.status === 'Resolved' || ticket.status === 'Closed') {
@@ -120,11 +112,11 @@ export function TicketDetailDrawer({ ticketId, onClose, onChanged }) {
         onClick={(e) => e.stopPropagation()}
       >
         <header className="ticket-drawer__head">
-          <div className="hstack" style={{ gap: 8 }}>
-            <Badge tone={STATUS_TONE[data?.ticket.status] ?? 'neutral'}>
+          <div className="ticket-drawer__head-meta">
+            <span className={`status ${TICKET_STATUS_CLASS[data?.ticket.status] ?? 'status-todo'}`}>
               {data?.ticket.status ?? '…'}
-            </Badge>
-            <span className="muted" style={{ fontSize: 12 }}>
+            </span>
+            <span className="muted">
               {data?.ticket.customerName}
               {data?.ticket.customerTier ? ` · ${data.ticket.customerTier}` : ''}
             </span>
@@ -147,18 +139,20 @@ export function TicketDetailDrawer({ ticketId, onClose, onChanged }) {
           <div className="ticket-drawer__body">
             <h2 className="ticket-drawer__title">{data.ticket.subject}</h2>
 
-            <div className="hstack ticket-drawer__meta">
-              <Badge
-                tone={
-                  data.ticket.isBreached ? 'danger'
-                  : data.ticket.status === 'Resolved' || data.ticket.status === 'Closed' ? 'success'
-                  : 'neutral'
-                }
+            <div className="ticket-drawer__meta">
+              <span
+                className={[
+                  'ticket-drawer__sla',
+                  data.ticket.isBreached ? 'is-danger'
+                    : data.ticket.status === 'Resolved' || data.ticket.status === 'Closed' ? 'is-ok'
+                      : '',
+                ].filter(Boolean).join(' ')}
               >
                 {slaLabel(data.ticket, now)}
-              </Badge>
+              </span>
               <span className="grow" />
               <Select
+                aria-label="Ticket status"
                 value={data.ticket.status}
                 onChange={(e) => changeStatus(e.target.value)}
                 disabled={saving}
@@ -170,11 +164,11 @@ export function TicketDetailDrawer({ ticketId, onClose, onChanged }) {
               <div className="ticket-drawer__body-md">{data.ticket.bodyMd}</div>
             )}
 
-            <div className="subsection">
-              <div className="subsection-eyebrow">Replies</div>
+            <section className="ticket-drawer__section">
+              <h3 className="ticket-drawer__section-title">Replies</h3>
               <ul className="ticket-drawer__replies">
                 {data.replies.length === 0 && (
-                  <li className="muted" style={{ padding: 12 }}>No replies yet.</li>
+                  <li className="ticket-drawer__empty">No replies yet.</li>
                 )}
                 {data.replies.map((r) => (
                   <li
@@ -184,18 +178,18 @@ export function TicketDetailDrawer({ ticketId, onClose, onChanged }) {
                       r.isInternal ? 'is-internal' : '',
                     ].filter(Boolean).join(' ')}
                   >
-                    <div className="hstack ticket-drawer__reply-head">
+                    <div className="ticket-drawer__reply-head">
                       {r.isInternal ? (
-                        <Badge tone="warning">
-                          <Lock size={11} aria-hidden="true" /> Internal note
-                        </Badge>
+                        <span className="ticket-drawer__reply-kind is-internal">
+                          <Lock size={12} aria-hidden="true" /> Internal note
+                        </span>
                       ) : (
-                        <Badge tone="info">
-                          <Eye size={11} aria-hidden="true" /> Public reply
-                        </Badge>
+                        <span className="ticket-drawer__reply-kind">
+                          <Eye size={12} aria-hidden="true" /> Public reply
+                        </span>
                       )}
                       <span className="grow" />
-                      <span className="muted" style={{ fontSize: 11 }}>
+                      <span className="ticket-drawer__reply-time">
                         {new Date(r.createdAt).toLocaleString()}
                       </span>
                     </div>
@@ -206,14 +200,14 @@ export function TicketDetailDrawer({ ticketId, onClose, onChanged }) {
 
               <form className="ticket-drawer__reply-form" onSubmit={submitReply}>
                 <textarea
-                  className="input"
+                  className="textarea"
                   rows={4}
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
                   placeholder={isInternal ? 'Note visible only to your team…' : 'Reply to the customer…'}
                 />
-                <div className="hstack" style={{ marginTop: 8 }}>
-                  <label className="hstack" style={{ gap: 6, cursor: 'pointer', fontSize: 12 }}>
+                <div className="ticket-drawer__reply-actions">
+                  <label className="ticket-drawer__internal-toggle">
                     <input
                       type="checkbox"
                       checked={isInternal}
@@ -237,7 +231,7 @@ export function TicketDetailDrawer({ ticketId, onClose, onChanged }) {
                   </Button>
                 </div>
               </form>
-            </div>
+            </section>
           </div>
         )}
       </aside>

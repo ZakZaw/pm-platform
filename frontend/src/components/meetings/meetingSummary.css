@@ -1,99 +1,94 @@
-/* F2-22 — Summary page + action-item card layout. */
+/* Meeting summary page + action-item rows. Cards use the shared .card
+   and .mtg-section (meetings.css). */
 
 .ms-grid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: var(--s-6);
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--s-7);
   align-items: start;
 }
 @media (max-width: 1120px) {
   .ms-grid { grid-template-columns: 1fr; }
 }
+.ms-span { grid-column: 1 / -1; }
 
-.ms-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: var(--s-5);
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-3);
-}
-.ms-card h2 {
+.ms-tldr {
   margin: 0;
+  font-size: var(--fs-lg);
+  color: var(--text);
+  line-height: var(--lh-relaxed);
+  white-space: pre-wrap;
+}
+
+.ms-block + .ms-block { margin-top: var(--s-3); }
+.ms-block-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  margin: 0 0 var(--s-3);
   font-size: var(--fs-md);
   font-weight: var(--fw-semibold);
   color: var(--text);
 }
-
-.ms-tldr {
-  font-size: var(--fs-md);
-  color: var(--text);
-  line-height: var(--lh-snug);
-  white-space: pre-wrap;
+.ms-block-count {
+  font-weight: var(--fw-regular);
+  color: var(--text-muted);
 }
 
 .ms-list {
   margin: 0;
-  padding-left: var(--s-5);
+  padding-left: var(--s-6);
   color: var(--text);
-  font-size: var(--fs-sm);
-  line-height: var(--lh-snug);
+  font-size: var(--fs-md);
+  line-height: var(--lh-normal);
 }
 .ms-list li { margin-bottom: var(--s-2); }
 .ms-list li:last-child { margin-bottom: 0; }
+.ms-list li::marker { color: var(--text-subtle); }
 
-.ms-empty {
-  color: var(--text-muted);
-  font-size: var(--fs-sm);
-}
-
-.ms-actions-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s-2);
-}
-
-/* Action item cards */
+/* Action items — flat rows inside the card, no nested boxes. */
 .ar-list {
   display: flex;
   flex-direction: column;
-  gap: var(--s-3);
+  gap: var(--s-2);
+  margin: 0 calc(-1 * var(--s-5));
 }
 
 .ar-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  padding: var(--s-4);
+  padding: var(--s-5);
+  border-radius: var(--r-lg);
   display: flex;
   flex-direction: column;
-  gap: var(--s-2);
+  gap: var(--s-3);
+  transition: background var(--dur-fast) var(--ease-out);
 }
-.ar-card.is-accepted {
-  border-color: var(--success-border);
-  background: var(--success-soft);
-}
-.ar-card.is-dismissed {
-  opacity: 0.7;
-}
+.ar-card:hover { background: var(--surface-2); }
+.ar-card.is-accepted .ar-card-title { color: var(--text-secondary); }
+.ar-card.is-dismissed { opacity: 0.6; }
+.ar-card.is-dismissed .ar-card-title { text-decoration: line-through; }
 
 .ar-card-head {
   display: flex;
   align-items: flex-start;
-  gap: var(--s-3);
+  gap: var(--s-4);
+}
+/* Pending rows carry a checkbox; indent the body so text lines up with
+   the title rather than the checkbox. */
+.ar-card.has-check > :not(.ar-card-head) {
+  margin-left: calc(var(--s-6) + var(--s-4));
 }
 .ar-card-check {
-  margin-top: 4px;
+  margin-top: var(--s-1);
+  flex-shrink: 0;
   cursor: pointer;
 }
 .ar-card-title-row {
   flex: 1;
+  min-width: 0;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--s-3);
+  gap: var(--s-4);
 }
 .ar-card-title {
   margin: 0;
@@ -101,23 +96,25 @@
   font-weight: var(--fw-semibold);
   color: var(--text);
 }
+.ar-card-state { display: flex; gap: var(--s-4); flex-shrink: 0; }
 
 .ar-card-desc {
   margin: 0;
-  font-size: var(--fs-sm);
+  font-size: var(--fs-md);
   color: var(--text-secondary);
-  line-height: var(--lh-snug);
+  line-height: var(--lh-normal);
 }
 
 .ar-card-edit {
   display: flex;
   flex-direction: column;
-  gap: var(--s-2);
+  gap: var(--s-4);
 }
+.ar-card-edit .input-group { align-items: stretch; }
 .ar-card-edit-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--s-2);
+  gap: var(--s-4);
 }
 @media (max-width: 760px) {
   .ar-card-edit-row { grid-template-columns: 1fr; }
@@ -125,38 +122,50 @@
 .ar-edit-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: var(--fs-xs);
+  gap: var(--s-2);
+  font-size: var(--fs-sm);
   color: var(--text-secondary);
 }
 .ar-edit-field select,
 .ar-edit-field input {
-  height: 32px;
-  padding: 0 var(--s-2);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
+  height: 36px;
+  padding: 0 var(--s-4);
+  background: var(--surface-2);
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
   color: var(--text);
-  font-size: var(--fs-sm);
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+}
+.ar-edit-field select:focus,
+.ar-edit-field input:focus {
+  outline: none;
+  background: var(--surface);
+  border-color: var(--accent-border);
+  box-shadow: var(--shadow-focus);
 }
 
 .ar-card-foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--s-3);
+  gap: var(--s-4);
   flex-wrap: wrap;
 }
 .ar-card-meta {
   display: flex;
-  gap: var(--s-3);
-  font-size: var(--fs-xs);
+  flex-wrap: wrap;
+  gap: var(--s-6);
+  font-size: var(--fs-sm);
   color: var(--text-secondary);
   align-items: center;
 }
-.ar-card-due {
-  color: var(--text-secondary);
+.ar-card-owner {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
 }
+.ar-card-due { color: var(--text-secondary); }
 
 /* Link-to-existing-task picker */
 .ar-link-wrap {
@@ -167,7 +176,7 @@
   right: 0;
   z-index: 50;
   margin-top: var(--s-2);
-  width: 360px;
+  width: 380px;
   max-width: 80vw;
   padding: var(--s-3) 0;
 }

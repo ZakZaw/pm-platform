@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, Circle, Lock, SkipForward } from 'lucide-react';
 import {
-  Badge,
   Button,
   Card,
   Input,
@@ -18,18 +17,20 @@ import './RunDetailPage.css';
 
 const TERMINAL = new Set(['Completed', 'Skipped']);
 
-function statusTone(status) {
+// Run status read-out as dot + coloured text (stratos .status-*).
+function statusClass(status) {
   switch (status) {
-    case 'Completed': return 'success';
-    case 'InProgress': return 'info';
-    case 'Skipped': return 'neutral';
-    default: return 'warning';
+    case 'Completed': return 'status-done';
+    case 'InProgress': return 'status-progress';
+    case 'Skipped': return 'status-todo';
+    default: return 'status-review';
   }
 }
 
+const STATUS_LABEL = { InProgress: 'In progress' };
+
 export function RunDetailPage() {
   const { slug: orgSlug, projectSlug, runId } = useParams();
-  const navigate = useNavigate();
   const toast = useToast();
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
@@ -85,9 +86,10 @@ export function RunDetailPage() {
   if (error) return <div className="main-inner"><p className="muted">{error}</p></div>;
   if (!data) {
     return (
-      <div className="main-inner" aria-busy="true">
-        <Skeleton width="50%" height={20} />
-        <div style={{ height: 12 }} />
+      <div className="main-inner run-detail-page" aria-busy="true">
+        <div className="page-head">
+          <Skeleton width="50%" height={28} />
+        </div>
         <Skeleton rows={5} />
       </div>
     );
@@ -96,29 +98,29 @@ export function RunDetailPage() {
   const { run, items } = data;
   const terminal = TERMINAL.has(run.status);
   const allDone = items.length > 0 && items.every((i) => i.completed);
+  const doneCount = items.filter((i) => i.completed).length;
 
   return (
     <div className="main-inner run-detail-page">
       <div className="page-head">
-        <div className="row gap-3" style={{ marginBottom: 'var(--s-3)' }}>
-          <Link to={`/${orgSlug}/projects/${projectSlug}/runbooks`} className="muted run-detail-page__back-link">
-            <ArrowLeft size={13} aria-hidden="true" /> Runbooks
-          </Link>
-        </div>
+        <Link to={`/${orgSlug}/projects/${projectSlug}/runbooks`} className="run-detail-page__back-link">
+          <ArrowLeft size={13} aria-hidden="true" /> Runbooks
+        </Link>
         <div className="page-title-row">
           <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>Workflow run</div>
-            <h1 className="page-title" style={{ fontSize: 'var(--fs-2xl)' }}>{run.workflowName}</h1>
-            <p className="page-subtitle" style={{ marginTop: 6 }}>
+            <h1 className="page-title">{run.workflowName}</h1>
+            <p className="page-subtitle">
               Scheduled for{' '}
               {new Date(run.scheduledFor).toLocaleString(undefined, {
                 dateStyle: 'medium', timeStyle: 'short',
               })}
-              {run.isOverdue && <> · <span style={{ color: 'var(--danger)' }}>Overdue</span></>}
+              {run.isOverdue && <> · <span className="run-detail-page__overdue">Overdue</span></>}
             </p>
           </div>
-          <div className="row gap-3">
-            <Badge tone={statusTone(run.status)}>{run.status}</Badge>
+          <div className="row gap-4">
+            <span className={`status ${statusClass(run.status)}`}>
+              {STATUS_LABEL[run.status] ?? run.status}
+            </span>
             {!terminal && (
               <Button variant="ghost" size="sm" onClick={() => setSkipping(true)}>
                 <SkipForward size={13} aria-hidden="true" /> Skip
@@ -138,10 +140,24 @@ export function RunDetailPage() {
       )}
 
       <Card className="run-detail-page__checklist">
+        {items.length > 0 && (
+          <div className="run-detail-page__progress">
+            <div className="run-detail-page__progress-label">
+              <span className="h-card">Checklist</span>
+              <span className="muted">{doneCount} of {items.length} done</span>
+            </div>
+            <div className="bar">
+              <div
+                className="bar-fill bar-fill-success"
+                style={{ width: `${Math.round((doneCount / items.length) * 100)}%` }}
+              />
+            </div>
+          </div>
+        )}
         {items.length === 0 ? (
           <p className="muted">This run has no checklist items.</p>
         ) : (
-          <ul className="col" style={{ listStyle: 'none', padding: 0, margin: 0, gap: 4 }}>
+          <ul className="run-detail-page__items">
             {items.map((item) => {
               const earlierIncomplete = item.sequential && items.some(
                 (i) => i.order < item.order && !i.completed,
@@ -175,7 +191,7 @@ export function RunDetailPage() {
                     {item.title}
                   </span>
                   {item.sequential && (
-                    <Badge tone="neutral">Sequential</Badge>
+                    <span className="run-detail-page__seq">Sequential</span>
                   )}
                 </li>
               );
@@ -183,7 +199,7 @@ export function RunDetailPage() {
           </ul>
         )}
         {allDone && run.status === 'Completed' && (
-          <p className="muted" style={{ marginTop: 12 }}>
+          <p className="muted run-detail-page__done-note">
             Completed{' '}
             {run.completedAt && new Date(run.completedAt).toLocaleString(undefined, {
               dateStyle: 'medium', timeStyle: 'short',
@@ -227,7 +243,7 @@ function SkipModal({ onClose, onConfirm }) {
         }}
       >
         <ModalHeader>
-          <h2 id="skip-title" style={{ margin: 0, fontSize: 16 }}>Skip this run</h2>
+          <h2 id="skip-title" className="modal-title">Skip this run</h2>
         </ModalHeader>
         <ModalBody>
           <Input

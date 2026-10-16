@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Filter, Plus, RefreshCw, X } from 'lucide-react';
-import { Button, Select, Skeleton, Sparkline } from '@/components/ui';
+import { Button, Select, Skeleton } from '@/components/ui';
 import { projectsApi } from '@/api/projects.api';
 import { boardApi } from '@/api/board.api';
 import { workflowApi } from '@/api/workflow.api';
@@ -10,6 +10,7 @@ import { sprintsApi } from '@/api/sprints.api';
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
 import { LiveIndicator } from '@/components/kanban/LiveIndicator';
 import { ColumnsButton } from '@/components/kanban/ColumnsButton';
+import { SprintMeta } from '@/components/kanban/SprintMeta';
 import { TaskDetailDrawer } from '@/components/tasks/TaskDetailDrawer';
 import { useProjectHub } from '@/hooks/useProjectHub';
 import { useOrgMembers } from '@/hooks/useOrgMembers';
@@ -221,58 +222,50 @@ export function BoardPage() {
     <div className="main-inner board-page">
       <div className="page-head">
         <div className="page-title-row">
-          <div>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>
+          <div className="board-page-heading">
+            <div className="eyebrow">
               {project.name} · {sprint ? 'Sprint board' : 'Board'}
             </div>
-            <h1 className="page-title row gap-3" style={{ fontSize: 'var(--fs-2xl)' }}>
+            <h1 className="page-title board-page-title">
               {sprint ? sprint.name : 'Board'}
               <LiveIndicator status={hubStatus} />
             </h1>
             {sprint?.goal && (
-              <p className="page-subtitle" style={{ marginTop: 6 }}>
-                <span className="muted">Goal · </span>{sprint.goal}
-              </p>
+              <p className="page-subtitle">{sprint.goal}</p>
             )}
             {!sprint && (
-              <p className="page-subtitle" style={{ marginTop: 6 }}>
+              <p className="page-subtitle">
                 No active sprint. Drag tasks across status columns; updates push to teammates live.
               </p>
             )}
-          </div>
-          <div className="row gap-4">
-            {sprint && burnPoints && (
-              <div className="board-page-banner">
-                <div className="col" style={{ gap: 0 }}>
-                  <div className="eyebrow board-page-banner-label">Burndown</div>
-                  <div className="row gap-3" style={{ marginTop: 2 }}>
-                    <Sparkline points={burnPoints} width={88} height={20} ideal />
-                    {totalPts > 0 && (
-                      <span className="mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-secondary)' }}>
-                        {donePts}/{totalPts} pts
-                      </span>
-                    )}
-                  </div>
-                </div>
-                {length && (
-                  <>
-                    <div className="divider-v" style={{ alignSelf: 'stretch' }} />
-                    <div className="col center board-page-banner-days">
-                      <div className="mono board-page-banner-days-num" style={{ color: left <= 3 ? 'var(--warning)' : undefined }}>
-                        {left}d
-                      </div>
-                      <div className="muted board-page-banner-days-label">left</div>
-                    </div>
-                  </>
-                )}
-              </div>
+            {sprint && (
+              <SprintMeta
+                burnPoints={burnPoints}
+                donePts={donePts}
+                totalPts={totalPts}
+                daysLeft={length ? left : null}
+                range={range}
+              />
             )}
-            <Button variant="ghost" size="sm" onClick={() => load(project.id, swimlane).catch(() => {})} aria-label="Refresh" title="Refresh">
-              <RefreshCw size={14} aria-hidden="true" />
-            </Button>
-            <Button size="sm" onClick={() => setFiltersOpen((v) => !v)}>
+          </div>
+          <div className="board-page-actions">
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => load(project.id, swimlane).catch(() => {})}
+              aria-label="Refresh"
+              title="Refresh"
+            >
+              <RefreshCw size={16} aria-hidden="true" />
+            </button>
+            <Button
+              variant={filtersOpen ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setFiltersOpen((v) => !v)}
+              aria-expanded={filtersOpen}
+            >
               <Filter size={14} aria-hidden="true" /> Filter
-              {anyFilter && <span className="board-page-filter-dot" aria-hidden="true" />}
+              {anyFilter && <span className="board-page-filter-dot" aria-label="Filters active" />}
             </Button>
             <ColumnsButton
               statuses={statusConfigs ?? []}

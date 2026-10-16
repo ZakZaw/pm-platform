@@ -130,8 +130,8 @@ export function Thread({
     <aside className="msg-thread" role="complementary" aria-label="Thread">
       <header className="msg-thread-head">
         <h2 className="msg-thread-title">Thread</h2>
-        <button type="button" className="msg-thread-close" onClick={onClose} aria-label="Close thread">
-          <X size={13} aria-hidden="true" />
+        <button type="button" className="icon-btn icon-btn-sm" onClick={onClose} aria-label="Close thread" title="Close (Esc)">
+          <X size={16} aria-hidden="true" />
         </button>
       </header>
       <div className="msg-thread-body">
@@ -149,7 +149,7 @@ export function Thread({
               onToggleReaction={handleToggleReaction}
             />
             <div className="msg-thread-divider">
-              {replies.length} {replies.length === 1 ? 'reply' : 'replies'}
+              <span>{replies.length} {replies.length === 1 ? 'reply' : 'replies'}</span>
             </div>
             {replies.map((r) => (
               <MessageItem

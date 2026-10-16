@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Avatar, Button, Card, Chip, Input, Select } from '@/components/ui';
+import { Avatar, Button, Chip, Input, Select } from '@/components/ui';
 import { usersApi } from '@/api/users.api';
 import { useAuthStore } from '@/store/authStore';
 import './ProfilePage.css';
@@ -183,19 +183,41 @@ export function ProfilePage() {
     }
   };
 
-  if (loadError) return <p className="profile__placeholder">{loadError}</p>;
-  if (!profile) return <p className="profile__placeholder">Loading…</p>;
+  if (loadError) {
+    return (
+      <div className="main-inner profile">
+        <p className="profile__placeholder">{loadError}</p>
+      </div>
+    );
+  }
+  if (!profile) {
+    return (
+      <div className="main-inner profile">
+        <p className="profile__placeholder">Loading…</p>
+      </div>
+    );
+  }
 
   const displayAvatar = avatarPreview ?? profile.avatarUrl ?? null;
 
   return (
-    <div className="page page-narrow profile">
-      <h1 className="profile__title">Profile</h1>
+    <div className="main-inner profile">
+      <header className="page-head">
+        <div className="page-title-row">
+          <div>
+            <p className="eyebrow">Settings</p>
+            <h1 className="page-title">Profile</h1>
+            <p className="page-subtitle">How you appear to your team, and how AI plans around you.</p>
+          </div>
+        </div>
+      </header>
 
-      <Card title="Identity" className="profile__card">
+      <section className="card profile__card" aria-label="Identity">
         <div className="profile__avatar-row">
           <Avatar src={displayAvatar} name={fullName || profile.email} size="xl" />
-          <div>
+          <div className="profile__identity">
+            <div className="profile__name">{fullName || profile.email}</div>
+            <div className="profile__email">{profile.email}</div>
             <div className="profile__avatar-actions">
               <Button
                 type="button"
@@ -217,8 +239,8 @@ export function ProfilePage() {
                   Reset to default
                 </Button>
               )}
+              <span className="profile__hint">PNG, JPEG, or WebP. Max 2 MB.</span>
             </div>
-            <p className="profile__hint">PNG, JPEG, or WebP. Max 2 MB.</p>
             <input
               ref={fileInputRef}
               className="profile__file-input"
@@ -229,44 +251,44 @@ export function ProfilePage() {
             {avatarError && <p className="profile__error">{avatarError}</p>}
           </div>
         </div>
-      </Card>
 
-      <Card title="Details" className="profile__card">
-        <form className="profile__form" onSubmit={onSubmit}>
-          <Input
-            label="Full name"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-            minLength={2}
-            maxLength={120}
-          />
+        <form className="profile__form" onSubmit={onSubmit} aria-label="Details">
+          <div className="profile__grid">
+            <Input
+              label="Full name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+              minLength={2}
+              maxLength={120}
+            />
 
-          <Select
-            label="Timezone"
-            options={tzOptions}
-            value={timezone}
-            onChange={(e) => setTimezone(e.target.value)}
-            help="Used to display dates in your local time. Stored as IANA timezone id."
-          />
+            <Select
+              label="Timezone"
+              options={tzOptions}
+              value={timezone}
+              onChange={(e) => setTimezone(e.target.value)}
+              help="Dates show in your local time."
+            />
 
-          <Input
-            label="Capacity (hours per week)"
-            type="number"
-            min={0}
-            max={168}
-            value={capacity}
-            onChange={(e) => setCapacity(Number(e.target.value))}
-            help="Used by AI assignment to estimate your bandwidth."
-          />
+            <Input
+              label="Capacity (hours per week)"
+              type="number"
+              min={0}
+              max={168}
+              value={capacity}
+              onChange={(e) => setCapacity(Number(e.target.value))}
+              help="Used by AI assignment to estimate your bandwidth."
+            />
 
-          <Input
-            label="Out of office until"
-            type="date"
-            value={oooDate}
-            onChange={(e) => setOooDate(e.target.value)}
-            help="While set, AI excludes you as a reassignment candidate and notifies PMs on each project you own work in."
-          />
+            <Input
+              label="Out of office until"
+              type="date"
+              value={oooDate}
+              onChange={(e) => setOooDate(e.target.value)}
+              help="AI won't reassign work to you and lets your PMs know."
+            />
+          </div>
 
           <div>
             <label className="input-label" htmlFor="profile-skill-input">Skill tags</label>
@@ -293,14 +315,17 @@ export function ProfilePage() {
             </p>
           </div>
 
-          {saveError && <p className="profile__error">{saveError}</p>}
-          {saveSuccess && <p className="profile__success">Profile saved.</p>}
-
-          <Button type="submit" disabled={submitting}>
-            {submitting ? 'Saving…' : 'Save changes'}
-          </Button>
+          <div className="profile__footer">
+            <div className="profile__status" aria-live="polite">
+              {saveError && <p className="profile__error">{saveError}</p>}
+              {saveSuccess && <p className="profile__success">Profile saved.</p>}
+            </div>
+            <Button type="submit" disabled={submitting}>
+              {submitting ? 'Saving…' : 'Save changes'}
+            </Button>
+          </div>
         </form>
-      </Card>
+      </section>
     </div>
   );
 }

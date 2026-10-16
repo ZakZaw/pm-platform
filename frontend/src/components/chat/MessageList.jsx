@@ -205,8 +205,9 @@ export function MessageList({ channelId, channelArchived = false, orgSlug, onAct
         {!loading && error && <p className="muted msg-empty">{error}</p>}
         {!loading && !error && messages.length === 0 && (
           <div className="msg-empty">
-            <MessageSquare size={20} aria-hidden="true" color="var(--text-muted)" />
-            <p className="muted">No messages yet — say hello.</p>
+            <span className="msg-empty-icon"><MessageSquare size={20} aria-hidden="true" /></span>
+            <p className="msg-empty-title">No messages yet</p>
+            <p className="muted">Say hello — it’s a quiet room so far.</p>
           </div>
         )}
         {!loading && hasMore && (
@@ -219,7 +220,7 @@ export function MessageList({ channelId, channelArchived = false, orgSlug, onAct
         {grouped.map((group) => (
           <section key={group.dayLabel} className="msg-day-group">
             <div className="msg-day-divider">
-              <span>{group.dayLabel}</span>
+              <span className="msg-day-label">{group.dayLabel}</span>
             </div>
             {group.items.map((m) => (
               <MessageItem

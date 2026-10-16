@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowDown, ArrowUp, GitMerge, Plus, X } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { StatusBadge, useToast } from '@/components/ui';
 import { tasksApi } from '@/api/tasks.api';
+import { TaskSection } from './TaskSection';
 import './DependenciesSection.css';
 
 export function DependenciesSection({ taskId, projectId }) {
@@ -98,16 +99,13 @@ export function DependenciesSection({ taskId, projectId }) {
     }
   }
 
-  return (
-    <div className="dependencies-section" ref={wrapRef}>
-      <div className="eyebrow dependencies-section__head">
-        <GitMerge size={11} aria-hidden="true" /> Dependencies
-      </div>
+  const total = deps.dependsOn.length + deps.blocking.length;
 
+  return (
+    <TaskSection title="Dependencies" meta={total > 0 ? total : 'None'}>
+    <div className="dependencies-section" ref={wrapRef}>
       <div className="dependencies-section__group">
-        <div className="dependencies-section__group-label">
-          <ArrowUp size={10} aria-hidden="true" /> Blocked by
-        </div>
+        <div className="dependencies-section__group-label">Blocked by</div>
         {deps.dependsOn.length === 0 ? (
           <p className="muted dependencies-section__empty">No prerequisites.</p>
         ) : (
@@ -169,9 +167,7 @@ export function DependenciesSection({ taskId, projectId }) {
       </div>
 
       <div className="dependencies-section__group">
-        <div className="dependencies-section__group-label">
-          <ArrowDown size={10} aria-hidden="true" /> Blocks
-        </div>
+        <div className="dependencies-section__group-label">Blocks</div>
         {deps.blocking.length === 0 ? (
           <p className="muted dependencies-section__empty">Nothing waits on this.</p>
         ) : (
@@ -183,6 +179,7 @@ export function DependenciesSection({ taskId, projectId }) {
         )}
       </div>
     </div>
+    </TaskSection>
   );
 }
 

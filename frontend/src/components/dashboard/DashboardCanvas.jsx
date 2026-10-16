@@ -7,6 +7,8 @@ import './DashboardCanvas.css';
 const COLS = { lg: 12, md: 12, sm: 6, xs: 4, xxs: 2 };
 const BREAKPOINTS = { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 };
 const ROW_HEIGHT = 56;
+// Gutter between widgets — matches the airy card grid used elsewhere (--s-8).
+const GAP = 24;
 
 /**
  * Generic dashboard canvas. Accepts a widget registry + the current layout
@@ -49,7 +51,7 @@ export function DashboardCanvas({
       cols={COLS}
       breakpoints={BREAKPOINTS}
       rowHeight={ROW_HEIGHT}
-      margin={[12, 12]}
+      margin={[GAP, GAP]}
       containerPadding={[0, 0]}
       isDraggable={editing}
       isResizable={editing}

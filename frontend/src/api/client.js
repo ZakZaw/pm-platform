@@ -1,5 +1,8 @@
 import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
+import { refreshAcrossTabs, syncAuthAcrossTabs } from './refreshCoordinator';
+
+syncAuthAcrossTabs(useAuthStore, 'pm-auth');
 
 export const apiClient = axios.create({
   baseURL: '/api/v1',
@@ -31,7 +34,7 @@ apiClient.interceptors.response.use(
     }
 
     try {
-      refreshInFlight = refreshInFlight ?? store.refresh();
+      refreshInFlight = refreshInFlight ?? refreshAcrossTabs(useAuthStore, store.refreshToken);
       await refreshInFlight;
     } catch (refreshErr) {
       useAuthStore.getState().logout();

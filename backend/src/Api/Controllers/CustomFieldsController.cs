@@ -47,7 +47,7 @@ public class CustomFieldsController(ISender mediator) : ControllerBase
         CancellationToken ct)
     {
         var result = await mediator.Send(new UpdateCustomFieldDefinitionCommand(
-            fieldId, body.Name, body.Options, body.Required, body.SortOrder), ct);
+            projectId, fieldId, body.Name, body.Options, body.Required, body.SortOrder), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
@@ -55,7 +55,7 @@ public class CustomFieldsController(ISender mediator) : ControllerBase
     [RequireProjectRole(ProjectRole.TeamLead)]
     public async Task<ActionResult> Delete(Guid projectId, Guid fieldId, CancellationToken ct)
     {
-        var result = await mediator.Send(new DeleteCustomFieldDefinitionCommand(fieldId), ct);
+        var result = await mediator.Send(new DeleteCustomFieldDefinitionCommand(projectId, fieldId), ct);
         return result.IsSuccess ? NoContent() : ToProblem(result.Error!);
     }
 

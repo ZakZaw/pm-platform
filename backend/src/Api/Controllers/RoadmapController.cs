@@ -47,7 +47,7 @@ public class RoadmapController(ISender mediator, IOptions<FrontendSettings> fron
         CancellationToken ct)
     {
         var result = await mediator.Send(
-            new UpdateEpicDatesCommand(epicId, body.StartDate, body.EndDate, body.Cascade), ct);
+            new UpdateEpicDatesCommand(projectId, epicId, body.StartDate, body.EndDate, body.Cascade), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
@@ -72,7 +72,7 @@ public class RoadmapController(ISender mediator, IOptions<FrontendSettings> fron
         CancellationToken ct)
     {
         var result = await mediator.Send(new UpdateMilestoneCommand(
-            milestoneId, body.Title, body.Date, body.Color, body.EpicId, body.ClearEpic ?? false), ct);
+            projectId, milestoneId, body.Title, body.Date, body.Color, body.EpicId, body.ClearEpic ?? false), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
@@ -81,7 +81,7 @@ public class RoadmapController(ISender mediator, IOptions<FrontendSettings> fron
     public async Task<ActionResult> DeleteMilestone(
         Guid projectId, Guid milestoneId, CancellationToken ct)
     {
-        var result = await mediator.Send(new DeleteMilestoneCommand(milestoneId), ct);
+        var result = await mediator.Send(new DeleteMilestoneCommand(projectId, milestoneId), ct);
         return result.IsSuccess ? NoContent() : ToProblem(result.Error!);
     }
 
@@ -92,7 +92,7 @@ public class RoadmapController(ISender mediator, IOptions<FrontendSettings> fron
         [FromBody] AddEpicDependencyBodyDto body,
         CancellationToken ct)
     {
-        var result = await mediator.Send(new AddEpicDependencyCommand(epicId, body.DependsOnEpicId), ct);
+        var result = await mediator.Send(new AddEpicDependencyCommand(projectId, epicId, body.DependsOnEpicId), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
@@ -101,7 +101,7 @@ public class RoadmapController(ISender mediator, IOptions<FrontendSettings> fron
     public async Task<ActionResult> RemoveDependency(
         Guid projectId, Guid epicId, Guid prereqId, CancellationToken ct)
     {
-        var result = await mediator.Send(new RemoveEpicDependencyCommand(epicId, prereqId), ct);
+        var result = await mediator.Send(new RemoveEpicDependencyCommand(projectId, epicId, prereqId), ct);
         return result.IsSuccess ? NoContent() : ToProblem(result.Error!);
     }
 
@@ -134,7 +134,7 @@ public class RoadmapController(ISender mediator, IOptions<FrontendSettings> fron
     public async Task<ActionResult> RevokeShareLink(
         Guid projectId, Guid linkId, CancellationToken ct)
     {
-        var result = await mediator.Send(new RevokeRoadmapShareLinkCommand(linkId), ct);
+        var result = await mediator.Send(new RevokeRoadmapShareLinkCommand(projectId, linkId), ct);
         return result.IsSuccess ? NoContent() : ToProblem(result.Error!);
     }
 

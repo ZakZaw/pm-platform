@@ -212,16 +212,31 @@ public class LiveKitVideoService(
         };
 
         var handler = new JwtSecurityTokenHandler();
-        var principal = handler.ValidateToken(raw, validation, out var validated);
+        handler.ValidateToken(raw, validation, out var validated);
 
-        // LiveKit binds the body to the token by setting `sub` to the
-        // SHA-256 hash of the request body. Compare so a replay with a
-        // different payload doesn't pass.
-        var expectedHash = Convert.ToHexString(
-            SHA256.HashData(Encoding.UTF8.GetBytes(body))).ToLowerInvariant();
-        var sub = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ?? string.Empty;
-        if (!string.Equals(sub, expectedHash, StringComparison.OrdinalIgnoreCase))
+        // M7 - LiveKit binds the body to the token with a `sha256` claim
+        // holding the standard base64 SHA-256 of the raw body (see the
+        // server SDKs' WebhookReceiver: `claims.sha256 !== base64(sha256(body))`).
+        // The old check compared `sub` to a hex digest, which never matches
+        // a real LiveKit webhook.
+        var sha256Claim = validated is JwtSecurityToken jwt
+            && jwt.Payload.TryGetValue("sha256", out var claim)
+            ? claim?.ToString()
+            : null;
+        if (!BodyMatchesSha256Claim(sha256Claim, body))
             throw new UnauthorizedAccessException("Webhook body hash mismatch.");
+    }
+
+    /// <summary>
+    /// Constant-time check that <paramref name="sha256Claim"/> is the
+    /// base64-encoded SHA-256 of <paramref name="body"/>.
+    /// </summary>
+    public static bool BodyMatchesSha256Claim(string? sha256Claim, string body)
+    {
+        if (string.IsNullOrEmpty(sha256Claim)) return false;
+        var expected = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(body ?? string.Empty)));
+        return CryptographicOperations.FixedTimeEquals(
+            Encoding.UTF8.GetBytes(expected), Encoding.UTF8.GetBytes(sha256Claim));
     }
 
     private string EgressBaseUrl()

@@ -14,6 +14,7 @@ import {
   WorkloadHeatmap,
 } from '@/components/charts';
 import { activityApi } from '@/api/activity.api';
+import { describeActivity, relativeTime } from '@/utils/activityFormat';
 import './DashboardWidget.css';
 
 // Short header label for the weekly-insight tone read-out.
@@ -334,46 +335,6 @@ export const ENGINEERING_WIDGETS = [
 
 // ---------- Activity feed (F2-04 wire-up) ----------
 
-// Human-facing verb phrase. The backend produces a Summary string for some
-// verbs (e.g. "moved Auth epic to next quarter"); when present we prefer it
-// over our default phrase so the feed reads naturally.
-const VERB_PHRASE = {
-  TaskCreated: 'created',
-  TaskStatusChanged: 'changed the status of',
-  TaskAssigned: 'assigned',
-  TaskDeleted: 'deleted',
-  EpicCreated: 'created the epic',
-  EpicUpdated: 'updated the epic',
-  EpicDatesChanged: 'rescheduled the epic',
-  EpicArchived: 'archived the epic',
-  MilestoneCreated: 'added the milestone',
-  MilestoneUpdated: 'updated the milestone',
-  MilestoneDeleted: 'removed the milestone',
-  SprintStarted: 'started the sprint',
-  SprintClosed: 'closed the sprint',
-  CommentAdded: 'commented on',
-  EpicDependencyAdded: 'linked an epic dependency',
-  EpicDependencyRemoved: 'removed an epic dependency',
-};
-
-const TARGET_LABEL = {
-  Task: 'task',
-  Epic: 'epic',
-  Sprint: 'sprint',
-  Milestone: 'milestone',
-  EpicDependency: 'dependency',
-};
-
-function relativeTime(iso) {
-  if (!iso) return '';
-  const diff = Date.now() - new Date(iso).getTime();
-  if (diff < 60_000) return 'now';
-  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m`;
-  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h`;
-  if (diff < 604_800_000) return `${Math.floor(diff / 86_400_000)}d`;
-  return new Date(iso).toLocaleDateString();
-}
-
 function ActivityFeedWidget({ project, refreshKey }) {
   const [entries, setEntries] = useState(null);
   const [error, setError] = useState(null);
@@ -406,18 +367,12 @@ function ActivityFeedWidget({ project, refreshKey }) {
 
 function ActivityRow({ entry }) {
   const actorName = entry.actor?.fullName ?? 'Someone';
-  const phrase = VERB_PHRASE[entry.verb] ?? entry.verb;
-  const targetLabel = TARGET_LABEL[entry.targetType] ?? entry.targetType.toLowerCase();
-  // Summary, when present, is the rich phrase produced by the recorder
-  // ("moved Auth epic to next quarter"). Otherwise we fall back to a
-  // generic "{verb} the {targetType}" line.
-  const summary = entry.summary?.trim();
   return (
     <div className="dash-activity-row">
       <Avatar name={actorName} src={entry.actor?.avatarUrl} size="sm" />
       <span className="dash-activity-text">
         <span className="dash-activity-actor">{actorName}</span>{' '}
-        <span className="muted">{summary || `${phrase} the ${targetLabel}`}</span>
+        <span className="muted">{describeActivity(entry)}</span>
       </span>
       <span className="dash-activity-time" title={new Date(entry.createdAt).toLocaleString()}>
         {relativeTime(entry.createdAt)}

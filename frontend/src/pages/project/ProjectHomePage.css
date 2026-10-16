@@ -26,11 +26,6 @@
   color: var(--text-muted);
 }
 
-.project-home-note {
-  font-size: var(--fs-xs);
-  margin: var(--s-4) 0 0 var(--s-2);
-}
-
 .project-home-body {
   margin-top: var(--s-9);
 }
@@ -63,10 +58,6 @@
   background: var(--surface-2);
   color: var(--text-muted);
 }
-.project-home-activity-icon.is-ai {
-  background: var(--ai-gradient-soft);
-  color: var(--ai-text);
-}
 
 .project-home-activity-main {
   flex: 1;
@@ -92,7 +83,17 @@
   line-height: var(--lh-normal);
 }
 
-/* Sprint health (AI card) */
+/* Type-aware health card (Sprint / Pipeline / Queue / … health) */
+.project-home-ai-headline {
+  margin: 0 0 var(--s-3);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-snug);
+}
+.project-home-ai-chips {
+  flex-wrap: wrap;
+  margin-bottom: var(--s-6);
+}
 .project-home-ai-copy {
   margin: 0 0 var(--s-6);
   font-size: var(--fs-md);

@@ -7,7 +7,10 @@ export const orgsApi = {
 
   get: (slug) => apiClient.get(`/orgs/${slug}`).then((r) => r.data),
 
-  // F3-19 — org portfolio aggregate. Returns { rollup, projects, resourceConflicts }.
+  // F3-19 — org portfolio aggregate. Returns { rollup, projects, resourceConflicts, kpis }.
+  // kpis is the org home strip: { portfolioHealth, hasTaskProjects, velocityPerWeek,
+  //   velocityChangePct, velocitySeries, hasSales, currency, pipelineValue, weightedForecast,
+  //   pipelineSeries, hasSupport, openTickets, slaAttainmentPct, ticketSeries }.
   portfolio: (slug) => apiClient.get(`/orgs/${slug}/portfolio`).then((r) => r.data),
 
   update: (slug, body) => apiClient.patch(`/orgs/${slug}`, body).then((r) => r.data),

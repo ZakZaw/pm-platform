@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
+  ArrowDown,
   ArrowRight,
   ArrowUp,
   Briefcase,
   Calendar,
   Camera,
-  Info,
   Pencil,
   Plus,
   Sparkles,
@@ -26,11 +26,28 @@ import { projectsApi } from '@/api/projects.api';
 import { useOrgRole } from '@/hooks/useOrgRole';
 import { useOrgStore } from '@/store/orgStore';
 import { findProjectType, PROJECT_TYPES } from '@/constants/projectTypes';
+import {
+  DASH,
+  deltaClass,
+  formatCompactMoney,
+  formatNumber,
+  formatPct,
+} from '@/utils/formatMetrics';
 import './OrgHomePage.css';
 
-const PLACEHOLDER_VELOCITY = [22, 24, 26, 25, 28, 30, 28, 32, 30, 33, 34];
-const PLACEHOLDER_PIPELINE = [800, 820, 810, 900, 950, 1000, 1050, 1100, 1150, 1180, 1260];
-const PLACEHOLDER_TICKETS = [40, 38, 36, 35, 32, 30, 32, 30, 28, 29, 28];
+// SLA attainment at or above this reads as good news on the tickets tile.
+const SLA_TARGET_PCT = 90;
+
+function TrendDelta({ pct }) {
+  if (pct == null) return null;
+  const up = pct >= 0;
+  return (
+    <span className={`stat-delta ${deltaClass(up)}`}>
+      {up ? <ArrowUp size={10} strokeWidth={3} /> : <ArrowDown size={10} strokeWidth={3} />}
+      {Math.abs(Math.round(pct))}%
+    </span>
+  );
+}
 
 function formatDate(iso) {
   if (!iso) return null;
@@ -79,22 +96,26 @@ export function OrgHomePage() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [filter, setFilter] = useState('all');
   const [aiInbox, setAiInbox] = useState(null);
+  const [portfolio, setPortfolio] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [orgData, projectList, members, inbox] = await Promise.all([
+        const [orgData, projectList, members, inbox, portfolioData] = await Promise.all([
           orgsApi.get(slug),
           projectsApi.listForOrg(slug),
           orgsApi.listMembers(slug, { page: 1, pageSize: 6 }).catch(() => ({ items: [], total: 0 })),
           aiApi.listOrgSuggestions(slug).catch(() => null),
+          // KPI strip rides on the portfolio aggregate (one call for all four tiles).
+          orgsApi.portfolio(slug).catch(() => null),
         ]);
         if (cancelled) return;
         setOrg(orgData);
         setProjects(projectList);
         setMemberSummary(members);
         setAiInbox(inbox);
+        setPortfolio(portfolioData);
       } catch (err) {
         if (!cancelled) setError(err.response?.data?.detail ?? 'Could not load organization.');
       }
@@ -170,6 +191,8 @@ export function OrgHomePage() {
     );
   }
 
+  const kpis = portfolio?.kpis ?? null;
+  const rollup = portfolio?.rollup ?? null;
   const role = org.role ?? myRole;
   const metaLine = [
     role,
@@ -242,50 +265,73 @@ export function OrgHomePage() {
         </div>
       </div>
 
-      {/* KPI strip — placeholder figures until org analytics ship; flagged once, quietly. */}
+      {/* KPI strip — server-computed from the org portfolio aggregate (kpis). */}
       <section className="org-home-section" aria-label="At a glance">
-        <p className="org-home-sample-note">
-          <Info size={13} aria-hidden="true" />
-          <span>
-            Sample figures — org-wide trends are in progress.{' '}
-            <Link to={`/${slug}/portfolio`} className="org-home-inline-link">
-              Live project health is in Portfolio
-            </Link>
-            .
-          </span>
-        </p>
         <div className="grid-4">
           <div className="stat">
             <div className="stat-label">Portfolio health</div>
             <div className="stat-row">
-              <div className="stat-value">82</div>
-              <HealthRing value={82} size={32} />
+              <div className="stat-value">{kpis?.portfolioHealth ?? DASH}</div>
+              {kpis?.portfolioHealth != null && <HealthRing value={kpis.portfolioHealth} size={32} />}
             </div>
-            <div className="org-home-stat-foot">across {projects.length} projects · daily snapshot</div>
+            <div className="org-home-stat-foot">
+              {rollup?.projectCount
+                ? `${rollup.atRiskCount} of ${rollup.projectCount} at risk · `
+                : 'No projects yet · '}
+              <Link to={`/${slug}/portfolio`} className="org-home-inline-link">Portfolio</Link>
+            </div>
           </div>
           <div className="stat">
             <div className="stat-label">Velocity</div>
             <div className="stat-row">
-              <div className="stat-value">34<span className="org-home-unit">pts/wk</span></div>
-              <span className="stat-delta stat-delta-up"><ArrowUp size={10} strokeWidth={3} />8%</span>
+              <div className="stat-value">
+                {kpis?.hasTaskProjects ? formatNumber(kpis.velocityPerWeek) : DASH}
+                {kpis?.hasTaskProjects && <span className="org-home-unit">pts/wk</span>}
+              </div>
+              <TrendDelta pct={kpis?.velocityChangePct} />
             </div>
-            <Sparkline points={PLACEHOLDER_VELOCITY} stroke="var(--accent)" className="org-home-spark" />
+            {kpis?.hasTaskProjects ? (
+              <Sparkline points={kpis.velocitySeries} stroke="var(--accent)" className="org-home-spark" />
+            ) : (
+              <div className="org-home-stat-foot">No engineering or task projects</div>
+            )}
           </div>
           <div className="stat">
             <div className="stat-label">Pipeline value</div>
             <div className="stat-row">
-              <div className="stat-value">$1.26m</div>
-              <span className="stat-delta stat-delta-up"><ArrowUp size={10} strokeWidth={3} />12%</span>
+              <div className="stat-value">
+                {kpis?.hasSales ? formatCompactMoney(kpis.pipelineValue, kpis.currency) : DASH}
+              </div>
             </div>
-            <Sparkline points={PLACEHOLDER_PIPELINE} stroke="var(--text-subtle)" className="org-home-spark" />
+            {kpis?.hasSales ? (
+              <>
+                <Sparkline points={kpis.pipelineSeries} stroke="var(--text-subtle)" className="org-home-spark" />
+                <div className="org-home-stat-foot">
+                  {formatCompactMoney(kpis.weightedForecast, kpis.currency)} weighted forecast
+                </div>
+              </>
+            ) : (
+              <div className="org-home-stat-foot">No sales projects</div>
+            )}
           </div>
           <div className="stat">
             <div className="stat-label">Open tickets</div>
             <div className="stat-row">
-              <div className="stat-value">28<span className="org-home-unit">open</span></div>
-              <span className="stat-delta stat-delta-up">94% SLA</span>
+              <div className="stat-value">
+                {kpis?.hasSupport ? kpis.openTickets : DASH}
+                {kpis?.hasSupport && <span className="org-home-unit">open</span>}
+              </div>
+              {kpis?.slaAttainmentPct != null && (
+                <span className={`stat-delta ${deltaClass(kpis.slaAttainmentPct >= SLA_TARGET_PCT)}`}>
+                  {formatPct(kpis.slaAttainmentPct)} SLA
+                </span>
+              )}
             </div>
-            <Sparkline points={PLACEHOLDER_TICKETS} stroke="var(--text-subtle)" className="org-home-spark" />
+            {kpis?.hasSupport ? (
+              <Sparkline points={kpis.ticketSeries} stroke="var(--text-subtle)" className="org-home-spark" />
+            ) : (
+              <div className="org-home-stat-foot">No support projects</div>
+            )}
           </div>
         </div>
       </section>

@@ -38,7 +38,7 @@ function daysBetween(a, b) {
 
 // F1.5-08 dispatch shell — typed dashboards keep their static widget set
 // for now; F2-04 customisation applies to the Engineering dashboard, which
-// has the placeholder-heavy widgets users most want to tweak.
+// has the widget set users most want to tweak.
 export function DashboardPage() {
   const { slug: orgSlug, projectSlug } = useParams();
   const [project, setProject] = useState(null);

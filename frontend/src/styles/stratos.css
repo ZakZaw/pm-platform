@@ -221,16 +221,6 @@
 .icon-badge-rose    { background: var(--rose-soft);    color: var(--rose); }
 .icon-badge-ai      { background: var(--ai-gradient-soft); color: var(--ai-text); }
 
-/* One quiet line flagging placeholder data (instead of a chip per tile) */
-.sample-note {
-  display: inline-flex; align-items: center; gap: var(--s-3);
-  font-size: var(--fs-sm); color: var(--text-muted);
-}
-.sample-note::before {
-  content: ""; width: 6px; height: 6px; border-radius: 999px;
-  background: var(--warning); flex-shrink: 0;
-}
-
 /* === AVATAR =============================================== */
 .avatar {
   display: inline-flex; align-items: center; justify-content: center;

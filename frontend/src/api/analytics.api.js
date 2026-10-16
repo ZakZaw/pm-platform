@@ -39,6 +39,21 @@ export const analyticsApi = {
   insight: (projectId) =>
     apiClient.get(`/projects/${projectId}/analytics/insight`).then((r) => r.data),
 
+  // Project home page. Returns { type, kpis: [{ label, value, sub, delta, deltaGood }],
+  //   health: { title, headline, detail, tone, highlights: [..] } } — tiles are
+  //   display-ready strings composed server-side per project type.
+  home: (projectId) =>
+    apiClient.get(`/projects/${projectId}/analytics/home`).then((r) => r.data),
+
+  // Personal /home dashboard for the signed-in user. Returns
+  //   { kpis: { completed30, completedDelta, avgCycleDays, avgCycleDeltaDays, streakDays,
+  //             velocity, velocityDelta, velocitySprints },
+  //     throughput: [{ weekStart, count }], throughputChangePct,
+  //     insight: { headline, detail, tone, highlights },
+  //     projects: [{ projectId, name, slug, key, type, orgSlug, openItems, openPoints,
+  //                  overdue, status, statusTone }] }.
+  myHome: () => apiClient.get('/users/me/home').then((r) => r.data),
+
   // ---- Per-type dashboard analytics (polish D) ----
   // Each returns one server-computed aggregate for that project type's
   // dashboard, replacing the client-side derivations the widgets used to do.

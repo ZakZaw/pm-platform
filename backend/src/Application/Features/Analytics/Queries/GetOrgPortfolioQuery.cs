@@ -24,6 +24,12 @@ public class GetOrgPortfolioQueryHandler(IAppDbContext db)
     // Cap the conflict list so an org with hundreds of shared members doesn't
     // return an unbounded payload; the worst-split people sort to the top.
     private const int MaxResourceConflicts = 15;
+    // Org home KPI trends: weekly points over this many complete weeks.
+    private const int TrendWeeks = 8;
+    private const int SlaWindowDays = 30;
+
+    private static readonly OrgKpisDto EmptyKpis = new(
+        null, false, 0, null, [], false, "USD", 0, 0, [], false, 0, null, []);
 
     private sealed class Signal
     {
@@ -52,10 +58,20 @@ public class GetOrgPortfolioQueryHandler(IAppDbContext db)
 
         if (projects.Count == 0)
             return Result.Success(new OrgPortfolioDto(
-                new PortfolioRollupDto(0, 0, 0, 0, []), [], []));
+                new PortfolioRollupDto(0, 0, 0, 0, []), [], [], EmptyKpis));
 
         var today = DateTime.UtcNow.Date;
         var now = DateTime.UtcNow;
+        // KPI trend window: TrendWeeks complete weeks plus the current partial one.
+        var trendStart = ThroughputCalculator.StartOfWeek(today).AddDays(-7 * TrendWeeks);
+        var velocitySeries = new List<double>();
+        double velocityPerWeek = 0;
+        double? velocityChange = null;
+        var pipelineItems = new List<OpenBacklogCalculator.Item>();
+        var weightedForecast = 0m;
+        string? pipelineCurrency = null;
+        var ticketItems = new List<OpenBacklogCalculator.Item>();
+        var resolvedForSla = new List<(DateTime, DateTime)>();
 
         var signals = projects.ToDictionary(p => p.Id, _ => new Signal());
         // Open-item load per (member, project) — the basis for resource conflicts.
@@ -88,16 +104,51 @@ public class GetOrgPortfolioQueryHandler(IAppDbContext db)
                 if (r.Status == DomainTaskStatus.Blocked) s.AtRisk++;
                 AddLoad(r.AssigneeId, r.ProjectId);
             }
+
+            // Org velocity — Done story points per week, dated by each task's
+            // most recent move to Done (re-opened-then-redone work counts once).
+            var done = await db.TaskStatusChanges
+                .Where(c => c.ToStatus == DomainTaskStatus.Done
+                            && c.CreatedAt >= trendStart
+                            && taskIds.Contains(c.Task.ProjectId)
+                            && c.Task.Status == DomainTaskStatus.Done)
+                .Select(c => new { c.TaskId, c.CreatedAt, c.Task.StoryPoints })
+                .ToListAsync(ct);
+            var weekly = ThroughputCalculator.WeeklySum(
+                    done.GroupBy(c => c.TaskId)
+                        .Select(g => (g.Max(c => c.CreatedAt), (double)(g.First().StoryPoints ?? 0))),
+                    now, TrendWeeks + 1)
+                .Select(w => w.Total)
+                .ToList();
+            // Drop the in-progress current week so a partial week doesn't drag the trend down.
+            velocitySeries = weekly.Take(TrendWeeks).ToList();
+            var (recent, previous) = TrendCalculator.TrailingWindows(velocitySeries, TrendWeeks / 2);
+            velocityPerWeek = recent ?? 0;
+            velocityChange = previous is { } prev ? TrendCalculator.PercentChange(velocityPerWeek, prev) : null;
         }
 
         // Sales — open Deals; headline is the open pipeline value.
         var salesIds = IdsOf(ProjectType.Sales);
         if (salesIds.Count > 0)
         {
-            var rows = await db.Deals
-                .Where(d => salesIds.Contains(d.ProjectId) && d.Status == DealStatus.Open)
-                .Select(d => new { d.ProjectId, d.OwnerId, d.ExpectedClose, d.Value, d.Currency })
+            // Open deals plus anything closed inside the trend window (for the
+            // reconstructed pipeline series).
+            var deals = await db.Deals
+                .Where(d => salesIds.Contains(d.ProjectId)
+                            && (d.Status == DealStatus.Open || d.ClosedAt >= trendStart))
+                .Select(d => new
+                {
+                    d.ProjectId, d.OwnerId, d.ExpectedClose, d.Value, d.Currency,
+                    d.Status, d.CreatedAt, d.ClosedAt, d.Probability,
+                })
                 .ToListAsync(ct);
+            pipelineItems = deals
+                .Select(d => new OpenBacklogCalculator.Item(
+                    d.CreatedAt, d.Status == DealStatus.Open ? null : d.ClosedAt ?? d.CreatedAt, d.Value))
+                .ToList();
+            var rows = deals.Where(d => d.Status == DealStatus.Open).ToList();
+            weightedForecast = SalesFunnelCalculator.WeightedForecast(rows.Select(d => (d.Value, d.Probability)));
+            pipelineCurrency = rows.Select(d => d.Currency).FirstOrDefault(c => !string.IsNullOrWhiteSpace(c));
             foreach (var r in rows)
             {
                 var s = signals[r.ProjectId];
@@ -113,12 +164,29 @@ public class GetOrgPortfolioQueryHandler(IAppDbContext db)
         var supportIds = IdsOf(ProjectType.Support);
         if (supportIds.Count > 0)
         {
-            var rows = await db.Tickets
+            // Open tickets plus anything resolved/closed inside the trend window.
+            var tickets = await db.Tickets
                 .Where(t => supportIds.Contains(t.ProjectId)
-                            && t.Status != TicketStatus.Resolved
-                            && t.Status != TicketStatus.Closed)
-                .Select(t => new { t.ProjectId, t.AssigneeId, t.SlaDueAt })
+                            && ((t.Status != TicketStatus.Resolved && t.Status != TicketStatus.Closed)
+                                || t.ResolvedAt >= trendStart
+                                || t.ClosedAt >= trendStart))
+                .Select(t => new
+                {
+                    t.ProjectId, t.AssigneeId, t.SlaDueAt, t.Status,
+                    t.OpenedAt, t.ResolvedAt, t.ClosedAt,
+                })
                 .ToListAsync(ct);
+            static bool TicketOpen(TicketStatus st) => st != TicketStatus.Resolved && st != TicketStatus.Closed;
+            ticketItems = tickets
+                .Select(t => new OpenBacklogCalculator.Item(
+                    t.OpenedAt, TicketOpen(t.Status) ? null : t.ResolvedAt ?? t.ClosedAt ?? t.OpenedAt, 1))
+                .ToList();
+            var slaCutoff = now.AddDays(-SlaWindowDays);
+            resolvedForSla = tickets
+                .Where(t => t.ResolvedAt is { } r && r >= slaCutoff)
+                .Select(t => (t.ResolvedAt!.Value, t.SlaDueAt))
+                .ToList();
+            var rows = tickets.Where(t => TicketOpen(t.Status)).ToList();
             foreach (var r in rows)
             {
                 var s = signals[r.ProjectId];
@@ -239,31 +307,32 @@ public class GetOrgPortfolioQueryHandler(IAppDbContext db)
                 .ToList();
         }
 
-        return Result.Success(new OrgPortfolioDto(rollup, projectDtos, conflicts));
+        // ---- Org home KPI strip ----
+        var kpis = new OrgKpisDto(
+            PortfolioHealth: (int)Math.Round(projectDtos.Average(p => p.Health)),
+            HasTaskProjects: taskIds.Count > 0,
+            VelocityPerWeek: velocityPerWeek,
+            VelocityChangePct: velocityChange,
+            VelocitySeries: velocitySeries,
+            HasSales: salesIds.Count > 0,
+            Currency: pipelineCurrency ?? "USD",
+            PipelineValue: salesIds.Sum(id => signals[id].Money),
+            WeightedForecast: weightedForecast,
+            PipelineSeries: OpenBacklogCalculator.Weekly(pipelineItems, now, TrendWeeks),
+            HasSupport: supportIds.Count > 0,
+            OpenTickets: supportIds.Sum(id => signals[id].Open),
+            SlaAttainmentPct: SlaAttainmentCalculator.AttainmentPct(resolvedForSla),
+            TicketSeries: OpenBacklogCalculator.Weekly(ticketItems, now, TrendWeeks).Select(v => (int)v).ToList());
+
+        return Result.Success(new OrgPortfolioDto(rollup, projectDtos, conflicts, kpis));
     }
 
     private static (string Label, string Value) Headline(ProjectType type, Signal s) => type switch
     {
-        ProjectType.Sales => ("Open pipeline", Money(s.Money, s.Currency ?? "USD")),
+        ProjectType.Sales => ("Open pipeline", DisplayFormat.Money(s.Money, s.Currency ?? "USD")),
         ProjectType.Support => ("Open tickets", s.Open.ToString()),
         ProjectType.Marketing => ("Open work", s.Open.ToString()),
         ProjectType.Operations => ("Open runs", s.Open.ToString()),
         _ => ("Open tasks", s.Open.ToString()),
     };
-
-    // Compact money for an exec rollup: $1.2M / $14k / $850.
-    private static string Money(decimal value, string currency)
-    {
-        var sym = currency switch
-        {
-            "USD" => "$", "EUR" => "€", "GBP" => "£", "JPY" => "¥",
-            _ => currency + " ",
-        };
-        return value switch
-        {
-            >= 1_000_000 => $"{sym}{value / 1_000_000m:0.#}M",
-            >= 1_000 => $"{sym}{value / 1_000m:0.#}k",
-            _ => $"{sym}{value:0}",
-        };
-    }
 }

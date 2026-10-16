@@ -141,6 +141,22 @@ public class ControllerAuthorizationCoverageTests
         Assert.True(anonymous.Count == 0, "Anonymous actions not in the allow-list: " + string.Join(", ", anonymous));
     }
 
+    [Theory]
+    [InlineData("UsersController", null)]
+    [InlineData("NotificationsController", null)]
+    [InlineData("ApiKeysController", null)]
+    [InlineData("OrgsController", "Create")]
+    [InlineData("InvitationsController", "Accept")]
+    public void AccountLevelEndpoints_RejectApiKeys(string controller, string? action)
+    {
+        var actions = Actions().Where(a => a.Controller.Name == controller && (action is null || a.Action.Name == action)).ToList();
+        Assert.NotEmpty(actions);
+        foreach (var (c, m) in actions)
+            Assert.True(
+                c.GetCustomAttribute<DenyApiKeyAttribute>() is not null || m.GetCustomAttribute<DenyApiKeyAttribute>() is not null,
+                $"{Key(c, m)} must carry [DenyApiKey]");
+    }
+
     [Fact]
     public void ProjectScopeAttributes_UseAKnownScope()
     {

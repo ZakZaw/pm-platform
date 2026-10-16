@@ -40,6 +40,7 @@ public class InvitationsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/invitations/{token}/accept")]
+    [DenyApiKey]
     [EnableRateLimiting(RateLimitPolicies.PublicLink)]
     [Authorize]
     public async Task<ActionResult<AcceptInvitationResultDto>> Accept(string token, CancellationToken ct)

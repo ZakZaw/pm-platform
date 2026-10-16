@@ -16,6 +16,7 @@ namespace Api.Controllers;
 /// </summary>
 [ApiController]
 [Authorize]
+[DenyApiKey]
 public class ApiKeysController(ISender mediator) : ControllerBase
 {
     [HttpGet("api/v1/orgs/{slug}/api-keys")]

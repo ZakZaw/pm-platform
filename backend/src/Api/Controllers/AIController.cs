@@ -162,6 +162,17 @@ public class AIController(ISender mediator) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
+    // F1.5-08 — org-level AI inbox: every suggestion across the caller's
+    // visible projects in the org, grouped by project type.
+    [HttpGet("api/v1/orgs/{slug}/ai/suggestions")]
+    [RequireOrgRole(OrgRole.Member)]
+    public async Task<ActionResult<OrgSuggestionInboxDto>> ListOrgSuggestions(
+        string slug, [FromQuery] bool includeActed = false, CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new ListOrgSuggestionsQuery(slug, includeActed), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
     [HttpPost("api/v1/projects/{projectId:guid}/ai/suggestions/sprint-health")]
     [RequireProjectRole(ProjectRole.Contributor)]
     public async Task<ActionResult<AISuggestionDto>> GenerateSprintHealth(

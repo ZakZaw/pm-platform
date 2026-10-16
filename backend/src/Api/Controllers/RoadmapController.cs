@@ -1,5 +1,6 @@
 using Api.Authorization;
 using Application.Common;
+using Application.Features.Roadmap;
 using Application.Features.Roadmap.Commands;
 using Application.Features.Roadmap.Queries;
 using Domain.Enums;
@@ -21,6 +22,19 @@ public class RoadmapController(ISender mediator, IOptions<FrontendSettings> fron
         Guid projectId, CancellationToken ct = default)
     {
         var result = await mediator.Send(new GetProjectRoadmapQuery(projectId), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    // F1.5-08 â€” type-aware timeline: one server-computed payload shaped by
+    // the project's type (engineering epics/sprints, sales deals by close
+    // quarter, support SLA deadlines per queue, marketing campaigns + assets,
+    // ops runs per workflow, generic tasks per list). Carries a `type` field.
+    [HttpGet("api/v1/projects/{projectId:guid}/roadmap/timeline")]
+    [RequireProjectRole(ProjectRole.Viewer)]
+    public async Task<ActionResult<ProjectTimelineDto>> Timeline(
+        Guid projectId, CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new GetProjectTimelineQuery(projectId), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 

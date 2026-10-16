@@ -14,6 +14,20 @@
   max-width: none;
 }
 
+/* F1.5-08 — type-aware variant. A tinted left rule keyed to the project
+   type's tone so a mixed inbox reads by type at a glance. */
+.ai-suggest.ai-suggest-tone {
+  --ai-suggest-tone: var(--text-muted);
+  box-shadow: var(--ai-glow), inset 3px 0 0 var(--ai-suggest-tone);
+}
+.ai-suggest-tone.is-info    { --ai-suggest-tone: var(--info); }
+.ai-suggest-tone.is-success { --ai-suggest-tone: var(--success); }
+.ai-suggest-tone.is-rose    { --ai-suggest-tone: var(--rose); }
+.ai-suggest-tone.is-amber   { --ai-suggest-tone: var(--amber); }
+.ai-suggest-tone.is-violet  { --ai-suggest-tone: var(--violet); }
+.ai-suggest-tone.is-teal    { --ai-suggest-tone: var(--teal); }
+.ai-suggest-tone.is-neutral { --ai-suggest-tone: var(--text-muted); }
+
 .ai-suggest__compact-row {
   align-items: center;
   gap: var(--s-5);

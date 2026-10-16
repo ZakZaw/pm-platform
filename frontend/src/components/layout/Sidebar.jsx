@@ -161,6 +161,12 @@ export function Sidebar() {
             </NavLink>
           )}
           {slug && (
+            <NavLink to={`/${slug}/ai-inbox`} className={navCls} title="AI Inbox">
+              <span className="nav-icon"><Sparkles size={14} aria-hidden="true" /></span>
+              <span>AI Inbox</span>
+            </NavLink>
+          )}
+          {slug && (
             <NavLink to={`/${slug}/chat`} className={navCls} title="Chat">
               <span className="nav-icon"><MessageSquare size={14} aria-hidden="true" /></span>
               <span>Chat</span>

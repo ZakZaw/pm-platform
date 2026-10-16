@@ -1,5 +1,7 @@
 /* AI Inbox — header is the stratos page-head; below are the filter
-   toolbar and a grid of AISuggestionCard items. */
+   toolbar and a grid of AISuggestionCard items. The list/row/badge and
+   reassignment styles live with the shared SuggestionListItem
+   (components/ai/SuggestionList.css) — the org inbox uses them too. */
 
 .ai-inbox {
   display: flex;
@@ -39,70 +41,4 @@
 
 .ai-inbox-empty {
   padding: var(--s-11) var(--s-8);
-}
-
-.ai-inbox-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr));
-  gap: var(--s-7);
-  align-items: start;
-}
-
-.ai-inbox-row {
-  display: flex;
-  min-width: 0;
-}
-/* Let the suggestion card fill its grid cell (the primitive caps itself
-   at a fixed max-width for stand-alone use). */
-.ai-inbox-row > .ai-suggest {
-  max-width: none;
-  width: 100%;
-}
-
-.ai-inbox-chip-label {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-2);
-}
-
-/* F2-13 — reassignment rows inside an AISuggestionCard body. */
-.reassign-block {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-5);
-  margin-top: var(--s-5);
-}
-
-.reassign-row {
-  display: grid;
-  grid-template-columns: minmax(120px, 1fr) minmax(160px, 1.4fr);
-  align-items: center;
-  gap: var(--s-2) var(--s-4);
-}
-
-.reassign-task-key {
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  color: var(--text-muted);
-  letter-spacing: var(--tracking-mono);
-}
-
-.reassign-task-title {
-  color: var(--text);
-  font-size: var(--fs-md);
-}
-
-.reassign-score {
-  grid-column: 2;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-muted);
-  font-size: var(--fs-xs);
-}
-.reassign-score:empty { display: none; }
-
-.reassign-select {
-  width: 100%;
 }

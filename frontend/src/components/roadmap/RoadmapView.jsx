@@ -101,11 +101,26 @@ export function RoadmapView({
   if (!data) return null;
 
   const { bars, points, emptyHint } = data;
-  const isEmpty = bars.length === 0 && points.length === 0;
+  const groups = data.groups ?? [];
+  const stats = data.stats ?? [];
+  const groupedCount = groups.reduce((n, g) => n + g.bars.length + g.points.length, 0);
+  const isEmpty = bars.length === 0 && points.length === 0 && groupedCount === 0;
   const canEdit = roleCanEdit && data.editable;
+  const flagged = groups.flatMap((g) =>
+    g.points.filter((p) => p.flagged).map((p) => ({ ...p, groupLabel: g.label })));
 
   return (
     <div className="roadmap-view" data-editable={canEdit ? 'true' : 'false'}>
+      {stats.length > 0 && (
+        <ul className="roadmap-stats" aria-label="Timeline summary">
+          {stats.map((s) => (
+            <li key={s.label} className={`roadmap-stat is-${s.tone}`}>
+              <span className="roadmap-stat-value">{s.value}</span>
+              <span className="roadmap-stat-label">{s.label}</span>
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="roadmap-view__axis">
         {layout.ticks.map((t) => (
           <span
@@ -134,8 +149,20 @@ export function RoadmapView({
         </div>
       ) : (
         <>
-          {emptyHint && bars.length + points.length > 0 && (
+          {emptyHint && (
             <p className="roadmap-view__hint">{emptyHint}</p>
+          )}
+          {groups.length > 0 && (
+            <ul className="roadmap-view__lanes">
+              {groups.map((g) => (
+                <GroupLane
+                  key={g.id}
+                  group={g}
+                  layout={layout}
+                  onPointClick={onPointClick}
+                />
+              ))}
+            </ul>
           )}
           {bars.length > 0 && (
             <div className="roadmap-view__lanes-wrap">
@@ -254,9 +281,89 @@ export function RoadmapView({
               </ul>
             </div>
           )}
+          {flagged.length > 0 && (
+            <div className="roadmap-attention">
+              <div className="roadmap-view__points-head">
+                <span className="roadmap-view__points-title">Needs attention</span>
+                <span className="muted">{flagged.length}</span>
+              </div>
+              <ul className="roadmap-view__points-legend">
+                {flagged.slice(0, 8).map((p) => (
+                  <li key={p.id}>
+                    <span
+                      className="roadmap-view__point-swatch"
+                      style={{ background: p.color }}
+                    />
+                    <span className="truncate">{p.label}</span>
+                    <span className="muted">{p.groupLabel} · {formatDate(p.at)}</span>
+                  </li>
+                ))}
+                {flagged.length > 8 && (
+                  <li className="muted">+{flagged.length - 8} more…</li>
+                )}
+              </ul>
+            </div>
+          )}
         </>
       )}
     </div>
+  );
+}
+
+// F1.5-08 — one lane per server-side group (deal stage, queue, campaign,
+// workflow, list, epic…). The lane's track overlays the group's bars (read-
+// only spans — quarters, campaigns, sprints) and its markers (deals, SLA
+// deadlines, assets, runs, tasks). Flagged markers get an attention ring.
+function GroupLane({ group, layout, onPointClick }) {
+  const segmented = group.bars.length > 1;
+  return (
+    <li className="roadmap-view__lane">
+      <span className="roadmap-view__lane-label">
+        <span className="truncate">{group.label}</span>
+        {group.sublabel && (
+          <span className="muted roadmap-view__lane-sub">{group.sublabel}</span>
+        )}
+      </span>
+      <span className="roadmap-view__track">
+        {layout.todayPct != null && (
+          <span
+            className="roadmap-view__track-today"
+            style={{ left: `${layout.todayPct}%` }}
+          />
+        )}
+        {group.bars.map((bar) => {
+          const placed = layout.placeBar(bar);
+          if (!placed) return null;
+          return (
+            <span
+              key={bar.id}
+              className={`roadmap-view__bar${segmented ? ' is-segment' : ''}`}
+              style={{ left: `${placed.left}%`, width: `${placed.width}%`, background: bar.color }}
+              title={`${bar.label} · ${formatDate(bar.start)} → ${formatDate(bar.end)}${bar.sublabel ? ` · ${bar.sublabel}` : ''}`}
+            >
+              <span className="roadmap-view__bar-label">
+                {segmented && bar.sublabel ? `${bar.label} · ${bar.sublabel}` : bar.label}
+              </span>
+            </span>
+          );
+        })}
+        {group.points.map((p) => {
+          const pct = layout.placePoint(p);
+          if (pct == null) return null;
+          return (
+            <button
+              type="button"
+              key={p.id}
+              className={`roadmap-view__point roadmap-view__point--${p.kind ?? 'milestone'}${p.flagged ? ' is-flagged' : ''}`}
+              style={{ left: `${pct}%`, background: p.color }}
+              title={`${p.label} · ${formatDate(p.at)}${p.sublabel ? ` · ${p.sublabel}` : ''}`}
+              onClick={() => onPointClick?.(p)}
+              disabled={!onPointClick}
+            />
+          );
+        })}
+      </span>
+    </li>
   );
 }
 

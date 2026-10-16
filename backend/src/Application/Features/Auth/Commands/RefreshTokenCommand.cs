@@ -61,6 +61,14 @@ public class RefreshTokenCommandHandler(
             FamilyId = stored.FamilyId,
         };
 
+        // Persist the successor *before* claiming the presented token. A
+        // concurrent reuse detection (or logout) revokes the family with one
+        // UPDATE; if the successor were inserted after our claim, an UPDATE
+        // landing between the two would miss it and the new token would
+        // outlive the revocation.
+        db.RefreshTokens.Add(replacement);
+        await db.SaveChangesAsync(ct);
+
         // Claim the presented token atomically; only one caller can win.
         var claimed = await db.RefreshTokens
             .Where(t => t.Id == stored.Id && t.RevokedAt == null)
@@ -68,11 +76,14 @@ public class RefreshTokenCommandHandler(
                 .SetProperty(t => t.RevokedAt, now)
                 .SetProperty(t => t.ReplacedByTokenId, replacement.Id), ct);
         if (claimed == 0)
+        {
+            // Lost the race (or the family was revoked meanwhile): the
+            // successor must never become usable.
+            await db.RefreshTokens.Where(t => t.Id == replacement.Id).ExecuteDeleteAsync(ct);
             return Result.Failure<AuthResponse>(AuthErrors.InvalidRefreshToken);
+        }
 
-        db.RefreshTokens.Add(replacement);
         var accessToken = jwt.GenerateAccessToken(stored.User);
-        await db.SaveChangesAsync(ct);
 
         return Result.Success(new AuthResponse(
             stored.User.Id,

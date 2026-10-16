@@ -2,6 +2,7 @@ using Application.Common;
 using Application.Interfaces;
 using Domain.Entities;
 using MediatR;
+using Application.Features.Attachments;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Features.Attachments.Commands;
@@ -45,6 +46,8 @@ public class UploadAttachmentCommandHandler(
         if (fileName.Length is < 1 or > 260)
             return Result.Failure<AttachmentDto>(AttachmentErrors.InvalidFileName);
         fileName = SanitizeFileName(fileName);
+        if (AttachmentFilePolicy.IsBlocked(fileName, request.ContentType))
+            return Result.Failure<AttachmentDto>(AttachmentErrors.BlockedType);
 
         var task = await db.Tasks
             .Where(t => t.Id == request.TaskId)
@@ -56,17 +59,20 @@ public class UploadAttachmentCommandHandler(
         // file name visible to the user via the entity column.
         var diskName = $"{Guid.NewGuid():N}-{fileName}";
         var contentType = NormalizeContentType(request.ContentType);
-        var stored = await fileStorage.SaveAsync(
+        // H3 - private storage: never reachable as a static file.
+        var stored = await fileStorage.SavePrivateAsync(
             request.Bytes, $"tasks/{task.Id:N}", diskName, ct);
 
+        var entityId = Guid.NewGuid();
         var entity = new Attachment
         {
+            Id = entityId,
             TaskId = task.Id,
             FileName = fileName,
             FileSize = request.Bytes.Length,
             ContentType = contentType,
             StorageKey = stored.StorageKey,
-            Url = stored.PublicUrl,
+            Url = AttachmentFilePolicy.DownloadUrl(entityId),
             UploadedByUserId = userId,
         };
         db.Attachments.Add(entity);

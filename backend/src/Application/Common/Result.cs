@@ -607,6 +607,9 @@ public static class AttachmentErrors
 
     public static readonly Error InvalidFileName =
         new("Attachment.InvalidFileName", "File name must be 1-260 characters.");
+
+    public static readonly Error BlockedType =
+        new("Attachment.BlockedType", "HTML, SVG, XML and script files can't be attached. Zip them first.");
 }
 
 public static class LabelErrors

@@ -8,6 +8,7 @@
 *.user
 *.lscache
 backend/src/Api/wwwroot/uploads/
+backend/src/Api/App_Data/
 
 # Frontend
 node_modules/

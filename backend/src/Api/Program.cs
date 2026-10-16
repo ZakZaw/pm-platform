@@ -172,10 +172,30 @@ app.UseSwaggerUI(c =>
 
 var uploadsRoot = Path.Combine(app.Environment.ContentRootPath, "wwwroot", "uploads");
 Directory.CreateDirectory(uploadsRoot);
+
+// H3 - task attachments are private (served only by the authorized
+// download endpoint). Attachments uploaded before that change still live
+// under wwwroot/uploads/tasks, so refuse to serve that folder statically.
+app.Use(async (ctx, next) =>
+{
+    if (ctx.Request.Path.StartsWithSegments("/uploads/tasks", StringComparison.OrdinalIgnoreCase))
+    {
+        ctx.Response.StatusCode = StatusCodes.Status404NotFound;
+        return;
+    }
+    await next();
+});
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(uploadsRoot),
-    RequestPath = "/uploads"
+    RequestPath = "/uploads",
+    // Public assets are avatars/logos only; never let a browser sniff them
+    // into something executable.
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+        ctx.Context.Response.Headers["Content-Security-Policy"] = "default-src 'none'; sandbox";
+    },
 });
 
 // F2-24 — per-key rate limiting with X-RateLimit-* headers, before auth

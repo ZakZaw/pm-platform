@@ -17,6 +17,17 @@ public class RefreshTokenCommandValidator : AbstractValidator<RefreshTokenComman
     }
 }
 
+/// <summary>
+/// Rotates a refresh token. M3:
+/// <list type="bullet">
+/// <item>Reuse detection - presenting a token that was already rotated
+/// revokes its whole family (the legitimate client and the thief both
+/// have to sign in again).</item>
+/// <item>No forking - the old token is claimed with a conditional update
+/// (<c>RevokedAt IS NULL</c>), so two parallel refreshes can't both mint
+/// a successor; the loser gets 401.</item>
+/// </list>
+/// </summary>
 public class RefreshTokenCommandHandler(
     IAppDbContext db,
     IJwtService jwt)
@@ -25,28 +36,42 @@ public class RefreshTokenCommandHandler(
     public async Task<Result<AuthResponse>> Handle(RefreshTokenCommand request, CancellationToken ct)
     {
         var incomingHash = jwt.HashRefreshToken(request.RefreshToken);
+        var now = DateTime.UtcNow;
 
         var stored = await db.RefreshTokens
             .Include(t => t.User)
             .FirstOrDefaultAsync(t => t.TokenHash == incomingHash, ct);
 
-        if (stored is null || !stored.IsActive)
-            return Result.Failure<AuthResponse>(AuthErrors.InvalidRefreshToken);
+        switch (RefreshTokenPolicy.Classify(stored, now))
+        {
+            case RefreshTokenState.Reused:
+                await RevokeFamilyAsync(db, stored!.FamilyId, now, ct);
+                return Result.Failure<AuthResponse>(AuthErrors.InvalidRefreshToken);
+            case RefreshTokenState.Unknown:
+            case RefreshTokenState.Inactive:
+                return Result.Failure<AuthResponse>(AuthErrors.InvalidRefreshToken);
+        }
 
         var (newPlain, newHash, newExpiresAt) = jwt.GenerateRefreshToken();
         var replacement = new RefreshToken
         {
-            UserId = stored.UserId,
+            UserId = stored!.UserId,
             TokenHash = newHash,
-            ExpiresAt = newExpiresAt
+            ExpiresAt = newExpiresAt,
+            FamilyId = stored.FamilyId,
         };
+
+        // Claim the presented token atomically; only one caller can win.
+        var claimed = await db.RefreshTokens
+            .Where(t => t.Id == stored.Id && t.RevokedAt == null)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(t => t.RevokedAt, now)
+                .SetProperty(t => t.ReplacedByTokenId, replacement.Id), ct);
+        if (claimed == 0)
+            return Result.Failure<AuthResponse>(AuthErrors.InvalidRefreshToken);
+
         db.RefreshTokens.Add(replacement);
-
-        stored.RevokedAt = DateTime.UtcNow;
-        stored.ReplacedByTokenId = replacement.Id;
-
         var accessToken = jwt.GenerateAccessToken(stored.User);
-
         await db.SaveChangesAsync(ct);
 
         return Result.Success(new AuthResponse(
@@ -59,4 +84,9 @@ public class RefreshTokenCommandHandler(
             DateTime.UtcNow.AddMinutes(15),
             newExpiresAt));
     }
+
+    internal static Task<int> RevokeFamilyAsync(IAppDbContext db, Guid familyId, DateTime now, CancellationToken ct) =>
+        db.RefreshTokens
+            .Where(t => t.FamilyId == familyId && t.RevokedAt == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.RevokedAt, now), ct);
 }

@@ -44,11 +44,15 @@ public class GetSalesAnalyticsQueryHandler(IAppDbContext db)
         var stageName = stages.ToDictionary(s => s.Id, s => s.Name);
 
         var openDeals = deals.Where(d => d.Status == DealStatus.Open).ToList();
-        var currency = openDeals.Select(d => d.Currency).FirstOrDefault(c => !string.IsNullOrWhiteSpace(c)) ?? "USD";
 
-        var openPipeline = openDeals.Sum(d => d.Value);
+        // M9 - report money in one currency; never add EUR to USD.
+        var (currency, otherCurrencies) = SalesFunnelCalculator.ReportingCurrency(
+            deals.Where(d => d.Status != DealStatus.Lost).Select(d => ((string?)d.Currency, d.Value)));
+        bool InCurrency(string? c) => SalesFunnelCalculator.IsIn(c, currency);
+
+        var openPipeline = openDeals.Where(d => InCurrency(d.Currency)).Sum(d => d.Value);
         var weighted = SalesFunnelCalculator.WeightedForecast(
-            openDeals.Select(d => (d.Value, d.Probability)));
+            openDeals.Where(d => InCurrency(d.Currency)).Select(d => (d.Value, d.Probability)));
 
         // Funnel over the non-terminal stages only — terminal Won/Lost are the
         // outcome, not a step the open pipeline flows through.
@@ -57,7 +61,8 @@ public class GetSalesAnalyticsQueryHandler(IAppDbContext db)
             .Select(s =>
             {
                 var inStage = openDeals.Where(d => d.StageId == s.Id).ToList();
-                return new SalesFunnelCalculator.StageInput(s.Name, inStage.Count, inStage.Sum(d => d.Value));
+                return new SalesFunnelCalculator.StageInput(
+                    s.Name, inStage.Count, inStage.Where(d => InCurrency(d.Currency)).Sum(d => d.Value));
             })
             .ToList();
         var funnel = SalesFunnelCalculator.Funnel(funnelInputs)
@@ -85,11 +90,12 @@ public class GetSalesAnalyticsQueryHandler(IAppDbContext db)
             currency,
             openPipeline,
             weighted,
-            won.Sum(d => d.Value),
+            won.Where(d => InCurrency(d.Currency)).Sum(d => d.Value),
             won.Count,
             lostCount,
             SalesFunnelCalculator.WinRatePct(won.Count, lostCount),
             funnel,
-            atRisk));
+            atRisk,
+            otherCurrencies));
     }
 }

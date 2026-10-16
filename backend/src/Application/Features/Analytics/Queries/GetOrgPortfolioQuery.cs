@@ -142,19 +142,33 @@ public class GetOrgPortfolioQueryHandler(IAppDbContext db)
                     d.Status, d.CreatedAt, d.ClosedAt, d.Probability,
                 })
                 .ToListAsync(ct);
+            var rows = deals.Where(d => d.Status == DealStatus.Open).ToList();
+
+            // M9 - money is only summed within one currency: the org rollup
+            // uses the org-wide reporting currency, each project card its own.
+            var orgCurrency = SalesFunnelCalculator.ReportingCurrency(
+                rows.Select(d => ((string?)d.Currency, d.Value))).Currency;
+            var projectCurrency = rows
+                .GroupBy(d => d.ProjectId)
+                .ToDictionary(g => g.Key, g => SalesFunnelCalculator.ReportingCurrency(
+                    g.Select(d => ((string?)d.Currency, d.Value))).Currency);
+
             pipelineItems = deals
+                .Where(d => SalesFunnelCalculator.IsIn(d.Currency, orgCurrency))
                 .Select(d => new OpenBacklogCalculator.Item(
                     d.CreatedAt, d.Status == DealStatus.Open ? null : d.ClosedAt ?? d.CreatedAt, d.Value))
                 .ToList();
-            var rows = deals.Where(d => d.Status == DealStatus.Open).ToList();
-            weightedForecast = SalesFunnelCalculator.WeightedForecast(rows.Select(d => (d.Value, d.Probability)));
-            pipelineCurrency = rows.Select(d => d.Currency).FirstOrDefault(c => !string.IsNullOrWhiteSpace(c));
+            weightedForecast = SalesFunnelCalculator.WeightedForecast(rows
+                .Where(d => SalesFunnelCalculator.IsIn(d.Currency, orgCurrency))
+                .Select(d => (d.Value, d.Probability)));
+            pipelineCurrency = rows.Count > 0 ? orgCurrency : null;
             foreach (var r in rows)
             {
                 var s = signals[r.ProjectId];
                 s.Open++;
-                s.Money += r.Value;
-                s.Currency ??= r.Currency;
+                var cur = projectCurrency[r.ProjectId];
+                if (SalesFunnelCalculator.IsIn(r.Currency, cur)) s.Money += r.Value;
+                s.Currency ??= cur;
                 if (r.ExpectedClose is { } close && close.Date < today) s.Overdue++;
                 AddLoad(r.OwnerId, r.ProjectId);
             }

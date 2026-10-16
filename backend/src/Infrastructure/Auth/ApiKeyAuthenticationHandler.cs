@@ -67,6 +67,15 @@ public class ApiKeyAuthenticationHandler(
         if (!key.IsActive(now))
             return AuthenticateResult.Fail("API key is revoked or expired.");
 
+        // H2 - a key acts as its creator; once the creator has left the org
+        // the key must stop working too.
+        var creatorActive = await db.OrgMemberships.AnyAsync(m =>
+            m.OrganizationId == key.OrganizationId
+            && m.UserId == key.CreatedByUserId
+            && m.RemovedAt == null);
+        if (!creatorActive)
+            return AuthenticateResult.Fail("API key owner is no longer a member of the organization.");
+
         // Throttle the last-used write to at most once a minute so a busy
         // key doesn't generate a DB write per request.
         if (key.LastUsedAt is null || key.LastUsedAt < now.AddMinutes(-1))

@@ -11,7 +11,12 @@ import './Table.css';
 //   </Table>
 export function Table({ className = '', children }) {
   const classes = ['table', className].filter(Boolean).join(' ');
-  return <table className={classes}>{children}</table>;
+  // The wrapper carries the card chrome and scrolls sideways on narrow screens.
+  return (
+    <div className="table-wrap">
+      <table className={classes}>{children}</table>
+    </div>
+  );
 }
 
 Table.Head = function TableHead({ children }) {

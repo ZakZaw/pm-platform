@@ -22,6 +22,7 @@ import {
 import { meetingsApi } from '@/api/meetings.api';
 import { useAuthStore } from '@/store/authStore';
 import { describeRecurrence } from '@/components/meetings/recurrence';
+import { MeetingLoadError } from '@/components/meetings/MeetingLoadError';
 import { useNow } from '@/hooks/useNow';
 import '@/components/meetings/meetings.css';
 
@@ -73,18 +74,24 @@ export function MeetingDetailPage() {
     setAgendaDraft(m.agendaMd ?? '');
   }, [meetingId]);
 
+  const [loadError, setLoadError] = useState(null);
+  const [attempt, setAttempt] = useState(0);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
+      setLoadError(null);
       try {
         await refresh();
+      } catch (err) {
+        if (!cancelled) setLoadError(err);
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
     return () => { cancelled = true; };
-  }, [refresh]);
+  }, [refresh, attempt]);
 
   async function rsvp(response) {
     if (!meeting) return;
@@ -162,7 +169,13 @@ export function MeetingDetailPage() {
     return <div className="main-inner"><Skeleton height={400} radius="lg" /></div>;
   }
   if (!meeting || !start || !end) {
-    return <div className="main-inner"><p className="muted">Meeting not found.</p></div>;
+    return (
+      <MeetingLoadError
+        error={loadError}
+        meetingsPath={`/${orgSlug}/projects/${projectSlug}/meetings`}
+        onRetry={() => setAttempt((n) => n + 1)}
+      />
+    );
   }
 
   const recurrenceLabel = describeRecurrence(meeting.recurrenceRule);

@@ -26,7 +26,7 @@ public record UpdateTaskCommand(
     string? PrUrl,
     string[]? AcceptanceCriteria) : IRequest<Result<TaskDto>>;
 
-public class UpdateTaskCommandHandler(IAppDbContext db)
+public class UpdateTaskCommandHandler(IAppDbContext db, IProjectEventBus events)
     : IRequestHandler<UpdateTaskCommand, Result<TaskDto>>
 {
     public async Task<Result<TaskDto>> Handle(UpdateTaskCommand request, CancellationToken ct)
@@ -133,6 +133,7 @@ public class UpdateTaskCommandHandler(IAppDbContext db)
         }
 
         await db.SaveChangesAsync(ct);
+        await events.PublishAsync(task.ProjectId, ProjectEvents.BoardChanged, new { taskId = task.Id }, ct);
         return Result.Success(CreateTaskCommandHandler.ToDto(task, project.Key));
     }
 }

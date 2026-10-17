@@ -22,7 +22,7 @@ public record CreateTaskCommand(
     string[]? AcceptanceCriteria,
     Guid? TaskListId = null) : IRequest<Result<TaskDto>>;
 
-public class CreateTaskCommandHandler(IAppDbContext db, ICurrentUser currentUser)
+public class CreateTaskCommandHandler(IAppDbContext db, ICurrentUser currentUser, IProjectEventBus events)
     : IRequestHandler<CreateTaskCommand, Result<TaskDto>>
 {
     public async Task<Result<TaskDto>> Handle(CreateTaskCommand request, CancellationToken ct)
@@ -124,6 +124,10 @@ public class CreateTaskCommandHandler(IAppDbContext db, ICurrentUser currentUser
         };
         db.Tasks.Add(task);
         await db.SaveChangesAsync(ct);
+
+        // Teammates' open boards/backlogs refetch on this; without it a new
+        // task only appeared for them after a reload.
+        await events.PublishAsync(project.Id, ProjectEvents.BoardChanged, new { taskId = task.Id }, ct);
 
         return Result.Success(ToDto(task, project.Key));
     }

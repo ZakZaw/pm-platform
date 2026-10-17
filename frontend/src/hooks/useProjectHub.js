@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { useAuthStore } from '@/store/authStore';
 
+const COALESCE_MS = 200;
+
 /**
  * Opens (and reuses) a SignalR connection to /hubs/project, joins the
  * given project group, and invokes `onEvent(name, payload)` for every
@@ -46,10 +48,18 @@ export function useProjectHub(projectId, onEvent) {
       .configureLogging(LogLevel.Warning)
       .build();
 
-    // Any event the server emits — we don't enumerate them client-side,
-    // since the page handler decides what to do per name.
-    connection.on('board.changed', (payload) => handlerRef.current?.('board.changed', payload));
-    connection.on('sprint.changed', (payload) => handlerRef.current?.('sprint.changed', payload));
+    // Bulk edits push one event per task. Pages only refetch on these, so
+    // coalesce a burst into one trailing call per event name (last payload wins).
+    const timers = new Map();
+    const deliver = (name) => (payload) => {
+      clearTimeout(timers.get(name));
+      timers.set(name, setTimeout(() => {
+        timers.delete(name);
+        if (!cancelled) handlerRef.current?.(name, payload);
+      }, COALESCE_MS));
+    };
+    connection.on('board.changed', deliver('board.changed'));
+    connection.on('sprint.changed', deliver('sprint.changed'));
 
     connection.onreconnecting(() => {
       if (!cancelled) setStatus('reconnecting');
@@ -83,6 +93,7 @@ export function useProjectHub(projectId, onEvent) {
 
     return () => {
       cancelled = true;
+      timers.forEach(clearTimeout);
       if (connection.state !== HubConnectionState.Disconnected) {
         connection.invoke('LeaveProject', projectId).catch(() => {});
         connection.stop().catch(() => {});

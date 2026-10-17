@@ -13,6 +13,7 @@ import { Track } from 'livekit-client';
 import { Video } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
 import { meetingsApi } from '@/api/meetings.api';
+import { useIsPhone } from '@/hooks/useMediaQuery';
 import './meetingRoom.css';
 
 /**
@@ -25,6 +26,7 @@ import './meetingRoom.css';
 export function GuestMeetingPage() {
   const { token } = useParams();
   const navigate = useNavigate();
+  const isPhone = useIsPhone();
 
   const [displayName, setDisplayName] = useState('');
   const [join, setJoin] = useState(null);
@@ -74,7 +76,7 @@ export function GuestMeetingPage() {
           >
             <GuestGrid />
             <RoomAudioRenderer />
-            <ControlBar variation="verbose" />
+            <ControlBar variation={isPhone ? 'minimal' : 'verbose'} />
           </LiveKitRoom>
         </div>
       </div>

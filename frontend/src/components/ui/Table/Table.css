@@ -1,12 +1,15 @@
-﻿.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--fs-md);
+﻿.table-wrap {
   background: var(--surface);
   border: 1px solid var(--card-border);
   border-radius: var(--r-xl);
   box-shadow: var(--shadow-card);
-  overflow: hidden;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-md);
 }
 
 .table-head {

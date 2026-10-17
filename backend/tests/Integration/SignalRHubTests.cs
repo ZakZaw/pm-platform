@@ -73,6 +73,37 @@ public class SignalRHubTests(ApiFixture fx)
     }
 
     [Fact]
+    public async Task Creating_editing_and_deleting_a_task_push_board_changed_to_the_project()
+    {
+        var w = await SeededWorld.GetAsync(Api);
+        await using var member = Connect(w.OwnerA.AccessToken);
+
+        var events = System.Threading.Channels.Channel.CreateUnbounded<Guid>();
+        member.On<JsonElement>("board.changed", e => events.Writer.TryWrite(e.GetProperty("taskId").GetGuid()));
+        await member.StartAsync();
+        await member.InvokeAsync("JoinProject", w.Engineering.Id.ToString());
+
+        async Task ExpectEventFor(Guid taskId)
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            while (await events.Reader.ReadAsync(timeout.Token) != taskId) { }
+        }
+
+        var task = await Api.CreateTaskAsync(w.OwnerA, w.Engineering.Id, "Live create probe");
+        var taskId = task.GetProperty("id").GetGuid();
+        await ExpectEventFor(taskId);
+
+        await TestApi.ExpectAsync(
+            await w.OwnerA.Client.PatchAsJsonAsync($"/api/v1/tasks/{taskId}", new { title = "Live edit probe" }),
+            HttpStatusCode.OK);
+        await ExpectEventFor(taskId);
+
+        var deleted = await w.OwnerA.Client.DeleteAsync($"/api/v1/tasks/{taskId}");
+        Assert.True(deleted.IsSuccessStatusCode, $"delete returned {(int)deleted.StatusCode}");
+        await ExpectEventFor(taskId);
+    }
+
+    [Fact]
     public async Task Anonymous_connections_are_refused()
     {
         await using var anon = Connect(accessToken: "");

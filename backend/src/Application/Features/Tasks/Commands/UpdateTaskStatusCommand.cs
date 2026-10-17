@@ -45,7 +45,7 @@ public class UpdateTaskStatusCommandHandler(
 
         await db.SaveChangesAsync(ct);
 
-        await events.PublishAsync(task.ProjectId, "board.changed", new { taskId = task.Id }, ct);
+        await events.PublishAsync(task.ProjectId, ProjectEvents.BoardChanged, new { taskId = task.Id }, ct);
         var projectKey = await db.Projects
             .Where(p => p.Id == task.ProjectId)
             .Select(p => p.Key)

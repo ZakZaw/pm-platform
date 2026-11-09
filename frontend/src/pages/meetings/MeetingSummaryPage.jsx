@@ -5,6 +5,7 @@ import { Button, Skeleton, useToast } from '@/components/ui';
 import { meetingsApi } from '@/api/meetings.api';
 import { projectsApi } from '@/api/projects.api';
 import { TaskReflection } from '@/components/meetings/TaskReflection';
+import { MeetingLoadError } from '@/components/meetings/MeetingLoadError';
 import '@/components/meetings/meetings.css';
 import '@/components/meetings/meetingSummary.css';
 
@@ -46,22 +47,30 @@ export function MeetingSummaryPage() {
     return m;
   }, [meetingId]);
 
+  const [loadError, setLoadError] = useState(null);
+  const [attempt, setAttempt] = useState(0);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
+      setLoadError(null);
       try {
         const m = await refresh();
         if (!cancelled && m) {
-          const ms = await projectsApi.listMembers(m.projectId);
+          // Members only feed the assignee pickers; a failure here
+          // shouldn't hide a summary that loaded fine.
+          const ms = await projectsApi.listMembers(m.projectId).catch(() => []);
           if (!cancelled) setMembers(ms);
         }
+      } catch (err) {
+        if (!cancelled) setLoadError(err);
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
     return () => { cancelled = true; };
-  }, [meetingId, refresh]);
+  }, [meetingId, refresh, attempt]);
 
   async function reprocess() {
     setReprocessing(true);
@@ -113,7 +122,13 @@ export function MeetingSummaryPage() {
     return <div className="main-inner"><Skeleton height={400} radius="lg" /></div>;
   }
   if (!meeting || !summary) {
-    return <div className="main-inner"><p className="muted">Meeting not found.</p></div>;
+    return (
+      <MeetingLoadError
+        error={loadError}
+        meetingsPath={`/${orgSlug}/projects/${projectSlug}/meetings`}
+        onRetry={() => setAttempt((n) => n + 1)}
+      />
+    );
   }
 
   const pendingCount = actionItems.filter((i) => !i.acceptedAt && !i.dismissedAt).length;

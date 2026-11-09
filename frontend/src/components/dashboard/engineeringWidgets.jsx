@@ -2,10 +2,9 @@
 // id, default grid size, and how to render itself given the shared `ctx`
 // that DashboardPage builds once per data fetch. Widgets stay declarative —
 // no data-fetching here, EXCEPT for the activity feed widget which fetches
-// its own paged history (see ActivityFeedWidget below).
+// its own paged history (ActivityFeedWidget in widgets/EngineeringWidgetParts).
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Avatar, Icon, Skeleton } from '@/components/ui';
+import { Icon } from '@/components/ui';
 import {
   BurndownChart,
   EpicProgressBars,
@@ -13,8 +12,14 @@ import {
   VelocityChart,
   WorkloadHeatmap,
 } from '@/components/charts';
-import { activityApi } from '@/api/activity.api';
-import { describeActivity, relativeTime } from '@/utils/activityFormat';
+import {
+  ActivityFeedWidget,
+  ChartFrame,
+  Empty,
+  KpiCard,
+  Tone,
+  WidgetHead,
+} from './widgets/EngineeringWidgetParts';
 import './DashboardWidget.css';
 
 // Short header label for the weekly-insight tone read-out.
@@ -28,67 +33,6 @@ const INSIGHT_TONE_LABEL = {
 // KPI ratios render an em dash when the backend can't compute them yet (null)
 // rather than a misleading zero.
 const pct = (v) => (v == null ? '—' : `${Math.round(v)}%`);
-
-// Dot + coloured text status read-out (no capsule).
-function Tone({ tone = 'neutral', children }) {
-  return <span className={`dash-tone dash-tone-${tone}`}>{children}</span>;
-}
-
-// Measures its own box so SVG charts render at the widget's real size (the
-// canvas is resizable) while the chart components keep their explicit
-// width/height props.
-function ChartFrame({ minHeight = 120, children }) {
-  const ref = useRef(null);
-  const [size, setSize] = useState(null);
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return undefined;
-    const measure = () => {
-      const r = el.getBoundingClientRect();
-      const next = { w: Math.floor(r.width), h: Math.max(minHeight, Math.floor(r.height)) };
-      setSize((cur) => (cur && cur.w === next.w && cur.h === next.h ? cur : next));
-    };
-    measure();
-    if (typeof ResizeObserver === 'undefined') return undefined;
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [minHeight]);
-  return (
-    <div ref={ref} className="dash-chart">
-      {size && size.w > 0 && children(size.w, size.h)}
-    </div>
-  );
-}
-
-function KpiCard({ label, value, delta, tone = 'info' }) {
-  return (
-    <div className="dash-kpi">
-      <div className="dash-kpi-label">{label}</div>
-      <div className="dash-kpi-row">
-        <div className="dash-kpi-value">{value}</div>
-        {delta && (
-          <span className={`stat-delta stat-delta-${tone === 'warning' || tone === 'danger' ? 'down' : 'up'}`}>
-            {delta}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function WidgetHead({ title, children }) {
-  return (
-    <header className="dash-card-head">
-      <h3 className="dash-card-title">{title}</h3>
-      {children}
-    </header>
-  );
-}
-
-function Empty({ children }) {
-  return <p className="dash-empty">{children}</p>;
-}
 
 // Widget registry. Order here drives the default layout. Adding a new
 // widget = new entry; the canvas + add-widget picker pick it up automatically.
@@ -332,51 +276,3 @@ export const ENGINEERING_WIDGETS = [
     ),
   },
 ];
-
-// ---------- Activity feed (F2-04 wire-up) ----------
-
-function ActivityFeedWidget({ project, refreshKey }) {
-  const [entries, setEntries] = useState(null);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (!project?.id) return undefined;
-    let cancelled = false;
-    setError(null);
-    activityApi
-      .listForProject(project.id, { limit: 12 })
-      .then((r) => { if (!cancelled) setEntries(r.entries ?? []); })
-      .catch((err) => { if (!cancelled) setError(err.response?.data?.detail ?? 'Could not load activity.'); });
-    return () => { cancelled = true; };
-  }, [project?.id, refreshKey]);
-
-  return (
-    <div className="dash-card">
-      <WidgetHead title="Recent activity" />
-      <div className="dash-activity">
-        {entries === null && !error && <Skeleton height={14} width="60%" />}
-        {error && <Empty>{error}</Empty>}
-        {entries && entries.length === 0 && !error && <Empty>No activity in this project yet.</Empty>}
-        {entries && entries.map((entry) => (
-          <ActivityRow key={entry.id} entry={entry} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ActivityRow({ entry }) {
-  const actorName = entry.actor?.fullName ?? 'Someone';
-  return (
-    <div className="dash-activity-row">
-      <Avatar name={actorName} src={entry.actor?.avatarUrl} size="sm" />
-      <span className="dash-activity-text">
-        <span className="dash-activity-actor">{actorName}</span>{' '}
-        <span className="muted">{describeActivity(entry)}</span>
-      </span>
-      <span className="dash-activity-time" title={new Date(entry.createdAt).toLocaleString()}>
-        {relativeTime(entry.createdAt)}
-      </span>
-    </div>
-  );
-}

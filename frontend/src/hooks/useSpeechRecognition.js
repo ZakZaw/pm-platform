@@ -22,7 +22,11 @@ import { useEffect, useRef, useState } from 'react';
  *   });
  */
 export function useSpeechRecognition({ onFinalSegment } = {}) {
-  const [supported, setSupported] = useState(false);
+  // Feature support can't change during the page's lifetime: detect once.
+  const [supported] = useState(
+    () => typeof window !== 'undefined'
+      && !!(window.SpeechRecognition ?? window.webkitSpeechRecognition),
+  );
   const [listening, setListening] = useState(false);
   const [error, setError] = useState(null);
   const recognitionRef = useRef(null);
@@ -30,13 +34,6 @@ export function useSpeechRecognition({ onFinalSegment } = {}) {
   const callbackRef = useRef(onFinalSegment);
 
   useEffect(() => { callbackRef.current = onFinalSegment; }, [onFinalSegment]);
-
-  useEffect(() => {
-    const Impl = typeof window !== 'undefined'
-      ? (window.SpeechRecognition ?? window.webkitSpeechRecognition)
-      : null;
-    setSupported(!!Impl);
-  }, []);
 
   function start() {
     const Impl = typeof window !== 'undefined'

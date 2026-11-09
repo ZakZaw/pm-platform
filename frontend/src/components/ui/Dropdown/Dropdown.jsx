@@ -52,14 +52,16 @@ export function Dropdown({ trigger, children, align = 'start', className = '' })
     };
   }, [open]);
 
-  // Reset placement to the requested align/side every time the menu opens —
-  // otherwise a previous flip can stick when the trigger moves back into
-  // a position where the original alignment fits.
+  // Reset placement to the requested align/side while closed (adjusted during
+  // render), so the next open starts from it — otherwise a previous flip can
+  // stick when the trigger moves back into a position where the original
+  // alignment fits.
+  if (!open && (placement.align !== align || placement.side !== 'bottom')) {
+    setPlacement({ align, side: 'bottom' });
+  }
+
   useLayoutEffect(() => {
-    if (!open) {
-      setPlacement({ align, side: 'bottom' });
-      return;
-    }
+    if (!open) return;
     const menu = menuRef.current;
     const root = rootRef.current;
     if (!menu || !root) return;

@@ -16,13 +16,17 @@ export function LabelsSection({ taskId, projectId, initial = [], onChange }) {
   const [newTone, setNewTone] = useState('neutral');
   const wrapRef = useRef(null);
 
-  // Fetch attached labels once on mount — TaskDto doesn't carry the join.
+  // When the task changes, adopt the caller's labels (if any) during render.
+  const [labelsTaskId, setLabelsTaskId] = useState(taskId);
+  if (taskId !== labelsTaskId) {
+    setLabelsTaskId(taskId);
+    if (taskId && initial && initial.length > 0) setLabels(initial);
+  }
+
+  // Otherwise fetch attached labels — TaskDto doesn't carry the join.
   useEffect(() => {
     if (!taskId) return undefined;
-    if (initial && initial.length > 0) {
-      setLabels(initial);
-      return undefined;
-    }
+    if (initial && initial.length > 0) return undefined;
     let cancelled = false;
     labelsApi.listForTask(taskId)
       .then((rows) => { if (!cancelled) setLabels(rows); })
@@ -43,9 +47,11 @@ export function LabelsSection({ taskId, projectId, initial = [], onChange }) {
     }
   }, [projectId, toast]);
 
-  useEffect(() => {
-    if (pickerOpen) loadAvailable();
-  }, [pickerOpen, loadAvailable]);
+  function togglePicker() {
+    const next = !pickerOpen;
+    setPickerOpen(next);
+    if (next) loadAvailable();
+  }
 
   // Close picker on outside click.
   useEffect(() => {
@@ -122,7 +128,7 @@ export function LabelsSection({ taskId, projectId, initial = [], onChange }) {
         <button
           type="button"
           className="labels-section-add"
-          onClick={() => setPickerOpen((v) => !v)}
+          onClick={togglePicker}
         >
           <Plus size={12} aria-hidden="true" /> Add label
         </button>

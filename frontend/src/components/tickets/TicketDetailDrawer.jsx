@@ -48,11 +48,19 @@ export function TicketDetailDrawer({ ticketId, onClose, onChanged }) {
     setData(d);
   }
 
+  // Clear the previous ticket during render when switching to another one.
+  const [loadedFor, setLoadedFor] = useState(ticketId);
+  if (ticketId !== loadedFor) {
+    setLoadedFor(ticketId);
+    if (ticketId) {
+      setData(null);
+      setError(null);
+    }
+  }
+
   useEffect(() => {
     if (!ticketId) return;
     let cancelled = false;
-    setData(null);
-    setError(null);
     supportApi.getTicket(ticketId)
       .then((d) => { if (!cancelled) setData(d); })
       .catch((err) => {

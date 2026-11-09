@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { listsApi } from '@/api/lists.api';
 import { useOrgMembers } from '@/hooks/useOrgMembers';
 import { useParams } from 'react-router-dom';
-import { DashboardWidget, MetricRow, ProgressBar, StackedBar, SEGMENT_TOKENS } from '../DashboardWidget';
+import { DashboardWidget, MetricRow, ProgressBar, StackedBar } from '../DashboardWidget';
+import { SEGMENT_TOKENS } from '../segmentTokens';
 
 function useView(projectId) {
   const [view, setView] = useState(null);

@@ -51,20 +51,29 @@ export function QuickCreateTaskModal() {
   const [epics, setEpics] = useState([]);
   const [sprints, setSprints] = useState([]);
 
+  // Blank the form during render each time the modal opens.
+  const [wasOpen, setWasOpen] = useState(false);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) {
+      setError(null);
+      setTitle('');
+      setDescription('');
+      setPriority('Medium');
+      setStoryPoints('');
+      setDueDate('');
+      setEpicId('');
+      setSprintId('');
+      setAssigneeId(null);
+      setReviewerId(null);
+      setAcceptance('');
+      setMoreOpen(false);
+    }
+  }
+
+  // Load the pickable projects while open.
   useEffect(() => {
     if (!open) return;
-    setError(null);
-    setTitle('');
-    setDescription('');
-    setPriority('Medium');
-    setStoryPoints('');
-    setDueDate('');
-    setEpicId('');
-    setSprintId('');
-    setAssigneeId(null);
-    setReviewerId(null);
-    setAcceptance('');
-    setMoreOpen(false);
     usersApi
       .personalProject()
       .then((p) => setPersonalProject(p))
@@ -109,13 +118,27 @@ export function QuickCreateTaskModal() {
     projectId === PERSONAL_VALUE ? personalProject?.id : projectId;
   const isPersonal = chosen?.isPersonal ?? projectId === PERSONAL_VALUE;
 
-  // Pull epics + sprints when a non-personal project is chosen.
-  useEffect(() => {
+  // When the chosen project changes (adjusted during render): reset the
+  // cross-project picks, and drop the epic/sprint lists if there is no
+  // non-personal project to list them for.
+  const [pickScope, setPickScope] = useState({ id: undefined, personal: undefined });
+  if (pickScope.id !== resolvedProjectId || pickScope.personal !== isPersonal) {
+    setPickScope({ id: resolvedProjectId, personal: isPersonal });
+    if (pickScope.id !== resolvedProjectId) {
+      setEpicId('');
+      setSprintId('');
+      setAssigneeId(null);
+      setReviewerId(null);
+    }
     if (!resolvedProjectId || isPersonal) {
       setEpics([]);
       setSprints([]);
-      return undefined;
     }
+  }
+
+  // Pull epics + sprints when a non-personal project is chosen.
+  useEffect(() => {
+    if (!resolvedProjectId || isPersonal) return undefined;
     let cancelled = false;
     Promise.all([
       epicsApi.listForProject(resolvedProjectId).catch(() => []),
@@ -129,14 +152,6 @@ export function QuickCreateTaskModal() {
       cancelled = true;
     };
   }, [resolvedProjectId, isPersonal]);
-
-  // Reset cross-project picks when the project changes.
-  useEffect(() => {
-    setEpicId('');
-    setSprintId('');
-    setAssigneeId(null);
-    setReviewerId(null);
-  }, [resolvedProjectId]);
 
   if (!open) return null;
 

@@ -22,17 +22,26 @@ function formatExpiry(dt) {
   });
 }
 
+const EMPTY_DRAFT = {
+  password: '',
+  expiresAt: '',
+  hideInternalLabels: false,
+  hideAssignees: false,
+};
+
 export function ShareLinkModal({ open, projectId, onClose }) {
   const toast = useToast();
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [draft, setDraft] = useState({
-    password: '',
-    expiresAt: '',
-    hideInternalLabels: false,
-    hideAssignees: false,
-  });
+  const [draft, setDraft] = useState(EMPTY_DRAFT);
+
+  // Clear the create form during render each time the modal opens.
+  const [wasOpen, setWasOpen] = useState(false);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) setDraft(EMPTY_DRAFT);
+  }
 
   const reload = useCallback(async () => {
     if (!projectId) return;
@@ -51,14 +60,8 @@ export function ShareLinkModal({ open, projectId, onClose }) {
   }, [projectId, toast]);
 
   useEffect(() => {
-    if (!open) return;
-    setDraft({
-      password: '',
-      expiresAt: '',
-      hideInternalLabels: false,
-      hideAssignees: false,
-    });
-    reload();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch on open; reload() flips the loading flag
+    if (open) reload();
   }, [open, reload]);
 
   async function createLink() {
@@ -119,15 +122,15 @@ export function ShareLinkModal({ open, projectId, onClose }) {
         <h3 id="share-modal-title" className="modal-title">Share roadmap</h3>
       </ModalHeader>
       <ModalBody>
-        <p className="muted share-modal__intro">
+        <p className="muted share-modal-intro">
           Read-only links you can send to stakeholders outside the platform.
           The roadmap stays live — changes show up the next time anyone
           opens the link.
         </p>
 
-        <div className="share-modal__create">
+        <div className="share-modal-create">
           <div className="eyebrow">New link</div>
-          <div className="row gap-4 share-modal__row">
+          <div className="row gap-4 share-modal-row">
             <label className="col gap-1 fill">
               <span className="muted">Password (optional)</span>
               <input
@@ -149,7 +152,7 @@ export function ShareLinkModal({ open, projectId, onClose }) {
               />
             </label>
           </div>
-          <div className="row gap-4 share-modal__toggles">
+          <div className="row gap-4 share-modal-toggles">
             <label className="row gap-2">
               <input
                 type="checkbox"
@@ -169,14 +172,14 @@ export function ShareLinkModal({ open, projectId, onClose }) {
               <span>Hide assignee names</span>
             </label>
           </div>
-          <div className="row share-modal__create-actions">
+          <div className="row share-modal-create-actions">
             <Button variant="primary" size="sm" onClick={createLink} disabled={creating}>
               {creating ? 'Creating…' : 'Generate link'}
             </Button>
           </div>
         </div>
 
-        <div className="share-modal__gap" />
+        <div className="share-modal-gap" />
 
         <div className="eyebrow">Existing links</div>
         {loading ? (
@@ -187,27 +190,27 @@ export function ShareLinkModal({ open, projectId, onClose }) {
         ) : links.length === 0 ? (
           <p className="muted">No share links yet.</p>
         ) : (
-          <ul className="share-modal__list">
+          <ul className="share-modal-list">
             {links.map((l) => {
               const revoked = !!l.revokedAt;
               const expired = l.expiresAt && new Date(l.expiresAt) < new Date();
               return (
                 <li
                   key={l.id}
-                  className={`share-modal__row ${revoked || expired ? 'is-disabled' : ''}`}
+                  className={`share-modal-row ${revoked || expired ? 'is-disabled' : ''}`}
                 >
-                  <div className="col gap-1 fill share-modal__link-info">
-                    <div className="row gap-2 share-modal__url">
+                  <div className="col gap-1 fill share-modal-link-info">
+                    <div className="row gap-2 share-modal-url">
                       <code className="mono truncate" title={l.url}>{l.url}</code>
                       {l.hasPassword && (
-                        <span className="share-modal__flag">Password</span>
+                        <span className="share-modal-flag">Password</span>
                       )}
-                      {revoked && <span className="share-modal__flag is-danger">Revoked</span>}
+                      {revoked && <span className="share-modal-flag is-danger">Revoked</span>}
                       {!revoked && expired && (
-                        <span className="share-modal__flag is-warning">Expired</span>
+                        <span className="share-modal-flag is-warning">Expired</span>
                       )}
                     </div>
-                    <div className="muted share-modal__meta">
+                    <div className="muted share-modal-meta">
                       Created by {l.createdByName ?? '—'} ·{' '}
                       {l.expiresAt ? `Expires ${formatExpiry(l.expiresAt)}` : 'No expiry'}
                       {l.hideInternalLabels ? ' · labels hidden' : ''}

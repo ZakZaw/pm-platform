@@ -101,6 +101,7 @@ export function ProjectListPage() {
     }
   }, [project, filter, sort, toast]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch on filter/sort change; reloadTasks() stores the rows
   useEffect(() => { reloadTasks(); }, [reloadTasks]);
 
   // Persist column prefs whenever they change.
@@ -624,7 +625,12 @@ function TaskRow({ task, visible, selected, onToggleSelect, onUpdate, epics, spr
 
 function EditableText({ value, placeholder, onCommit }) {
   const [local, setLocal] = useState(value);
-  useEffect(() => { setLocal(value); }, [value]);
+  // Adopt a new server value during render (no effect round-trip).
+  const [prevValue, setPrevValue] = useState(value);
+  if (value !== prevValue) {
+    setPrevValue(value);
+    setLocal(value);
+  }
   return (
     <input
       type="text"
@@ -643,7 +649,12 @@ function EditableText({ value, placeholder, onCommit }) {
 
 function EditableNumber({ value, min, onCommit }) {
   const [local, setLocal] = useState(value);
-  useEffect(() => { setLocal(value); }, [value]);
+  // Adopt a new server value during render (no effect round-trip).
+  const [prevValue, setPrevValue] = useState(value);
+  if (value !== prevValue) {
+    setPrevValue(value);
+    setLocal(value);
+  }
   return (
     <input
       type="number"
@@ -665,9 +676,12 @@ function BulkActionModal({ op, count, members, onClose, onConfirm }) {
   const [reason, setReason] = useState('');
   const [assigneeId, setAssigneeId] = useState('');
 
-  useEffect(() => {
+  // Reset the form during render whenever a new bulk op is chosen.
+  const [prevOp, setPrevOp] = useState(null);
+  if (op !== prevOp) {
+    setPrevOp(op);
     if (op) { setStatus('ToDo'); setReason(''); setAssigneeId(''); }
-  }, [op]);
+  }
 
   if (!op) return null;
   const needsReason = op === 'status' && (status === 'Blocked' || status === 'WontDo');

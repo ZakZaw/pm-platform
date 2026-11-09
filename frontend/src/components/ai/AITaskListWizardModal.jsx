@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Check, Edit3, RefreshCw, Sparkles, Trash2 } from 'lucide-react';
 import {
   AIChip,
@@ -45,9 +45,13 @@ export function AITaskListWizardModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  // Re-seed the epic picker during render whenever the modal opens or the
+  // caller's preselected epic changes.
+  const [prevSeed, setPrevSeed] = useState({ open: false, initialEpicId });
+  if (open !== prevSeed.open || initialEpicId !== prevSeed.initialEpicId) {
+    setPrevSeed({ open, initialEpicId });
     if (open) setEpicId(initialEpicId ?? '');
-  }, [open, initialEpicId]);
+  }
 
   function reset() {
     setDescription('');

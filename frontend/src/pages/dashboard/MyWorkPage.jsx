@@ -15,6 +15,7 @@ import { myWorkApi } from '@/api/myWork.api';
 import { operationsApi } from '@/api/operations.api';
 import { TaskDetailDrawer } from '@/components/tasks/TaskDetailDrawer';
 import { findProjectType } from '@/constants/projectTypes';
+import { useNow } from '@/hooks/useNow';
 import './MyWorkPage.css';
 
 const ALL = '__all__';
@@ -76,6 +77,7 @@ export function MyWorkPage() {
   const [projectFilter, setProjectFilter] = useState(ALL);
   const [sprintFilter, setSprintFilter] = useState(ALL);
   const [opened, setOpened] = useState(null);
+  const now = useNow();
 
   useEffect(() => {
     let cancelled = false;
@@ -121,9 +123,17 @@ export function MyWorkPage() {
     setOperationsRuns(runs);
   }, [projectFilter, sprintFilter]);
 
+  // Changing a filter re-enters the loading state during render; the effect
+  // below only fetches.
+  const filterKey = `${projectFilter}|${sprintFilter}`;
+  const [loadingFor, setLoadingFor] = useState(filterKey);
+  if (filterKey !== loadingFor) {
+    setLoadingFor(filterKey);
+    setLoading(true);
+  }
+
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     (async () => {
       try {
         await refresh();
@@ -158,7 +168,6 @@ export function MyWorkPage() {
   // Bucket items by due date, oldest first within each section.
   const sectioned = useMemo(() => {
     const buckets = { overdue: [], today: [], week: [], later: [] };
-    const now = Date.now();
     for (const item of items) {
       buckets[dueBucket(item, now)].push(item);
     }
@@ -170,7 +179,7 @@ export function MyWorkPage() {
       });
     }
     return buckets;
-  }, [items]);
+  }, [items, now]);
 
   const projectCount = useMemo(
     () => new Set(items.map((i) => i.projectId).filter(Boolean)).size,

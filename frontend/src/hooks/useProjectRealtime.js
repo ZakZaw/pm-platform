@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import * as signalR from '@microsoft/signalr';
 import { useAuthStore } from '@/store/authStore';
 
@@ -16,7 +16,11 @@ export function useProjectRealtime(projectId, handlers) {
   // Store handlers in a ref so consumers can pass inline objects without
   // tearing down the connection on every render.
   const handlersRef = useRef(handlers);
-  handlersRef.current = handlers;
+  // Refresh after every commit (not during render). Declared before the
+  // connection effect so the first run binds the latest handler names.
+  useLayoutEffect(() => {
+    handlersRef.current = handlers;
+  });
 
   useEffect(() => {
     if (!projectId || !accessToken) return undefined;

@@ -21,17 +21,21 @@ import { useAuthStore } from '@/store/authStore';
  */
 export function useProjectHub(projectId, onEvent) {
   const handlerRef = useRef(onEvent);
-  const [status, setStatus] = useState('idle');
+  const [status, setStatus] = useState(projectId ? 'connecting' : 'idle');
+
+  // A new project id means a new connection: reset the status during render.
+  const [statusFor, setStatusFor] = useState(projectId);
+  if (projectId !== statusFor) {
+    setStatusFor(projectId);
+    setStatus(projectId ? 'connecting' : 'idle');
+  }
 
   useEffect(() => {
     handlerRef.current = onEvent;
   }, [onEvent]);
 
   useEffect(() => {
-    if (!projectId) {
-      setStatus('idle');
-      return undefined;
-    }
+    if (!projectId) return undefined;
 
     let cancelled = false;
     const connection = new HubConnectionBuilder()
@@ -60,7 +64,6 @@ export function useProjectHub(projectId, onEvent) {
       if (!cancelled) setStatus('failed');
     });
 
-    setStatus('connecting');
     (async () => {
       try {
         await connection.start();

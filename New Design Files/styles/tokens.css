@@ -202,6 +202,27 @@
   --mkt-channel-event-bg: hsl(262 80% 96%);
   --mkt-channel-other:    hsl(230 12% 54%);
   --mkt-channel-other-bg: hsl(230 25% 95%);
+  /* === IDENTITY PALETTES (avatar initials + project-type icon badges) ===
+     Light: pale tint + deep fg. Dark: dark tint + light fg (like -soft).
+     --av-N maps to .avatar-c(N-1). */
+  --av-1-bg: hsl(217 80% 88%);  --av-1-fg: hsl(217 80% 30%);
+  --av-2-bg: hsl(160 60% 86%);  --av-2-fg: hsl(160 60% 28%);
+  --av-3-bg: hsl(35 90% 86%);   --av-3-fg: hsl(35 80% 30%);
+  --av-4-bg: hsl(264 70% 90%);  --av-4-fg: hsl(264 60% 38%);
+  --av-5-bg: hsl(338 75% 90%);  --av-5-fg: hsl(338 60% 38%);
+  --av-6-bg: hsl(178 60% 86%);  --av-6-fg: hsl(178 60% 26%);
+  --av-7-bg: hsl(195 80% 88%);  --av-7-fg: hsl(195 70% 28%);
+  --av-8-bg: hsl(28 88% 88%);   --av-8-fg: hsl(28 70% 32%);
+
+  --proj-engineering-bg: hsl(217 80% 92%);  --proj-engineering-fg: hsl(217 80% 38%);
+  --proj-sales-bg:       hsl(160 60% 90%);  --proj-sales-fg:       hsl(160 60% 28%);
+  --proj-support-bg:     hsl(338 75% 92%);  --proj-support-fg:     hsl(338 60% 40%);
+  --proj-marketing-bg:   hsl(35 90% 90%);   --proj-marketing-fg:   hsl(35 80% 35%);
+  --proj-operations-bg:  hsl(264 70% 92%);  --proj-operations-fg:  hsl(264 60% 40%);
+  --proj-generic-bg:     hsl(220 12% 92%);  --proj-generic-fg:     hsl(220 12% 35%);
+
+  /* Sidebar AI-pulse dot halo */
+  --ai-pulse-ring: hsl(264 80% 60% / 0.18);
 }
 
 [data-theme="dark"] {
@@ -299,6 +320,23 @@
   --mkt-channel-event-bg: hsl(262 45% 17%);
   --mkt-channel-other:    hsl(230 10% 60%);
   --mkt-channel-other-bg: hsl(232 18% 17%);
+  --av-1-bg: hsl(217 50% 22%);  --av-1-fg: hsl(217 85% 80%);
+  --av-2-bg: hsl(160 40% 18%);  --av-2-fg: hsl(160 60% 70%);
+  --av-3-bg: hsl(35 50% 18%);   --av-3-fg: hsl(35 90% 72%);
+  --av-4-bg: hsl(264 40% 24%);  --av-4-fg: hsl(264 85% 82%);
+  --av-5-bg: hsl(338 40% 22%);  --av-5-fg: hsl(338 85% 80%);
+  --av-6-bg: hsl(178 40% 17%);  --av-6-fg: hsl(178 60% 68%);
+  --av-7-bg: hsl(195 50% 19%);  --av-7-fg: hsl(195 80% 72%);
+  --av-8-bg: hsl(28 50% 19%);   --av-8-fg: hsl(28 90% 74%);
+
+  --proj-engineering-bg: hsl(217 50% 19%);  --proj-engineering-fg: hsl(217 85% 74%);
+  --proj-sales-bg:       hsl(160 40% 15%);  --proj-sales-fg:       hsl(160 55% 58%);
+  --proj-support-bg:     hsl(338 40% 19%);  --proj-support-fg:     hsl(338 80% 74%);
+  --proj-marketing-bg:   hsl(35 50% 15%);   --proj-marketing-fg:   hsl(35 90% 64%);
+  --proj-operations-bg:  hsl(264 40% 21%);  --proj-operations-fg:  hsl(264 80% 78%);
+  --proj-generic-bg:     hsl(220 14% 21%);  --proj-generic-fg:     hsl(220 14% 72%);
+
+  --ai-pulse-ring: hsl(264 85% 70% / 0.28);
 }
 
 /* === DENSITY MODES =========================================== */

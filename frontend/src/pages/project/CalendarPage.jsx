@@ -147,6 +147,7 @@ function TaskCalendarView({ project }) {
     }
   }, [project, range, toast]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch for the visible range; reload() flips the loading flag
   useEffect(() => { reload(); }, [reload]);
 
   // For each cell ymd, the tasks due that day and the sprint covering it

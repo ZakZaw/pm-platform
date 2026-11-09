@@ -12,15 +12,17 @@ export function TaskDetailDrawer({ taskId, projectId, onClose, onChanged }) {
   const [task, setTask] = useState(null);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (!taskId) {
-      setTask(null);
-      setError(null);
-      return undefined;
-    }
-    let cancelled = false;
+  // Clear the previous task during render when the id changes.
+  const [loadedFor, setLoadedFor] = useState(taskId);
+  if (taskId !== loadedFor) {
+    setLoadedFor(taskId);
     setTask(null);
     setError(null);
+  }
+
+  useEffect(() => {
+    if (!taskId) return undefined;
+    let cancelled = false;
     tasksApi.get(taskId)
       .then((t) => { if (!cancelled) setTask(t); })
       .catch((err) => {

@@ -15,29 +15,30 @@ async function fetchAll(orgSlug) {
  * this; it intentionally doesn't paginate — at 100 members per org the
  * picker switches to a search input rather than a second page.
  */
+function stateFor(orgSlug) {
+  return orgSlug && cache.has(orgSlug)
+    ? { members: cache.get(orgSlug), loading: false }
+    : { members: [], loading: Boolean(orgSlug) };
+}
+
 export function useOrgMembers(orgSlug) {
-  const [state, setState] = useState(() =>
-    orgSlug && cache.has(orgSlug)
-      ? { members: cache.get(orgSlug), loading: false }
-      : { members: [], loading: Boolean(orgSlug) },
-  );
+  const [state, setState] = useState(() => stateFor(orgSlug));
+
+  // Switching orgs: reset to the cached list (or loading) during render.
+  const [stateSlug, setStateSlug] = useState(orgSlug);
+  if (orgSlug !== stateSlug) {
+    setStateSlug(orgSlug);
+    setState(stateFor(orgSlug));
+  }
 
   useEffect(() => {
-    if (!orgSlug) {
-      setState({ members: [], loading: false });
-      return undefined;
-    }
-    if (cache.has(orgSlug)) {
-      setState({ members: cache.get(orgSlug), loading: false });
-      return undefined;
-    }
+    if (!orgSlug) return undefined;
     let cancelled = false;
-    let promise = inflight.get(orgSlug);
+    let promise = cache.has(orgSlug) ? Promise.resolve(cache.get(orgSlug)) : inflight.get(orgSlug);
     if (!promise) {
       promise = fetchAll(orgSlug);
       inflight.set(orgSlug, promise);
     }
-    setState({ members: [], loading: true });
     promise
       .then((list) => {
         cache.set(orgSlug, list);

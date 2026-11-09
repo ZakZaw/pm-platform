@@ -93,10 +93,10 @@ export function RoadmapView({
   }, [roleCanEdit, data, onResize]);
 
   if (loading) {
-    return <div className="roadmap-view roadmap-view--loading">Loading…</div>;
+    return <div className="roadmap-view roadmap-view-loading">Loading…</div>;
   }
   if (error) {
-    return <p className="roadmap-view__error">{error}</p>;
+    return <p className="roadmap-view-error">{error}</p>;
   }
   if (!data) return null;
 
@@ -121,11 +121,11 @@ export function RoadmapView({
           ))}
         </ul>
       )}
-      <div className="roadmap-view__axis">
+      <div className="roadmap-view-axis">
         {layout.ticks.map((t) => (
           <span
             key={t.at}
-            className="roadmap-view__tick"
+            className="roadmap-view-tick"
             style={{ left: `${t.pct}%` }}
           >
             {t.label}
@@ -133,7 +133,7 @@ export function RoadmapView({
         ))}
         {layout.todayPct != null && (
           <span
-            className="roadmap-view__today"
+            className="roadmap-view-today"
             style={{ left: `${layout.todayPct}%` }}
             aria-label="Today"
           >
@@ -143,17 +143,17 @@ export function RoadmapView({
       </div>
 
       {isEmpty ? (
-        <div className="roadmap-view__empty">
+        <div className="roadmap-view-empty">
           <Icon name="calendar" size={20} color="var(--text-muted)" />
-          <p className="roadmap-view__empty-text">{emptyHint ?? 'No timeline data yet.'}</p>
+          <p className="roadmap-view-empty-text">{emptyHint ?? 'No timeline data yet.'}</p>
         </div>
       ) : (
         <>
           {emptyHint && (
-            <p className="roadmap-view__hint">{emptyHint}</p>
+            <p className="roadmap-view-hint">{emptyHint}</p>
           )}
           {groups.length > 0 && (
-            <ul className="roadmap-view__lanes">
+            <ul className="roadmap-view-lanes">
               {groups.map((g) => (
                 <GroupLane
                   key={g.id}
@@ -165,14 +165,14 @@ export function RoadmapView({
             </ul>
           )}
           {bars.length > 0 && (
-            <div className="roadmap-view__lanes-wrap">
+            <div className="roadmap-view-lanes-wrap">
               <DependencyArrows
                 bars={bars}
                 dependencies={data.dependencies ?? []}
                 layout={layout}
                 previewShift={previewShift}
               />
-              <ul className="roadmap-view__lanes">
+              <ul className="roadmap-view-lanes">
               {bars.map((bar) => {
                 const shown = previewShift?.barId === bar.id
                   ? { ...bar, start: previewShift.start, end: previewShift.end }
@@ -180,15 +180,15 @@ export function RoadmapView({
                 const placed = layout.placeBar(shown);
                 if (!placed) return null;
                 return (
-                  <li key={bar.id} className="roadmap-view__lane">
-                    <span className="roadmap-view__lane-label">
+                  <li key={bar.id} className="roadmap-view-lane">
+                    <span className="roadmap-view-lane-label">
                       {bar.label}
                       {bar.sublabel && (
-                        <span className="muted roadmap-view__lane-sub">{bar.sublabel}</span>
+                        <span className="muted roadmap-view-lane-sub">{bar.sublabel}</span>
                       )}
                     </span>
                     <span
-                      className="roadmap-view__track"
+                      className="roadmap-view-track"
                       ref={(el) => {
                         if (el) trackRefs.current.set(bar.id, el);
                         else trackRefs.current.delete(bar.id);
@@ -196,12 +196,12 @@ export function RoadmapView({
                     >
                       {layout.todayPct != null && (
                         <span
-                          className="roadmap-view__track-today"
+                          className="roadmap-view-track-today"
                           style={{ left: `${layout.todayPct}%` }}
                         />
                       )}
                       <span
-                        className="roadmap-view__bar"
+                        className="roadmap-view-bar"
                         data-bar-id={bar.id}
                         style={{
                           left: `${placed.left}%`,
@@ -212,16 +212,16 @@ export function RoadmapView({
                       >
                         {canEdit && (
                           <span
-                            className="roadmap-view__handle roadmap-view__handle--start"
+                            className="roadmap-view-handle roadmap-view-handle-start"
                             onPointerDown={(e) => handlePointerDown(e, bar, 'start')}
                             aria-label={`Drag to change ${bar.label} start`}
                             role="slider"
                           />
                         )}
-                        <span className="roadmap-view__bar-label">{bar.label}</span>
+                        <span className="roadmap-view-bar-label">{bar.label}</span>
                         {canEdit && (
                           <span
-                            className="roadmap-view__handle roadmap-view__handle--end"
+                            className="roadmap-view-handle roadmap-view-handle-end"
                             onPointerDown={(e) => handlePointerDown(e, bar, 'end')}
                             aria-label={`Drag to change ${bar.label} end`}
                             role="slider"
@@ -236,15 +236,15 @@ export function RoadmapView({
             </div>
           )}
           {points.length > 0 && (
-            <div className="roadmap-view__points-area">
-              <div className="roadmap-view__points-head">
-                <span className="roadmap-view__points-title">Markers</span>
+            <div className="roadmap-view-points-area">
+              <div className="roadmap-view-points-head">
+                <span className="roadmap-view-points-title">Markers</span>
                 <span className="muted">{points.length}</span>
               </div>
-              <div className="roadmap-view__points-track">
+              <div className="roadmap-view-points-track">
                 {layout.todayPct != null && (
                   <span
-                    className="roadmap-view__track-today"
+                    className="roadmap-view-track-today"
                     style={{ left: `${layout.todayPct}%` }}
                   />
                 )}
@@ -255,7 +255,7 @@ export function RoadmapView({
                     <button
                       type="button"
                       key={p.id}
-                      className={`roadmap-view__point roadmap-view__point--${p.kind ?? 'milestone'}`}
+                      className={`roadmap-view-point roadmap-view-point-${p.kind ?? 'milestone'}`}
                       style={{ left: `${pct}%`, background: p.color }}
                       title={`${p.label} · ${formatDate(p.at)}${p.sublabel ? ` · ${p.sublabel}` : ''}`}
                       onClick={() => onPointClick?.(p)}
@@ -264,11 +264,11 @@ export function RoadmapView({
                   );
                 })}
               </div>
-              <ul className="roadmap-view__points-legend">
+              <ul className="roadmap-view-points-legend">
                 {points.slice(0, 8).map((p) => (
                   <li key={p.id}>
                     <span
-                      className="roadmap-view__point-swatch"
+                      className="roadmap-view-point-swatch"
                       style={{ background: p.color }}
                     />
                     <span className="truncate">{p.label}</span>
@@ -283,15 +283,15 @@ export function RoadmapView({
           )}
           {flagged.length > 0 && (
             <div className="roadmap-attention">
-              <div className="roadmap-view__points-head">
-                <span className="roadmap-view__points-title">Needs attention</span>
+              <div className="roadmap-view-points-head">
+                <span className="roadmap-view-points-title">Needs attention</span>
                 <span className="muted">{flagged.length}</span>
               </div>
-              <ul className="roadmap-view__points-legend">
+              <ul className="roadmap-view-points-legend">
                 {flagged.slice(0, 8).map((p) => (
                   <li key={p.id}>
                     <span
-                      className="roadmap-view__point-swatch"
+                      className="roadmap-view-point-swatch"
                       style={{ background: p.color }}
                     />
                     <span className="truncate">{p.label}</span>
@@ -317,17 +317,17 @@ export function RoadmapView({
 function GroupLane({ group, layout, onPointClick }) {
   const segmented = group.bars.length > 1;
   return (
-    <li className="roadmap-view__lane">
-      <span className="roadmap-view__lane-label">
+    <li className="roadmap-view-lane">
+      <span className="roadmap-view-lane-label">
         <span className="truncate">{group.label}</span>
         {group.sublabel && (
-          <span className="muted roadmap-view__lane-sub">{group.sublabel}</span>
+          <span className="muted roadmap-view-lane-sub">{group.sublabel}</span>
         )}
       </span>
-      <span className="roadmap-view__track">
+      <span className="roadmap-view-track">
         {layout.todayPct != null && (
           <span
-            className="roadmap-view__track-today"
+            className="roadmap-view-track-today"
             style={{ left: `${layout.todayPct}%` }}
           />
         )}
@@ -337,11 +337,11 @@ function GroupLane({ group, layout, onPointClick }) {
           return (
             <span
               key={bar.id}
-              className={`roadmap-view__bar${segmented ? ' is-segment' : ''}`}
+              className={`roadmap-view-bar${segmented ? ' is-segment' : ''}`}
               style={{ left: `${placed.left}%`, width: `${placed.width}%`, background: bar.color }}
               title={`${bar.label} · ${formatDate(bar.start)} → ${formatDate(bar.end)}${bar.sublabel ? ` · ${bar.sublabel}` : ''}`}
             >
-              <span className="roadmap-view__bar-label">
+              <span className="roadmap-view-bar-label">
                 {segmented && bar.sublabel ? `${bar.label} · ${bar.sublabel}` : bar.label}
               </span>
             </span>
@@ -354,7 +354,7 @@ function GroupLane({ group, layout, onPointClick }) {
             <button
               type="button"
               key={p.id}
-              className={`roadmap-view__point roadmap-view__point--${p.kind ?? 'milestone'}${p.flagged ? ' is-flagged' : ''}`}
+              className={`roadmap-view-point roadmap-view-point-${p.kind ?? 'milestone'}${p.flagged ? ' is-flagged' : ''}`}
               style={{ left: `${pct}%`, background: p.color }}
               title={`${p.label} · ${formatDate(p.at)}${p.sublabel ? ` · ${p.sublabel}` : ''}`}
               onClick={() => onPointClick?.(p)}
@@ -416,7 +416,7 @@ function DependencyArrows({ bars, dependencies, layout, previewShift }) {
 
   return (
     <svg
-      className="roadmap-view__deps"
+      className="roadmap-view-deps"
       viewBox="0 0 100 100"
       preserveAspectRatio="none"
       aria-hidden="true"

@@ -152,7 +152,6 @@ export function Icon({ name, size = 14, color, strokeWidth = 2, className, ...re
   const Cmp = REGISTRY[name];
   if (!Cmp) {
     if (import.meta.env?.DEV) {
-      // eslint-disable-next-line no-console
       console.warn(`[Icon] unknown icon name "${name}" — add it to Icon.jsx REGISTRY.`);
     }
     return <svg width={size} height={size} aria-hidden="true" />;

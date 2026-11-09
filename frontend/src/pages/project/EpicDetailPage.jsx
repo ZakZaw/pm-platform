@@ -95,12 +95,14 @@ export function EpicDetailPage() {
     return () => { cancelled = true; };
   }, [orgSlug, projectSlug, refresh]);
 
-  useEffect(() => {
-    if (epic) {
-      setTitleDraft(epic.title);
-      setDescDraft(epic.description ?? '');
-    }
-  }, [epic?.id, epic?.title, epic?.description]);
+  // Resync the edit buffers during render when the epic's fields change.
+  const [draftsFrom, setDraftsFrom] = useState(null);
+  if (epic && (epic.id !== draftsFrom?.id || epic.title !== draftsFrom?.title
+      || epic.description !== draftsFrom?.description)) {
+    setDraftsFrom({ id: epic.id, title: epic.title, description: epic.description });
+    setTitleDraft(epic.title);
+    setDescDraft(epic.description ?? '');
+  }
 
   async function patch(body, errMsg = 'Could not save change.') {
     try {

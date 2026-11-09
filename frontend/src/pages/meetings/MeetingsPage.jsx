@@ -11,6 +11,7 @@ import { meetingsApi } from '@/api/meetings.api';
 import { useAuthStore } from '@/store/authStore';
 import { describeRecurrence } from '@/components/meetings/recurrence';
 import { InstantMeetingModal } from '@/components/meetings/InstantMeetingModal';
+import { useNow } from '@/hooks/useNow';
 import '@/components/meetings/meetings.css';
 
 const TYPE_LABELS = {
@@ -45,6 +46,7 @@ export function MeetingsPage() {
   const { slug: orgSlug, projectSlug } = useParams();
   const navigate = useNavigate();
   const me = useAuthStore((s) => s.user);
+  const now = useNow();
 
   const [project, setProject] = useState(null);
   const [members, setMembers] = useState([]);
@@ -81,12 +83,10 @@ export function MeetingsPage() {
   }, [orgSlug, projectSlug, scope]);
 
   const upcomingByScope = useMemo(() => {
-    const now = Date.now();
     return scope === 'upcoming'
       ? meetings.filter((m) => new Date(m.scheduledAt).getTime() > now - 60 * 60 * 1000)
       : meetings;
-  }, [scope, meetings]);
-  const renderedNow = useMemo(() => Date.now(), [meetings]);
+  }, [scope, meetings, now]);
 
   if (loading && !project) {
     return <div className="main-inner"><Skeleton height={400} radius="lg" /></div>;
@@ -163,7 +163,7 @@ export function MeetingsPage() {
         <div className="card mtg-list">
           {upcomingByScope.map((m) => {
             const start = new Date(m.scheduledAt);
-            const isPast = start.getTime() + m.durationMinutes * 60_000 < renderedNow;
+            const isPast = start.getTime() + m.durationMinutes * 60_000 < now;
             const recurrenceLabel = describeRecurrence(m.recurrenceRule);
             const statusLabel = STATUS_LABELS[m.status];
             return (

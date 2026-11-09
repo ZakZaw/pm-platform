@@ -13,7 +13,8 @@ import { sprintsApi } from '@/api/sprints.api';
 import { dashboardApi } from '@/api/dashboard.api';
 import { analyticsApi } from '@/api/analytics.api';
 import { widgetsForType } from '@/components/dashboard/dashboardRegistry';
-import { DashboardCanvas, defaultLayout } from '@/components/dashboard/DashboardCanvas';
+import { DashboardCanvas } from '@/components/dashboard/DashboardCanvas';
+import { defaultLayout } from '@/components/dashboard/dashboardLayout';
 import { ENGINEERING_WIDGETS } from '@/components/dashboard/engineeringWidgets';
 import { useProjectRealtime } from '@/hooks/useProjectRealtime';
 import { findProjectType } from '@/constants/projectTypes';
@@ -159,6 +160,7 @@ function EngineeringDashboard({ project }) {
     }
   }, [project.id]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch on mount/project change; reloadData() stores the results
   useEffect(() => { reloadData(); }, [reloadData]);
 
   // Load saved layout once on mount; fall back to default. The version

@@ -13,6 +13,7 @@ import { Track } from 'livekit-client';
 import { FileText, MessageSquare, VideoOff, X } from 'lucide-react';
 import { Button, Skeleton, useToast } from '@/components/ui';
 import { meetingsApi } from '@/api/meetings.api';
+import { useIsPhone } from '@/hooks/useMediaQuery';
 import { TranscriptPanel } from '@/components/meetings/TranscriptPanel';
 import './meetingRoom.css';
 
@@ -90,6 +91,8 @@ export function MeetingRoomPage() {
 }
 
 function MeetingRoomInner({ join, sidePanel, onSidePanelChange, onLeave, onToast }) {
+  // Icon-only controls fit a phone; the labelled bar is wider than the screen.
+  const isPhone = useIsPhone();
   return (
     <div className="mr-shell">
       <header className="mr-head">
@@ -145,7 +148,7 @@ function MeetingRoomInner({ join, sidePanel, onSidePanelChange, onLeave, onToast
         >
           <ParticipantsGrid />
           <RoomAudioRenderer />
-          <ControlBar variation="verbose" />
+          <ControlBar variation={isPhone ? 'minimal' : 'verbose'} />
         </LiveKitRoom>
 
         {sidePanel !== 'none' && (

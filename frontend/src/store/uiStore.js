@@ -9,6 +9,11 @@ export const useUiStore = create(
         set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
       setSidebarCollapsed: (value) => set({ sidebarCollapsed: Boolean(value) }),
 
+      // Phone-width off-canvas sidebar; never persisted.
+      mobileNavOpen: false,
+      toggleMobileNav: () => set((state) => ({ mobileNavOpen: !state.mobileNavOpen })),
+      closeMobileNav: () => set({ mobileNavOpen: false }),
+
       lastOrgSlug: null,
       setLastOrgSlug: (slug) => set({ lastOrgSlug: slug || null }),
 

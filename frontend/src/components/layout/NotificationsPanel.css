@@ -152,3 +152,16 @@
   font-size: var(--fs-2xs);
   color: var(--text-muted);
 }
+
+/* Phones: the 360px panel would hang off the left edge from the bell, so it
+   drops below the topbar and spans the screen with the page gutter. */
+@media (max-width: 760px) {
+  .notif-panel {
+    position: fixed;
+    top: calc(var(--topbar-h) + var(--s-2));
+    left: var(--s-4);
+    right: var(--s-4);
+    width: auto;
+    max-height: calc(100dvh - var(--topbar-h) - var(--s-8));
+  }
+}

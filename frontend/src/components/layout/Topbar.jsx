@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ChevronDown,
   LogOut,
+  Menu,
   Moon,
   PanelLeftClose,
   PanelLeftOpen,
@@ -11,6 +12,7 @@ import {
   UserCircle,
 } from 'lucide-react';
 import { Avatar, Button } from '@/components/ui';
+import { useIsPhone } from '@/hooks/useMediaQuery';
 import { useAuthStore } from '@/store/authStore';
 import { useOrgStore } from '@/store/orgStore';
 import { useProjectStore } from '@/store/projectStore';
@@ -113,6 +115,9 @@ export function Topbar() {
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
   const openQuickCreate = useUiStore((s) => s.openQuickCreate);
+  const navOpen = useUiStore((s) => s.mobileNavOpen);
+  const toggleMobileNav = useUiStore((s) => s.toggleMobileNav);
+  const isPhone = useIsPhone();
 
   const orgs = useOrgStore((s) => s.orgs);
   const projectsByOrg = useProjectStore((s) => s.byOrg);
@@ -138,19 +143,32 @@ export function Topbar() {
 
   return (
     <header className="topbar">
-      <button
-        type="button"
-        className="btn btn-ghost btn-icon-sm"
-        onClick={toggleSidebar}
-        title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-      >
-        {collapsed ? (
-          <PanelLeftOpen size={14} aria-hidden="true" />
-        ) : (
-          <PanelLeftClose size={14} aria-hidden="true" />
-        )}
-      </button>
+      {isPhone ? (
+        <button
+          type="button"
+          className="btn btn-ghost btn-icon-sm"
+          onClick={toggleMobileNav}
+          title="Menu"
+          aria-label={navOpen ? 'Close navigation' : 'Open navigation'}
+          aria-expanded={navOpen}
+        >
+          <Menu size={18} aria-hidden="true" />
+        </button>
+      ) : (
+        <button
+          type="button"
+          className="btn btn-ghost btn-icon-sm"
+          onClick={toggleSidebar}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {collapsed ? (
+            <PanelLeftOpen size={14} aria-hidden="true" />
+          ) : (
+            <PanelLeftClose size={14} aria-hidden="true" />
+          )}
+        </button>
+      )}
 
       <nav className="crumbs" aria-label="Breadcrumb">
         {crumbs.map((c, i) => (
@@ -175,7 +193,7 @@ export function Topbar() {
         title="Create a new task"
       >
         <Plus size={14} aria-hidden="true" />
-        <span>New task</span>
+        <span className="topbar-btn-label">New task</span>
       </Button>
 
       <NotificationsPanel />

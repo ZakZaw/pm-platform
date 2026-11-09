@@ -1,3 +1,4 @@
+using Api.Authorization;
 using Application.Common;
 using Application.Features.Organizations;
 using Application.Features.Organizations.Queries;
@@ -13,6 +14,7 @@ namespace Api.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/v1/users")]
+[DenyApiKey]
 public class UsersController(ISender mediator) : ControllerBase
 {
     [HttpGet("me")]

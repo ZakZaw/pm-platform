@@ -1,3 +1,6 @@
+using Api.Authorization;
+using Api.Middleware;
+using Microsoft.AspNetCore.RateLimiting;
 using Application.Common;
 using Application.Features.Roadmap.Queries;
 using MediatR;
@@ -16,13 +19,30 @@ namespace Api.Controllers;
 [AllowAnonymous]
 public class ShareController(ISender mediator) : ControllerBase
 {
+    public const string PasswordHeader = "X-Share-Password";
+
+    // M4 - the password never travels in the URL (where it would end up in
+    // access logs, proxies and browser history): send it in the
+    // X-Share-Password header on GET, or in the body of the POST below.
     [HttpGet("api/v1/share/roadmap/{token}")]
+    [EnableRateLimiting(RateLimitPolicies.PublicLink)]
     public async Task<ActionResult<PublicRoadmapDto>> GetRoadmap(
         string token,
-        [FromQuery] string? password = null,
+        [FromHeader(Name = PasswordHeader)] string? password = null,
         CancellationToken ct = default)
     {
         var result = await mediator.Send(new GetPublicRoadmapQuery(token, password), ct);
+        return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+    }
+
+    [HttpPost("api/v1/share/roadmap/{token}")]
+    [EnableRateLimiting(RateLimitPolicies.PublicLink)]
+    public async Task<ActionResult<PublicRoadmapDto>> UnlockRoadmap(
+        string token,
+        [FromBody] UnlockShareBodyDto body,
+        CancellationToken ct = default)
+    {
+        var result = await mediator.Send(new GetPublicRoadmapQuery(token, body?.Password), ct);
         return result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
     }
 
@@ -35,9 +55,12 @@ public class ShareController(ISender mediator) : ControllerBase
             "RoadmapShare.Revoked" => StatusCodes.Status410Gone,
             "RoadmapShare.PasswordRequired" => StatusCodes.Status401Unauthorized,
             "RoadmapShare.InvalidPassword" => StatusCodes.Status401Unauthorized,
+            "RoadmapShare.PasswordLocked" => StatusCodes.Status429TooManyRequests,
             "Project.NotFound" => StatusCodes.Status404NotFound,
             _ => StatusCodes.Status400BadRequest
         };
         return Problem(title: error.Code, detail: error.Message, statusCode: status);
     }
 }
+
+public record UnlockShareBodyDto(string? Password);

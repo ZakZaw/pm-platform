@@ -14,6 +14,7 @@ namespace Application.Features.Roadmap.Commands;
 /// and re-PATCHes with <c>cascade=true</c> to apply.
 /// </summary>
 public record UpdateEpicDatesCommand(
+    Guid ProjectId,
     Guid EpicId,
     DateOnly? StartDate,
     DateOnly? EndDate,
@@ -43,7 +44,7 @@ public class UpdateEpicDatesCommandHandler(
         if (currentUser.UserId is not { } userId)
             return Result.Failure<EpicDatesUpdateResult>(AuthErrors.NotAuthenticated);
 
-        var epic = await db.Epics.FirstOrDefaultAsync(e => e.Id == request.EpicId, ct);
+        var epic = await db.Epics.FirstOrDefaultAsync(e => e.Id == request.EpicId && e.ProjectId == request.ProjectId, ct);
         if (epic is null)
             return Result.Failure<EpicDatesUpdateResult>(EpicErrors.NotFound);
 

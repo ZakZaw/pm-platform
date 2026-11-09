@@ -20,6 +20,12 @@ public class RoadmapShareLink
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? RevokedAt { get; set; }
 
+    /// <summary>M4 - consecutive wrong passwords since the last success/lock.</summary>
+    public int FailedPasswordAttempts { get; set; }
+
+    /// <summary>M4 - password attempts are refused until this time.</summary>
+    public DateTime? PasswordLockedUntil { get; set; }
+
     public Project Project { get; set; } = null!;
     public User CreatedBy { get; set; } = null!;
 }

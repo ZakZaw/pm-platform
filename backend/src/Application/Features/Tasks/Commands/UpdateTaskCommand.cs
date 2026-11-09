@@ -108,7 +108,14 @@ public class UpdateTaskCommandHandler(IAppDbContext db)
         else if (request.DueDate.HasValue) task.DueDate = request.DueDate;
 
         if (request.TimeLoggedMinutes.HasValue) task.TimeLoggedMinutes = request.TimeLoggedMinutes.Value;
-        if (request.PrUrl is not null) task.PrUrl = request.PrUrl;
+        if (request.PrUrl is not null)
+        {
+            // L6 - only http(s) links; an empty string clears the link.
+            var prUrl = request.PrUrl.Trim();
+            if (prUrl.Length == 0) task.PrUrl = null;
+            else if (!SafeUrl.IsHttp(prUrl)) return Result.Failure<TaskDto>(TaskErrors.InvalidPrUrl);
+            else task.PrUrl = prUrl;
+        }
 
         if (request.AcceptanceCriteria is not null)
         {

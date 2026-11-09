@@ -27,7 +27,10 @@ public record SalesAnalyticsDto(
     int LostCount,
     double? WinRatePct,
     IReadOnlyList<SalesFunnelStageDto> Funnel,
-    IReadOnlyList<SalesDealAtRiskDto> DealsAtRisk);
+    IReadOnlyList<SalesDealAtRiskDto> DealsAtRisk,
+    // M9 - currencies present on deals but excluded from the money totals
+    // (which are all in Currency). Empty when the pipeline is single-currency.
+    IReadOnlyList<string> OtherCurrencies);
 
 // ---- Support ----
 

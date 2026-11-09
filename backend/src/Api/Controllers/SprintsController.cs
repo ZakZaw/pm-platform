@@ -1,3 +1,6 @@
+using Api.Middleware;
+using Microsoft.AspNetCore.RateLimiting;
+using Application.Authorization;
 using Api.Authorization;
 using Application.Common;
 using Application.Features.Sprints;
@@ -42,6 +45,7 @@ public class SprintsController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("api/v1/sprints/{id:guid}")]
+    [RequireProjectRole(ProjectRole.TeamLead, ProjectScope.Sprint, "id")]
     public async Task<ActionResult<SprintDto>> Update(
         Guid id, [FromBody] UpdateSprintBodyDto body, CancellationToken ct)
     {
@@ -52,6 +56,7 @@ public class SprintsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/sprints/{id:guid}/start")]
+    [RequireProjectRole(ProjectRole.TeamLead, ProjectScope.Sprint, "id")]
     public async Task<ActionResult<SprintDto>> Start(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new StartSprintCommand(id), ct);
@@ -59,6 +64,7 @@ public class SprintsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/sprints/{id:guid}/close")]
+    [RequireProjectRole(ProjectRole.TeamLead, ProjectScope.Sprint, "id")]
     public async Task<ActionResult<SprintDto>> Close(
         Guid id, [FromBody] CloseSprintBodyDto? body, CancellationToken ct)
     {
@@ -67,6 +73,7 @@ public class SprintsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/sprints/{id:guid}/tasks/{taskId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Sprint, "id")]
     public async Task<ActionResult> AddTask(Guid id, Guid taskId, CancellationToken ct)
     {
         var result = await mediator.Send(new AddTaskToSprintCommand(id, taskId), ct);
@@ -74,6 +81,7 @@ public class SprintsController(ISender mediator) : ControllerBase
     }
 
     [HttpDelete("api/v1/sprints/tasks/{taskId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "taskId")]
     public async Task<ActionResult> RemoveTask(Guid taskId, CancellationToken ct)
     {
         var result = await mediator.Send(new RemoveTaskFromSprintCommand(taskId), ct);
@@ -82,6 +90,7 @@ public class SprintsController(ISender mediator) : ControllerBase
 
     // F2-11 sprint retrospective endpoints.
     [HttpGet("api/v1/sprints/{id:guid}/retro")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Sprint, "id")]
     public async Task<ActionResult<SprintRetrospectiveDto>> GetRetro(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new GetSprintRetrospectiveQuery(id), ct);
@@ -89,6 +98,9 @@ public class SprintsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/sprints/{id:guid}/retro/generate")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
+    [RequireProjectRole(ProjectRole.TeamLead, ProjectScope.Sprint, "id")]
     public async Task<ActionResult<SprintRetrospectiveDto>> GenerateRetro(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new GenerateSprintRetrospectiveCommand(id), ct);
@@ -96,6 +108,7 @@ public class SprintsController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("api/v1/sprints/{id:guid}/retro")]
+    [RequireProjectRole(ProjectRole.TeamLead, ProjectScope.Sprint, "id")]
     public async Task<ActionResult<SprintRetrospectiveDto>> UpdateRetro(
         Guid id, [FromBody] UpdateRetroBodyDto body, CancellationToken ct)
     {
@@ -105,6 +118,7 @@ public class SprintsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/sprints/{id:guid}/retro/apply-next")]
+    [RequireProjectRole(ProjectRole.TeamLead, ProjectScope.Sprint, "id")]
     public async Task<ActionResult<SprintDto>> ApplyNext(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new ApplyNextSprintDraftCommand(id), ct);

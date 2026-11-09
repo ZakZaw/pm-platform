@@ -1,3 +1,5 @@
+using System.Data;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Reflection;
 using Application.Interfaces;
 using Domain.Entities;
@@ -115,6 +117,46 @@ public class AppDbContext : DbContext, IAppDbContext
 
     // F2-25 integration health snapshots.
     public DbSet<IntegrationHealth> IntegrationHealth => Set<IntegrationHealth>();
+
+    public async Task<int> ReserveTaskKeyNumsAsync(Guid projectId, int count, CancellationToken cancellationToken = default)
+    {
+        if (count < 1) throw new ArgumentOutOfRangeException(nameof(count));
+
+        var connection = Database.GetDbConnection();
+        var opened = false;
+        if (connection.State != ConnectionState.Open)
+        {
+            await connection.OpenAsync(cancellationToken);
+            opened = true;
+        }
+
+        try
+        {
+            await using var command = connection.CreateCommand();
+            command.Transaction = Database.CurrentTransaction?.GetDbTransaction();
+            // Single-statement read-modify-write: Postgres row-locks the
+            // project row, so concurrent callers get disjoint blocks.
+            command.CommandText =
+                "UPDATE projects SET \"LastTaskKeyNum\" = \"LastTaskKeyNum\" + @count " +
+                "WHERE \"Id\" = @projectId RETURNING \"LastTaskKeyNum\"";
+            var countParam = command.CreateParameter();
+            countParam.ParameterName = "count";
+            countParam.Value = count;
+            command.Parameters.Add(countParam);
+            var idParam = command.CreateParameter();
+            idParam.ParameterName = "projectId";
+            idParam.Value = projectId;
+            command.Parameters.Add(idParam);
+
+            var last = await command.ExecuteScalarAsync(cancellationToken)
+                ?? throw new InvalidOperationException($"Project {projectId} not found.");
+            return Convert.ToInt32(last) - count + 1;
+        }
+        finally
+        {
+            if (opened) await connection.CloseAsync();
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -6,6 +6,8 @@ namespace Domain.Entities;
 /// in a public URL (<c>/meetings/guest/{token}</c>) and the join
 /// endpoint accepts it without authentication; access expires at
 /// <see cref="ExpiresAt"/> or when an organiser hits <c>revoke</c>.
+/// The link is reusable until then (not single-use), so treat it like a
+/// shared meeting password: send it only to the intended guest.
 /// </summary>
 public class MeetingGuestLink
 {

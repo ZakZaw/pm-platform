@@ -10,15 +10,19 @@ namespace Infrastructure.Services;
 /// F2-23 — HMAC-signed, stateless OAuth state. Format is
 /// <c>base64url(payload).base64url(sig)</c> where the payload is the
 /// JSON-serialised <see cref="OAuthState"/> plus an issued-at stamp,
-/// and the signature is HMAC-SHA256 over the payload using the JWT
-/// signing key. Tokens older than <see cref="TokenLifetime"/> are
+/// and the signature is HMAC-SHA256 over the payload using a key derived
+/// from (not equal to) the JWT signing key. Tokens older than <see cref="TokenLifetime"/> are
 /// rejected so a leaked state can't be replayed indefinitely.
 /// </summary>
 public class OAuthStateProtector(IOptions<JwtSettings> jwtOptions) : IOAuthStateProtector
 {
     private static readonly TimeSpan TokenLifetime = TimeSpan.FromMinutes(15);
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
-    private readonly byte[] _key = Encoding.UTF8.GetBytes(jwtOptions.Value.SigningKey);
+    // M2 - never sign OAuth state with the raw JWT key: derive a separate,
+    // purpose-bound key so a state token can't double as anything else.
+    private readonly byte[] _key = HMACSHA256.HashData(
+        Encoding.UTF8.GetBytes(jwtOptions.Value.SigningKey),
+        Encoding.UTF8.GetBytes("pm-platform/oauth-state/v1"));
 
     private record Payload(Guid ProjectId, string Repo, Guid UserId, string ReturnPath, long IssuedAtUnix);
 

@@ -1,3 +1,6 @@
+using Domain.Enums;
+using Application.Authorization;
+using Api.Authorization;
 using Application.Common;
 using Application.Features.Messages;
 using Application.Features.Messages.Commands;
@@ -18,6 +21,7 @@ namespace Api.Controllers;
 public class MessagesController(ISender mediator) : ControllerBase
 {
     [HttpGet("api/v1/channels/{channelId:guid}/messages")]
+    [RequireOrgRole(OrgRole.Guest, OrgScope.Channel, "channelId")]
     public async Task<ActionResult<ChannelMessagePageDto>> List(
         Guid channelId,
         [FromQuery(Name = "before")] Guid? before,
@@ -29,6 +33,7 @@ public class MessagesController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/channels/{channelId:guid}/messages")]
+    [RequireOrgRole(OrgRole.Guest, OrgScope.Channel, "channelId")]
     public async Task<ActionResult<MessageDto>> Post(
         Guid channelId, [FromBody] PostMessageBodyDto body, CancellationToken ct)
     {
@@ -38,6 +43,7 @@ public class MessagesController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("api/v1/messages/{id:guid}")]
+    [RequireOrgRole(OrgRole.Guest, OrgScope.Message, "id")]
     public async Task<ActionResult<MessageDto>> Edit(
         Guid id, [FromBody] EditMessageBodyDto body, CancellationToken ct)
     {
@@ -46,6 +52,7 @@ public class MessagesController(ISender mediator) : ControllerBase
     }
 
     [HttpDelete("api/v1/messages/{id:guid}")]
+    [RequireOrgRole(OrgRole.Guest, OrgScope.Message, "id")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new DeleteMessageCommand(id), ct);
@@ -53,6 +60,7 @@ public class MessagesController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/messages/{id:guid}/reactions")]
+    [RequireOrgRole(OrgRole.Guest, OrgScope.Message, "id")]
     public async Task<ActionResult<ToggleReactionResult>> Toggle(
         Guid id, [FromBody] ToggleReactionBodyDto body, CancellationToken ct)
     {
@@ -61,6 +69,7 @@ public class MessagesController(ISender mediator) : ControllerBase
     }
 
     [HttpGet("api/v1/messages/{id:guid}/thread")]
+    [RequireOrgRole(OrgRole.Guest, OrgScope.Message, "id")]
     public async Task<ActionResult<ThreadDto>> Thread(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new GetThreadQuery(id), ct);

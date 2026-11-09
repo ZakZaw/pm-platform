@@ -12,6 +12,7 @@ namespace Application.Features.CustomFields.Commands;
 /// "change" a type, delete the field and create a new one.
 /// </summary>
 public record UpdateCustomFieldDefinitionCommand(
+    Guid ProjectId,
     Guid Id,
     string Name,
     IReadOnlyList<string>? Options,
@@ -25,7 +26,7 @@ public class UpdateCustomFieldDefinitionCommandHandler(IAppDbContext db)
         UpdateCustomFieldDefinitionCommand request, CancellationToken ct)
     {
         var def = await db.CustomFieldDefinitions
-            .FirstOrDefaultAsync(d => d.Id == request.Id && d.DeletedAt == null, ct);
+            .FirstOrDefaultAsync(d => d.Id == request.Id && d.ProjectId == request.ProjectId && d.DeletedAt == null, ct);
         if (def is null) return Result.Failure<CustomFieldDefinitionDto>(CustomFieldErrors.NotFound);
 
         var name = request.Name?.Trim() ?? string.Empty;

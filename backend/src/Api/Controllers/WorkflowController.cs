@@ -1,7 +1,9 @@
+using Api.Authorization;
 using Application.Common;
 using Application.Features.Workflow;
 using Application.Features.Workflow.Commands;
 using Application.Features.Workflow.Queries;
+using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +16,7 @@ namespace Api.Controllers;
 public class WorkflowController(ISender mediator) : ControllerBase
 {
     [HttpGet]
+    [RequireProjectRole(ProjectRole.Viewer)]
     public async Task<ActionResult<IReadOnlyList<StatusConfigDto>>> List(
         Guid projectId, CancellationToken ct)
     {
@@ -22,6 +25,7 @@ public class WorkflowController(ISender mediator) : ControllerBase
     }
 
     [HttpPost]
+    [RequireProjectRole(ProjectRole.TeamLead)]
     public async Task<ActionResult<StatusConfigDto>> Create(
         Guid projectId,
         [FromBody] CreateStatusConfigBodyDto body,
@@ -34,6 +38,7 @@ public class WorkflowController(ISender mediator) : ControllerBase
     }
 
     [HttpDelete("{configId:guid}")]
+    [RequireProjectRole(ProjectRole.TeamLead)]
     public async Task<ActionResult> Delete(
         Guid projectId, Guid configId, CancellationToken ct)
     {
@@ -42,6 +47,7 @@ public class WorkflowController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("{configId:guid}")]
+    [RequireProjectRole(ProjectRole.TeamLead)]
     public async Task<ActionResult<StatusConfigDto>> Update(
         Guid projectId,
         Guid configId,
@@ -55,6 +61,7 @@ public class WorkflowController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("reorder")]
+    [RequireProjectRole(ProjectRole.TeamLead)]
     public async Task<ActionResult<IReadOnlyList<StatusConfigDto>>> Reorder(
         Guid projectId,
         [FromBody] ReorderStatusConfigBodyDto body,

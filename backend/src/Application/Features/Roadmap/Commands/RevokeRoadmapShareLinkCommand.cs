@@ -5,14 +5,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Features.Roadmap.Commands;
 
-public record RevokeRoadmapShareLinkCommand(Guid LinkId) : IRequest<Result>;
+public record RevokeRoadmapShareLinkCommand(Guid ProjectId, Guid LinkId) : IRequest<Result>;
 
 public class RevokeRoadmapShareLinkCommandHandler(IAppDbContext db)
     : IRequestHandler<RevokeRoadmapShareLinkCommand, Result>
 {
     public async Task<Result> Handle(RevokeRoadmapShareLinkCommand request, CancellationToken ct)
     {
-        var link = await db.RoadmapShareLinks.FirstOrDefaultAsync(l => l.Id == request.LinkId, ct);
+        var link = await db.RoadmapShareLinks.FirstOrDefaultAsync(l => l.Id == request.LinkId && l.ProjectId == request.ProjectId, ct);
         if (link is null) return Result.Failure(RoadmapShareErrors.NotFound);
 
         if (link.RevokedAt is null)

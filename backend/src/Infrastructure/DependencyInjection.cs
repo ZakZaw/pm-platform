@@ -71,6 +71,8 @@ public static class DependencyInjection
         // app bootable without a key but makes the failure obvious to the user.
         services.Configure<AISettings>(configuration.GetSection("AI"));
         services.AddScoped<IAIService, GeminiAIService>();
+        services.AddSingleton<IAIUsageQuota, InMemoryAIUsageQuota>();
+        services.AddSingleton<ILoginAttemptStore, InMemoryLoginAttemptStore>();
 
         // F2-12 — daily sweep over active sprints. The hosted service
         // scopes its own DbContext per tick, so it's safe to register

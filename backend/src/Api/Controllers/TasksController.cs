@@ -1,3 +1,4 @@
+using Application.Authorization;
 using Api.Authorization;
 using Application.Common;
 using Application.Features.Tasks;
@@ -17,6 +18,7 @@ namespace Api.Controllers;
 public class TasksController(ISender mediator, IOptions<FrontendSettings> frontend) : ControllerBase
 {
     [HttpGet("api/v1/projects/{projectId:guid}/tasks")]
+    [RequireProjectRole(ProjectRole.Viewer)]
     public async Task<ActionResult<IReadOnlyList<TaskDto>>> ListForProject(
         Guid projectId,
         [FromQuery(Name = "epic_id")] Guid? epicId = null,
@@ -44,6 +46,7 @@ public class TasksController(ISender mediator, IOptions<FrontendSettings> fronte
     }
 
     [HttpPost("api/v1/projects/{projectId:guid}/tasks")]
+    [RequireProjectRole(ProjectRole.Contributor)]
     public async Task<ActionResult<TaskDto>> Create(
         Guid projectId,
         [FromBody] CreateTaskBodyDto body,
@@ -58,6 +61,7 @@ public class TasksController(ISender mediator, IOptions<FrontendSettings> fronte
     }
 
     [HttpGet("api/v1/tasks/{id:guid}")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Task, "id")]
     public async Task<ActionResult<TaskDto>> Get(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new GetTaskQuery(id), ct);
@@ -67,6 +71,7 @@ public class TasksController(ISender mediator, IOptions<FrontendSettings> fronte
     // F2-18 — resolve a display key like "AT-247" inside an org.
     // Powers the [[task:KEY]] embed in chat messages.
     [HttpGet("api/v1/orgs/{slug}/tasks/by-key/{key}")]
+    [RequireOrgRole(OrgRole.Guest)]
     public async Task<ActionResult<TaskDto>> GetByKey(
         string slug, string key, CancellationToken ct)
     {
@@ -75,6 +80,7 @@ public class TasksController(ISender mediator, IOptions<FrontendSettings> fronte
     }
 
     [HttpPatch("api/v1/tasks/{id:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "id")]
     public async Task<ActionResult<TaskDto>> Update(
         Guid id,
         [FromBody] UpdateTaskBodyDto body,
@@ -93,6 +99,7 @@ public class TasksController(ISender mediator, IOptions<FrontendSettings> fronte
     }
 
     [HttpDelete("api/v1/tasks/{id:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "id")]
     public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new DeleteTaskCommand(id), ct);
@@ -100,6 +107,7 @@ public class TasksController(ISender mediator, IOptions<FrontendSettings> fronte
     }
 
     [HttpPatch("api/v1/tasks/{id:guid}/status")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "id")]
     public async Task<ActionResult<TaskDto>> ChangeStatus(
         Guid id,
         [FromBody] ChangeTaskStatusBodyDto body,
@@ -121,6 +129,7 @@ public class TasksController(ISender mediator, IOptions<FrontendSettings> fronte
     }
 
     [HttpPost("api/v1/projects/{projectId:guid}/tasks/bulk")]
+    [RequireProjectRole(ProjectRole.Contributor)]
     public async Task<ActionResult<BulkUpdateTasksResult>> Bulk(
         Guid projectId,
         [FromBody] BulkUpdateTasksBodyDto body,
@@ -137,6 +146,7 @@ public class TasksController(ISender mediator, IOptions<FrontendSettings> fronte
 
     // F2-09 task dependencies — feeds the Task->Done unblock automation.
     [HttpGet("api/v1/tasks/{taskId:guid}/dependencies")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<TaskDependencyListDto>> Dependencies(
         Guid taskId, CancellationToken ct)
     {
@@ -145,6 +155,7 @@ public class TasksController(ISender mediator, IOptions<FrontendSettings> fronte
     }
 
     [HttpPost("api/v1/tasks/{taskId:guid}/dependencies")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<TaskDependencyDto>> AddDependency(
         Guid taskId,
         [FromBody] AddTaskDependencyBodyDto body,
@@ -156,6 +167,7 @@ public class TasksController(ISender mediator, IOptions<FrontendSettings> fronte
     }
 
     [HttpDelete("api/v1/tasks/{taskId:guid}/dependencies/{prereqId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "taskId")]
     public async Task<ActionResult> RemoveDependency(
         Guid taskId, Guid prereqId, CancellationToken ct)
     {
@@ -173,6 +185,7 @@ public class TasksController(ISender mediator, IOptions<FrontendSettings> fronte
             "Task.InvalidTransition" => StatusCodes.Status422UnprocessableEntity,
             "Task.NoOpTransition" => StatusCodes.Status422UnprocessableEntity,
             "Task.ReasonRequired" => StatusCodes.Status422UnprocessableEntity,
+            "Task.InvalidPrUrl" => StatusCodes.Status422UnprocessableEntity,
             "Task.PersonalAssigneeLocked" => StatusCodes.Status403Forbidden,
             "Task.DependencyCycle" => StatusCodes.Status409Conflict,
             "Task.DependencyNotInProject" => StatusCodes.Status422UnprocessableEntity,

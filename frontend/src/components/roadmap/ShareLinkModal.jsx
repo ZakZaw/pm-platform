@@ -136,9 +136,10 @@ export function ShareLinkModal({ open, projectId, onClose }) {
               <input
                 className="input"
                 type="text"
-                placeholder="Leave blank for open access"
+                placeholder="Leave blank for open access (8+ characters)"
                 value={draft.password}
                 onChange={(e) => setDraft((d) => ({ ...d, password: e.target.value }))}
+                minLength={8}
                 maxLength={128}
               />
             </label>

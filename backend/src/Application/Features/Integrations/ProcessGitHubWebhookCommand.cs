@@ -147,7 +147,7 @@ public class ProcessGitHubWebhookCommandHandler(
         if (task is null) return [];
 
         task.PrNumber = number;
-        if (!string.IsNullOrWhiteSpace(url)) task.PrUrl = url;
+        if (SafeUrl.IsHttp(url)) task.PrUrl = url; // L6
 
         switch (action)
         {

@@ -25,19 +25,19 @@ internal static class ChannelAccessGate
         if (channel is null)
             return Result.Failure<ChannelContext>(ChannelErrors.NotFound);
 
-        // OrgWide is readable by every active org member; everything
-        // else requires an explicit ChannelMember row. Same gate the
-        // F2-16 GetChannel query applies.
-        if (channel.Type == ChannelType.OrgWide)
-        {
-            var isOrgMember = await db.OrgMemberships.AnyAsync(
-                m => m.OrganizationId == channel.OrganizationId
-                  && m.UserId == userId
-                  && m.RemovedAt == null, ct);
-            if (!isOrgMember)
-                return Result.Failure<ChannelContext>(ChannelErrors.NotAMember);
-        }
-        else
+        // H2 - every channel type requires an active org membership, so a
+        // member removed from the org loses chat access even if a stale
+        // ChannelMember row survived. OrgWide is then readable by every
+        // org member; everything else also needs an explicit ChannelMember
+        // row. Same gate the F2-16 GetChannel query applies.
+        var isOrgMember = await db.OrgMemberships.AnyAsync(
+            m => m.OrganizationId == channel.OrganizationId
+              && m.UserId == userId
+              && m.RemovedAt == null, ct);
+        if (!isOrgMember)
+            return Result.Failure<ChannelContext>(ChannelErrors.NotAMember);
+
+        if (channel.Type != ChannelType.OrgWide)
         {
             var isMember = await db.ChannelMembers
                 .AnyAsync(m => m.ChannelId == channel.ChannelId && m.UserId == userId, ct);

@@ -17,6 +17,14 @@ function formatMoney(value, currency = 'USD') {
   }
 }
 
+// Money totals are reported in one currency; deals in other currencies are
+// left out (they can't be added up) and named here so the number isn't
+// mistaken for the whole pipeline.
+function otherCurrencyNote(data) {
+  const others = data?.otherCurrencies ?? [];
+  return others.length > 0 ? `Excludes ${others.join(', ')} deals` : undefined;
+}
+
 export function SalesPipelineValueWidget({ data, loading }) {
   const segments = (data?.funnel ?? [])
     .filter((s) => s.value > 0)
@@ -30,7 +38,11 @@ export function SalesPipelineValueWidget({ data, loading }) {
       empty={!loading && segments.length === 0}
       emptyText="No open deals yet."
     >
-      <MetricRow label="Total open pipeline" value={formatMoney(data?.openPipelineValue, currency)} />
+      <MetricRow
+        label="Total open pipeline"
+        value={formatMoney(data?.openPipelineValue, currency)}
+        sublabel={otherCurrencyNote(data)}
+      />
       {segments.length > 0 && (
         <StackedBar segments={segments} format={(v) => formatMoney(v, currency)} />
       )}
@@ -51,7 +63,10 @@ export function SalesForecastWidget({ data, loading }) {
       <MetricRow
         label="Probability-weighted open pipeline"
         value={formatMoney(data?.weightedForecast, currency)}
-        sublabel={`of ${formatMoney(data?.openPipelineValue, currency)} total open`}
+        sublabel={[
+          `of ${formatMoney(data?.openPipelineValue, currency)} total open`,
+          otherCurrencyNote(data),
+        ].filter(Boolean).join(' · ')}
       />
       <MetricRow
         label="Won · last 90 days"

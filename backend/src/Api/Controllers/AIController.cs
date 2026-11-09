@@ -1,3 +1,6 @@
+using Api.Middleware;
+using Microsoft.AspNetCore.RateLimiting;
+using Application.Authorization;
 using Api.Authorization;
 using Application.Common;
 using Application.Features.AI;
@@ -18,6 +21,8 @@ namespace Api.Controllers;
 public class AIController(ISender mediator) : ControllerBase
 {
     [HttpPost("api/v1/ai/clarify")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
     public async Task<ActionResult<ClarifyResponseDto>> Clarify(
         [FromBody] ClarifyBodyDto body, CancellationToken ct)
     {
@@ -29,6 +34,9 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/orgs/{slug}/ai/generate-project")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
+    [RequireOrgRole(OrgRole.Member)]
     public async Task<ActionResult<AIGenerationPreviewDto>> GenerateProject(
         string slug,
         [FromBody] GenerateProjectBodyDto body,
@@ -43,6 +51,7 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/ai/generate-project/{requestId:guid}/apply")]
+    [RequireOrgRole(OrgRole.Member, OrgScope.AIGenerationRequest, "requestId")]
     public async Task<ActionResult<ProjectDto>> ApplyGeneratedProject(
         Guid requestId,
         [FromBody] ApplyGenerationBodyDto body,
@@ -60,6 +69,7 @@ public class AIController(ISender mediator) : ControllerBase
     // stays canonical on the server (stored in AIGenerationRequest.PreviewJson),
     // so the wizard only needs to send the chosen project name.
     [HttpPost("api/v1/ai/generate-typed-project/{requestId:guid}/apply")]
+    [RequireOrgRole(OrgRole.Member, OrgScope.AIGenerationRequest, "requestId")]
     public async Task<ActionResult<ProjectDto>> ApplyTypedGeneratedProject(
         Guid requestId,
         [FromBody] ApplyTypedGenerationBodyDto body,
@@ -71,6 +81,9 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/tasks/{taskId:guid}/estimate")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<TaskEstimateDto>> Estimate(
         Guid taskId, CancellationToken ct)
     {
@@ -79,6 +92,9 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/tasks/{taskId:guid}/ai/breakdown")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<TaskBreakdownDto>> BreakdownTask(
         Guid taskId, CancellationToken ct)
     {
@@ -87,6 +103,8 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/projects/{projectId:guid}/ai/generate-epic")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
     [RequireProjectRole(ProjectRole.TeamLead)]
     public async Task<ActionResult<AIGeneratedEpicDto>> GenerateEpic(
         Guid projectId, [FromBody] GenerateEpicBodyDto body, CancellationToken ct)
@@ -113,6 +131,8 @@ public class AIController(ISender mediator) : ControllerBase
     // (which sprints overflow, which milestones shift) so the user
     // sees the cost of accepting before they pick a destination.
     [HttpPost("api/v1/projects/{projectId:guid}/ai/breakdown")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
     [RequireProjectRole(ProjectRole.TeamLead)]
     public async Task<ActionResult<AIEpicBreakdownPreviewDto>> Breakdown(
         Guid projectId, [FromBody] GenerateEpicBodyDto body, CancellationToken ct)
@@ -123,6 +143,8 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/projects/{projectId:guid}/ai/generate-tasks")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
     [RequireProjectRole(ProjectRole.Contributor)]
     public async Task<ActionResult<AIGeneratedTaskListDto>> GenerateTasks(
         Guid projectId, [FromBody] GenerateTasksBodyDto body, CancellationToken ct)
@@ -143,6 +165,9 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/sprints/{sprintId:guid}/ai-fill")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Sprint, "sprintId")]
     public async Task<ActionResult<SprintFillPlanDto>> AiFillSprint(
         Guid sprintId,
         [FromQuery(Name = "target")] int? target,
@@ -174,6 +199,8 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/projects/{projectId:guid}/ai/suggestions/sprint-health")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
     [RequireProjectRole(ProjectRole.Contributor)]
     public async Task<ActionResult<AISuggestionDto>> GenerateSprintHealth(
         Guid projectId, CancellationToken ct)
@@ -189,6 +216,9 @@ public class AIController(ISender mediator) : ControllerBase
     // endpoints (Auth-only on the route, handler validates via the AI
     // gate + sprint state).
     [HttpPost("api/v1/sprints/{sprintId:guid}/ai/replan")]
+    [EnableRateLimiting(AIQuotaAttribute.PolicyName)]
+    [AIQuota]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Sprint, "sprintId")]
     public async Task<ActionResult<AISuggestionDto>> GenerateVelocityReplan(
         Guid sprintId, CancellationToken ct)
     {
@@ -197,6 +227,7 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/ai/suggestions/{id:guid}/apply-replan")]
+    [RequireProjectRole(ProjectRole.TeamLead, ProjectScope.AISuggestion, "id")]
     public async Task<ActionResult<AISuggestionDto>> ApplyVelocityReplan(
         Guid id, [FromBody] ApplyReplanBodyDto body, CancellationToken ct)
     {
@@ -210,10 +241,11 @@ public class AIController(ISender mediator) : ControllerBase
     // F2-13 — manual trigger that fans out the same "member
     // unavailable" notification the org-removal / OOO / capacity-zero
     // soft triggers use. Useful for previewing the reassignment card
-    // without actually marking someone OOO. Authorization mirrors the
-    // org-member read endpoints (auth-only; handler reads org/project
-    // membership inline).
+    // without actually marking someone OOO. L4: org_id is required and
+    // the caller must be an org Admin+; the handler checks the target
+    // user belongs to that org.
     [HttpPost("api/v1/users/{userId:guid}/ai/reassignment")]
+    [RequireOrgRole(OrgRole.Admin, OrgScope.Organization, "org_id")]
     public async Task<IActionResult> GenerateReassignmentSuggestion(
         Guid userId,
         [FromQuery(Name = "org_id")] Guid? orgId,
@@ -225,6 +257,7 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/ai/suggestions/{id:guid}/apply-reassignments")]
+    [RequireProjectRole(ProjectRole.TeamLead, ProjectScope.AISuggestion, "id")]
     public async Task<ActionResult<AISuggestionDto>> ApplyReassignments(
         Guid id, [FromBody] ApplyReassignmentsBodyDto body, CancellationToken ct)
     {
@@ -234,6 +267,7 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/ai/suggestions/{id:guid}/dismiss")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.AISuggestion, "id")]
     public async Task<IActionResult> DismissSuggestion(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new DismissSuggestionCommand(id), ct);
@@ -241,6 +275,7 @@ public class AIController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/ai/suggestions/{id:guid}/accept")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.AISuggestion, "id")]
     public async Task<IActionResult> AcceptSuggestion(Guid id, CancellationToken ct)
     {
         var result = await mediator.Send(new AcceptSuggestionCommand(id), ct);
@@ -253,6 +288,7 @@ public class AIController(ISender mediator) : ControllerBase
         {
             "Auth.NotAuthenticated" => StatusCodes.Status401Unauthorized,
             "Org.NotFound" => StatusCodes.Status404NotFound,
+            "Org.MemberNotFound" => StatusCodes.Status404NotFound,
             "Task.NotFound" => StatusCodes.Status404NotFound,
             "Sprint.NotFound" => StatusCodes.Status404NotFound,
             "Sprint.NotActive" => StatusCodes.Status422UnprocessableEntity,

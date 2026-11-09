@@ -1,3 +1,4 @@
+using Application.Authorization;
 using Api.Authorization;
 using Application.Common;
 using Application.Features.Operations;
@@ -28,6 +29,7 @@ public class OperationsController(ISender mediator) : ControllerBase
     }
 
     [HttpGet("api/v1/workflows/{workflowId:guid}")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Workflow, "workflowId")]
     public async Task<ActionResult<WorkflowDetailDto>> GetWorkflow(Guid workflowId, CancellationToken ct)
     {
         var result = await mediator.Send(new GetWorkflowQuery(workflowId), ct);
@@ -47,6 +49,7 @@ public class OperationsController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("api/v1/workflows/{workflowId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Workflow, "workflowId")]
     public async Task<ActionResult<WorkflowDto>> UpdateWorkflow(
         Guid workflowId, [FromBody] UpdateWorkflowBodyDto body, CancellationToken ct)
     {
@@ -59,6 +62,7 @@ public class OperationsController(ISender mediator) : ControllerBase
     }
 
     [HttpDelete("api/v1/workflows/{workflowId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Workflow, "workflowId")]
     public async Task<IActionResult> DeleteWorkflow(Guid workflowId, CancellationToken ct)
     {
         var result = await mediator.Send(new DeleteWorkflowCommand(workflowId), ct);
@@ -68,6 +72,7 @@ public class OperationsController(ISender mediator) : ControllerBase
     // ---------- Runs ----------
 
     [HttpGet("api/v1/runs/{runId:guid}")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.WorkflowRun, "runId")]
     public async Task<ActionResult<WorkflowRunDetailDto>> GetRun(Guid runId, CancellationToken ct)
     {
         var result = await mediator.Send(new GetRunQuery(runId), ct);
@@ -75,6 +80,7 @@ public class OperationsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/runs/{runId:guid}/start")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.WorkflowRun, "runId")]
     public async Task<IActionResult> StartRun(Guid runId, CancellationToken ct)
     {
         var result = await mediator.Send(new StartRunCommand(runId), ct);
@@ -82,6 +88,7 @@ public class OperationsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/runs/{runId:guid}/skip")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.WorkflowRun, "runId")]
     public async Task<IActionResult> SkipRun(
         Guid runId, [FromBody] SkipRunBodyDto body, CancellationToken ct)
     {
@@ -92,6 +99,7 @@ public class OperationsController(ISender mediator) : ControllerBase
     // ---------- Checklist items ----------
 
     [HttpPost("api/v1/checklist-items/{itemId:guid}/toggle")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.ChecklistItem, "itemId")]
     public async Task<IActionResult> ToggleItem(
         Guid itemId, [FromBody] ToggleItemBodyDto body, CancellationToken ct)
     {

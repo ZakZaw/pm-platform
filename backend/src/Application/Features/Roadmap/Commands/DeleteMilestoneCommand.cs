@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Features.Roadmap.Commands;
 
-public record DeleteMilestoneCommand(Guid MilestoneId) : IRequest<Result>;
+public record DeleteMilestoneCommand(Guid ProjectId, Guid MilestoneId) : IRequest<Result>;
 
 public class DeleteMilestoneCommandHandler(
     IAppDbContext db,
@@ -20,7 +20,7 @@ public class DeleteMilestoneCommandHandler(
         if (currentUser.UserId is not { } userId)
             return Result.Failure(AuthErrors.NotAuthenticated);
 
-        var m = await db.Milestones.FirstOrDefaultAsync(x => x.Id == request.MilestoneId, ct);
+        var m = await db.Milestones.FirstOrDefaultAsync(x => x.Id == request.MilestoneId && x.ProjectId == request.ProjectId, ct);
         if (m is null) return Result.Failure(MilestoneErrors.NotFound);
 
         var orgId = await db.Projects

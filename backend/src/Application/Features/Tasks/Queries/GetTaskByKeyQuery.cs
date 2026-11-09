@@ -1,3 +1,4 @@
+using Application.Authorization;
 using Application.Common;
 using Application.Features.Tasks.Commands;
 using Application.Interfaces;
@@ -17,12 +18,12 @@ public record GetTaskByKeyQuery(string OrgSlug, string Key)
     : IRequest<Result<TaskDto>>;
 
 public class GetTaskByKeyQueryHandler(
-    IAppDbContext db, ICurrentUser currentUser)
+    IAppDbContext db, IAccessControl access)
     : IRequestHandler<GetTaskByKeyQuery, Result<TaskDto>>
 {
     public async Task<Result<TaskDto>> Handle(GetTaskByKeyQuery request, CancellationToken ct)
     {
-        if (currentUser.UserId is not { } userId)
+        if (access.CurrentPrincipal() is not { } principal)
             return Result.Failure<TaskDto>(AuthErrors.NotAuthenticated);
 
         // Parse "PROJKEY-NUM". Tolerant of whitespace + case so chat
@@ -47,6 +48,14 @@ public class GetTaskByKeyQueryHandler(
             .Select(p => new { p.Id, p.Key })
             .FirstOrDefaultAsync(ct);
         if (project is null)
+            return Result.Failure<TaskDto>(TaskErrors.NotFound);
+
+        // The route only proves org membership; the task itself is
+        // project-scoped. Answer "not found" rather than 403 so keys of
+        // projects the caller can't see aren't confirmed to exist.
+        var canRead = await access.CheckProjectAsync(
+            principal, project.Id, Domain.Enums.ProjectRole.Viewer, ct);
+        if (!canRead.IsSuccess)
             return Result.Failure<TaskDto>(TaskErrors.NotFound);
 
         var task = await db.Tasks

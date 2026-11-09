@@ -11,7 +11,8 @@ public record RemoveOrgMemberCommand(string Slug, Guid UserId) : IRequest<Result
 
 // Admin+ via [RequireOrgRole]. Owners can only be removed by another Owner,
 // and the last Owner cannot be removed. Soft-delete: sets RemovedAt; the
-// row stays for history. Partial unique index lets the same user be
+// row stays for history, while project/channel memberships and the user's
+// API keys in this org are removed/revoked. Partial unique index lets the same user be
 // re-invited later.
 public class RemoveOrgMemberCommandHandler(
     IAppDbContext db,
@@ -56,7 +57,28 @@ public class RemoveOrgMemberCommandHandler(
                 return Result.Failure(OrgErrors.LastOwner);
         }
 
-        target.RemovedAt = DateTime.UtcNow;
+        var now = DateTime.UtcNow;
+        target.RemovedAt = now;
+
+        // H2 - removal must actually revoke access: drop the user's project
+        // and channel memberships inside this org and revoke the API keys
+        // they created for it. (The access checks also require an active
+        // org membership, so this is belt and braces.)
+        var orgProjectIds = db.Projects.Where(p => p.OrganizationId == org.Id).Select(p => p.Id);
+        db.ProjectMemberships.RemoveRange(await db.ProjectMemberships
+            .Where(m => m.UserId == target.UserId && orgProjectIds.Contains(m.ProjectId))
+            .ToListAsync(ct));
+
+        var orgChannelIds = db.Channels.Where(c => c.OrganizationId == org.Id).Select(c => c.Id);
+        db.ChannelMembers.RemoveRange(await db.ChannelMembers
+            .Where(m => m.UserId == target.UserId && orgChannelIds.Contains(m.ChannelId))
+            .ToListAsync(ct));
+
+        var keys = await db.ApiKeys
+            .Where(k => k.OrganizationId == org.Id && k.CreatedByUserId == target.UserId && k.RevokedAt == null)
+            .ToListAsync(ct);
+        foreach (var key in keys) key.RevokedAt = now;
+
         await db.SaveChangesAsync(ct);
 
         // F2-13 — fan out the trigger so the reassignment scorer can

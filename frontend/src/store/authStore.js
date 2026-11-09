@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { authApi, rawRefresh } from '@/api/auth.api';
+import { authApi, rawLogout, rawRefresh } from '@/api/auth.api';
 
 export const useAuthStore = create(
   persist(
@@ -60,7 +60,13 @@ export const useAuthStore = create(
       setUserFromProfile: ({ id, email, fullName, avatarUrl }) =>
         set({ user: { id, email, fullName, avatarUrl: avatarUrl ?? null } }),
 
-      logout: () => set({ user: null, accessToken: null, refreshToken: null }),
+      // Clear the local session immediately, then revoke the refresh-token
+      // family on the server so a copied token can't be used afterwards.
+      logout: () => {
+        const { refreshToken } = get();
+        set({ user: null, accessToken: null, refreshToken: null });
+        return refreshToken ? rawLogout(refreshToken) : Promise.resolve();
+      },
     }),
     {
       name: 'pm-auth',

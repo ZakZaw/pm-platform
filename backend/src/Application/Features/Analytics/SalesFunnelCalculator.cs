@@ -12,6 +12,33 @@ public static class SalesFunnelCalculator
 {
     public readonly record struct StageInput(string Name, int Count, decimal Value);
 
+    public const string DefaultCurrency = "USD";
+
+    /// <summary>Upper-cased ISO code; blank means the default currency.</summary>
+    public static string NormalizeCurrency(string? currency) =>
+        string.IsNullOrWhiteSpace(currency) ? DefaultCurrency : currency.Trim().ToUpperInvariant();
+
+    /// <summary>
+    /// M9 - money can't be summed across currencies, so dashboards report in
+    /// one currency: the one holding the most value (ties: most deals, then
+    /// alphabetical). Deals in other currencies are left out of the money
+    /// totals and listed in <c>Others</c> so the UI can say so.
+    /// </summary>
+    public static (string Currency, IReadOnlyList<string> Others) ReportingCurrency(
+        IEnumerable<(string? Currency, decimal Value)> deals)
+    {
+        var groups = deals
+            .GroupBy(d => NormalizeCurrency(d.Currency))
+            .Select(g => new { Code = g.Key, Total = g.Sum(d => d.Value), Count = g.Count() })
+            .OrderByDescending(g => g.Total).ThenByDescending(g => g.Count).ThenBy(g => g.Code, StringComparer.Ordinal)
+            .ToList();
+        if (groups.Count == 0) return (DefaultCurrency, []);
+        return (groups[0].Code, groups.Skip(1).Select(g => g.Code).OrderBy(c => c, StringComparer.Ordinal).ToList());
+    }
+
+    public static bool IsIn(string? currency, string reportingCurrency) =>
+        NormalizeCurrency(currency) == reportingCurrency;
+
     public record FunnelStage(string Name, int Count, decimal Value, double ConversionPct);
 
     /// <summary>

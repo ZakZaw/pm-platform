@@ -7,10 +7,15 @@ using Microsoft.EntityFrameworkCore;
 namespace Application.Features.Meetings.Commands;
 
 /// <summary>
-/// F2-20 — anonymous guest join. Validates a one-time guest token,
-/// then mints a LiveKit access token with subscribe + publish so the
+/// F2-20 — anonymous guest join. Validates a guest token, then mints a
+/// LiveKit access token with subscribe + publish so the
 /// guest can speak. Guest identities are namespaced (<c>g:{link-id}</c>)
 /// so the F2-21 transcript pipeline can still attribute speech.
+///
+/// Guest links are deliberately reusable until they expire or are revoked
+/// (a guest who drops can rejoin with the same link); they are NOT
+/// single-use. The self-chosen display name is capped at
+/// <see cref="MaxDisplayNameLength"/> characters.
 /// </summary>
 public record JoinAsGuestCommand(string Token, string? DisplayName)
     : IRequest<Result<MeetingJoinTokenDto>>;
@@ -18,6 +23,8 @@ public record JoinAsGuestCommand(string Token, string? DisplayName)
 public class JoinAsGuestCommandHandler(IAppDbContext db, IVideoService video)
     : IRequestHandler<JoinAsGuestCommand, Result<MeetingJoinTokenDto>>
 {
+    public const int MaxDisplayNameLength = 80;
+
     public async Task<Result<MeetingJoinTokenDto>> Handle(JoinAsGuestCommand request, CancellationToken ct)
     {
         if (!video.IsConfigured)
@@ -56,9 +63,7 @@ public class JoinAsGuestCommandHandler(IAppDbContext db, IVideoService video)
         if (now > hardCloseAt)
             return Result.Failure<MeetingJoinTokenDto>(MeetingErrors.AlreadyStarted);
 
-        var displayName = !string.IsNullOrWhiteSpace(request.DisplayName)
-            ? request.DisplayName.Trim()
-            : (link.GuestLabel ?? "Guest");
+        var displayName = SanitizeDisplayName(request.DisplayName) ?? link.GuestLabel ?? "Guest";
         var roomName = MeetingRoom.RoomNameFor(link.MeetingSeriesId);
         var access = video.MintAccessToken(
             roomName: roomName,
@@ -73,5 +78,17 @@ public class JoinAsGuestCommandHandler(IAppDbContext db, IVideoService video)
             access.Token, access.Url, access.RoomName,
             access.Identity, access.DisplayName, access.ExpiresAt,
             link.MeetingId, link.MeetingTitle, recordingActive));
+    }
+
+    /// <summary>
+    /// L3 - trims, drops control characters and caps the guest's
+    /// self-chosen name; null when nothing usable is left.
+    /// </summary>
+    public static string? SanitizeDisplayName(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return null;
+        var cleaned = new string(raw.Where(c => !char.IsControl(c)).ToArray()).Trim();
+        if (cleaned.Length == 0) return null;
+        return cleaned.Length > MaxDisplayNameLength ? cleaned[..MaxDisplayNameLength].TrimEnd() : cleaned;
     }
 }

@@ -1,3 +1,4 @@
+using Application.Authorization;
 using Api.Authorization;
 using Application.Common;
 using Application.Features.Support;
@@ -45,6 +46,7 @@ public class SupportController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("api/v1/queues/{queueId:guid}")]
+    [RequireProjectRole(ProjectRole.TeamLead, ProjectScope.Queue, "queueId")]
     public async Task<ActionResult<QueueDto>> UpdateQueue(
         Guid queueId, [FromBody] UpdateQueueBodyDto body, CancellationToken ct)
     {
@@ -54,6 +56,7 @@ public class SupportController(ISender mediator) : ControllerBase
     }
 
     [HttpDelete("api/v1/queues/{queueId:guid}")]
+    [RequireProjectRole(ProjectRole.TeamLead, ProjectScope.Queue, "queueId")]
     public async Task<IActionResult> DeleteQueue(Guid queueId, CancellationToken ct)
     {
         var result = await mediator.Send(new DeleteQueueCommand(queueId), ct);
@@ -72,6 +75,7 @@ public class SupportController(ISender mediator) : ControllerBase
     }
 
     [HttpGet("api/v1/customers/{customerId:guid}")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Customer, "customerId")]
     public async Task<ActionResult<CustomerDto>> GetCustomer(Guid customerId, CancellationToken ct)
     {
         var result = await mediator.Send(new GetCustomerQuery(customerId), ct);
@@ -90,6 +94,7 @@ public class SupportController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("api/v1/customers/{customerId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Customer, "customerId")]
     public async Task<ActionResult<CustomerDto>> UpdateCustomer(
         Guid customerId, [FromBody] UpdateCustomerBodyDto body, CancellationToken ct)
     {
@@ -101,6 +106,7 @@ public class SupportController(ISender mediator) : ControllerBase
     // ---------- Tickets ----------
 
     [HttpGet("api/v1/tickets/{ticketId:guid}")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Ticket, "ticketId")]
     public async Task<ActionResult<TicketDetailDto>> GetTicket(
         Guid ticketId,
         [FromQuery] bool includeInternal = true,
@@ -123,6 +129,7 @@ public class SupportController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("api/v1/tickets/{ticketId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Ticket, "ticketId")]
     public async Task<ActionResult<TicketDto>> UpdateTicket(
         Guid ticketId, [FromBody] UpdateTicketBodyDto body, CancellationToken ct)
     {
@@ -133,6 +140,7 @@ public class SupportController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/tickets/{ticketId:guid}/status")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Ticket, "ticketId")]
     public async Task<ActionResult<TicketDto>> ChangeStatus(
         Guid ticketId, [FromBody] ChangeStatusBodyDto body, CancellationToken ct)
     {
@@ -144,6 +152,7 @@ public class SupportController(ISender mediator) : ControllerBase
     // ---------- Replies ----------
 
     [HttpPost("api/v1/tickets/{ticketId:guid}/replies")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Ticket, "ticketId")]
     public async Task<ActionResult<TicketReplyDto>> AddReply(
         Guid ticketId, [FromBody] AddReplyBodyDto body, CancellationToken ct)
     {

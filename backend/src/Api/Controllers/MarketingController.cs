@@ -1,3 +1,4 @@
+using Application.Authorization;
 using Api.Authorization;
 using Application.Common;
 using Application.Features.Marketing;
@@ -28,6 +29,7 @@ public class MarketingController(ISender mediator) : ControllerBase
     }
 
     [HttpGet("api/v1/campaigns/{campaignId:guid}")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Campaign, "campaignId")]
     public async Task<ActionResult<CampaignDetailDto>> GetCampaign(
         Guid campaignId, CancellationToken ct)
     {
@@ -48,6 +50,7 @@ public class MarketingController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("api/v1/campaigns/{campaignId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Campaign, "campaignId")]
     public async Task<ActionResult<CampaignDto>> UpdateCampaign(
         Guid campaignId, [FromBody] UpdateCampaignBodyDto body, CancellationToken ct)
     {
@@ -64,6 +67,7 @@ public class MarketingController(ISender mediator) : ControllerBase
     }
 
     [HttpDelete("api/v1/campaigns/{campaignId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Campaign, "campaignId")]
     public async Task<IActionResult> DeleteCampaign(Guid campaignId, CancellationToken ct)
     {
         var result = await mediator.Send(new DeleteCampaignCommand(campaignId), ct);
@@ -87,6 +91,7 @@ public class MarketingController(ISender mediator) : ControllerBase
     // ---------- Assets ----------
 
     [HttpGet("api/v1/assets/{assetId:guid}")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Asset, "assetId")]
     public async Task<ActionResult<AssetDto>> GetAsset(Guid assetId, CancellationToken ct)
     {
         var result = await mediator.Send(new GetAssetQuery(assetId), ct);
@@ -94,6 +99,7 @@ public class MarketingController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/campaigns/{campaignId:guid}/assets")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Campaign, "campaignId")]
     public async Task<ActionResult<AssetDto>> CreateAsset(
         Guid campaignId, [FromBody] CreateAssetBodyDto body, CancellationToken ct)
     {
@@ -104,6 +110,7 @@ public class MarketingController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("api/v1/assets/{assetId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Asset, "assetId")]
     public async Task<ActionResult<AssetDto>> UpdateAsset(
         Guid assetId, [FromBody] UpdateAssetBodyDto body, CancellationToken ct)
     {
@@ -117,6 +124,7 @@ public class MarketingController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/assets/{assetId:guid}/status")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Asset, "assetId")]
     public async Task<ActionResult<AssetDto>> ChangeAssetStatus(
         Guid assetId, [FromBody] ChangeAssetStatusBodyDto body, CancellationToken ct)
     {
@@ -126,6 +134,7 @@ public class MarketingController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/assets/{assetId:guid}/reschedule")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Asset, "assetId")]
     public async Task<ActionResult<AssetDto>> RescheduleAsset(
         Guid assetId, [FromBody] RescheduleAssetBodyDto body, CancellationToken ct)
     {
@@ -134,6 +143,7 @@ public class MarketingController(ISender mediator) : ControllerBase
     }
 
     [HttpDelete("api/v1/assets/{assetId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Asset, "assetId")]
     public async Task<IActionResult> DeleteAsset(Guid assetId, CancellationToken ct)
     {
         var result = await mediator.Send(new DeleteAssetCommand(assetId), ct);
@@ -143,6 +153,7 @@ public class MarketingController(ISender mediator) : ControllerBase
     // ---------- Marketing tasks ----------
 
     [HttpPost("api/v1/campaigns/{campaignId:guid}/tasks")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Campaign, "campaignId")]
     public async Task<ActionResult<MarketingTaskDto>> CreateTask(
         Guid campaignId, [FromBody] CreateMarketingTaskBodyDto body, CancellationToken ct)
     {
@@ -153,6 +164,7 @@ public class MarketingController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("api/v1/marketing-tasks/{taskId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.MarketingTask, "taskId")]
     public async Task<ActionResult<MarketingTaskDto>> UpdateTask(
         Guid taskId, [FromBody] UpdateMarketingTaskBodyDto body, CancellationToken ct)
     {
@@ -165,6 +177,7 @@ public class MarketingController(ISender mediator) : ControllerBase
     }
 
     [HttpDelete("api/v1/marketing-tasks/{taskId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.MarketingTask, "taskId")]
     public async Task<IActionResult> DeleteTask(Guid taskId, CancellationToken ct)
     {
         var result = await mediator.Send(new DeleteMarketingTaskCommand(taskId), ct);

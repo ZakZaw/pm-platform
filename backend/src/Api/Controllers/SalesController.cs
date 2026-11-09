@@ -1,3 +1,4 @@
+using Application.Authorization;
 using Api.Authorization;
 using Application.Common;
 using Application.Features.Sales;
@@ -45,6 +46,7 @@ public class SalesController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("api/v1/deal-stages/{stageId:guid}")]
+    [RequireProjectRole(ProjectRole.TeamLead, ProjectScope.DealStage, "stageId")]
     public async Task<ActionResult<DealStageDto>> UpdateStage(
         Guid stageId, [FromBody] UpdateStageBodyDto body, CancellationToken ct)
     {
@@ -65,6 +67,7 @@ public class SalesController(ISender mediator) : ControllerBase
     }
 
     [HttpDelete("api/v1/deal-stages/{stageId:guid}")]
+    [RequireProjectRole(ProjectRole.TeamLead, ProjectScope.DealStage, "stageId")]
     public async Task<IActionResult> DeleteStage(Guid stageId, CancellationToken ct)
     {
         var result = await mediator.Send(new DeleteDealStageCommand(stageId), ct);
@@ -85,6 +88,7 @@ public class SalesController(ISender mediator) : ControllerBase
     }
 
     [HttpGet("api/v1/accounts/{accountId:guid}")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Account, "accountId")]
     public async Task<ActionResult<AccountDto>> GetAccount(Guid accountId, CancellationToken ct)
     {
         var result = await mediator.Send(new GetAccountQuery(accountId), ct);
@@ -103,6 +107,7 @@ public class SalesController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("api/v1/accounts/{accountId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Account, "accountId")]
     public async Task<ActionResult<AccountDto>> UpdateAccount(
         Guid accountId, [FromBody] UpdateAccountBodyDto body, CancellationToken ct)
     {
@@ -115,6 +120,7 @@ public class SalesController(ISender mediator) : ControllerBase
     // ---------- Deals ----------
 
     [HttpGet("api/v1/deals/{dealId:guid}")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Deal, "dealId")]
     public async Task<ActionResult<DealDto>> GetDeal(Guid dealId, CancellationToken ct)
     {
         var result = await mediator.Send(new GetDealQuery(dealId), ct);
@@ -134,6 +140,7 @@ public class SalesController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("api/v1/deals/{dealId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Deal, "dealId")]
     public async Task<ActionResult<DealDto>> UpdateDeal(
         Guid dealId, [FromBody] UpdateDealBodyDto body, CancellationToken ct)
     {
@@ -144,6 +151,7 @@ public class SalesController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/deals/{dealId:guid}/change-stage")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Deal, "dealId")]
     public async Task<ActionResult<DealDto>> ChangeDealStage(
         Guid dealId, [FromBody] ChangeStageBodyDto body, CancellationToken ct)
     {
@@ -155,6 +163,7 @@ public class SalesController(ISender mediator) : ControllerBase
     // ---------- Activities ----------
 
     [HttpGet("api/v1/deals/{dealId:guid}/activities")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Deal, "dealId")]
     public async Task<ActionResult<IReadOnlyList<ActivityDto>>> ListActivities(
         Guid dealId, CancellationToken ct)
     {
@@ -163,6 +172,7 @@ public class SalesController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/deals/{dealId:guid}/activities")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Deal, "dealId")]
     public async Task<ActionResult<ActivityDto>> CreateActivity(
         Guid dealId, [FromBody] CreateActivityBodyDto body, CancellationToken ct)
     {
@@ -195,6 +205,7 @@ public class SalesController(ISender mediator) : ControllerBase
     }
 
     [HttpPatch("api/v1/leads/{leadId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Lead, "leadId")]
     public async Task<ActionResult<LeadDto>> UpdateLead(
         Guid leadId, [FromBody] UpdateLeadBodyDto body, CancellationToken ct)
     {
@@ -205,6 +216,7 @@ public class SalesController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/leads/{leadId:guid}/convert")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Lead, "leadId")]
     public async Task<ActionResult<DealDto>> ConvertLead(
         Guid leadId, [FromBody] ConvertLeadBodyDto body, CancellationToken ct)
     {

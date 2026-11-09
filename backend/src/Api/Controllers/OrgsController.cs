@@ -21,6 +21,7 @@ namespace Api.Controllers;
 public class OrgsController(ISender mediator) : ControllerBase
 {
     [HttpPost]
+    [DenyApiKey]
     [RequestSizeLimit(5 * 1024 * 1024)]
     public async Task<ActionResult<OrganizationDto>> Create(
         [FromForm] CreateOrgFormDto form,

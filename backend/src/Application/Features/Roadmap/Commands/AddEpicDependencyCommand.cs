@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Application.Features.Roadmap.Commands;
 
 public record AddEpicDependencyCommand(
+    Guid ProjectId,
     Guid EpicId,
     Guid DependsOnEpicId) : IRequest<Result<EpicDependencyDto>>;
 
@@ -26,7 +27,7 @@ public class AddEpicDependencyCommandHandler(
             return Result.Failure<EpicDependencyDto>(AuthErrors.NotAuthenticated);
 
         var epic = await db.Epics
-            .Where(e => e.Id == request.EpicId)
+            .Where(e => e.Id == request.EpicId && e.ProjectId == request.ProjectId)
             .Select(e => new { e.Id, e.ProjectId, e.Title })
             .FirstOrDefaultAsync(ct);
         if (epic is null) return Result.Failure<EpicDependencyDto>(EpicErrors.NotFound);
@@ -96,6 +97,7 @@ public class AddEpicDependencyCommandHandler(
 }
 
 public record RemoveEpicDependencyCommand(
+    Guid ProjectId,
     Guid EpicId,
     Guid DependsOnEpicId) : IRequest<Result>;
 
@@ -112,7 +114,9 @@ public class RemoveEpicDependencyCommandHandler(
             return Result.Failure(AuthErrors.NotAuthenticated);
 
         var dep = await db.EpicDependencies
-            .FirstOrDefaultAsync(d => d.EpicId == request.EpicId && d.DependsOnEpicId == request.DependsOnEpicId, ct);
+            .FirstOrDefaultAsync(d => d.EpicId == request.EpicId
+                                   && d.DependsOnEpicId == request.DependsOnEpicId
+                                   && d.Epic.ProjectId == request.ProjectId, ct);
         if (dep is null) return Result.Failure(EpicErrors.DependencyNotFound);
 
         var epic = await db.Epics

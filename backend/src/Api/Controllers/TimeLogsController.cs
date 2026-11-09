@@ -1,3 +1,6 @@
+using Domain.Enums;
+using Application.Authorization;
+using Api.Authorization;
 using Application.Common;
 using Application.Features.TimeLogs;
 using MediatR;
@@ -11,6 +14,7 @@ namespace Api.Controllers;
 public class TimeLogsController(ISender mediator) : ControllerBase
 {
     [HttpGet("api/v1/tasks/{taskId:guid}/time-logs")]
+    [RequireProjectRole(ProjectRole.Viewer, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<IReadOnlyList<TimeLogDto>>> List(Guid taskId, CancellationToken ct)
     {
         var result = await mediator.Send(new ListTaskTimeLogsQuery(taskId), ct);
@@ -18,6 +22,7 @@ public class TimeLogsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("api/v1/tasks/{taskId:guid}/time-logs")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.Task, "taskId")]
     public async Task<ActionResult<TimeLogDto>> Log(
         Guid taskId, [FromBody] LogTimeBodyDto body, CancellationToken ct)
     {
@@ -27,6 +32,7 @@ public class TimeLogsController(ISender mediator) : ControllerBase
     }
 
     [HttpDelete("api/v1/time-logs/{timeLogId:guid}")]
+    [RequireProjectRole(ProjectRole.Contributor, ProjectScope.TimeLog, "timeLogId")]
     public async Task<ActionResult> Delete(Guid timeLogId, CancellationToken ct)
     {
         var result = await mediator.Send(new DeleteTimeLogCommand(timeLogId), ct);
